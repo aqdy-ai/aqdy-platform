@@ -1,0 +1,385 @@
+name: Aqdy CI/CD
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+env:
+  NODE_VERSION: 24
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: ${{ github.repository }}/aqdy-platform-backend
+  IMAGE_NAME_FRONTEND: ${{ github.repository }}/aqdy-platform-frontend
+
+jobs:
+  # ─────────────────────────────────────────
+  # JOB 1: Lint Backend
+  # ─────────────────────────────────────────
+  lint-backend:
+    name: 🔍 Lint Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: cd backend && npm ci
+
+      - name: Run ESLint
+        run: cd backend && npm run lint
+
+      - name: Run Prettier check
+        run: cd backend && npm run format:check
+
+  # ─────────────────────────────────────────
+  # JOB 2: Lint Frontend
+  # ─────────────────────────────────────────
+  lint-frontend:
+    name: 🔍 Lint Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Run ESLint
+        run: cd frontend && npm run lint
+
+      - name: Run Prettier check
+        run: cd frontend && npm run format:check
+
+  # ─────────────────────────────────────────
+  # JOB 3: Test Backend
+  # ─────────────────────────────────────────
+  test-backend:
+    name: 🧪 Test Backend
+    runs-on: ubuntu-latest
+    needs: lint-backend
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: cd backend && npm ci
+
+      - name: Run backend tests with coverage
+        run: cd backend && npm test -- --coverage --forceExit
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://localhost:27017/aqdy_test
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PINECONE_API_KEY: ${{ secrets.PINECONE_API_KEY }}
+          PINECONE_INDEX: ${{ secrets.PINECONE_INDEX }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          JWT_SECRET: test-jwt-secret-for-ci
+
+      - name: Upload backend coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage/
+          retention-days: 7
+
+      - name: Check coverage threshold
+        run: cd backend && npm run coverage:check
+
+  # ─────────────────────────────────────────
+  # JOB 4: Test Frontend
+  # ─────────────────────────────────────────
+  test-frontend:
+    name: 🧪 Test Frontend
+    runs-on: ubuntu-latest
+    needs: lint-frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Run frontend tests with coverage
+        run: cd frontend && npm test -- --coverage --watchAll=false
+        env:
+          CI: true
+
+      - name: Upload frontend coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+          retention-days: 7
+
+  # ─────────────────────────────────────────
+  # JOB 5: Security Audit
+  # ─────────────────────────────────────────
+  security-audit:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    needs: [lint-backend, lint-frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Audit backend dependencies
+        run: cd backend && npm audit --audit-level=high
+
+      - name: Audit frontend dependencies
+        run: cd frontend && npm audit --audit-level=high
+
+      - name: Check for hardcoded secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+
+  # ─────────────────────────────────────────
+  # JOB 6: Build Docker Images
+  # ─────────────────────────────────────────
+  build:
+    name: 🐳 Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend, security-audit]
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for backend image
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Extract metadata for frontend image
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────
+  # JOB 7: Deploy to Staging
+  # ─────────────────────────────────────────
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://staging.aqdy.app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy backend to ECS (staging)
+        run: |
+          aws ecs update-service \
+            --cluster aqdy-staging \
+            --service aqdy-platform-backend-staging \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Deploy frontend to ECS (staging)
+        run: |
+          aws ecs update-service \
+            --cluster aqdy-staging \
+            --service aqdy-platform-frontend-staging \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Wait for staging backend to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster aqdy-staging \
+            --services aqdy-platform-backend-staging \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Wait for staging frontend to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster aqdy-staging \
+            --services aqdy-platform-frontend-staging \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Run smoke tests on staging
+        run: |
+          curl --fail https://staging.aqdy.app/api/health || exit 1
+          echo "✅ Staging health check passed"
+
+  # ─────────────────────────────────────────
+  # JOB 8: Deploy to Production
+  # ─────────────────────────────────────────
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://aqdy.app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy backend to ECS (production)
+        run: |
+          aws ecs update-service \
+            --cluster aqdy-production \
+            --service aqdy-platform-backend-production \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Deploy frontend to ECS (production)
+        run: |
+          aws ecs update-service \
+            --cluster aqdy-production \
+            --service aqdy-platform-frontend-production \
+            --force-new-deployment \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Wait for production backend to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster aqdy-production \
+            --services aqdy-platform-backend-production \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Wait for production frontend to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster aqdy-production \
+            --services aqdy-platform-frontend-production \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Run smoke tests on production
+        run: |
+          curl --fail https://aqdy.app/api/health || exit 1
+          echo "✅ Production health check passed"
+
+      - name: Notify team on success
+        if: success()
+        run: |
+          echo "🎉 Production deployment successful!"
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed — triggering rollback"
+          aws ecs update-service \
+            --cluster aqdy-production \
+            --service aqdy-platform-backend-production \
+            --task-definition aqdy-platform-backend-previous \
+            --region ${{ secrets.AWS_REGION }}
+          aws ecs update-service \
+            --cluster aqdy-production \
+            --service aqdy-platform-frontend-production \
+            --task-definition aqdy-platform-frontend-previous \
+            --region ${{ secrets.AWS_REGION }}
