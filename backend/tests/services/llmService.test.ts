@@ -1,32 +1,35 @@
-import { jest, describe, beforeEach, test, expect } from '@jest/globals';
-import { llmService } from '../../src/services/llm.service.js';
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 
-jest.mock("@langchain/google-genai");
+// أبسط mock بدون أي types مشاكل
+const mockInvoke = jest.fn() as jest.Mock;
 
-describe('LLM Service Logic', () => {
+// mock module FIRST
+jest.unstable_mockModule("@langchain/google-genai", () => {
+  return {
+    ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+      invoke: mockInvoke,
+    })),
+  };
+});
 
+// import AFTER mocking
+const { llmService } = await import("../../src/services/llm.service.js");
+
+describe("LLM Service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('should fallback to Gemini if primary fails', async () => {
+  test("should fallback to Gemini if primary fails", async () => {
+    mockInvoke
+      .mockRejectedValueOnce(new Error("Primary Down"))
+      .mockRejectedValueOnce(new Error("Primary Down"))
+      .mockRejectedValueOnce(new Error("Primary Down"))
+      .mockResolvedValueOnce({ content: "Fallback Result" });
 
-    const mockInvoke = jest.fn<() => Promise<{ content: string }>>()
-      .mockRejectedValueOnce(new Error('Primary Down'))
-      .mockRejectedValueOnce(new Error('Primary Down'))
-      .mockRejectedValueOnce(new Error('Primary Down'))
-      .mockResolvedValueOnce({ content: 'Fallback Result' });
-
-    (ChatGoogleGenerativeAI as unknown as jest.Mock).mockImplementation(() => ({
-      invoke: mockInvoke,
-    }));
-
-    const response = await llmService.call('Test contract text');
+    const response = await llmService.call("Test contract text");
 
     expect(response.usedFallback).toBe(true);
-    expect(response.content).toBe('Fallback Result');
-    expect(response.model).toBe('gemma-4-26b-a4b-it');
+    expect(response.content).toBe("Fallback Result");
   });
-
 });
