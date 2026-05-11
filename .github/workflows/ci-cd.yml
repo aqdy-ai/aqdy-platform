@@ -7,7 +7,7 @@ on:
     branches: [develop, main]
 
 env:
-  NODE_VERSION: 24
+  NODE_VERSION: 22
   REGISTRY: ghcr.io
   IMAGE_NAME_BACKEND: ${{ github.repository }}/aqdy-platform-backend
   IMAGE_NAME_FRONTEND: ${{ github.repository }}/aqdy-platform-frontend
@@ -59,6 +59,9 @@ jobs:
       - name: Install frontend dependencies
         run: cd frontend && npm ci
 
+      - name: Type check TypeScript
+        run: cd frontend && npm run typecheck
+
       - name: Run ESLint
         run: cd frontend && npm run lint
 
@@ -101,6 +104,7 @@ jobs:
       - name: Run backend tests with coverage
         run: cd backend && npm test -- --coverage --forceExit
         env:
+          NODE_OPTIONS: --experimental-vm-modules
           NODE_ENV: test
           MONGODB_URI: mongodb://localhost:27017/aqdy_test
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -144,7 +148,7 @@ jobs:
         run: cd frontend && npm ci
 
       - name: Run frontend tests with coverage
-        run: cd frontend && npm test -- --coverage --watchAll=false
+        run: cd frontend && npm run test:coverage
         env:
           CI: true
 
@@ -303,7 +307,7 @@ jobs:
 
       - name: Run smoke tests on staging
         run: |
-          curl --fail https://staging.aqdy.app/api/health || exit 1
+          curl --fail https://staging.aqdy.app/health || exit 1
           echo "✅ Staging health check passed"
 
   # ─────────────────────────────────────────
@@ -361,7 +365,7 @@ jobs:
 
       - name: Run smoke tests on production
         run: |
-          curl --fail https://aqdy.app/api/health || exit 1
+          curl --fail https://aqdy.app/health || exit 1
           echo "✅ Production health check passed"
 
       - name: Notify team on success
