@@ -1,5 +1,4 @@
 import morgan from "morgan";
-import { Request, Response } from "express";
 import { env } from "../config/env";
 
 export const logger = {

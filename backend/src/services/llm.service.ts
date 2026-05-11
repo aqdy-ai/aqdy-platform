@@ -173,7 +173,7 @@ export const llmService = {
                         ? fallbackError.message
                         : "Unknown error",
             });
-            throw new Error("All LLM providers failed. Please try again later.");
+            throw new Error("All LLM providers failed. Please try again later.", { cause: fallbackError });
         }
     },
 
