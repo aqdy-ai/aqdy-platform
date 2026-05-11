@@ -17,10 +17,10 @@ export const GEMMA4_FALLBACK_MODEL = "gemma-4-26b-a4b-it";
  * Context window: 256K tokens
  */
 export const gemma4Primary = new ChatGoogleGenerativeAI({
-    model: GEMMA4_PRIMARY_MODEL,
-    apiKey: env.GEMINI_API_KEY,
-    temperature: 0.1,
-    maxOutputTokens: 4096,
+  model: GEMMA4_PRIMARY_MODEL,
+  apiKey: env.GEMINI_API_KEY,
+  temperature: 0.1,
+  maxOutputTokens: 4096,
 });
 
 /**
@@ -29,10 +29,10 @@ export const gemma4Primary = new ChatGoogleGenerativeAI({
  * Context window: 256K tokens
  */
 export const gemma4Fallback = new ChatGoogleGenerativeAI({
-    model: GEMMA4_FALLBACK_MODEL,
-    apiKey: env.GEMINI_API_KEY,
-    temperature: 0.1,
-    maxOutputTokens: 4096,
+  model: GEMMA4_FALLBACK_MODEL,
+  apiKey: env.GEMINI_API_KEY,
+  temperature: 0.1,
+  maxOutputTokens: 4096,
 });
 
 // ── Output Parser ────────────────────────────────
@@ -52,17 +52,17 @@ export const outputParser = new StringOutputParser();
  * const result = await chain.invoke({ input: contractText });
  */
 export const buildChain = (
-    systemPrompt: string,
-    useFallback = false
+  systemPrompt: string,
+  useFallback = false,
 ): RunnableSequence => {
-    const model = useFallback ? gemma4Fallback : gemma4Primary;
+  const model = useFallback ? gemma4Fallback : gemma4Primary;
 
-    const prompt = ChatPromptTemplate.fromMessages([
-        ["system", systemPrompt],
-        ["human", "{input}"],
-    ]);
+  const prompt = ChatPromptTemplate.fromMessages([
+    ["system", systemPrompt],
+    ["human", "{input}"],
+  ]);
 
-    return RunnableSequence.from([prompt, model, outputParser]);
+  return RunnableSequence.from([prompt, model, outputParser]);
 };
 
 // ── Prompt Templates ─────────────────────────────
