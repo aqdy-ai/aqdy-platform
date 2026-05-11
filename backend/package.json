@@ -16,7 +16,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
+  "type": "commonjs",
   "dependencies": {
     "@langchain/core": "^1.1.45",
     "@langchain/google-genai": "^2.1.30",
