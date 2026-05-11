@@ -307,7 +307,7 @@ jobs:
 
       - name: Run smoke tests on staging
         run: |
-          curl --fail https://staging.aqdy.app/health || exit 1
+          curl --fail https://staging.aqdy.app/api/health || exit 1
           echo "✅ Staging health check passed"
 
   # ─────────────────────────────────────────
@@ -365,7 +365,7 @@ jobs:
 
       - name: Run smoke tests on production
         run: |
-          curl --fail https://aqdy.app/health || exit 1
+          curl --fail https://aqdy.app/api/health || exit 1
           echo "✅ Production health check passed"
 
       - name: Notify team on success

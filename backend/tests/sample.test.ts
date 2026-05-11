@@ -3,9 +3,13 @@
  * هذا الملف يساعد المطورين على فهم كيفية كتابة اختبارات للكود الخاص بهم
  * Path: backend/tests/sample.test.js
  */
-
+import { jest, describe, test, expect } from '@jest/globals';
 import { calculateRiskScore } from '../src/services/contractService.js';
 
+type User = {
+  id: number;
+  status: string;
+};
 describe('Contract Service - Unit Tests', () => {
 
   test('يجب أن يعيد نتيجة 100 إذا كان العقد يحتوي على كلمات خطيرة جداً', () => {
@@ -20,7 +24,7 @@ describe('Contract Service - Unit Tests', () => {
   });
 
   test('مثال على استخدام Mock لخدمة خارجية', async () => {
-    const mockDatabaseFetch = jest.fn().mockReturnValue({ id: 1, status: 'active' });
+    const mockDatabaseFetch = jest.fn<() => User>().mockReturnValue({ id: 1, status: 'active' });
     const data = mockDatabaseFetch();
     expect(data.status).toBe('active');
     expect(mockDatabaseFetch).toHaveBeenCalledTimes(1);
