@@ -1,0 +1,14 @@
+{
+  "common": {
+    "upload": "Upload Contract",
+    "analyze": "Analyze",
+    "cancel": "Cancel",
+    "close": "Close",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "success": "Success"
+  },
+  "upload_description": "Supported formats: PDF, DOCX (Max 10MB)",
+  "drag_drop": "Click or drag to upload contract",
+  "analyze_now": "Analyze Contract"
+}
