@@ -1,7 +1,7 @@
 // /**
 //  * نموذج لاختبارات الوحدات (Unit Testing Template)
 //  * هذا الملف يساعد المطورين على فهم كيفية كتابة اختبارات للكود الخاص بهم
-//  * Path: backend/tests/sample.test.js
+//  *
 //  */
 // import { jest, describe, beforeEach, test, expect } from '@jest/globals';
 // import { calculateRiskScore } from '../src/services/contractService.js';
@@ -43,8 +43,12 @@
 //  */
 import { describe, test, expect } from "@jest/globals";
 
-describe("Sample test", () => {
-  test("should return true", () => {
+describe("Environment Verification", () => {
+  test("should pass basic assertion", () => {
     expect(true).toBe(true);
+  });
+
+  test("should have access to ES Modules", () => {
+    expect(import.meta.url).toBeDefined();
   });
 });
