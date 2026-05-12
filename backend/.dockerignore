@@ -1,0 +1,15 @@
+# Docker Build Context Excludes
+node_modules/
+dist/
+.env
+.env.local
+.git
+.gitignore
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
+.eslintcache
+.next/
+out/
+build/
