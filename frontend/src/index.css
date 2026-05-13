@@ -1,0 +1,91 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/inter";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* ──── Royal Intelligence (Light Mode) ──── */
+  --background: oklch(0.99 0.005 285); /* أبيض بلمسة بنفسجي خفيفة جداً */
+  --foreground: oklch(0.25 0.05 280);   /* نيلي غامق جداً (بدل الرمادي) */
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.05 280);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.05 280);
+
+  --primary: oklch(0.55 0.18 280);     /* بنفسجي ملكي صريح - مبهج واحترافي */
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.94 0.02 280);
+  --secondary-foreground: oklch(0.25 0.05 280);
+
+  --muted: oklch(0.96 0.01 280);
+  --muted-foreground: oklch(0.5 0.05 280);
+
+  --accent: oklch(0.65 0.25 350);      /* وردي ياقوتي (Vibrant) للفت الانتباه */
+  --accent-foreground: oklch(1 0 0);
+
+  --destructive: oklch(0.6 0.2 25);
+  --border: oklch(0.9 0.03 280);
+  --input: oklch(0.9 0.03 280);
+  --ring: oklch(0.55 0.18 280);
+
+  --radius: 0.75rem; /* كبرنا الـ Radius شوية عشان نكسر حدة القانون */
+
+  --sans: 'Inter Variable', system-ui, sans-serif;
+  font: 18px/145% var(--sans);
+  color-scheme: light dark;
+}
+
+/* ──── Dark Mode (Modern Deep Blue) ──── */
+.dark {
+  --background: oklch(0.18 0.04 280);  /* خلفية ليلية بنفسجية عميقة جداً */
+  --foreground: oklch(0.95 0.02 280);
+
+  --card: oklch(0.22 0.04 280);       /* أفتح سنة من الخلفية */
+  --card-foreground: oklch(0.95 0.02 280);
+
+  --popover: oklch(0.22 0.04 280);
+  --popover-foreground: oklch(0.95 0.02 280);
+
+  --primary: oklch(0.7 0.15 280);     /* بنفسجي مضيء في الضلمة */
+  --primary-foreground: oklch(0.1 0 0);
+
+  --secondary: oklch(0.28 0.04 280);
+  --secondary-foreground: oklch(0.95 0.02 280);
+
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 12%);
+}
+
+@theme inline {
+  --color-ring: var(--ring);
+  --font-sans: 'Inter Variable', sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+}
+
+@layer base {
+  * { @apply border-border outline-primary/50; }
+  body { @apply bg-background text-foreground transition-colors duration-500; }
+  html { @apply font-sans; }
+}
+
+#root {
+  width: 100%;
+  margin: 0;
+  text-align: start;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
