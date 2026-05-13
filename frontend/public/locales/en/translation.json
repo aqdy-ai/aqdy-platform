@@ -4,28 +4,49 @@
     "analyze": "Analyze",
     "cancel": "Cancel",
     "close": "Close",
-    "loading": "Loading…",
+    "loading": "Loading...",
     "error": "Something went wrong",
-    "success": "Success",
-     "brand_name": "Aqdy",
-    "tagline": "Secure Legal AI",
-    "get_started": "Get Started"
+    "success": "Operation successful",
+    "brand_name": "Aqdy",
+    "tagline": "Secure AI Legal Assistant",
+    "get_started": "Get Started",
+    "remove": "Remove"
   },
   "nav": {
     "home": "Home",
-    "how_it_works": "How it works",
+    "how_it_works": "How it works?",
     "pricing": "Pricing",
-    "contact": "Contact",
+    "contact": "Contact Us",
     "language_toggle": "العربية"
   },
   "hero": {
-    "title": "Your Smart Legal Assistant",
-    "subtitle": "Analyze, draft, and review contracts with the power of AI tailored for Egyptian law.",
+    "title": "Your Legal Future, Smarter.",
+    "title_part1": "Your Legal Future,",
+    "title_part2": "Smarter.",
+    "subtitle": "Upload your contracts now and get accurate AI-powered legal analysis tailored to Egyptian Law.",
     "cta_primary": "Start Analysis",
-    "cta_secondary": "View Demo"
+    "cta_secondary": "Watch Demo"
   },
-  "upload_description": "Supported formats: PDF, DOCX (Max 10MB)",
-  "drag_drop": "Click or drag to upload contract",
-  "analyze_now": "Analyze Contract"
-
+  "upload": {
+    "title": "Upload your contract",
+    "subtitle": "Drag and drop your PDF file or click to browse",
+    "hint": "Supports PDF only (Max 10MB)",
+    "analyze_button": "Start AI Analysis",
+    "error_invalid_type": "Please select a PDF file only",
+    "error_too_large": "File size exceeds 10MB",
+    "dropzone_label": "Contract upload area"
+  },
+  "disclaimer": {
+    "description": "Aqdy is an AI legal assistant designed to facilitate contract review and is not a formal legal advice.",
+    "warning": "Please consult a specialized lawyer before making any final legal decisions.",
+    "accept_button": "I Understand & Accept"
+  },
+  "features": {
+    "title_1": "Smart Analysis",
+    "desc_1": "Extract key clauses and identify legal loopholes accurately.",
+    "title_2": "Legal Compliance",
+    "desc_2": "Comprehensive review of contract compliance with Egyptian laws and regulations.",
+    "title_3": "Instant Recommendations",
+    "desc_3": "Legal advice to improve contract terms and protect your rights."
+  }
 }
