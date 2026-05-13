@@ -79,6 +79,9 @@
   * { @apply border-border outline-primary/50; }
   body { @apply bg-background text-foreground transition-colors duration-500; }
   html { @apply font-sans; }
+  :root[dir="rtl"] {
+    --font-sans: 'Inter', 'Noto Sans Arabic', sans-serif;
+  }
 }
 
 #root {

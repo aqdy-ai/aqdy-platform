@@ -6,9 +6,26 @@
     "close": "Close",
     "loading": "Loading…",
     "error": "Something went wrong",
-    "success": "Success"
+    "success": "Success",
+     "brand_name": "Aqdy",
+    "tagline": "Secure Legal AI",
+    "get_started": "Get Started"
+  },
+  "nav": {
+    "home": "Home",
+    "how_it_works": "How it works",
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "language_toggle": "العربية"
+  },
+  "hero": {
+    "title": "Your Smart Legal Assistant",
+    "subtitle": "Analyze, draft, and review contracts with the power of AI tailored for Egyptian law.",
+    "cta_primary": "Start Analysis",
+    "cta_secondary": "View Demo"
   },
   "upload_description": "Supported formats: PDF, DOCX (Max 10MB)",
   "drag_drop": "Click or drag to upload contract",
   "analyze_now": "Analyze Contract"
+
 }
