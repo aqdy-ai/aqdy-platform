@@ -5,6 +5,10 @@ import { env } from "./config/env";
 import { httpLogger } from "./utils/logger";
 import { errorHandler } from "./middlewares/errorHandler";
 import healthRouter from "./routes/health.route";
+import connectDB from './config/database';
+import 'dotenv/config';
+
+connectDB();
 
 const app: Application = express();
 
