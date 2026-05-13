@@ -1,7 +1,7 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { env } from "../config/env";
-import { logger } from "../utils/logger";
+import { env } from "../config/env.js";
+import { logger } from "../utils/logger.js";
 
 export interface GeminiOptions {
   systemPrompt?: string;

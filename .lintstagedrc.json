@@ -1,0 +1,12 @@
+{
+  "backend/**/*.ts": [
+    "npm --prefix backend run lint",
+    "npm --prefix backend run format:check",
+    "cross-env NODE_OPTIONS=--experimental-vm-modules npm --prefix backend test -- --findRelatedTests --passWithNoTests"
+  ],
+  "frontend/**/*.{js,jsx,ts,tsx}": [
+    "npm --prefix frontend run lint",
+    "npm --prefix frontend run format:check",
+    "npm --prefix frontend test -- run --related --passWithNoTests"
+  ]
+}
