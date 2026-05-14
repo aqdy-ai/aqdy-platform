@@ -1,13 +1,14 @@
 import express, { Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { env } from "./config/env";
-import { httpLogger } from "./utils/logger";
-import { errorHandler } from "./middlewares/errorHandler";
-import healthRouter from "./routes/health.route";
-import connectDB from './config/database';
 import 'dotenv/config';
+import { env } from "./config/env.js";
+import { httpLogger } from "./utils/logger.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
+import healthRouter from "./routes/health.route.js";
+import connectDB from './config/database.js';
 
+// Initialize Database
 connectDB();
 
 const app: Application = express();

@@ -1,0 +1,9 @@
+process.env.MONGODB_URI = "mongodb://localhost:27017/test";
+process.env.GEMINI_API_KEY = "test";
+process.env.PINECONE_API_KEY = "test";
+process.env.PINECONE_INDEX = "test";
+process.env.LANGFUSE_SECRET_KEY = "test";
+process.env.LANGFUSE_PUBLIC_KEY = "test";
+process.env.JWT_SECRET = "test";
+process.env.PORT = "3000";
+process.env.NODE_ENV = "test";
