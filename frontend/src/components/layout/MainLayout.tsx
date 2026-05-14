@@ -43,7 +43,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <img
                 src="/AqdyLogo.png"
                 alt="Aqdy Logo"
-                className={`relative h-14 w-auto object-contain transition-transform duration-500 group-hover:rotate-3 ${isRtl ? 'ml-[-12px]' : 'mr-[-12px]'}`}
+                className="relative ms-[-12px] h-14 w-auto object-contain transition-transform duration-500 group-hover:rotate-3"
               />
             </div>
             <div className="flex flex-col">
@@ -98,9 +98,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       <main className="relative overflow-hidden">
         {/* Background Decorative Elements */}
-        <div className="pointer-events-none absolute top-0 left-0 -z-10 h-full w-full">
-          <div className="bg-primary/5 absolute top-40 -left-20 h-96 w-96 rounded-full blur-[100px]" />
-          <div className="bg-secondary/5 absolute top-80 -right-20 h-[500px] w-[500px] rounded-full blur-[120px]" />
+        <div className="pointer-events-none absolute inset-0 -z-10 h-full w-full">
+          <div className="bg-primary/5 absolute start-[-5rem] top-40 h-96 w-96 rounded-full blur-[100px]" />
+          <div className="bg-secondary/5 absolute end-[-5rem] top-80 h-[500px] w-[500px] rounded-full blur-[120px]" />
         </div>
 
         <div className="mx-auto max-w-7xl px-6">{children}</div>
