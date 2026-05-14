@@ -1,11 +1,11 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export type AuditAction =
-  | 'CONTRACT_UPLOADED'
-  | 'ANALYSIS_STARTED'
-  | 'ANALYSIS_COMPLETED'
-  | 'ANALYSIS_FAILED'
-  | 'REPORT_EXPORTED';
+  | "CONTRACT_UPLOADED"
+  | "ANALYSIS_STARTED"
+  | "ANALYSIS_COMPLETED"
+  | "ANALYSIS_FAILED"
+  | "REPORT_EXPORTED";
 
 export interface IAuditLog extends Document {
   contractId: mongoose.Types.ObjectId;
@@ -19,7 +19,7 @@ export interface IAuditLog extends Document {
 const AuditLogSchema = new Schema<IAuditLog>({
   contractId: {
     type: Schema.Types.ObjectId,
-    ref: 'Contract',
+    ref: "Contract",
     required: true,
     index: true,
   },
@@ -27,11 +27,11 @@ const AuditLogSchema = new Schema<IAuditLog>({
   action: {
     type: String,
     enum: [
-      'CONTRACT_UPLOADED',
-      'ANALYSIS_STARTED',
-      'ANALYSIS_COMPLETED',
-      'ANALYSIS_FAILED',
-      'REPORT_EXPORTED',
+      "CONTRACT_UPLOADED",
+      "ANALYSIS_STARTED",
+      "ANALYSIS_COMPLETED",
+      "ANALYSIS_FAILED",
+      "REPORT_EXPORTED",
     ],
     required: true,
   },
@@ -43,4 +43,4 @@ const AuditLogSchema = new Schema<IAuditLog>({
 AuditLogSchema.index({ userId: 1, timestamp: -1 });
 AuditLogSchema.index({ action: 1, timestamp: -1 });
 
-export const AuditLog = mongoose.model<IAuditLog>('AuditLog', AuditLogSchema);
+export const AuditLog = mongoose.model<IAuditLog>("AuditLog", AuditLogSchema);

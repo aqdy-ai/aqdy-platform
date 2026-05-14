@@ -1,5 +1,5 @@
 import morgan from "morgan";
-import { env } from "../config/env";
+import { env } from "../config/env.js";
 
 export const logger = {
   info: (message: string, meta?: object) => {

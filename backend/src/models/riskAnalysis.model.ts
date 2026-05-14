@@ -1,5 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import { z } from 'zod';
+import mongoose, { Document, Schema } from "mongoose";
+import { z } from "zod";
 
 export const RiskAnalysisZodSchema = z.object({
   contractId: z.string().min(1),
@@ -10,7 +10,7 @@ export const RiskAnalysisZodSchema = z.object({
 export interface IClauseAnalysis {
   clauseText: string;
   clauseType: string;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical' | 'unknown';
+  riskLevel: "low" | "medium" | "high" | "critical" | "unknown";
   confidence: number;
   explanation: { ar: string; en: string };
   sourceFromKB: string | null;
@@ -21,7 +21,7 @@ export interface IRiskAnalysis extends Document {
   contractId: mongoose.Types.ObjectId;
   userId: string;
   executiveSummary: {
-    overallRisk: 'low' | 'medium' | 'high' | 'critical';
+    overallRisk: "low" | "medium" | "high" | "critical";
     totalClauses: number;
     riskyClausesCount: number;
     summary: { ar: string; en: string };
@@ -36,7 +36,7 @@ const ClauseAnalysisSchema = new Schema<IClauseAnalysis>({
   clauseType: { type: String, required: true },
   riskLevel: {
     type: String,
-    enum: ['low', 'medium', 'high', 'critical', 'unknown'],
+    enum: ["low", "medium", "high", "critical", "unknown"],
     required: true,
   },
   confidence: { type: Number, min: 0, max: 1, required: true },
@@ -52,7 +52,7 @@ const RiskAnalysisSchema = new Schema<IRiskAnalysis>(
   {
     contractId: {
       type: Schema.Types.ObjectId,
-      ref: 'Contract',
+      ref: "Contract",
       required: true,
       index: true,
     },
@@ -60,7 +60,7 @@ const RiskAnalysisSchema = new Schema<IRiskAnalysis>(
     executiveSummary: {
       overallRisk: {
         type: String,
-        enum: ['low', 'medium', 'high', 'critical'],
+        enum: ["low", "medium", "high", "critical"],
         required: true,
       },
       totalClauses: { type: Number, required: true },
@@ -73,10 +73,13 @@ const RiskAnalysisSchema = new Schema<IRiskAnalysis>(
     clauseAnalysis: [ClauseAnalysisSchema],
     analysisDuration: { type: Number, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 RiskAnalysisSchema.index({ contractId: 1, createdAt: -1 });
 RiskAnalysisSchema.index({ userId: 1, createdAt: -1 });
 
-export const RiskAnalysis = mongoose.model<IRiskAnalysis>('RiskAnalysis', RiskAnalysisSchema);
+export const RiskAnalysis = mongoose.model<IRiskAnalysis>(
+  "RiskAnalysis",
+  RiskAnalysisSchema,
+);
