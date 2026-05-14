@@ -1,5 +1,5 @@
-import { AuditLog, IAuditLog, AuditAction } from '../models/auditLog.model.js';
-import { logger } from '../utils/logger.js';
+import { AuditLog, IAuditLog, AuditAction } from "../models/auditLog.model.js";
+import { logger } from "../utils/logger.js";
 
 export class AuditLogService {
   // سجل حدث جديد

@@ -1,11 +1,15 @@
-import { Contract, IContract, ContractZodSchema } from '../models/contract.model.js';
-import { logger } from '../utils/logger.js';
+import {
+  Contract,
+  IContract,
+  ContractZodSchema,
+} from "../models/contract.model.js";
+import { logger } from "../utils/logger.js";
 
 export class ContractService {
   // حفظ عقد جديد
   async saveContract(data: {
     filename: string;
-    language: 'ar' | 'en';
+    language: "ar" | "en";
     text: string;
     userId: string;
     fileSize: number;
@@ -30,9 +34,11 @@ export class ContractService {
   // تحديث عقد
   async updateContract(
     contractId: string,
-    data: Partial<IContract>
+    data: Partial<IContract>,
   ): Promise<IContract | null> {
-    return await Contract.findByIdAndUpdate(contractId, data,{ returnDocument: 'after' } );
+    return await Contract.findByIdAndUpdate(contractId, data, {
+      returnDocument: "after",
+    });
   }
 
   // مسح عقد

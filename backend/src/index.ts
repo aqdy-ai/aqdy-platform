@@ -6,6 +6,8 @@ import { env } from "./config/env.js";
 import { httpLogger } from "./utils/logger.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import healthRouter from "./routes/health.route.js";
+import contractRouter from "./routes/contract.route.js";
+import analysisRouter from "./routes/analysis.route.js";
 import connectDB from './config/database.js';
 
 // Initialize Database
@@ -22,6 +24,8 @@ app.use(httpLogger);
 
 // ── Routes ───────────────────────────────────────
 app.use("/api", healthRouter);
+app.use("/api/contracts", contractRouter);
+app.use("/api/analysis", analysisRouter);
 
 // ── Error Handler ────────────────────────────────
 app.use(errorHandler);
