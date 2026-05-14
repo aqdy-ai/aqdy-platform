@@ -32,7 +32,7 @@ export class ContractService {
     contractId: string,
     data: Partial<IContract>
   ): Promise<IContract | null> {
-    return await Contract.findByIdAndUpdate(contractId, data, { new: true });
+    return await Contract.findByIdAndUpdate(contractId, data,{ returnDocument: 'after' } );
   }
 
   // مسح عقد
