@@ -1,0 +1,33 @@
+# Ignore node modules and build output
+node_modules
+dist
+build
+.cache
+
+# Dependency logs
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Local envs
+.env
+.env.local
+.env.*.local
+
+# IDEs and OS files
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Tests and coverage
+coverage
+tests
+*.test.*
+*.spec.*
+
+# Vite cache
+.vite
+
+# Misc logs
+*.log
