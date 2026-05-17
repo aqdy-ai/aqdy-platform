@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { Contract } from "../models/contract.model.js";
-import { AuditLog } from "../models/auditLog.model.js";
+import { contractService } from "../services/contract.service.js";
+import { auditLogService } from "../services/auditLog.service.js";
 import { ApiResponse } from "../types/index.js";
 import { logger } from "../utils/logger.js";
 import { AppError } from "../middlewares/errorHandler.js";
@@ -21,15 +21,15 @@ export const analyzeContract = async (
     const { contractId, userId } = req.body;
 
     // Verify the contract exists
-    const contract = await Contract.findById(contractId);
+    const contract = await contractService.getContractById(contractId);
 
     if (!contract) {
       throw new AppError(404, "Contract not found");
     }
 
     // Audit trail — mark analysis as started
-    await AuditLog.create({
-      contractId: contract._id,
+    await auditLogService.logEvent({
+      contractId: String(contract._id),
       userId,
       action: "ANALYSIS_STARTED",
       metadata: {
