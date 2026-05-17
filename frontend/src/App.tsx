@@ -6,6 +6,7 @@ import DisclaimerModal from './components/DisclaimerModal'
 
 // استخدام lazy loading لتحسين الأداء
 const Home = lazy(() => import('./pages/Home'))
+const TestDashboard = lazy(() => import('./pages/TestDashboard'))
 
 function App() {
   return (
@@ -26,7 +27,7 @@ function App() {
 
           <MainLayout>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/home" element={<Home />} />
               {/* أي صفحات تانية زي الـ Dashboard هتتضاف هنا */}
               <Route
                 path="/dashboard"
@@ -36,6 +37,7 @@ function App() {
                   </div>
                 }
               />
+              <Route path="/" element={<TestDashboard />} />
             </Routes>
           </MainLayout>
         </Suspense>

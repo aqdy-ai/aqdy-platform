@@ -48,5 +48,25 @@
     "desc_2": "Comprehensive review of contract compliance with Egyptian laws and regulations.",
     "title_3": "Instant Recommendations",
     "desc_3": "Legal advice to improve contract terms and protect your rights."
+  },
+  "risk": {
+    "low": "Low Risk",
+    "medium": "Medium Risk",
+    "high": "High Risk",
+    "critical": "Critical Risk"
+  },
+  "dashboard": {
+    "analysis_result": "Executive Analysis Summary",
+    "completed_in": "Analysis completed in",
+    "seconds": "seconds",
+    "overall_risk": "Overall Risk Level",
+    "total_clauses": "Total Clauses Found",
+    "risky_clauses": "Risky Clauses Count",
+    "detailed_findings": "Detailed Findings & Clause Analysis",
+    "explanation": "Risk Legal Explanation:",
+    "confidence": "Smart Confidence Score",
+    "show_redline": "Show Redline Suggestion",
+    "hide_redline": "Hide Redline Suggestion",
+    "suggested_safer": "Suggested Safer Clause (Redline):"
   }
 }
