@@ -1,7 +1,6 @@
 import RiskAnalysisDashboard from '@/components/dashboard/RiskAnalysisDashboard'
 import sampleData from '@/mocks/sampleAnalysis.json'
 
-// عمل Type Casting آمن يتوافق مع الـ Props المتوقعة للمكون
 const verifiedAnalysisData = sampleData as React.ComponentProps<
   typeof RiskAnalysisDashboard
 >['analysisData']
