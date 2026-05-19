@@ -7,6 +7,8 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { riskColors, getConfidenceMeta, cn } from '@/lib/utils'
+// 1️⃣ هنا عملنا Import للمكون الجديد
+import RedlineComparison from './RedlineComparison'
 
 interface ClauseCardProps {
   clause: {
@@ -112,16 +114,13 @@ export default function ClauseCard({ clause }: ClauseCardProps) {
           </button>
         )}
 
-      {/* Redline Suggestion Content */}
+      {/* 2️⃣ هنا استبدلنا الكود القديم بالمكون الجديد الفخم والمقارن وعمر الـ Linter ما هيتكلم */}
       {showRedline && clause.redlineSuggestion && (
-        <div className="animate-in fade-in slide-in-from-top-2 mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 duration-200">
-          <h5 className="mb-1.5 text-xs font-bold text-emerald-600 uppercase dark:text-emerald-400">
-            ✨ {t('dashboard.suggested_safer')}
-          </h5>
-          <p className="text-foreground/90 bg-background/50 mb-2 rounded border border-emerald-500/10 p-3 font-mono text-sm leading-relaxed">
-            {clause.redlineSuggestion}
-          </p>
-        </div>
+        <RedlineComparison
+          originalText={clause.clauseText}
+          suggestedText={clause.redlineSuggestion}
+          riskLevel={clause.riskLevel}
+        />
       )}
     </div>
   )

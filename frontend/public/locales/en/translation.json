@@ -67,6 +67,11 @@
     "confidence": "Smart Confidence Score",
     "show_redline": "Show Redline Suggestion",
     "hide_redline": "Hide Redline Suggestion",
-    "suggested_safer": "Suggested Safer Clause (Redline):"
+    "suggested_safer": "Suggested Safer Clause (Redline):",
+    "original_risky": "Original Clause (Risky):",
+    "suggested_safer_label": "Suggested Safer Clause:",
+    "why_better": "Why is this better?",
+    "why_better_desc": "This adjustment establishes an industry-standard liability cap, protecting both parties from unfair or unlimited financial and legal claims.",
+    "ai_summary_title": "AI Executive Assessment:"
   }
 }
