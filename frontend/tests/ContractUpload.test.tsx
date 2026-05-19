@@ -13,7 +13,9 @@ describe('ContractUpload', () => {
   it('should render the contract upload component', () => {
     render(<ContractUpload />)
 
-    expect(screen.getAllByText('common.upload')[0]).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'common.upload' })
+    ).toBeInTheDocument()
   })
 
   it('should enable analyze button after file upload', async () => {
@@ -23,7 +25,7 @@ describe('ContractUpload', () => {
       type: 'application/pdf',
     })
 
-    const input = screen.getByLabelText('common.upload')
+    const input = screen.getByLabelText('common.upload', { selector: 'input' })
 
     await userEvent.upload(input, file)
 
