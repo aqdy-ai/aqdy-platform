@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { Contract } from "../models/contract.model.js";
-import { AuditLog } from "../models/auditLog.model.js";
+import { contractService } from "../services/contract.service.js";
+import { auditLogService } from "../services/auditLog.service.js";
 import { ApiResponse } from "../types/index.js";
 import { logger } from "../utils/logger.js";
 import { AppError } from "../middlewares/errorHandler.js";
@@ -20,7 +20,7 @@ export const uploadContract = async (
     const { filename, language, text, userId, fileSize } = req.body;
 
     // Persist contract
-    const contract = await Contract.create({
+    const contract = await contractService.saveContract({
       filename,
       language,
       text,
@@ -29,8 +29,8 @@ export const uploadContract = async (
     });
 
     // Audit trail
-    await AuditLog.create({
-      contractId: contract._id,
+    await auditLogService.logEvent({
+      contractId: String(contract._id),
       userId,
       action: "CONTRACT_UPLOADED",
       metadata: {

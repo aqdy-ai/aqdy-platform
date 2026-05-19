@@ -1,0 +1,43 @@
+{
+  "_id": "507f1f77bcf86cd799439011",
+  "contractId": "507f1f77bcf86cd799439012",
+  "userId": "user_123",
+  "executiveSummary": {
+    "overallRisk": "high",
+    "totalClauses": 3,
+    "riskyClausesCount": 2,
+    "summary": {
+      "ar": "العقد يحتوي على شروط عالية المخاطر تتطلب تحسينات وتعديلات فورية لحماية حقوق المنصة.",
+      "en": "This contract contains several high-risk clauses that need improvement to protect the platform."
+    }
+  },
+  "clauseAnalysis": [
+    {
+      "clauseText": "The Service Provider shall be liable for all damages, losses, and injuries of any kind.",
+      "clauseType": "Liability",
+      "riskLevel": "critical",
+      "confidence": 0.95,
+      "explanation": {
+        "ar": "هذا الشرط يجعلك مسؤولاً عن خسائر غير محدودة - خطر جداً وقد يؤدي لالتزامات مالية ضخمة.",
+        "en": "Unlimited liability - could bankrupt you. Very dangerous."
+      },
+      "sourceFromKB": "clause_001_unlimited_liability",
+      "redlineSuggestion": "The Service Provider's total liability shall be limited to 12 months of fees paid by Client."
+    },
+    {
+      "clauseText": "Service Provider shall not work for any competitor for 5 years after contract ends.",
+      "clauseType": "NonCompete",
+      "riskLevel": "high",
+      "confidence": 0.88,
+      "explanation": {
+        "ar": "مدة 5 سنوات طويلة جداً للعاملين الحرين والمستشارين - يحد من فرص العمل المستقبلي.",
+        "en": "5 years is excessive for freelancers - limits your ability to work in the industry."
+      },
+      "sourceFromKB": "clause_002_non_compete",
+      "redlineSuggestion": "Service Provider shall not work with direct competitors in the same specific services for 2 years after contract ends."
+    }
+  ],
+  "analysisDuration": 2340,
+  "createdAt": "2024-01-15T10:30:00Z",
+  "updatedAt": "2024-01-15T10:30:00Z"
+}

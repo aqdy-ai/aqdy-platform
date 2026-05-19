@@ -148,3 +148,70 @@ vite.config.ts.timestamp-*
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+# Sensitive files and credentials
+# Private keys, certificates and archives
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.crt
+*.cer
+*.der
+*.asc
+
+# Secret/config files
+secrets*
+*.secret
+secrets.json
+credentials.json
+google-services.json
+GoogleService-Info.plist
+# kube and kubectl configs
+.kube/
+kubeconfig
+.kube/config
+
+# Cloud provider SDK configuration and credentials
+.aws/
+.aws/credentials
+.azure/
+.gcloud/
+.gcloud/*
+
+# Docker credentials
+.docker/config.json
+
+# SSH keys
+.ssh/
+id_rsa
+id_rsa.pub
+id_ecdsa
+id_ecdsa.pub
+id_ed25519
+id_ed25519.pub
+
+# IDE/editor folders and OS files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.user
+.DS_Store
+Thumbs.db
+
+# Local env files (already covered, but reaffirm)
+.env
+.env.*
+!.env.example
+
+# Other secrets
+*.env.local
+*.env.*.local
+
+# Binary secrets
+*.pem.enc
+*.key.enc
+
