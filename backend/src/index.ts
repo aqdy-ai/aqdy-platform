@@ -1,15 +1,15 @@
 import express, { Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import 'dotenv/config';
+import "dotenv/config";
 import { env } from "./config/env.js";
 import { httpLogger } from "./utils/logger.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import healthRouter from "./routes/health.route.js";
 import contractRouter from "./routes/contract.route.js";
 import analysisRouter from "./routes/analysis.route.js";
-import connectDB from './config/database.js';
-import uploadRouter from './routes/upload.route.js';
+import connectDB from "./config/database.js";
+import uploadRouter from "./routes/upload.route.js";
 
 // Initialize Database
 connectDB();
@@ -36,7 +36,7 @@ app.use(errorHandler);
 const PORT = parseInt(env.PORT, 10);
 
 app.listen(PORT, () => {
-    console.log(`🚀 Aqdy backend running on port ${PORT} [${env.NODE_ENV}]`);
+  console.log(`🚀 Aqdy backend running on port ${PORT} [${env.NODE_ENV}]`);
 });
 
 export default app;

@@ -44,8 +44,11 @@ export const handleUploadError = (
   }
 
   if (err) {
-    return res.status(400).json({ 
-      error: err instanceof Error ? err.message : "An unknown error occurred during upload." 
+    return res.status(400).json({
+      error:
+        err instanceof Error
+          ? err.message
+          : "An unknown error occurred during upload.",
     });
   }
 
