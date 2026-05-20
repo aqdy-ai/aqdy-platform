@@ -61,7 +61,9 @@ uploadRouter.post(
       });
     } catch (error: unknown) {
       logger.error("❌ Upload failed:", error);
-      return res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   },
 );
@@ -79,7 +81,9 @@ uploadRouter.get("/:id", async (req: Request, res: Response) => {
 
     return res.status(200).json(contract);
   } catch (error: unknown) {
-    return res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 });
 

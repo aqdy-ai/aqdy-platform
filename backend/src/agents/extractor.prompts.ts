@@ -155,7 +155,11 @@ export function buildExtractionUserPrompt(
 ): string {
   let prompt = "";
 
-  if (chunkIndex !== undefined && totalChunks !== undefined && totalChunks > 1) {
+  if (
+    chunkIndex !== undefined &&
+    totalChunks !== undefined &&
+    totalChunks > 1
+  ) {
     prompt += `[Processing chunk ${chunkIndex + 1} of ${totalChunks}]\n\n`;
   }
 

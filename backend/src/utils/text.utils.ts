@@ -11,7 +11,8 @@
 export const MAX_CHUNK_SIZE = 80_000;
 
 /** Arabic Unicode block ranges (basic + supplement + extended) */
-const ARABIC_REGEX = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
+const ARABIC_REGEX =
+  /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g;
 
 /** Arabic-Indic numerals: ٠١٢٣٤٥٦٧٨٩ */
 const ARABIC_INDIC_DIGITS: Record<string, string> = {
@@ -293,10 +294,7 @@ export function mergeExtractionResults<
   for (const chunkResult of results) {
     for (const clause of chunkResult) {
       // Normalize for dedup: trim, lowercase, collapse whitespace
-      const key = clause.clauseText
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, " ");
+      const key = clause.clauseText.trim().toLowerCase().replace(/\s+/g, " ");
 
       if (!seen.has(key)) {
         seen.add(key);

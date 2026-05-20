@@ -23,7 +23,7 @@ import {
 } from "../utils/text.utils.js";
 import {
   EXTRACTOR_SYSTEM_PROMPT,
-  buildExtractionUserPrompt
+  buildExtractionUserPrompt,
 } from "./extractor.prompts.js";
 
 // ── Output Schema ────────────────────────────────
@@ -137,7 +137,7 @@ export class ExtractorAgent {
     const mergedClauses =
       chunks.length > 1
         ? mergeExtractionResults(allChunkResults)
-        : allChunkResults[0] ?? [];
+        : (allChunkResults[0] ?? []);
 
     const durationMs = Date.now() - startTime;
 
