@@ -15,6 +15,7 @@ const envSchema = z.object({
   LANGFUSE_SECRET_KEY: z.string().min(1, "LANGFUSE_SECRET_KEY is required"),
   LANGFUSE_PUBLIC_KEY: z.string().min(1, "LANGFUSE_PUBLIC_KEY is required"),
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
+  OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY is required"),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -24,5 +25,7 @@ if (!parsed.success) {
   console.error(parsed.error.flatten().fieldErrors);
   process.exit(1);
 }
+
+
 
 export const env = parsed.data;
