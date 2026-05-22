@@ -13,7 +13,8 @@
     "check-format": "prettier --check \"src/**/*.{ts,tsx,css,md}\"",
     "start": "vite",
     "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "npx playwright test -c ../playwright.config.ts tests/e2e"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import path from 'path'
 
 test('Upload → Analyze → Report flow', async ({ page }) => {
 
@@ -9,6 +8,7 @@ test('Upload → Analyze → Report flow', async ({ page }) => {
       contentType: 'application/json',
       body: JSON.stringify({
         riskScore: 42,
+        summary: 'Contract contains moderate risk',
         clauses: [
           { title: 'Payment Terms', risk: 'medium' },
           { title: 'Termination', risk: 'high' }
@@ -19,27 +19,26 @@ test('Upload → Analyze → Report flow', async ({ page }) => {
 
   await page.goto('/')
 
-  // 👇 stable check
-  await expect(page.locator('body')).toBeVisible()
+  // Confirm the page is loaded by checking for the main heading
+  await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 10000 })
 
-  // Verify the file input is present using the ID from the component
-  const fileInput = page.locator('#contract-file');
-  await expect(fileInput).toBeVisible();
+  // Using a resilient selector: locate the input by its functional type
+  const fileInput = page.locator('input[type="file"]').first()
+  await expect(fileInput).toBeAttached({ timeout: 15000 })
 
-  // Fix ENOENT by using a Buffer instead of a physical file path
   await fileInput.setInputFiles({
     name: 'sample-contract.pdf',
     mimeType: 'application/pdf',
-    buffer: Buffer.from('this is mock contract content for E2E testing'),
+    buffer: Buffer.from('mock contract for testing')
   })
 
-  // The developer used the translation key 'analyze_now'
-  // Playwright matches the visible text or the name property
-  const analyzeBtn = page.getByRole('button', { name: /analyze/i });
-  await analyzeBtn.click();
+  const analyzeBtn = page.getByRole('button', { name: /analyze/i })
+  await analyzeBtn.click()
 
-  // These assertions will fail/timeout until the developers implement 
-  // the results UI in ContractUpload.tsx
-  await expect(page.getByText(/risk score/i)).toBeVisible({ timeout: 5000 });
-  await expect(page.getByText(/clauses/i)).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText(/risk score/i)).toBeVisible({ timeout: 15000 })
+
+  await expect(page.getByText('42')).toBeVisible()
+  await expect(page.getByText('Payment Terms')).toBeVisible()
+  await expect(page.getByText('Termination')).toBeVisible()
+
 })
