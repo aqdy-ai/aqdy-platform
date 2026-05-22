@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import ClauseCard from './ClauseCard'
 import ExecutiveSummary from './ExecutiveSummary'
+import ExportReportButton from './ExportReportButton'
 
 interface Clause {
   clauseText: string
@@ -43,13 +44,20 @@ export default function RiskAnalysisDashboard({
         analysisDuration={analysisDuration}
       />
 
-      <div>
-        <h3 className="text-foreground mb-4 text-start text-lg font-bold">
-          🔍 {t('dashboard.detailed_findings')}
-        </h3>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      {/* Clauses Grid */}
+      <div className="mx-auto max-w-7xl space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-foreground mb-4 text-start text-lg font-bold">
+            🔍 {t('dashboard.detailed_findings')}
+          </h3>
+          <ExportReportButton />
+        </div>
+        <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2">
           {clauseAnalysis.map((clause, index) => (
-            <ClauseCard key={index} clause={clause} />
+            <ClauseCard
+              key={`${clause.sourceFromKB}-${index}`}
+              clause={clause}
+            />
           ))}
         </div>
       </div>
