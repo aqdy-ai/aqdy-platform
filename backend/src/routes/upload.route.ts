@@ -4,10 +4,27 @@ import { pdfService } from "../services/pdf.service.js";
 import { docxService } from "../services/docx.service.js";
 import { contractService } from "../services/contract.service.js";
 import { auditLogService } from "../services/auditLog.service.js";
+import { analysisService } from "../services/analysis.service.js";
 import { logger } from "../utils/logger.js";
 
 const uploadRouter = Router();
 
+/**
+ * POST /api/upload/
+ *
+ * Full contract ingestion pipeline (single HTTP request):
+ *   1. Accept PDF or DOCX file via multipart/form-data
+ *   2. Parse the file → extract raw text + metadata
+ *   3. Persist the contract text to the Contract collection
+ *   4. Fire-and-forget: trigger the LLM extraction pipeline in the background
+ *   5. Respond 202 immediately so the client can poll GET /api/analysis/:id
+ *
+ * Headers:
+ *   x-user-id  — the authenticated user's ID (defaults to "anonymous")
+ *
+ * Form fields:
+ *   contract   — the PDF or DOCX file
+ */
 uploadRouter.post(
   "/",
   upload.single("contract"),
@@ -20,7 +37,9 @@ uploadRouter.post(
         return res.status(400).json({ error: "No file uploaded." });
       }
 
-      // Parse based on file type
+      const userId = String(req.headers["x-user-id"] ?? "anonymous");
+
+      // ── Step 1: Parse the file ───────────────────────────────────────────
       let parsed;
       if (file.mimetype === "application/pdf") {
         parsed = await pdfService.parsePdf(file);
@@ -28,19 +47,21 @@ uploadRouter.post(
         parsed = await docxService.parseDocx(file);
       }
 
-      // Save to database
+      // ── Step 2: Persist contract to DB ───────────────────────────────────
       const contract = await contractService.saveContract({
         filename: parsed.filename,
         language: parsed.language,
         text: parsed.text,
-        userId: String(req.headers["x-user-id"] ?? "anonymous"),
+        userId,
         fileSize: parsed.fileSize,
       });
 
-      // Log the event
+      const contractId = String(contract._id);
+
+      // ── Step 3: Audit — CONTRACT_UPLOADED ────────────────────────────────
       await auditLogService.logEvent({
-        contractId: String(contract._id),
-        userId: String(contract.userId),
+        contractId,
+        userId,
         action: "CONTRACT_UPLOADED",
         metadata: {
           filename: parsed.filename,
@@ -49,15 +70,43 @@ uploadRouter.post(
         },
       });
 
-      logger.info(`✅ Contract uploaded and saved: ${contract._id}`);
+      // ── Step 4: Audit — ANALYSIS_STARTED ─────────────────────────────────
+      await auditLogService.logEvent({
+        contractId,
+        userId,
+        action: "ANALYSIS_STARTED",
+        metadata: {
+          filename: parsed.filename,
+          language: parsed.language,
+        },
+      });
 
-      return res.status(201).json({
-        message: "Contract uploaded successfully",
-        contractId: contract._id,
+      // ── Step 5: Fire-and-forget extraction pipeline ───────────────────────
+      // analysisService.triggerAnalysis() handles:
+      //   - ExtractorAgent.extract() via LLM
+      //   - Persisting results to RiskAnalysis collection
+      //   - Writing ANALYSIS_COMPLETED / ANALYSIS_FAILED audit entries
+      analysisService
+        .triggerAnalysis(contractId, userId, parsed.text, parsed.language)
+        .catch((err) => {
+          logger.error(
+            `❌ Background analysis failed for contract ${contractId}:`,
+            err,
+          );
+        });
+
+      logger.info(`✅ Contract uploaded and analysis triggered: ${contractId}`);
+
+      // ── Step 6: Respond immediately (202 Accepted) ────────────────────────
+      return res.status(202).json({
+        message:
+          "Contract uploaded successfully. Analysis is running in the background.",
+        contractId,
         filename: parsed.filename,
         language: parsed.language,
         pages: parsed.pages,
         fileSize: parsed.fileSize,
+        status: "processing",
       });
     } catch (error: unknown) {
       logger.error("❌ Upload failed:", error);
@@ -68,7 +117,10 @@ uploadRouter.post(
   },
 );
 
-// Get contract by ID
+/**
+ * GET /api/upload/:id
+ * Retrieve a saved contract by its MongoDB ObjectId.
+ */
 uploadRouter.get("/:id", async (req: Request, res: Response) => {
   try {
     const contract = await contractService.getContractById(

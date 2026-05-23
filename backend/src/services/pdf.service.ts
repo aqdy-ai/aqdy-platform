@@ -1,8 +1,5 @@
-import { createRequire } from "module";
+import { PDFParse } from "pdf-parse";
 import { logger } from "../utils/logger.js";
-
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
 
 export interface ParsedDocument {
   text: string;
@@ -43,22 +40,27 @@ export class PdfService {
   async parsePdf(file: MulterFile): Promise<ParsedDocument> {
     this.validateFile(file);
 
-    const data = await pdfParse(file.buffer);
+    const parser = new PDFParse({ data: file.buffer });
+    try {
+      const data = await parser.getText();
 
-    if (!data.text || data.text.trim().length === 0) {
-      throw new Error("Could not extract text from PDF.");
+      if (!data.text || data.text.trim().length === 0) {
+        throw new Error("Could not extract text from PDF.");
+      }
+
+      const language = this.detectLanguage(data.text);
+      logger.info(`✅ PDF parsed: ${file.originalname} (${data.total} pages)`);
+
+      return {
+        text: data.text.trim(),
+        pages: data.total || 1,
+        fileSize: file.size,
+        filename: file.originalname,
+        language,
+      };
+    } finally {
+      await parser.destroy();
     }
-
-    const language = this.detectLanguage(data.text);
-    logger.info(`✅ PDF parsed: ${file.originalname} (${data.numpages} pages)`);
-
-    return {
-      text: data.text.trim(),
-      pages: data.numpages,
-      fileSize: file.size,
-      filename: file.originalname,
-      language,
-    };
   }
 }
 

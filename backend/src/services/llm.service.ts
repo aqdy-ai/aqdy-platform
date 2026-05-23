@@ -12,8 +12,8 @@ import { logger } from "../utils/logger.js";
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
-const GEMMA4_PRIMARY = "gemma-4-31b-it";
-const GEMMA4_FALLBACK = "gemma-4-26b-a4b-it";
+const GEMINI_PRIMARY = "gemini-3.5-flash";
+const GEMINI_FALLBACK = "gemini-3.1-flash-lite";
 
 // ── Interfaces ───────────────────────────────────
 
@@ -48,11 +48,11 @@ const buildMessages = (
 
 // ── Client Factories ─────────────────────────────
 
-const createGemma4PrimaryClient = (
+const createGeminiPrimaryClient = (
   options: LLMRequestOptions,
 ): ChatGoogleGenerativeAI => {
   return new ChatGoogleGenerativeAI({
-    model: GEMMA4_PRIMARY,
+    model: GEMINI_PRIMARY,
     apiKey: env.GEMINI_API_KEY,
     temperature: options.temperature ?? 0.1,
     maxOutputTokens: options.maxTokens ?? 4096,
@@ -60,11 +60,11 @@ const createGemma4PrimaryClient = (
   });
 };
 
-const createGemma4FallbackClient = (
+const createGeminiFallbackClient = (
   options: LLMRequestOptions,
 ): ChatGoogleGenerativeAI => {
   return new ChatGoogleGenerativeAI({
-    model: GEMMA4_FALLBACK,
+    model: GEMINI_FALLBACK,
     apiKey: env.GEMINI_API_KEY,
     temperature: options.temperature ?? 0.1,
     maxOutputTokens: options.maxTokens ?? 4096,
@@ -79,7 +79,7 @@ const callWithRetry = async (
   options: LLMRequestOptions,
   useFallback = false,
 ): Promise<string> => {
-  const clientName = useFallback ? GEMMA4_FALLBACK : GEMMA4_PRIMARY;
+  const clientName = useFallback ? GEMINI_FALLBACK : GEMINI_PRIMARY;
   const messages = buildMessages(prompt, options.systemPrompt);
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -90,8 +90,8 @@ const callWithRetry = async (
       });
 
       const client = useFallback
-        ? createGemma4FallbackClient(options)
-        : createGemma4PrimaryClient(options);
+        ? createGeminiFallbackClient(options)
+        : createGeminiPrimaryClient(options);
 
       const response = await client.invoke(messages);
       const content = response.content;
@@ -130,7 +130,7 @@ const callWithRetry = async (
 
 export const llmService = {
   /**
-   * Call Gemma 4 31B with automatic fallback to Gemma 4 26B MoE
+   * Call Gemini 3.5 Flash with automatic fallback to Gemini 3.1 Flash Lite
    * if the primary model fails all retries.
    * This is the main method all agents should use.
    */
@@ -138,17 +138,17 @@ export const llmService = {
     prompt: string,
     options: LLMRequestOptions = {},
   ): Promise<LLMResponse> {
-    // Try Gemma 4 31B first
+    // Try Gemini 3.5 Flash first
     try {
       const content = await callWithRetry(prompt, options, false);
       return {
         content,
-        model: GEMMA4_PRIMARY,
+        model: GEMINI_PRIMARY,
         usedFallback: false,
       };
     } catch (primaryError) {
       logger.warn(
-        "Gemma 4 31B exhausted all retries — switching to 26B MoE fallback",
+        "Gemini 3.5 Flash exhausted all retries — switching to Gemini 3.1 Flash Lite fallback",
         {
           error:
             primaryError instanceof Error
@@ -158,16 +158,16 @@ export const llmService = {
       );
     }
 
-    // Fallback to Gemma 4 26B MoE
+    // Fallback to Gemini 3.1 Flash Lite
     try {
       const content = await callWithRetry(prompt, options, true);
       return {
         content,
-        model: GEMMA4_FALLBACK,
+        model: GEMINI_FALLBACK,
         usedFallback: true,
       };
     } catch (fallbackError) {
-      logger.error("Both Gemma 4 models failed", {
+      logger.error("Both Gemini models failed", {
         error:
           fallbackError instanceof Error
             ? fallbackError.message
@@ -180,7 +180,7 @@ export const llmService = {
   },
 
   /**
-   * Call Gemma 4 31B (primary) directly — no fallback.
+   * Call Gemini 3.5 Flash (primary) directly — no fallback.
    * Use when you specifically need the larger, more capable model.
    */
   async callPrimary(
@@ -190,13 +190,13 @@ export const llmService = {
     const content = await callWithRetry(prompt, options, false);
     return {
       content,
-      model: GEMMA4_PRIMARY,
+      model: GEMINI_PRIMARY,
       usedFallback: false,
     };
   },
 
   /**
-   * Call Gemma 4 26B MoE (fallback) directly — no fallback chain.
+   * Call Gemini 3.1 Flash Lite (fallback) directly — no fallback chain.
    * Use for lighter tasks where speed matters more than raw capability.
    */
   async callFallback(
@@ -206,7 +206,7 @@ export const llmService = {
     const content = await callWithRetry(prompt, options, true);
     return {
       content,
-      model: GEMMA4_FALLBACK,
+      model: GEMINI_FALLBACK,
       usedFallback: false,
     };
   },

@@ -32,7 +32,7 @@ describe("LLM Service", () => {
       const response = await llmService.call("Analyze this contract");
 
       expect(response.content).toBe("Primary result");
-      expect(response.model).toBe("gemma-4-31b-it");
+      expect(response.model).toBe("gemini-3.5-flash");
       expect(response.usedFallback).toBe(false);
       expect(mockInvoke).toHaveBeenCalledTimes(1);
     });
@@ -51,7 +51,7 @@ describe("LLM Service", () => {
       const response = await llmService.call("Retry test");
 
       expect(response.content).toBe("Recovered");
-      expect(response.model).toBe("gemma-4-31b-it");
+      expect(response.model).toBe("gemini-3.5-flash");
       expect(response.usedFallback).toBe(false);
       expect(mockInvoke).toHaveBeenCalledTimes(2);
     });
@@ -65,7 +65,7 @@ describe("LLM Service", () => {
       const response = await llmService.call("Retry test 2");
 
       expect(response.content).toBe("Third try");
-      expect(response.model).toBe("gemma-4-31b-it");
+      expect(response.model).toBe("gemini-3.5-flash");
       expect(response.usedFallback).toBe(false);
       expect(mockInvoke).toHaveBeenCalledTimes(3);
     });
@@ -76,7 +76,7 @@ describe("LLM Service", () => {
   // ────────────────────────────────────────────────
 
   describe("call() — Fallback chain", () => {
-    test("should fallback to the MoE model if primary exhausts all retries", async () => {
+    test("should fallback to the fallback model if primary exhausts all retries", async () => {
       // Primary fails 3 times, fallback succeeds on first try
       mockInvoke
         .mockRejectedValueOnce(new Error("Primary Down"))
@@ -87,7 +87,7 @@ describe("LLM Service", () => {
       const response = await llmService.call("Test contract text");
 
       expect(response.usedFallback).toBe(true);
-      expect(response.model).toBe("gemma-4-26b-a4b-it");
+      expect(response.model).toBe("gemini-3.1-flash-lite");
       expect(response.content).toBe("Fallback Result");
     }, 15000);
 
@@ -141,7 +141,7 @@ describe("LLM Service", () => {
       const response = await llmService.callPrimary("Direct primary");
 
       expect(response.content).toBe("Primary only");
-      expect(response.model).toBe("gemma-4-31b-it");
+      expect(response.model).toBe("gemini-3.5-flash");
       expect(response.usedFallback).toBe(false);
     });
 
@@ -169,7 +169,7 @@ describe("LLM Service", () => {
       const response = await llmService.callFallback("Direct fallback");
 
       expect(response.content).toBe("Fallback direct");
-      expect(response.model).toBe("gemma-4-26b-a4b-it");
+      expect(response.model).toBe("gemini-3.1-flash-lite");
     });
 
     test("should throw when fallback fails all retries", async () => {
