@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test'
 
 test('Upload → Analyze → Report flow', async ({ page }) => {
 
-  await page.route('**/api/analyze', async route => {
+  // ضمان مطابقة مسار الـ API الموحد في المشروع
+  await page.route('**/api/contracts/analysis*', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

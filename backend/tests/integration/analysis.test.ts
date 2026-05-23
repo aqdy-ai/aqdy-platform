@@ -43,7 +43,7 @@ describe('Analysis API Integration', () => {
       .post('/api/contracts/analysis')
       .send({ contractId: 'test-id-123' });
 
-    expect(response.body.data).toHaveProperty('status');
+    expect(response.body.data).toHaveProperty('contractId');
     // هذا يتوقع أن المطور سيبدأ في ربط الـ Schema المطلوبة
   });
 
