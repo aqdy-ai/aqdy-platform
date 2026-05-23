@@ -5,9 +5,9 @@ import {
   ChevronUp,
   AlertTriangle,
   ShieldCheck,
+  BookOpen,
 } from 'lucide-react'
 import { riskColors, getConfidenceMeta, cn } from '@/lib/utils'
-// 1️⃣ هنا عملنا Import للمكون الجديد
 import RedlineComparison from './RedlineComparison'
 
 interface ClauseCardProps {
@@ -35,14 +35,14 @@ export default function ClauseCard({ clause }: ClauseCardProps) {
   return (
     <div
       className={cn(
-        'bg-card rounded-xl border p-5 text-start shadow-sm transition-all duration-200'
+        'bg-card border-muted flex flex-col rounded-xl border p-5 text-start shadow-sm transition-all duration-300 hover:shadow-md'
       )}
     >
       {/* Header: Risk & Type */}
       <div className="mb-4 flex items-center justify-between">
         <span
           className={cn(
-            'rounded-full border px-3 py-1 text-xs font-semibold uppercase',
+            'rounded-full border px-3 py-1 text-xs font-semibold uppercase transition-colors',
             riskColors[clause.riskLevel]
           )}
         >
@@ -55,13 +55,16 @@ export default function ClauseCard({ clause }: ClauseCardProps) {
 
       {/* Original Clause Text */}
       <div className="bg-muted/40 border-muted mb-4 rounded-lg border border-dashed p-4">
-        <p className="text-foreground/90 font-mono text-sm leading-relaxed">
-          "{clause.clauseText}"
+        <p
+          className="text-foreground/90 font-mono text-sm leading-relaxed"
+          dir="auto"
+        >
+          {`"${clause.clauseText}"`}
         </p>
       </div>
 
       {/* Explanation */}
-      <div className="mb-4">
+      <div className="mb-4 flex-grow">
         <h4 className="text-muted-foreground mb-1 text-xs font-bold tracking-wider uppercase">
           {t('dashboard.explanation')}
         </h4>
@@ -70,15 +73,19 @@ export default function ClauseCard({ clause }: ClauseCardProps) {
         </p>
       </div>
 
-      {/* Footer Meta: Confidence & KB */}
-      <div className="border-muted/60 text-muted-foreground flex flex-col justify-between gap-3 border-t pt-4 text-xs sm:flex-row sm:items-center">
+      {/* Footer Meta: Confidence & KB Source Attribution */}
+      <div className="border-muted/60 text-muted-foreground flex flex-col justify-between gap-4 border-t pt-4 text-xs sm:flex-row sm:items-center">
+        {/* Left Side: Confidence Score */}
         <div className="flex items-center gap-2">
           <span>
             {t('dashboard.confidence')}: {(clause.confidence * 100).toFixed(0)}%
           </span>
           <div className="bg-muted h-1.5 w-16 overflow-hidden rounded-full">
             <div
-              className={cn('h-full', confidenceMeta.color)}
+              className={cn(
+                'h-full transition-all duration-500',
+                confidenceMeta.color
+              )}
               style={{ width: `${clause.confidence * 100}%` }}
             />
           </div>
@@ -88,39 +95,57 @@ export default function ClauseCard({ clause }: ClauseCardProps) {
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
           )}
         </div>
-        <span className="bg-muted/80 rounded px-2 py-0.5 font-mono text-[10px]">
-          ID: {clause.sourceFromKB}
-        </span>
+
+        {/* Right Side: KB Source Attribution Display */}
+        <div
+          className="bg-primary/5 border-primary/10 text-primary hover:bg-primary/10 flex cursor-help items-center gap-1.5 rounded-md border px-2.5 py-1 font-medium transition-colors"
+          title={t('dashboard.kb_source_tooltip')}
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          <span>{t('dashboard.kb_source')}:</span>
+          <span className="font-mono text-[11px] font-semibold tracking-tight opacity-90">
+            {clause.sourceFromKB.replace('clause_', '#')}
+          </span>
+        </div>
       </div>
 
+      {/* 🚀 Redline Toggle Button (Show/Hide) */}
       {/* Redline Toggle Button */}
-      {clause.redlineSuggestion &&
-        (clause.riskLevel === 'high' || clause.riskLevel === 'critical') && (
-          <button
-            onClick={() => setShowRedline(!showRedline)}
-            className="bg-primary/5 text-primary hover:bg-primary/10 border-primary/10 browser-default mt-4 flex w-full items-center justify-center gap-2 rounded-lg border py-2 text-xs font-semibold transition-colors"
-          >
-            {showRedline ? (
-              <>
-                {t('dashboard.hide_redline')}{' '}
-                <ChevronUp className="h-3.5 w-3.5" />
-              </>
-            ) : (
-              <>
-                {t('dashboard.show_redline')}{' '}
-                <ChevronDown className="h-3.5 w-3.5" />
-              </>
-            )}
-          </button>
-        )}
+      {clause.redlineSuggestion && (
+        <button
+          onClick={() => setShowRedline(!showRedline)}
+          className={cn(
+            'browser-default focus:ring-primary/20 mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border py-2 text-xs font-semibold transition-all duration-200 focus:ring-2 focus:outline-none',
+            showRedline
+              ? 'bg-destructive/5 text-destructive border-destructive/20 hover:bg-destructive/10'
+              : 'bg-primary/5 text-primary border-primary/10 hover:bg-primary/10'
+          )}
+          aria-expanded={showRedline}
+        >
+          {showRedline ? (
+            <>
+              {t('dashboard.hide_redline')}{' '}
+              <ChevronUp className="h-3.5 w-3.5" />
+            </>
+          ) : (
+            <>
+              {t('dashboard.show_redline')}{' '}
+              <ChevronDown className="h-3.5 w-3.5" />
+            </>
+          )}
+        </button>
+      )}
 
-      {/* 2️⃣ هنا استبدلنا الكود القديم بالمكون الجديد الفخم والمقارن وعمر الـ Linter ما هيتكلم */}
+      {/* 🚀 التعديل السحري هنا: الـ State معزولة صراحة ومستحيل كارد يأثر على التاني */}
       {showRedline && clause.redlineSuggestion && (
-        <RedlineComparison
-          originalText={clause.clauseText}
-          suggestedText={clause.redlineSuggestion}
-          riskLevel={clause.riskLevel}
-        />
+        <div className="animate-in fade-in slide-in-from-top-3 w-full duration-300 ease-out">
+          <RedlineComparison
+            originalText={clause.clauseText}
+            suggestedText={clause.redlineSuggestion}
+            riskLevel={clause.riskLevel}
+            clauseType={clause.clauseType}
+          />
+        </div>
       )}
     </div>
   )

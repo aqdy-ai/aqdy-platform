@@ -72,6 +72,20 @@
     "suggested_safer_label": "Suggested Safer Clause:",
     "why_better": "Why is this better?",
     "why_better_desc": "This adjustment establishes an industry-standard liability cap, protecting both parties from unfair or unlimited financial and legal claims.",
-    "ai_summary_title": "AI Executive Assessment:"
+    "ai_summary_title": "AI Executive Assessment:",
+    "kb_source": "KB Reference",
+    "kb_source_tooltip": "The verified reference clause ID within Aqdy's internal legal knowledge base",
+    "talking_points_title": "Suggested Negotiation Talking Points:",
+    "talking_points_copy": "Copy point",
+    "talking_points_copied": "Copied!",
+    "tp": {
+      "Liability_critical": "Unlimited liability poses an existential operational risk. An industry-standard liability cap protects both business entities.",
+      "Liability_high": "Capping liability at the total contract value is the standard legal framework for balanced risk distribution.",
+      "NonCompete_high": "An excessive non-compete duration unfairly restricts professional livelihood; reducing the scope balances both parties' interests.",
+      "default": "The suggested adjustment aligns with standard commercial practices, ensuring a balanced and fair contractual relationship."
+    },
+    "export_report": "Export Report",
+    "export_pdf": "PDF Document",
+    "export_docx": "Word Document (DOCX)"
   }
 }
