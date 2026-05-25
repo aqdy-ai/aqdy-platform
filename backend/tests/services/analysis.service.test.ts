@@ -2,9 +2,10 @@ import { describe, test, expect, beforeEach, jest } from "@jest/globals";
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockSave = jest.fn().mockResolvedValue(true);
-const mockFindOne = jest.fn();
-const mockFind = jest.fn();
+const mockSave = jest.fn() as jest.Mock<any>;
+mockSave.mockResolvedValue(true);
+const mockFindOne = jest.fn() as jest.Mock<any>;
+const mockFind = jest.fn() as jest.Mock<any>;
 
 jest.unstable_mockModule("../../src/models/riskAnalysis.model.js", () => ({
   RiskAnalysis: jest.fn().mockImplementation(() => ({ save: mockSave })),
@@ -14,13 +15,15 @@ jest.unstable_mockModule("../../src/models/riskAnalysis.model.js", () => ({
 }));
 
 // Mock AuditLog constructor + save
-const mockAuditSave = jest.fn().mockResolvedValue(true);
+const mockAuditSave = jest.fn() as jest.Mock<any>;
+mockAuditSave.mockResolvedValue(true);
 jest.unstable_mockModule("../../src/models/auditLog.model.js", () => ({
   AuditLog: jest.fn().mockImplementation(() => ({ save: mockAuditSave })),
 }));
 
 // Mock extractorAgent
-const mockExtract = jest.fn() as jest.Mock;
+// Give a permissive mock type so resolved values aren't inferred as `never`.
+const mockExtract = jest.fn() as jest.Mock<any>;
 jest.unstable_mockModule("../../src/agents/extractor.agent.js", () => ({
   extractorAgent: { extract: mockExtract },
 }));
@@ -37,7 +40,7 @@ const { RiskAnalysis } = await import(
 (RiskAnalysis as any).findOne = mockFindOne;
 (RiskAnalysis as any).find = mockFind;
 
-const analysisService = new AnalysisService();
+const analysisService = new AnalysisService(3, 1);
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
@@ -66,9 +69,10 @@ describe("AnalysisService", () => {
 
     test("should get analysis by contract ID", async () => {
       const mockAnalysis = { _id: "analysis_123", contractId: "contract_123" };
-      mockFindOne.mockReturnValue({
-        sort: jest.fn().mockResolvedValue(mockAnalysis),
-      });
+      const mockSort = jest.fn() as jest.Mock<any>;
+      mockSort.mockResolvedValue(mockAnalysis);
+
+      mockFindOne.mockReturnValue({ sort: mockSort });
 
       const result =
         await analysisService.getAnalysisByContractId("contract_123");
@@ -76,9 +80,10 @@ describe("AnalysisService", () => {
     });
 
     test("should return null if analysis not found", async () => {
-      mockFindOne.mockReturnValue({
-        sort: jest.fn().mockResolvedValue(null),
-      });
+      const mockSortNull = jest.fn() as jest.Mock<any>;
+      mockSortNull.mockResolvedValue(null);
+
+      mockFindOne.mockReturnValue({ sort: mockSortNull });
 
       const result =
         await analysisService.getAnalysisByContractId("nonexistent");
@@ -133,7 +138,6 @@ describe("AnalysisService", () => {
         "en",
       );
 
-      // RiskAnalysis model constructor should have been called
       expect(mockSave).toHaveBeenCalled();
     });
 
@@ -145,17 +149,15 @@ describe("AnalysisService", () => {
         "en",
       );
 
-      // AuditLog.save() should have been called (for ANALYSIS_COMPLETED)
       expect(mockAuditSave).toHaveBeenCalled();
     });
 
     test("should map extracted clauses to clauseAnalysis with default risk values", async () => {
-      // Capture the data passed to RiskAnalysis constructor
       const { RiskAnalysis: MockRiskAnalysis } = await import(
         "../../src/models/riskAnalysis.model.js"
       );
       let capturedData: any;
-      (MockRiskAnalysis as jest.Mock).mockImplementation((data) => {
+      (MockRiskAnalysis as unknown as jest.Mock).mockImplementation((data) => {
         capturedData = data;
         return { save: mockSave };
       });
@@ -183,7 +185,7 @@ describe("AnalysisService", () => {
         "../../src/models/riskAnalysis.model.js"
       );
       let capturedData: any;
-      (MockRiskAnalysis as jest.Mock).mockImplementation((data) => {
+      (MockRiskAnalysis as unknown as jest.Mock).mockImplementation((data) => {
         capturedData = data;
         return { save: mockSave };
       });
@@ -197,6 +199,63 @@ describe("AnalysisService", () => {
 
       expect(capturedData.executiveSummary.totalClauses).toBe(2);
       expect(capturedData.executiveSummary.overallRisk).toBe("low");
+    });
+  });
+
+  describe("triggerAnalysis() — retry behavior", () => {
+    test("should retry transient extractor failures and succeed", async () => {
+      const retryService = new AnalysisService(3, 1);
+      let attempts = 0;
+      mockExtract.mockImplementation(async () => {
+        attempts += 1;
+        if (attempts === 1) {
+          throw new Error("Transient LLM error");
+        }
+
+        return {
+          clauses: [
+            {
+              clauseNumber: 1,
+              clauseText: "The employee shall serve as Senior Engineer.",
+              clauseType: "employment-terms",
+            },
+          ],
+          language: "en",
+          modelUsed: "gemini-3.5-flash",
+          usedFallback: false,
+          chunkCount: 1,
+          durationMs: 1200,
+        };
+      });
+
+      await retryService.triggerAnalysis(
+        "contract_retry",
+        "user_retry",
+        "Contract text here.",
+        "en",
+      );
+
+      expect(mockExtract).toHaveBeenCalledTimes(2);
+      expect(mockSave).toHaveBeenCalled();
+      expect(mockAuditSave).toHaveBeenCalled();
+    });
+
+    test("should write ANALYSIS_FAILED after exhausting retries", async () => {
+      const retryService = new AnalysisService(2, 1);
+      mockExtract.mockRejectedValue(new Error("LLM unavailable"));
+
+      await expect(
+        retryService.triggerAnalysis(
+          "contract_fail",
+          "user_retry",
+          "Some text.",
+          "en",
+        ),
+      ).resolves.toBeUndefined();
+
+      expect(mockExtract).toHaveBeenCalledTimes(2);
+      expect(mockSave).not.toHaveBeenCalled();
+      expect(mockAuditSave).toHaveBeenCalled();
     });
   });
 

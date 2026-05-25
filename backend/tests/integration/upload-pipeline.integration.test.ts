@@ -160,6 +160,7 @@ function makeDocxFile(
 describe("Upload → Extract → Store Pipeline", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (analysisService as any).executionQueue.retryDelayMs = 1;
   });
 
   // ── Parsing step (unit) ───────────────────────────────────────────────────

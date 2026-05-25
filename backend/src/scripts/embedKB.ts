@@ -35,7 +35,9 @@ interface Clause {
 const INDEX_NAME = "legal-kb";
 
 async function main() {
-  console.log("🚀 Starting Legal KB Embedding pipeline (multilingual-e5-large)...");
+  console.log(
+    "🚀 Starting Legal KB Embedding pipeline (multilingual-e5-large)...",
+  );
 
   // 1. Loads 50+ legal clauses from 'backend/src/data/legalKB.json'
   let kbPath = path.join(process.cwd(), "backend/src/data/legalKB.json");
@@ -49,7 +51,9 @@ async function main() {
   }
 
   const clauses: Clause[] = JSON.parse(fs.readFileSync(kbPath, "utf-8"));
-  console.log(`📂 Loaded ${clauses.length} clauses from backend/src/data/legalKB.json`);
+  console.log(
+    `📂 Loaded ${clauses.length} clauses from backend/src/data/legalKB.json`,
+  );
 
   const apiKey = process.env.PINECONE_API_KEY;
   if (!apiKey) {
@@ -65,7 +69,9 @@ async function main() {
   const indexExists = indexList.indexes?.some((idx) => idx.name === INDEX_NAME);
 
   if (!indexExists) {
-    console.log(`🏗️ Index "${INDEX_NAME}" does not exist. Creating serverless index with model "multilingual-e5-large"…`);
+    console.log(
+      `🏗️ Index "${INDEX_NAME}" does not exist. Creating serverless index with model "multilingual-e5-large"…`,
+    );
     await pc.createIndexForModel({
       name: INDEX_NAME,
       cloud: "aws",
@@ -108,20 +114,26 @@ async function main() {
   });
 
   // 4. Upsert records to Pinecone
-  console.log(`\n📤 Upserting ${records.length} clauses to Pinecone index "${INDEX_NAME}"…`);
+  console.log(
+    `\n📤 Upserting ${records.length} clauses to Pinecone index "${INDEX_NAME}"…`,
+  );
 
   // Batching the upserts into chunks of 25
   const batchSize = 25;
   for (let i = 0; i < records.length; i += batchSize) {
     const batch = records.slice(i, i + batchSize);
-    console.log(`   Upserting batch ${Math.floor(i / batchSize) + 1} (${batch.length} records)…`);
-    
+    console.log(
+      `   Upserting batch ${Math.floor(i / batchSize) + 1} (${batch.length} records)…`,
+    );
+
     // Call the Pinecone SDK upsertRecords method
     await index.upsertRecords({ records: batch });
   }
 
   // 5. Logs progress and confirms all 50+ clauses are embedded
-  console.log(`\n🎉 Success: Confirmed that all ${records.length} clauses have been embedded and upserted into Pinecone!`);
+  console.log(
+    `\n🎉 Success: Confirmed that all ${records.length} clauses have been embedded and upserted into Pinecone!`,
+  );
 }
 
 main().catch((err) => {
