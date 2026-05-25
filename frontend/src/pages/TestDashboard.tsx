@@ -1,14 +1,9 @@
-import RiskAnalysisDashboard from '@/components/dashboard/RiskAnalysisDashboard'
-import sampleData from '@/mocks/sampleAnalysis.json'
-
-const verifiedAnalysisData = sampleData as React.ComponentProps<
-  typeof RiskAnalysisDashboard
->['analysisData']
+import RiskAnalysisDashboard from '@/pages/RiskAnalysisDashboard'
 
 export default function TestPage() {
   return (
     <div className="bg-background min-h-screen py-8">
-      <RiskAnalysisDashboard analysisData={verifiedAnalysisData} />
+      <RiskAnalysisDashboard />
     </div>
   )
 }

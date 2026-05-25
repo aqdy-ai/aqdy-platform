@@ -2,7 +2,9 @@ import { lazy } from 'react'
 import { useTranslation } from 'react-i18next'
 import SEO from '@/components/layout/SEO'
 
-const ContractUpload = lazy(() => import('@/components/ContractUpload'))
+const ContractUpload = lazy(
+  () => import('@/components/features/ContractUpload')
+)
 
 const Home = () => {
   const { t } = useTranslation()
