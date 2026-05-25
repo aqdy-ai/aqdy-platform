@@ -8,7 +8,7 @@ export default function ExportReportButton() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // إغلاق القائمة تلقائياً لو المستخدم ضغط في أي مكان برة الزرار
+  // إغلاق القائمة عند الضغط خارجها أو عند الضغط على Escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -18,13 +18,23 @@ export default function ExportReportButton() {
         setIsOpen(false)
       }
     }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
 
   const handleExport = (type: 'pdf' | 'docx') => {
     setIsOpen(false)
-    // 💡 هنا هنربط الـ Actual Integration الأسبوع الجاي يا ميرنا
     console.log(`Exporting report as ${type}...`)
   }
 
@@ -33,9 +43,12 @@ export default function ExportReportButton() {
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-haspopup="true"
+        aria-expanded={isOpen}
+        aria-controls="export-dropdown-menu"
         className={cn(
-          'bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary/20 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 focus:ring-2 focus:outline-none',
-          isOpen && 'ring-primary/20 bg-primary/90 ring-2'
+          'bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring ring-offset-background flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          isOpen && 'bg-primary/90'
         )}
       >
         <Download className="h-4 w-4" />
@@ -48,24 +61,34 @@ export default function ExportReportButton() {
         />
       </button>
 
-      {/* Dropdown Menu with Smooth Transition */}
+      {/* Dropdown Menu */}
       {isOpen && (
-        <div className="border-muted bg-card animate-in fade-in slide-in-from-top-2 absolute end-0 z-50 mt-2 w-48 origin-top-right rounded-xl border p-1.5 shadow-lg ring-1 ring-black/5 duration-150">
+        <div
+          id="export-dropdown-menu"
+          role="menu"
+          aria-label={t('dashboard.export_report')}
+          className="border-border bg-card animate-in fade-in slide-in-from-top-2 absolute end-0 z-50 mt-2 w-48 origin-top-right rounded-xl border p-1.5 shadow-lg ring-1 ring-black/5 duration-150"
+        >
           {/* PDF Option */}
           <button
             onClick={() => handleExport('pdf')}
-            className="text-foreground hover:bg-muted/60 flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm font-medium transition-colors"
+            role="menuitem"
+            className="text-foreground hover:bg-muted/80 focus:bg-muted/80 focus-visible:ring-primary/20 flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2"
           >
-            <FileText className="h-4 w-4 text-red-500" />
+            <FileText className="h-4 w-4 text-red-500" aria-hidden="true" />
             <span>{t('dashboard.export_pdf')}</span>
           </button>
 
           {/* DOCX Option */}
           <button
             onClick={() => handleExport('docx')}
-            className="text-foreground hover:bg-muted/60 flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm font-medium transition-colors"
+            role="menuitem"
+            className="text-foreground hover:bg-muted/80 focus:bg-muted/80 focus-visible:ring-primary/20 flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2"
           >
-            <FileSpreadsheet className="h-4 w-4 text-blue-500" />
+            <FileSpreadsheet
+              className="h-4 w-4 text-blue-500"
+              aria-hidden="true"
+            />
             <span>{t('dashboard.export_docx')}</span>
           </button>
         </div>

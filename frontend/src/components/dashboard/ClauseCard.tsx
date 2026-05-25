@@ -111,29 +111,48 @@ export default function ClauseCard({ clause }: ClauseCardProps) {
 
       {/* 🚀 Redline Toggle Button (Show/Hide) */}
       {/* Redline Toggle Button */}
+      {/* Redline Toggle Button */}
       {clause.redlineSuggestion && (
         <button
           onClick={() => setShowRedline(!showRedline)}
+          aria-expanded={showRedline}
+          aria-controls={`redline-container-${clause.sourceFromKB}`}
           className={cn(
-            'browser-default focus:ring-primary/20 mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border py-2 text-xs font-semibold transition-all duration-200 focus:ring-2 focus:outline-none',
+            'focus-visible:ring-ring ring-offset-background mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border py-2 text-xs font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
             showRedline
               ? 'bg-destructive/5 text-destructive border-destructive/20 hover:bg-destructive/10'
               : 'bg-primary/5 text-primary border-primary/10 hover:bg-primary/10'
           )}
-          aria-expanded={showRedline}
         >
           {showRedline ? (
             <>
               {t('dashboard.hide_redline')}{' '}
-              <ChevronUp className="h-3.5 w-3.5" />
+              <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
             </>
           ) : (
             <>
               {t('dashboard.show_redline')}{' '}
-              <ChevronDown className="h-3.5 w-3.5" />
+              <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
             </>
           )}
         </button>
+      )}
+
+      {/* Redline Comparison Container */}
+      {showRedline && clause.redlineSuggestion && (
+        <div
+          id={`redline-container-${clause.sourceFromKB}`}
+          role="region"
+          aria-label={t('dashboard.redline_comparison')}
+          className="animate-in fade-in slide-in-from-top-3 w-full duration-300 ease-out"
+        >
+          <RedlineComparison
+            originalText={clause.clauseText}
+            suggestedText={clause.redlineSuggestion}
+            riskLevel={clause.riskLevel}
+            clauseType={clause.clauseType}
+          />
+        </div>
       )}
 
       {/* 🚀 التعديل السحري هنا: الـ State معزولة صراحة ومستحيل كارد يأثر على التاني */}
