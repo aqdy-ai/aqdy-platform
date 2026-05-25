@@ -97,15 +97,14 @@ export class AgentExecutionService<TPayload> {
           } catch (auditError) {
             logger.error("AgentExecutionService: final failure hook failed", {
               jobId: job.id,
-              error: auditError instanceof Error
-                ? auditError.message
-                : String(auditError),
+              error:
+                auditError instanceof Error
+                  ? auditError.message
+                  : String(auditError),
             });
           }
         }
-        job.reject(
-          error instanceof Error ? error : new Error(String(error)),
-        );
+        job.reject(error instanceof Error ? error : new Error(String(error)));
         return;
       }
 

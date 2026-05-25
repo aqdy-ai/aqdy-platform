@@ -14,10 +14,7 @@ import {
 export class AnalysisService {
   private readonly executionQueue: AgentExecutionService<AgentJobPayload>;
 
-  constructor(
-    queueMaxAttempts = 3,
-    queueRetryDelayMs = 2000,
-  ) {
+  constructor(queueMaxAttempts = 3, queueRetryDelayMs = 2000) {
     this.executionQueue = new AgentExecutionService(
       this.executeAnalysisAttempt.bind(this),
       queueMaxAttempts,
@@ -90,9 +87,7 @@ export class AnalysisService {
     }
   }
 
-  private async executeAnalysisAttempt(
-    job: AgentJobPayload,
-  ): Promise<void> {
+  private async executeAnalysisAttempt(job: AgentJobPayload): Promise<void> {
     const startTime = Date.now();
 
     const extractionResult = await extractorAgent.extract(
@@ -143,7 +138,9 @@ export class AnalysisService {
       },
     }).save();
 
-    logger.info(`✅ Background analysis complete for contract: ${job.contractId}`);
+    logger.info(
+      `✅ Background analysis complete for contract: ${job.contractId}`,
+    );
   }
 
   private async logFinalFailure(

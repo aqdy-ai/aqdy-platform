@@ -40,7 +40,7 @@ const { RiskAnalysis } = await import(
 (RiskAnalysis as any).findOne = mockFindOne;
 (RiskAnalysis as any).find = mockFind;
 
-const analysisService = new AnalysisService();
+const analysisService = new AnalysisService(3, 1);
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
