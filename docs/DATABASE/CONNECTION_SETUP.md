@@ -42,11 +42,5 @@ Mongoose creates these collections on first use:
 ---
 
 ## Testing
-Integration tests use a separate test database:
 
-
-
-## aqdy_test
-
-
-This database is dropped after every test run.
+Integration tests use a separate test database named `aqdy_test`. This database is dropped automatically after every test run to ensure isolation.
