@@ -18,10 +18,18 @@ test('Upload → Analyze → Report flow', async ({ page }) => {
     })
   })
 
+  // Ensure clean state (Clear all persistence to force the application into the Upload state)
+  await page.addInitScript('window.localStorage.clear(); window.sessionStorage.clear();')
   await page.goto('/')
 
-  // Confirm the page is loaded by checking for the main heading
-  await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 10000 })
+  // Handle Legal Disclaimer modal: Use auto-waiting click instead of isVisible()
+  // We use .catch() because if storage was cleared, the modal might not always appear.
+  await page.getByRole('button', { name: /أوافق وأفهم ذلك|agree/i })
+    .click({ timeout: 5000 })
+    .catch(() => { /* Optional: modal didn't appear */ });
+
+  // Confirm we are on the Upload page (this prevents testing logic on the wrong view)
+  await expect(page.getByRole('heading', { name: /ارفع|upload/i })).toBeVisible({ timeout: 10000 })
 
   // Using a resilient selector: locate the input by its functional type
   const fileInput = page.locator('input[type="file"]').first()
