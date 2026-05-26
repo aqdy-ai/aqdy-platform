@@ -140,8 +140,7 @@ export class RAGService {
           ),
         );
 
-        const mmrScore =
-          lambda * relevanceScore - (1 - lambda) * maxSimilarity;
+        const mmrScore = lambda * relevanceScore - (1 - lambda) * maxSimilarity;
 
         if (mmrScore > bestScore) {
           bestScore = mmrScore;
@@ -246,7 +245,7 @@ export class RAGService {
       id: hit._id,
       score: hit._score ?? 0,
       category: String(f.category ?? ""),
-      riskLevel: (String(f.riskLevel ?? "medium") as KBMatch["riskLevel"]),
+      riskLevel: String(f.riskLevel ?? "medium") as KBMatch["riskLevel"],
       clausePattern: String(f.text ?? ""),
       explanation: {
         ar: String(f.explanation_ar ?? ""),
