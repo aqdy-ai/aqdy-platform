@@ -84,7 +84,7 @@ The stack uses **LangChain JS** as the orchestration framework with **Google Gen
 | `LANGFUSE_SECRET_KEY` | Langfuse observability secret | ✅ |
 | `LANGFUSE_PUBLIC_KEY` | Langfuse observability public key | ✅ |
 
-All environment variables are validated at startup using **Zod** in [`src/config/env.ts`](src/config/env.ts). If any required variable is missing, the process exits with a descriptive error.
+All environment variables are validated at startup using **Zod** in [`backend/src/config/env.ts`](../../backend/src/config/env.ts). If any required variable is missing, the process exits with a descriptive error.
 
 ### Files
 
@@ -165,7 +165,7 @@ throw Error("All LLM providers failed")
 
 ## Gemini Wrapper
 
-[`src/services/gemini.wrapper.ts`](src/services/gemini.wrapper.ts) provides a **thin, direct wrapper** around the `gemini-1.5-pro` model without any retry or fallback logic:
+[`backend/src/services/gemini.wrapper.ts`](../../backend/src/services/gemini.wrapper.ts) provides a **thin, direct wrapper** around the `gemini-1.5-pro` model without any retry or fallback logic:
 
 ```typescript
 import { geminiWrapper } from "./services/gemini.wrapper.js";
@@ -183,7 +183,7 @@ Use this wrapper when you need direct Gemini access outside the Gemma pipeline.
 
 ## LangChain Config & Prompt Templates
 
-[`src/config/langchain.config.ts`](src/config/langchain.config.ts) provides:
+[`backend/src/config/langchain.config.ts`](../../backend/src/config/langchain.config.ts) provides:
 
 ### Shared Model Instances
 

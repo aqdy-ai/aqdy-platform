@@ -110,6 +110,6 @@ The platform uses `i18next` for translations. We follow best practices for RTL s
 
 ## 📖 Additional Documentation
 
-- [Component Architecture](file:///media/merna/merna/work/iti/Aqdy/aqdy-platform/frontend/COMPONENT_ARCHITECTURE.md) - Deep dive into our frontend structure and patterns.
+- [Component Architecture](./COMPONENT_ARCHITECTURE.md) - Deep dive into our frontend structure and patterns.
 
 Built with ❤️ by the Aqdy Development Team.

@@ -240,7 +240,7 @@ During contract analysis, the RAG retrieval works as follows:
 
 ## Related Services
 
-### [`llm.service.ts`](../backend/src/services/llm.service.ts)
+### [`llm.service.ts`](../../backend/src/services/llm.service.ts)
 
 Handles all LLM calls with automatic retry and fallback:
 
@@ -259,7 +259,7 @@ const response = await llmService.call(prompt, {
 });
 ```
 
-### [`langchain.config.ts`](../backend/src/config/langchain.config.ts)
+### [`langchain.config.ts`](../../backend/src/config/langchain.config.ts)
 
 Defines reusable LangChain model instances and system prompts:
 
@@ -270,11 +270,11 @@ Defines reusable LangChain model instances and system prompts:
 | `RISK_CLASSIFICATION_SYSTEM_PROMPT` | Risk scoring with law references |
 | `REDLINE_SYSTEM_PROMPT` | Suggest safer clause alternatives |
 
-### [`analysis.service.ts`](../backend/src/services/analysis.service.ts)
+### [`analysis.service.ts`](../../backend/src/services/analysis.service.ts)
 
 Persists the final risk analysis results to MongoDB.
 
-### [`contract.service.ts`](../backend/src/services/contract.service.ts)
+### [`contract.service.ts`](../../backend/src/services/contract.service.ts)
 
 Manages contract CRUD — save, retrieve, update, and delete user contracts.
 
@@ -303,7 +303,7 @@ LANGFUSE_SECRET_KEY=your_langfuse_secret
 LANGFUSE_PUBLIC_KEY=your_langfuse_public_key
 ```
 
-All variables are validated at startup via **Zod schema** in [`env.ts`](../backend/src/config/env.ts). The app will refuse to start if any required variable is missing.
+All variables are validated at startup via **Zod schema** in [`env.ts`](../../backend/src/config/env.ts). The app will refuse to start if any required variable is missing.
 
 > **Note:** `embedKB.ts` loads `PINECONE_API_KEY` separately with a fallback path:  
 > It looks for `.env` in `process.cwd()` first, then in `../` (one level up).
@@ -424,7 +424,7 @@ Run the script from the project root (not a subdirectory):
 
 ```bash
 # ✅ Correct
-cd d:\iti\0 Final Project\aqdy\aqdy-platform
+cd aqdy-platform
 npx ts-node backend/src/scripts/embedKB.ts
 ```
 
