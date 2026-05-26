@@ -80,7 +80,8 @@ export class RiskClassifierAgent {
     let sourceFromKB: string | null = null;
 
     try {
-      const matches = await ragService.searchKB(clauseText, 1);
+      const ragResult = await ragService.searchKB(clauseText);
+      const matches = ragResult?.matches || [];
       if (matches && matches.length > 0) {
         const bestMatch = matches[0];
         if (bestMatch.score >= this.similarityThreshold) {
