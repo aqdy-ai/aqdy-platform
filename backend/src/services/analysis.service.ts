@@ -5,6 +5,7 @@ import {
 } from "../models/riskAnalysis.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
 import { extractorAgent } from "../agents/extractor.agent.js";
+import { riskClassifierAgent } from "../agents/riskClassifier.agent.js";
 import { logger } from "../utils/logger.js";
 import {
   AgentExecutionService,
@@ -95,25 +96,73 @@ export class AnalysisService {
       job.language,
     );
 
-    const clauseAnalysis = extractionResult.clauses.map((clause) => ({
-      clauseText: clause.clauseText,
-      clauseType: clause.clauseType,
-      riskLevel: "unknown" as const,
-      confidence: 1.0,
-      explanation: {
-        ar: "تم استخراج البند بنجاح.",
-        en: "Clause extracted successfully.",
-      },
-      sourceFromKB: null,
-    }));
+    const clauseAnalysis = [];
+    let riskyClausesCount = 0;
+    let maxRiskWeight = 0;
+    const riskWeights = {
+      low: 1,
+      medium: 2,
+      high: 3,
+      critical: 4,
+      unknown: 0,
+    };
+
+    for (const clause of extractionResult.clauses) {
+      try {
+        const classification = await riskClassifierAgent.classify(
+          clause.clauseText,
+          clause.clauseType,
+          job.language,
+        );
+
+        clauseAnalysis.push({
+          clauseText: clause.clauseText,
+          clauseType: clause.clauseType,
+          riskLevel: classification.riskLevel,
+          confidence: classification.confidence,
+          explanation: classification.explanation,
+          sourceFromKB: classification.sourceFromKB,
+        });
+
+        if (classification.riskLevel !== "low") {
+          riskyClausesCount++;
+        }
+
+        const weight = riskWeights[classification.riskLevel];
+        if (weight > maxRiskWeight) {
+          maxRiskWeight = weight;
+        }
+      } catch (err) {
+        logger.error(`Failed to classify clause ${clause.clauseNumber}:`, err);
+        clauseAnalysis.push({
+          clauseText: clause.clauseText,
+          clauseType: clause.clauseType,
+          riskLevel: "unknown" as const,
+          confidence: 0.0,
+          explanation: {
+            ar: "فشل تصنيف مخاطر هذا البند.",
+            en: "Failed to classify the risk of this clause.",
+          },
+          sourceFromKB: null,
+        });
+      }
+    }
+
+    let overallRisk: "low" | "medium" | "high" | "critical" = "low";
+    if (maxRiskWeight === 4) overallRisk = "critical";
+    else if (maxRiskWeight === 3) overallRisk = "high";
+    else if (maxRiskWeight === 2) overallRisk = "medium";
+
+    const summaryAr = `تم تحليل العقد بنجاح. تم تحديد عدد ${riskyClausesCount} بند ينطوي على مخاطر من إجمالي ${extractionResult.clauses.length} بند تم استخراجها. مستوى المخاطر العام للعقد هو: ${overallRisk}.`;
+    const summaryEn = `Contract analysis completed. Identified ${riskyClausesCount} risky clauses out of ${extractionResult.clauses.length} extracted clauses. The overall contract risk level is ${overallRisk}.`;
 
     const executiveSummary = {
-      overallRisk: "low" as const,
+      overallRisk,
       totalClauses: extractionResult.clauses.length,
-      riskyClausesCount: 0,
+      riskyClausesCount,
       summary: {
-        ar: "تم استخراج البنود بنجاح.",
-        en: "Clauses extracted successfully.",
+        ar: summaryAr,
+        en: summaryEn,
       },
     };
 

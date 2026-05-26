@@ -28,6 +28,12 @@ jest.unstable_mockModule("../../src/agents/extractor.agent.js", () => ({
   extractorAgent: { extract: mockExtract },
 }));
 
+// Mock riskClassifierAgent
+const mockClassify = jest.fn() as jest.Mock<any>;
+jest.unstable_mockModule("../../src/agents/riskClassifier.agent.js", () => ({
+  riskClassifierAgent: { classify: mockClassify },
+}));
+
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
 const { AnalysisService } = await import(
@@ -45,7 +51,15 @@ const analysisService = new AnalysisService(3, 1);
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe("AnalysisService", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockClassify.mockResolvedValue({
+      riskLevel: "low",
+      confidence: 0.9,
+      explanation: { ar: "شرح", en: "Explanation" },
+      sourceFromKB: null,
+    });
+  });
 
   // ── saveAnalysis() ────────────────────────────────────────────────────────
 
@@ -152,7 +166,7 @@ describe("AnalysisService", () => {
       expect(mockAuditSave).toHaveBeenCalled();
     });
 
-    test("should map extracted clauses to clauseAnalysis with default risk values", async () => {
+    test("should map extracted clauses to clauseAnalysis with classified risk values", async () => {
       const { RiskAnalysis: MockRiskAnalysis } = await import(
         "../../src/models/riskAnalysis.model.js"
       );
@@ -161,6 +175,20 @@ describe("AnalysisService", () => {
         capturedData = data;
         return { save: mockSave };
       });
+
+      mockClassify
+        .mockResolvedValueOnce({
+          riskLevel: "high",
+          confidence: 0.85,
+          explanation: { ar: "شرح المخاطر", en: "Risk explanation" },
+          sourceFromKB: "kb_match_123",
+        })
+        .mockResolvedValueOnce({
+          riskLevel: "low",
+          confidence: 0.95,
+          explanation: { ar: "شرح بند منخفض المخاطر", en: "Low risk explanation" },
+          sourceFromKB: null,
+        });
 
       await analysisService.triggerAnalysis(
         "contract_abc",
@@ -176,8 +204,9 @@ describe("AnalysisService", () => {
       expect(capturedData.clauseAnalysis[0].clauseType).toBe(
         MOCK_CLAUSES[0].clauseType,
       );
-      expect(capturedData.clauseAnalysis[0].riskLevel).toBe("unknown");
-      expect(capturedData.clauseAnalysis[0].confidence).toBe(1.0);
+      expect(capturedData.clauseAnalysis[0].riskLevel).toBe("high");
+      expect(capturedData.clauseAnalysis[0].confidence).toBe(0.85);
+      expect(capturedData.clauseAnalysis[0].sourceFromKB).toBe("kb_match_123");
     });
 
     test("should set correct executiveSummary totalClauses count", async () => {

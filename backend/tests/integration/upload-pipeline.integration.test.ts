@@ -61,6 +61,12 @@ jest.unstable_mockModule("../../src/models/auditLog.model.js", () => ({
   AuditLog: jest.fn().mockImplementation(() => ({ save: mockAuditSave })),
 }));
 
+// Mock riskClassifierAgent
+const mockClassify = jest.fn() as jest.Mock<any>;
+jest.unstable_mockModule("../../src/agents/riskClassifier.agent.js", () => ({
+  riskClassifierAgent: { classify: mockClassify },
+}));
+
 // ── 3. Imports (after all mocks) ──────────────────────────────────────────────
 
 const { pdfService } = await import("../../src/services/pdf.service.js");
@@ -161,6 +167,15 @@ describe("Upload → Extract → Store Pipeline", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (analysisService as any).executionQueue.retryDelayMs = 1;
+    mockClassify.mockResolvedValue({
+      riskLevel: "low",
+      confidence: 0.95,
+      explanation: {
+        ar: "تصنيف البند",
+        en: "Clause classification",
+      },
+      sourceFromKB: null,
+    });
   });
 
   // ── Parsing step (unit) ───────────────────────────────────────────────────
