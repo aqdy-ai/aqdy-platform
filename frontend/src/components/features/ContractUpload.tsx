@@ -1,89 +1,318 @@
-import { useState } from 'react'
+/* src/components/features/ContractUpload.tsx */
+import { useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { UploadCloud, FileText, X } from 'lucide-react'
+import { Upload, FileText, X, CheckCircle2, AlertCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 
-export default function ContractUpload() {
-  const { t } = useTranslation()
+interface ContractUploadProps {
+  onUploadSuccess?: (analysisData: unknown) => void
+}
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
+export default function ContractUpload({
+  onUploadSuccess,
+}: ContractUploadProps) {
+  const { t, i18n } = useTranslation()
   const [file, setFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number>(0)
+  const [isUploading, setIsUploading] = useState(false)
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    if (e.target.files?.[0]) {
-      setFile(e.target.files[0])
-    }
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const isRtl = i18n.language === 'ar'
+
+  const showErrorToast = useCallback(
+    (message: string) => {
+      toast.custom(
+        (tId) => (
+          <div
+            className="z-[9999] flex w-full max-w-sm items-start gap-3 rounded-2xl border-2 border-red-500/50 bg-red-50 p-4 text-start shadow-2xl transition-all dark:bg-red-950/40"
+            dir={isRtl ? 'rtl' : 'ltr'}
+          >
+            <AlertCircle
+              className="mt-0.5 shrink-0 text-red-600 dark:text-red-400"
+              size={20}
+            />
+            <p className="flex-1 text-sm leading-relaxed font-bold text-red-800 dark:text-red-100">
+              {message}
+            </p>
+            <button
+              onClick={() => toast.dismiss(tId)}
+              className="-mt-1 cursor-pointer p-1 text-red-400 transition-colors hover:text-red-700 dark:hover:text-red-300"
+            >
+              ✕
+            </button>
+          </div>
+        ),
+        { duration: 5000 }
+      )
+    },
+    [isRtl]
+  )
+
+  const simulateUpload = useCallback(
+    (targetFile: File) => {
+      setIsUploading(true)
+      setUploadProgress(0)
+      let completed = false
+
+      const interval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval)
+            if (!completed) {
+              completed = true
+              setIsUploading(false)
+
+              toast.success(t('upload.success_title'), {
+                description: `${targetFile.name} ${t('upload.success_desc')}`,
+              })
+
+              onUploadSuccess?.(targetFile)
+            }
+            return 100
+          }
+          return prev + 10
+        })
+      }, 200)
+    },
+    [onUploadSuccess, t]
+  )
+
+  const handleFileSelection = useCallback(
+    (selectedFile: File | undefined) => {
+      if (!selectedFile) return
+
+      // Type validation
+      if (selectedFile.type !== 'application/pdf') {
+        showErrorToast(
+          t('upload.error_invalid_type', {
+            defaultValue: isRtl
+              ? 'يرجى اختيار ملف PDF فقط'
+              : 'Please select a PDF file only',
+          })
+        )
+        return
+      }
+
+      // Size validation
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        showErrorToast(
+          t('upload.error_too_large', {
+            defaultValue: isRtl
+              ? 'حجم الملف يتجاوز 10 ميجابايت'
+              : 'File size exceeds 10MB',
+          })
+        )
+        return
+      }
+
+      setFile(selectedFile)
+      simulateUpload(selectedFile)
+    },
+    [showErrorToast, simulateUpload, t, isRtl]
+  )
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    handleFileSelection(selectedFile)
+    e.target.value = ''
   }
 
-  const handleRemoveFile = (): void => {
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }, [])
+
+  const onDragLeave = useCallback(() => {
+    setIsDragging(false)
+  }, [])
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setIsDragging(false)
+      const droppedFile = e.dataTransfer.files[0]
+      handleFileSelection(droppedFile)
+    },
+    [handleFileSelection]
+  )
+
+  const removeFile = (e: React.MouseEvent) => {
+    e.stopPropagation()
     setFile(null)
+    setUploadProgress(0)
+    setIsUploading(false)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleStartAnalysis = () => {
+    if (!file) return
+    console.log('Starting analysis for:', file.name)
+    // Future: integration with Firebase/AI service
   }
 
   return (
-    <Card className="mx-auto w-full max-w-2xl border-none bg-slate-50/50 shadow-sm dark:bg-zinc-900/50">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">
-          {t('common.upload')}
-        </CardTitle>
-        <CardDescription>
-          {t('upload_description', 'Supported formats: PDF, DOCX (Max 10MB)')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid w-full items-center gap-6">
-          <div className="relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 p-12 transition-colors hover:bg-slate-100/50 dark:border-zinc-800 dark:hover:bg-zinc-800/50">
-            <Input
-              id="contract-file"
-              type="file"
-              className="absolute inset-0 cursor-pointer opacity-0"
-              onChange={handleFileChange}
-              accept=".pdf,.docx"
-            />
+    <div className="mx-auto w-full max-w-2xl px-4 py-8">
+      <input
+        type="file"
+        id="contract-upload-input"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        accept="application/pdf"
+        className="sr-only"
+        aria-hidden="true"
+      />
 
-            {!file ? (
-              <>
-                <UploadCloud className="mb-4 h-12 w-12 text-slate-400" />
-                <p className="text-sm font-medium text-slate-600 dark:text-zinc-400">
-                  {t('drag_drop', 'Click or drag to upload contract')}
-                </p>
-              </>
-            ) : (
-              <div className="flex items-center gap-3 rounded-lg border border-slate-100 bg-white p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
-                <FileText className="h-5 w-5 text-blue-500" />
-                <span className="max-w-[200px] truncate text-sm font-medium">
-                  {file.name}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 rounded-full"
-                  onClick={handleRemoveFile}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+      <motion.div
+        layout
+        onClick={() => !file && fileInputRef.current?.click()}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            fileInputRef.current?.click()
+          }
+        }}
+        aria-label={t('upload.dropzone_label', {
+          defaultValue: 'Upload contract',
+        })}
+        className={`group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[2.5rem] border-2 border-dashed p-10 transition-all duration-500 ${
+          isDragging
+            ? 'border-primary bg-primary/10 shadow-primary/20 scale-[1.02] shadow-2xl'
+            : 'border-border/60 bg-card/50 hover:border-primary/40 hover:bg-card/80 backdrop-blur-md'
+        } ${file ? 'border-primary/40 bg-primary/5 border-solid' : ''}`}
+      >
+        {/* Background glow effect */}
+        <div className="from-primary/5 to-secondary/5 pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent" />
+
+        <AnimatePresence mode="wait">
+          {!file ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative z-10 flex flex-col items-center text-center"
+            >
+              <div className="bg-primary/10 mb-6 rounded-3xl p-5 shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
+                <Upload className="text-primary" size={40} strokeWidth={1.5} />
               </div>
-            )}
-          </div>
+              <h3 className="mb-3 text-2xl font-black tracking-tight">
+                {t('upload.title', {
+                  defaultValue: isRtl
+                    ? 'ارفع عقدك هنا'
+                    : 'Upload your contract',
+                })}
+              </h3>
+              <p className="text-muted-foreground mb-4 max-w-[300px] text-base leading-relaxed">
+                {t('upload.subtitle', {
+                  defaultValue: isRtl
+                    ? 'اسحب وأفلت ملف PDF أو اضغط للتصفح'
+                    : 'Drag and drop your PDF file or click to browse',
+                })}
+              </p>
+              <div className="bg-muted/50 text-muted-foreground/80 flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium">
+                <FileText size={14} />
+                <span>
+                  {t('upload.hint', {
+                    defaultValue: isRtl
+                      ? 'يدعم ملفات PDF فقط (بحد أقصى 10 ميجابايت)'
+                      : 'PDF only • Max 10MB',
+                  })}
+                </span>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="selected"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="border-primary/20 bg-background/80 relative z-10 flex w-full items-center justify-between rounded-3xl border p-5 shadow-xl backdrop-blur-xl"
+            >
+              <div className="flex items-center gap-4">
+                <div className="bg-primary/10 rounded-2xl p-3">
+                  <FileText className="text-primary" size={30} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="max-w-[180px] truncate text-base font-bold sm:max-w-[300px]">
+                    {file.name}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-xs font-medium">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </span>
+                    <span className="bg-muted-foreground/30 h-1 w-1 rounded-full" />
+                    {uploadProgress === 100 ? (
+                      <span className="flex items-center gap-1 text-xs font-bold text-green-500">
+                        <CheckCircle2 size={12} />
+                        {isRtl ? 'جاهز للتحليل' : 'Ready'}
+                      </span>
+                    ) : isUploading ? (
+                      <span className="text-primary text-xs font-bold">
+                        {uploadProgress}%
+                      </span>
+                    ) : null}
+                  </div>
 
-          <Label htmlFor="contract-file" className="sr-only">
-            {t('common.upload')}
-          </Label>
+                  {/* Progress bar */}
+                  {isUploading && (
+                    <div className="mt-2 w-full">
+                      <div className="bg-muted h-1.5 w-48 overflow-hidden rounded-full">
+                        <motion.div
+                          className="bg-primary h-full rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${uploadProgress}%` }}
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {!isUploading && (
+                <button
+                  onClick={removeFile}
+                  className="group/btn bg-muted hover:bg-destructive/10 hover:text-destructive rounded-2xl p-3 transition-all duration-300 active:scale-90"
+                  aria-label={t('common.remove', { defaultValue: 'Remove' })}
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
-          <Button
-            disabled={!file}
-            className="h-12 w-full bg-zinc-900 text-lg font-semibold transition-all hover:bg-zinc-800 dark:bg-slate-100 dark:text-zinc-900 dark:hover:bg-slate-200"
+      <AnimatePresence>
+        {file && !isUploading && uploadProgress === 100 && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            onClick={handleStartAnalysis}
+            className="group bg-primary text-primary-foreground shadow-primary/30 hover:shadow-primary/40 relative mt-8 w-full overflow-hidden rounded-[1.5rem] px-8 py-5 text-lg font-black shadow-2xl transition-all duration-300 hover:scale-[1.01] active:scale-[0.98]"
           >
-            {t('analyze_now', 'Analyze Contract')}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              {t('upload.analyze_button', {
+                defaultValue: isRtl ? 'بدء التحليل الذكي' : 'Start AI Analysis',
+              })}
+              <motion.span
+                animate={{ x: isRtl ? [-4, 0, -4] : [4, 0, 4] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                {isRtl ? '←' : '→'}
+              </motion.span>
+            </span>
+            <div className="absolute inset-0 -translate-x-full transform bg-gradient-to-r from-white/0 via-white/10 to-white/0 transition-transform duration-1000 group-hover:translate-x-full" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

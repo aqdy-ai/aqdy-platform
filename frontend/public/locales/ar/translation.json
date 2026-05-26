@@ -34,7 +34,16 @@
     "analyze_button": "بدء التحليل الذكي",
     "error_invalid_type": "يرجى اختيار ملف PDF فقط",
     "error_too_large": "حجم الملف يتجاوز 10 ميجابايت",
-    "dropzone_label": "منطقة رفع العقد"
+    "dropzone_label": "منطقة رفع العقد",
+    "drag_drop_prompt": "قم بسحب وإفلات ملف العقد هنا أو اضغط للتصفح",
+    "supported_formats": "الصيغ المدعومة: PDF, DOCX (الحد الأقصى 10 ميجابايت)",
+    "status_uploading": "جاري رفع وتحليل العقد قانونياً...",
+    "status_completed": "اكتمل الرفع وجاري معالجة البيانات",
+    "success_title": "تم رفع العقد بنجاح",
+    "success_desc": "جاهز الآن للتحليل واستخراج المخاطر.",
+    "remove_file": "إزالة الملف",
+    "error_invalid_type_desc": "يرجى اختيار ملف بصيغة PDF أو Word فقط.",
+    "error_large_file": "حجم الملف كبير جداً، الحد الأقصى هو 10 ميجابايت"
   },
   "disclaimer": {
     "description": "منصة عقدي هي مساعد قانوني ذكي يهدف لتسهيل مراجعة العقود، ولا تعتبر استشارة قانونية رسمية.",
@@ -87,9 +96,5 @@
     "export_report": "تصدير التقرير",
     "export_pdf": "ملف PDF طباعي",
     "export_docx": "مستند وورد Word"
-
-
   }
- 
-
 }
