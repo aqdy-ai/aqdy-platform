@@ -6,12 +6,27 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 export const riskColors = {
-  critical: 'bg-orange-950 text-orange-200 border-orange-800', // #7C2D12
-  high: 'bg-red-500/10 text-red-500 border-red-500/20', // #EF4444
-  medium: 'bg-amber-500/10 text-amber-500 border-amber-500/20', // #F59E0B
-  low: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', // #10B981
-  unknown: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-}
+  critical: cn(
+    'bg-red-950 text-red-200 border-red-800',
+    'dark:bg-red-950/60 dark:text-red-300 dark:border-red-900'
+  ),
+  high: cn(
+    'bg-orange-500/10 text-orange-600 border-orange-500/20',
+    'dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/30'
+  ),
+  medium: cn(
+    'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    'dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30'
+  ),
+  low: cn(
+    'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+    'dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30'
+  ),
+  unknown: cn(
+    'bg-gray-500/10 text-gray-600 border-gray-500/20',
+    'dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+  ),
+} as const
 
 export function getConfidenceMeta(score: number) {
   if (score >= 0.9) return { color: 'bg-emerald-500', text: 'high_confidence' }

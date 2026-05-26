@@ -3,10 +3,10 @@
 This document describes recommended steps to build and deploy the codebase (backend + frontend) using Docker and docker-compose.
 
 **Repo layout (relevant files):**
-- [frontend/Dockerfile](frontend/Dockerfile)
-- [frontend/.dockerignore](frontend/.dockerignore)
-- [backend/Dockerfile](backend/Dockerfile)
-- [docker-compose.yml](docker-compose.yml)
+- [frontend/Dockerfile](../../frontend/Dockerfile)
+- [frontend/.dockerignore](../../frontend/.dockerignore)
+- [backend/Dockerfile](../../backend/Dockerfile)
+- [docker-compose.yml](../../docker-compose.yml)
 
 Prerequisites
 - Install Docker Engine and Docker Compose (or Docker Desktop) on your machine.

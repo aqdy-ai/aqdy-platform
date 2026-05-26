@@ -38,11 +38,11 @@
                                │  llm.service.ts           │
                                │                           │
                                │  ┌─────────────────────┐  │
-                               │  │ Gemma 4 31B (Primary)│  │
+                               │  │ Gemini 3.5 Flash (Pr)│  │
                                │  └──────┬──────────────┘  │
                                │         │ fallback         │
                                │  ┌──────▼──────────────┐  │
-                               │  │ Gemma 4 26B MoE     │  │
+                               │  │ Gemini 3.1 Flash Lite│  │
                                │  └─────────────────────┘  │
                                └──────────────────────────┘
                                              │
@@ -60,14 +60,14 @@ The stack uses **LangChain JS** as the orchestration framework with **Google Gen
 
 | Model | ID | Parameters | Role | Use Case |
 |---|---|---|---|---|
-| **Gemma 4 31B Dense** | `gemma-4-31b-it` | 31B | Primary | Complex clause analysis, risk classification, redline generation |
-| **Gemma 4 26B MoE** | `gemma-4-26b-a4b-it` | 26B (MoE) | Fallback | Lighter tasks, faster responses, automatic fallback |
+| **Gemini 3.5 Flash** | `gemini-3.5-flash` | - | Primary | Complex clause analysis, risk classification, redline generation |
+| **Gemini 3.1 Flash Lite** | `gemini-3.1-flash-lite` | - | Fallback | Lighter tasks, faster responses, automatic fallback |
 
-### Why Gemma 4?
+### Why Gemini?
 
-- **256K context window** — handles full contracts without chunking
+- **1M context window** — handles full contracts without chunking
 - **Multilingual** — strong Arabic + English support (critical for MENA contracts)
-- **Instruction-tuned** — both `-it` variants follow structured JSON output formats reliably
+- **State-of-the-Art Speed & Quality** — extremely fast execution times with precise output formatting
 - **Free tier** — available through Google AI Studio at no cost during development
 
 ---
@@ -84,7 +84,7 @@ The stack uses **LangChain JS** as the orchestration framework with **Google Gen
 | `LANGFUSE_SECRET_KEY` | Langfuse observability secret | ✅ |
 | `LANGFUSE_PUBLIC_KEY` | Langfuse observability public key | ✅ |
 
-All environment variables are validated at startup using **Zod** in [`src/config/env.ts`](src/config/env.ts). If any required variable is missing, the process exits with a descriptive error.
+All environment variables are validated at startup using **Zod** in [`backend/src/config/env.ts`](../../backend/src/config/env.ts). If any required variable is missing, the process exits with a descriptive error.
 
 ### Files
 
@@ -105,7 +105,7 @@ The main service exposes three methods:
 
 #### `llmService.call(prompt, options?)` → `LLMResponse`
 
-The **recommended method for all agents**. Tries the primary model (Gemma 4 31B) with 3 retries, then automatically falls back to the MoE model (Gemma 4 26B) with 3 more retries.
+The **recommended method for all agents**. Tries the primary model (Gemini 3.5 Flash) with 3 retries, then automatically falls back to the fallback model (Gemini 3.1 Flash Lite) with 3 more retries.
 
 ```typescript
 const response = await llmService.call("Analyze this contract clause", {
@@ -115,17 +115,17 @@ const response = await llmService.call("Analyze this contract clause", {
 });
 
 console.log(response.content);      // LLM output string
-console.log(response.model);        // "gemma-4-31b-it" or "gemma-4-26b-a4b-it"
+console.log(response.model);        // "gemini-3.5-flash" or "gemini-3.1-flash-lite"
 console.log(response.usedFallback); // true if primary failed
 ```
 
 #### `llmService.callPrimary(prompt, options?)` → `LLMResponse`
 
-Calls Gemma 4 31B directly — **no fallback**. Use when you specifically need the larger model.
+Calls Gemini 3.5 Flash directly — **no fallback**. Use when you specifically need the larger model.
 
 #### `llmService.callFallback(prompt, options?)` → `LLMResponse`
 
-Calls Gemma 4 26B MoE directly. Use for lighter tasks where speed matters.
+Calls Gemini 3.1 Flash Lite directly. Use for lighter tasks where speed matters.
 
 ### Options
 
@@ -142,13 +142,13 @@ interface LLMRequestOptions {
 ## Retry & Fallback Strategy
 
 ```
-Primary (gemma-4-31b-it)
+Primary (gemini-3.5-flash)
   ├── Attempt 1 → success? return
   ├── Attempt 2 (wait 1s) → success? return
   └── Attempt 3 (wait 2s) → success? return
         │
         ▼ (all 3 failed)
-Fallback (gemma-4-26b-a4b-it)
+Fallback (gemini-3.1-flash-lite)
   ├── Attempt 1 → success? return
   ├── Attempt 2 (wait 1s) → success? return
   └── Attempt 3 (wait 2s) → success? return
@@ -165,7 +165,7 @@ throw Error("All LLM providers failed")
 
 ## Gemini Wrapper
 
-[`src/services/gemini.wrapper.ts`](src/services/gemini.wrapper.ts) provides a **thin, direct wrapper** around the `gemini-1.5-pro` model without any retry or fallback logic:
+[`backend/src/services/gemini.wrapper.ts`](../../backend/src/services/gemini.wrapper.ts) provides a **thin, direct wrapper** around the `gemini-1.5-pro` model without any retry or fallback logic:
 
 ```typescript
 import { geminiWrapper } from "./services/gemini.wrapper.js";
@@ -183,12 +183,12 @@ Use this wrapper when you need direct Gemini access outside the Gemma pipeline.
 
 ## LangChain Config & Prompt Templates
 
-[`src/config/langchain.config.ts`](src/config/langchain.config.ts) provides:
+[`backend/src/config/langchain.config.ts`](../../backend/src/config/langchain.config.ts) provides:
 
 ### Shared Model Instances
 
-- `gemma4Primary` — pre-configured `ChatGoogleGenerativeAI` for Gemma 4 31B
-- `gemma4Fallback` — pre-configured `ChatGoogleGenerativeAI` for Gemma 4 26B MoE
+- `geminiPrimary` — pre-configured `ChatGoogleGenerativeAI` for Gemini 3.5 Flash
+- `geminiFallback` — pre-configured `ChatGoogleGenerativeAI` for Gemini 3.1 Flash Lite
 
 ### Chain Builder
 
@@ -256,7 +256,7 @@ MONGODB_URI=mongodb://localhost:27017/aqdy
 
 ### `All LLM providers failed` error
 
-Both Gemma models exhausted all retries. Common causes:
+Both Gemini models exhausted all retries. Common causes:
 1. **Invalid API key** — check `GEMINI_API_KEY`
 2. **Rate limiting** — the exponential backoff handles transient limits, but sustained overload will fail
 3. **Model unavailable** — Google may temporarily disable models; check [Google AI Studio](https://aistudio.google.com/)
