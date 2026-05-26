@@ -64,7 +64,7 @@ export function buildClassificationUserPrompt(
   clauseText: string,
   clauseType: string,
   language: "ar" | "en",
-  kbMatch?: KBReference
+  kbMatch?: KBReference,
 ): string {
   let prompt = `Analyze and classify the following contract clause:\n\n`;
   prompt += `Clause Text:\n"""\n${clauseText}\n"""\n\n`;

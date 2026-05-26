@@ -62,7 +62,7 @@ export class RiskClassifierAgent {
   async classify(
     clauseText: string,
     clauseType: string,
-    language: "ar" | "en"
+    language: "ar" | "en",
   ): Promise<ClassificationResult> {
     // Input validation
     if (!clauseText || clauseText.trim().length === 0) {
@@ -93,17 +93,23 @@ export class RiskClassifierAgent {
             threshold: this.similarityThreshold,
           });
         } else {
-          logger.info("RiskClassifierAgent: KB match found but below threshold", {
-            matchId: bestMatch.id,
-            score: bestMatch.score,
-            threshold: this.similarityThreshold,
-          });
+          logger.info(
+            "RiskClassifierAgent: KB match found but below threshold",
+            {
+              matchId: bestMatch.id,
+              score: bestMatch.score,
+              threshold: this.similarityThreshold,
+            },
+          );
         }
       } else {
         logger.info("RiskClassifierAgent: no matches returned from KB");
       }
     } catch (error) {
-      logger.error("RiskClassifierAgent: KB search query failed (continuing without RAG)", error);
+      logger.error(
+        "RiskClassifierAgent: KB search query failed (continuing without RAG)",
+        error,
+      );
     }
 
     // 2. Construct context-aware prompts
@@ -112,7 +118,7 @@ export class RiskClassifierAgent {
       clauseText,
       clauseType,
       language,
-      kbMatch || undefined
+      kbMatch || undefined,
     );
 
     // 3. Call LLM service
@@ -127,7 +133,7 @@ export class RiskClassifierAgent {
     const validated = ClassificationOutputSchema.parse(parsed);
 
     // 5. Calibrate confidence score
-    let calibratedConfidence = validated.confidence;
+    let calibratedConfidence: number;
     if (kbMatch) {
       // Blend vector similarity score and LLM confidence score
       calibratedConfidence = 0.5 * kbMatch.score + 0.5 * validated.confidence;
@@ -139,7 +145,7 @@ export class RiskClassifierAgent {
     // Round to two decimal places and clamp between 0.0 and 1.0
     calibratedConfidence = Math.min(
       1.0,
-      Math.max(0.0, Math.round(calibratedConfidence * 100) / 100)
+      Math.max(0.0, Math.round(calibratedConfidence * 100) / 100),
     );
 
     logger.info("RiskClassifierAgent: classification complete", {
