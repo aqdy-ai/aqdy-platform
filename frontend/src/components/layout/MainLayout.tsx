@@ -1,7 +1,8 @@
+/* src/components/layout/MainLayout.tsx */
 import { Sun, Moon, ExternalLink } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 import { useTranslation } from 'react-i18next'
-import { Toaster } from 'sonner'
+
 import { useEffect } from 'react'
 import LanguageSwitcher from '../LanguageSwitcher.tsx'
 import { motion } from 'framer-motion'
@@ -24,13 +25,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <div
       className={`bg-background text-foreground selection:bg-primary selection:text-primary-foreground min-h-screen transition-colors duration-500 ${isRtl ? 'font-arabic' : 'font-sans'}`}
     >
-      <Toaster
-        dir={isRtl ? 'rtl' : 'ltr'}
-        position={isRtl ? 'bottom-left' : 'bottom-right'}
-        richColors
-        closeButton
-      />
-
       <nav className="border-border/40 bg-background/70 sticky top-0 z-[60] border-b backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
           {/* Logo Section */}

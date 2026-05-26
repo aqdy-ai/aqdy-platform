@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
-import { analyzeContract } from "../controllers/analysis.controller.js";
+import {
+  analyzeContract,
+  getContractAnalysis,
+} from "../controllers/analysis.controller.js";
 import { validate } from "../middlewares/validate.js";
 
 /**
@@ -15,6 +18,16 @@ const AnalyzeRequestSchema = z.object({
   userId: z.string().min(1, "userId is required"),
 });
 
+/**
+ * Validation schema for the get analysis path params.
+ */
+const GetAnalysisParamsSchema = z.object({
+  contractId: z
+    .string()
+    .min(1, "contractId is required")
+    .regex(/^[0-9a-fA-F]{24}$/, "contractId must be a valid ObjectId"),
+});
+
 const router = Router();
 
 /**
@@ -24,5 +37,15 @@ const router = Router();
  * Body: { contractId, userId }
  */
 router.post("/analyze", validate(AnalyzeRequestSchema), analyzeContract);
+
+/**
+ * GET /api/analysis/:contractId
+ * Retrieve the status/results of a contract analysis.
+ */
+router.get(
+  "/:contractId",
+  validate(GetAnalysisParamsSchema, "params"),
+  getContractAnalysis,
+);
 
 export default router;
