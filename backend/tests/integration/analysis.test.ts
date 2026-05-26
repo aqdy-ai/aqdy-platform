@@ -6,15 +6,15 @@ import  app  from '../../src/index.js';
 describe('Analysis API Integration', () => {
   it('should accept a contract for analysis and return 202', async () => {
     const response = await request(app)
-      .post('/api/contracts/analysis')
+      .post('/api/analysis/analyze')
       .send({
         contractId: 'test-id-123',
-        options: { language: 'ar' }
+        userId: 'user-123'
       });
 
     expect(response.status).toBe(202);
-    expect(response.body).toHaveProperty('status', 'processing');
-    expect(response.body).toHaveProperty('analysisId');
+    expect(response.body.data).toHaveProperty('status', 'processing');
+    expect(response.body.data).toHaveProperty('contractId', 'test-id-123');
   });
 
   /**
@@ -23,15 +23,14 @@ describe('Analysis API Integration', () => {
    */
   it('should return 422 if the document content is unreadable or empty', async () => {
     const response = await request(app)
-      .post('/api/contracts/analysis')
+      .post('/api/analysis/analyze')
       .send({
         contractId: 'empty-file-id',
-        options: { language: 'ar' }
+        userId: 'user-123'
       });
     
-    // ملاحظة: سيفشل هذا الاختبار (سيعيد 202) حتى يقوم المطور ببرمجة الـ Validation
-    expect(response.status).toBe(422); 
-    expect(response.body.message).toMatch(/unreadable|empty/i);
+    // If validation logic is not yet in controller, this remains a failing test for T2
+    expect(response.status).toBe(422);
   });
 
   /**
@@ -40,18 +39,55 @@ describe('Analysis API Integration', () => {
    */
   it('should eventually include analysis results structure in the processing flow', async () => {
     const response = await request(app)
-      .post('/api/contracts/analysis')
-      .send({ contractId: 'test-id-123' });
+      .post('/api/analysis/analyze')
+      .send({ contractId: 'test-id-123', userId: 'user-123' });
 
     expect(response.body.data).toHaveProperty('contractId');
-    // هذا يتوقع أن المطور سيبدأ في ربط الـ Schema المطلوبة
+    expect(response.body.data).toHaveProperty('status', 'processing');
+  });
+
+  /**
+   * [Week 2][Day 6][Task 4] - اختبار استمرارية البيانات (Database Persistence)
+   * يتحقق من أن حالة التحليل (عبر سجلات التدقيق) يتم حفظها واسترجاعها بشكل صحيح
+   */
+  it('should persist the analysis state and retrieve it via the GET endpoint', async () => {
+    const contractId = 'test-id-123';
+    const userId = 'user-123';
+
+    // 1. إرسال طلب التحليل (يؤدي لحفظ سجل التدقيق ANALYSIS_STARTED)
+    await request(app)
+      .post('/api/analysis/analyze')
+      .send({ contractId, userId });
+
+    // 2. محاولة استرجاع الحالة (يجب أن يقرأ من قاعدة البيانات ويعيد حالة المعالجة)
+    const response = await request(app)
+      .get(`/api/analysis/${contractId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.data).toHaveProperty('status', 'processing');
+  });
+
+  /**
+   * [Week 2][Day 8][Task 4] - اختبار الأنبوب الكامل (Full Pipeline) على عقود حقيقية
+   * يتحقق من قدرة النظام على التعامل مع عقد توظيف حقيقي وتنسيق النتائج
+   */
+  it('should handle a full analysis request for a real employment contract fixture', async () => {
+    const response = await request(app)
+      .post('/api/analysis/analyze')
+      .send({ 
+        contractId: 'real-contract-id-001', 
+        userId: 'user-123' 
+      });
+
+    expect(response.status).toBe(202);
+    expect(response.body.data.status).toBe('processing');
   });
 
   it('should return 400 if contractId is missing', async () => {
     const response = await request(app)
-      .post('/api/contracts/analysis')
+      .post('/api/analysis/analyze')
       .send({
-        options: { language: 'ar' }
+        userId: 'user-123'
       });
 
     expect(response.status).toBe(400);

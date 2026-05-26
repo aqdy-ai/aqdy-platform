@@ -98,6 +98,45 @@ const MIXED_AR_EN_RESPONSE = [
   { clauseNumber: 8, clauseText: "This Agreement shall be governed by the Egyptian Civil Code and applicable real estate regulations. Disputes shall be resolved through arbitration at the Cairo Regional Centre for International Commercial Arbitration (CRCICA).", clauseType: "governing-law" },
 ];
 
+const SAAS_EN_RESPONSE = [
+  { clauseNumber: 1, clauseText: "The Provider grants the Customer a non-exclusive, non-transferable right to access and use the Service during the Term for its internal business purposes.", clauseType: "license-grant" },
+  { clauseNumber: 2, clauseText: "The Service is provided on a subscription basis. Fees are billed annually in advance. All payments are non-refundable unless otherwise specified in this Agreement.", clauseType: "payment" },
+  { clauseNumber: 3, clauseText: "The Provider shall implement industry-standard security measures to protect Customer Data from unauthorized access, disclosure, or destruction.", clauseType: "data-security" },
+  { clauseNumber: 4, clauseText: "The Provider warrants that the Service will perform substantially in accordance with the Documentation. The sole remedy for breach of this warranty is repair or replacement of the Service.", clauseType: "warranty" },
+  { clauseNumber: 5, clauseText: "In no event shall either party be liable for any indirect or consequential damages. Total aggregate liability shall not exceed the fees paid in the twelve months preceding the claim.", clauseType: "liability" }
+];
+
+const PARTNERSHIP_AR_RESPONSE = [
+  { clauseNumber: 1, clauseText: "اتفق الشركاء على تأسيس شركة تضامن للعمل في مجال التجارة العامة والمقاولات.", clauseType: "partnership-terms" },
+  { clauseNumber: 2, clauseText: "يحدد رأس مال الشركة بمبلغ مليون جنيه مصري، مقسم بنسبة ٥٠٪ لكل شريك.", clauseType: "capital-contribution" },
+  { clauseNumber: 3, clauseText: "توزع الأرباح والخسائر بين الشركاء بنسبة حصة كل منهم في رأس المال.", clauseType: "profit-sharing" },
+  { clauseNumber: 4, clauseText: "يتولى الشريك الأول مهام المدير العام وله كافة الصلاحيات اللازمة لإدارة الشركة أمام الغير.", clauseType: "management" },
+  { clauseNumber: 5, clauseText: "لا يجوز لأي شريك الانسحاب من الشركة قبل مرور سنتين على تاريخ التأسيس.", clauseType: "withdrawal" }
+];
+
+const FREELANCE_EN_RESPONSE = [
+  { clauseNumber: 1, clauseText: "The Freelancer shall provide graphic design services as described in the Statement of Work. All deliverables must be approved by the Client before final payment.", clauseType: "scope-of-work" },
+  { clauseNumber: 2, clauseText: "The Client shall pay the Freelancer a fixed fee of USD 2,000 upon successful completion of all project milestones.", clauseType: "payment" },
+  { clauseNumber: 3, clauseText: "The Freelancer is an independent contractor and not an employee of the Client. The Freelancer is responsible for all taxes and benefits.", clauseType: "employment-status" },
+  { clauseNumber: 4, clauseText: "Upon full payment, the Freelancer assigns all intellectual property rights in the deliverables to the Client.", clauseType: "intellectual-property" },
+  { clauseNumber: 5, clauseText: "Either party may terminate this project with 14 days' written notice.", clauseType: "termination" }
+];
+
+const LOAN_AR_RESPONSE = [
+  { clauseNumber: 1, clauseText: "يقر المقترض باستلام مبلغ وقدره ٥٠٠,٠٠٠ جنيه مصري من المقرض بصفة قرض حسن.", clauseType: "loan-amount" },
+  { clauseNumber: 2, clauseText: "يلتزم المقترض بسداد القرض على أقساط شهرية متساوية لمدة ٢٤ شهراً.", clauseType: "repayment-terms" },
+  { clauseNumber: 3, clauseText: "في حالة تأخر المقترض عن سداد أي قسط لمدة تزيد عن ١٥ يوماً، يصبح كامل القرض واجب السداد فوراً.", clauseType: "default" },
+  { clauseNumber: 4, clauseText: "يضمن المقترض سداد القرض بكامل أمواله المنقولة وغير المنقولة.", clauseType: "guarantee" }
+];
+
+const PRIVACY_EN_RESPONSE = [
+  { clauseNumber: 1, clauseText: "We collect personal information such as name, email address, and IP address when you use our service.", clauseType: "data-collection" },
+  { clauseNumber: 2, clauseText: "We use your data to provide, maintain, and improve our services, and to communicate with you about updates.", clauseType: "data-usage" },
+  { clauseNumber: 3, clauseText: "We do not sell your personal data to third parties. We may share data with service providers who assist in our operations.", clauseType: "data-sharing" },
+  { clauseNumber: 4, clauseText: "You have the right to access, correct, or delete your personal data at any time through your account settings.", clauseType: "user-rights" },
+  { clauseNumber: 5, clauseText: "We use cookies and similar technologies to track activity on our service and hold certain information.", clauseType: "cookies" }
+];
+
 // ── Tests ────────────────────────────────────────
 
 describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
@@ -245,6 +284,97 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   });
 
   // ────────────────────────────────────────────────
+  // Contract 6: English SaaS Agreement
+  // ────────────────────────────────────────────────
+
+  describe("Sample 6: English SaaS Agreement", () => {
+    test("should extract SaaS licensing and data clauses", async () => {
+      const contractText = loadSampleContract("saas-en.txt");
+      mockInvoke.mockResolvedValueOnce({
+        content: JSON.stringify(SAAS_EN_RESPONSE),
+      });
+
+      const result = await agent.extract(contractText, "en");
+      expect(result.clauses.length).toBe(5);
+      const types = result.clauses.map((c) => c.clauseType);
+      expect(types).toContain("license-grant");
+      expect(types).toContain("data-security");
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // Contract 7: Arabic Partnership Agreement
+  // ────────────────────────────────────────────────
+
+  describe("Sample 7: Arabic Partnership Agreement (عقد شراكة)", () => {
+    test("should extract capital and profit sharing clauses", async () => {
+      const contractText = loadSampleContract("partnership-ar.txt");
+      mockInvoke.mockResolvedValueOnce({
+        content: JSON.stringify(PARTNERSHIP_AR_RESPONSE),
+      });
+
+      const result = await agent.extract(contractText, "ar");
+      const types = result.clauses.map((c) => c.clauseType);
+      expect(types).toContain("capital-contribution");
+      expect(types).toContain("profit-sharing");
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // Contract 8: English Freelance Agreement
+  // ────────────────────────────────────────────────
+
+  describe("Sample 8: English Freelance Agreement", () => {
+    test("should extract IP assignment and scope of work", async () => {
+      const contractText = loadSampleContract("freelance-en.txt");
+      mockInvoke.mockResolvedValueOnce({
+        content: JSON.stringify(FREELANCE_EN_RESPONSE),
+      });
+
+      const result = await agent.extract(contractText, "en");
+      const types = result.clauses.map((c) => c.clauseType);
+      expect(types).toContain("scope-of-work");
+      expect(types).toContain("intellectual-property");
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // Contract 9: Arabic Loan Agreement
+  // ────────────────────────────────────────────────
+
+  describe("Sample 9: Arabic Loan Agreement (عقد قرض)", () => {
+    test("should extract repayment and default clauses", async () => {
+      const contractText = loadSampleContract("loan-ar.txt");
+      mockInvoke.mockResolvedValueOnce({
+        content: JSON.stringify(LOAN_AR_RESPONSE),
+      });
+
+      const result = await agent.extract(contractText, "ar");
+      const types = result.clauses.map((c) => c.clauseType);
+      expect(types).toContain("repayment-terms");
+      expect(types).toContain("default");
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // Contract 10: English Privacy Policy
+  // ────────────────────────────────────────────────
+
+  describe("Sample 10: English Privacy Policy", () => {
+    test("should extract data usage and user rights", async () => {
+      const contractText = loadSampleContract("privacy-en.txt");
+      mockInvoke.mockResolvedValueOnce({
+        content: JSON.stringify(PRIVACY_EN_RESPONSE),
+      });
+
+      const result = await agent.extract(contractText, "en");
+      const types = result.clauses.map((c) => c.clauseType);
+      expect(types).toContain("data-usage");
+      expect(types).toContain("user-rights");
+    });
+  });
+
+  // ────────────────────────────────────────────────
   // Cross-contract structural validation
   // ────────────────────────────────────────────────
 
@@ -256,6 +386,11 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
         { file: "employment-ar.txt", response: EMPLOYMENT_AR_RESPONSE, lang: "ar" as const },
         { file: "service-ar.txt", response: SERVICE_AR_RESPONSE, lang: "ar" as const },
         { file: "mixed-ar-en.txt", response: MIXED_AR_EN_RESPONSE, lang: "en" as const },
+        { file: "saas-en.txt", response: SAAS_EN_RESPONSE, lang: "en" as const },
+        { file: "partnership-ar.txt", response: PARTNERSHIP_AR_RESPONSE, lang: "ar" as const },
+        { file: "freelance-en.txt", response: FREELANCE_EN_RESPONSE, lang: "en" as const },
+        { file: "loan-ar.txt", response: LOAN_AR_RESPONSE, lang: "ar" as const },
+        { file: "privacy-en.txt", response: PRIVACY_EN_RESPONSE, lang: "en" as const },
       ];
 
       for (const { file, response, lang } of contracts) {

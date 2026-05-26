@@ -1,18 +1,26 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Contract Upload Flow', () => {
-  test('should complete the upload and show analysis elements', async ({  page }) => {
+  test('should complete the upload and show analysis elements', async ({
+    page,
+  }) => {
     // 1. Start from a fresh state so the Upload Card is visible
-    await page.addInitScript('window.localStorage.clear(); window.sessionStorage.clear();')
+    await page.addInitScript(
+      'window.localStorage.clear(); window.sessionStorage.clear();'
+    )
     await page.goto('/')
 
     // 2. Handle Legal Disclaimer modal
-    await page.getByRole('button', { name: /agree|أوافق/i })
-      .click({ timeout: 5000 })
-      .catch(() => {});
+    const disclaimer = page.getByRole('button', { name: /agree|أوافق/i })
+    await disclaimer
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => disclaimer.click())
+      .catch(() => {})
 
     // 3. Verify we are on the Upload page by checking for the main heading
-    await expect(page.getByRole('heading', { name: /ارفع|upload/i })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: /ارفع|upload/i })
+    ).toBeVisible()
 
     // 4. Locate and use the file input
     const fileInput = page.locator('input[type="file"]').first()

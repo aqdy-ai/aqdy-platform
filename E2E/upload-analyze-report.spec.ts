@@ -2,31 +2,51 @@ import { test, expect } from '@playwright/test'
 
 test('Upload → Analyze → Report flow', async ({ page }) => {
 
-  // ضمان مطابقة مسار الـ API الموحد في المشروع
-  await page.route('**/api/contracts/analysis*', async route => {
+  // 1. Mock the initial Analyze request (Backend returns 202 Accepted)
+  await page.route('**/api/analysis/analyze', async route => {
     await route.fulfill({
-      status: 200,
+      status: 202,
       contentType: 'application/json',
       body: JSON.stringify({
-        riskScore: 42,
-        summary: 'Contract contains moderate risk',
-        clauses: [
-          { title: 'Payment Terms', risk: 'medium' },
-          { title: 'Termination', risk: 'high' }
-        ]
+        success: true,
+        data: { contractId: 'test-123', status: 'processing' },
+        message: 'Analysis started'
       })
     })
   })
 
-  // Ensure clean state (Clear all persistence to force the application into the Upload state)
-  await page.addInitScript('window.localStorage.clear(); window.sessionStorage.clear();')
+  // 2. Mock the Polling request (Backend returns 200 with results)
+  // This simulates the frontend fetching the results after the 202
+  await page.route('**/api/analysis/test-123', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          executiveSummary: {
+            overallRisk: 'high',
+            totalClauses: 2,
+            riskyClausesCount: 2,
+            summary: { en: 'Contract contains moderate risk', ar: 'مخاطرة متوسطة' }
+          },
+          clauseAnalysis: [
+            { clauseType: 'Payment Terms', riskLevel: 'medium', clauseText: '...' },
+            { clauseType: 'Termination', riskLevel: 'high', clauseText: '...' }
+          ]
+        }
+      })
+    })
+  })
+
+  // Ensure clean state (Clear all persistence including cookies to force the Upload state)
+  await page.context().clearCookies();
+  await page.addInitScript('window.localStorage.clear(); window.sessionStorage.clear();');
   await page.goto('/')
 
-  // Handle Legal Disclaimer modal: Use auto-waiting click instead of isVisible()
-  // We use .catch() because if storage was cleared, the modal might not always appear.
-  await page.getByRole('button', { name: /أوافق وأفهم ذلك|agree/i })
-    .click({ timeout: 5000 })
-    .catch(() => { /* Optional: modal didn't appear */ });
+  // Handle Legal Disclaimer modal: Use a more resilient approach
+  const disclaimer = page.getByRole('button', { name: /أوافق وأفهم ذلك|agree/i });
+  await disclaimer.waitFor({ state: 'visible', timeout: 5000 }).then(() => disclaimer.click()).catch(() => {});
 
   // Confirm we are on the Upload page (this prevents testing logic on the wrong view)
   await expect(page.getByRole('heading', { name: /ارفع|upload/i })).toBeVisible({ timeout: 10000 })

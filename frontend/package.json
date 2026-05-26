@@ -14,7 +14,7 @@
     "start": "vite",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "npx playwright test --config=../playwright.config.ts tests/e2e"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
