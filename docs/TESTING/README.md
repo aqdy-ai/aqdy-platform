@@ -5,7 +5,12 @@ This document outlines the testing strategy, tools, and procedures for the Aqdy 
 ## 🧪 Overview
 Our testing strategy follows the Testing Pyramid, focusing on robust unit tests and targeted integration tests. We enforce a **60% minimum line coverage** across both the backend and frontend.
 
-## 🛠 Tools & Frameworks
+## 📈 Quality Reports
+Per-week quality audits and metric reports:
+- Week 1 Quality Metrics Report
+- Week 2 Quality Metrics Report
+
+## � Tools & Frameworks
 
 ### Backend
 - **Framework:** [Jest](https://jestjs.io/)

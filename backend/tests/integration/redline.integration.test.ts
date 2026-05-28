@@ -22,19 +22,45 @@ const { RedlineAgent } = await import(
 const REDLINE_RESPONSES = {
   "liability-cap-en": {
     suggestedText: "In no event shall either party's total aggregate liability exceed the total fees paid under this Agreement in the twelve (12) months preceding the claim.",
-    explanation: "Introduces a standard liability cap to protect both parties from unlimited financial exposure."
+    explanation: {
+      en: "Introduces a standard liability cap to protect both parties from unlimited financial exposure.",
+      ar: "يضع حداً أقصى للمسؤولية لحماية الطرفين من التعرض لمخاطر مالية غير محدودة."
+    },
+    talkingPoints: {
+      en: ["Standard market practice", "Risk mitigation"],
+      ar: ["ممارسة سوقية قياسية", "تقليل المخاطر"]
+    },
+    confidence: 0.9
   },
   "non-compete-limited-en": {
     suggestedText: "The Employee agrees not to compete with the Company for a period of twelve (12) months following termination within the Arab Republic of Egypt.",
-    explanation: "Reduces the duration and geographic scope to ensure the clause is legally enforceable and reasonable."
+    explanation: {
+      en: "Reduces the duration and geographic scope to ensure the clause is legally enforceable and reasonable.",
+      ar: "يقلل من المدة والنطاق الجغرافي لضمان معقولية البند وقابليته للتنفيذ قانوناً."
+    },
+    talkingPoints: {
+      en: ["Reasonable restriction", "Legal compliance"],
+      ar: ["تقييد معقول", "الامتثال القانوني"]
+    },
+    confidence: 0.85
   },
   "liability-cap-ar": {
     suggestedText: "لا يجوز في أي حال من الأحوال أن يتجاوز إجمالي مسؤولية أي من الطرفين إجمالي الرسوم المدفوعة بموجب هذا العقد خلال الاثني عشر (١٢) شهراً السابقة للمطالبة.",
-    explanation: "يضع حداً أقصى للمسؤولية لحماية الطرفين من التعرض لمخاطر مالية غير محدودة."
+    explanation: {
+      en: "Introduces a standard liability cap to protect both parties from unlimited financial exposure.",
+      ar: "يضع حداً أقصى للمسؤولية لحماية الطرفين من التعرض لمخاطر مالية غير محدودة."
+    },
+    talkingPoints: { en: ["Standard practice"], ar: ["ممارسة قياسية"] },
+    confidence: 0.9
   },
   "non-compete-limited-ar": {
     suggestedText: "يتعهد الموظف بعدم المنافسة لمدة ١٢ شهراً بعد انتهاء العقد وذلك داخل نطاق جمهورية مصر العربية.",
-    explanation: "يقلل من المدة والنطاق الجغرافي لضمان معقولية البند وقابليته للتنفيذ قانوناً."
+    explanation: {
+      en: "Reduces duration and scope for legal enforceability.",
+      ar: "يقلل من المدة والنطاق الجغرافي لضمان معقولية البند وقابليته للتنفيذ قانوناً."
+    },
+    talkingPoints: { en: ["Enforceability"], ar: ["قابلية التنفيذ"] },
+    confidence: 0.88
   }
 };
 
@@ -44,24 +70,28 @@ const testCases = [
   {
     originalText: "Service Provider shall be liable for all damages, losses, and injuries of any kind without limit.",
     riskLevel: "critical",
+    clauseType: "liability",
     lang: "en",
     mockKey: "liability-cap-en"
   },
   {
     originalText: "Employee shall not work for any competitor for 5 years after contract ends worldwide.",
     riskLevel: "high",
+    clauseType: "non_compete",
     lang: "en",
     mockKey: "non-compete-limited-en"
   },
   {
     originalText: "يكون مقدم الخدمة مسؤولاً عن جميع الأضرار والخسائر والإصابات من أي نوع دون حد أقصى.",
     riskLevel: "critical",
+    clauseType: "liability",
     lang: "ar",
     mockKey: "liability-cap-ar"
   },
   {
     originalText: "يتعهد الموظف بعدم العمل لدى أي منافس لمدة ٥ سنوات بعد انتهاء العقد في أي مكان في العالم.",
     riskLevel: "high",
+    clauseType: "non_compete",
     lang: "ar",
     mockKey: "non-compete-limited-ar"
   }
@@ -79,16 +109,16 @@ describe("RedlineAgent — Integration Tests for Suggestion Quality", () => {
 
   test.each(testCases)(
     "should suggest a high-quality alternative for $riskLevel risk in $lang",
-    async ({ originalText, riskLevel, lang, mockKey }) => {
+    async ({ originalText, riskLevel, clauseType, lang, mockKey }) => {
       mockInvoke.mockResolvedValueOnce({
         content: JSON.stringify(REDLINE_RESPONSES[mockKey]),
       });
 
-      const result = await agent.suggest(originalText, riskLevel, lang);
+      const result = await agent.generate(originalText, riskLevel, clauseType, lang as "ar" | "en");
 
       expect(result).toBeDefined();
       expect(result.suggestedText).toBe(REDLINE_RESPONSES[mockKey].suggestedText);
-      expect(result.explanation).toBe(REDLINE_RESPONSES[mockKey].explanation);
+      expect(result.explanation.en).toBe(REDLINE_RESPONSES[mockKey].explanation.en);
       
       // Check for language consistency
       if (lang === "ar") {
@@ -100,12 +130,12 @@ describe("RedlineAgent — Integration Tests for Suggestion Quality", () => {
   test("should handle LLM failure gracefully", async () => {
     mockInvoke.mockRejectedValueOnce(new Error("LLM Timeout"));
     
-    await expect(agent.suggest("text", "high", "en")).rejects.toThrow("Failed to generate redline suggestion");
-  });
+    await expect(agent.generate("text", "high", "liability", "en")).rejects.toThrow("All LLM providers failed. Please try again");
+  }, 10000);
 
   test("should handle invalid JSON from LLM", async () => {
     mockInvoke.mockResolvedValueOnce({ content: "not a json" });
 
-    await expect(agent.suggest("text", "high", "en")).rejects.toThrow("Failed to parse redline response");
+    await expect(agent.generate("text", "high", "liability", "en")).rejects.toThrow(/Failed to parse JSON/);
   });
 });

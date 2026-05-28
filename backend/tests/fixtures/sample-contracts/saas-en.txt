@@ -1,0 +1,6 @@
+SOFTWARE AS A SERVICE AGREEMENT
+1. License Grant: The Provider grants the Customer a non-exclusive right to access the Service.
+2. Subscription: Fees are billed annually in advance.
+3. Data Security: Provider shall implement industry-standard security measures.
+4. Warranty: The Service will perform in accordance with the Documentation.
+5. Liability: Total aggregate liability shall not exceed the fees paid.

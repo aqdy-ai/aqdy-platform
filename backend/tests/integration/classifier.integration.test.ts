@@ -13,22 +13,78 @@ jest.unstable_mockModule("@langchain/google-genai", () => {
 });
 
 // Import AFTER mocking
-const { ClassifierAgent } = await import(
-  "../../src/agents/classifier.agent.js"
+const { RiskClassifierAgent } = await import(
+  "../../src/agents/riskClassifier.agent.js"
 );
 
 // ── Simulated LLM Responses ─────────────────────
 // These simulate what the LLM would return for various clauses.
 
 const CLASSIFICATION_RESPONSES = {
-  "low-risk-en": { riskLevel: "low", rationale: "Standard clause." },
-  "medium-risk-en": { riskLevel: "medium", rationale: "Requires careful review." },
-  "high-risk-en": { riskLevel: "high", rationale: "Significant potential impact." },
-  "critical-risk-en": { riskLevel: "critical", rationale: "Could lead to severe financial or legal consequences." },
-  "low-risk-ar": { riskLevel: "low", rationale: "بند قياسي." },
-  "medium-risk-ar": { riskLevel: "medium", rationale: "يتطلب مراجعة دقيقة." },
-  "high-risk-ar": { riskLevel: "high", rationale: "تأثير محتمل كبير." },
-  "critical-risk-ar": { riskLevel: "critical", rationale: "قد يؤدي إلى عواقب مالية أو قانونية وخيمة." },
+  "low-risk-en": {
+    riskLevel: "low",
+    confidence: 0.92,
+    explanation: {
+      en: "Standard clause.",
+      ar: "بند قياسي.",
+    },
+  },
+  "medium-risk-en": {
+    riskLevel: "medium",
+    confidence: 0.76,
+    explanation: {
+      en: "Requires careful review.",
+      ar: "يتطلب مراجعة دقيقة.",
+    },
+  },
+  "high-risk-en": {
+    riskLevel: "high",
+    confidence: 0.82,
+    explanation: {
+      en: "Significant potential impact.",
+      ar: "تأثير محتمل كبير.",
+    },
+  },
+  "critical-risk-en": {
+    riskLevel: "critical",
+    confidence: 0.95,
+    explanation: {
+      en: "Could lead to severe financial or legal consequences.",
+      ar: "قد يؤدي إلى عواقب مالية أو قانونية وخيمة.",
+    },
+  },
+  "low-risk-ar": {
+    riskLevel: "low",
+    confidence: 0.9,
+    explanation: {
+      en: "Standard clause.",
+      ar: "بند قياسي.",
+    },
+  },
+  "medium-risk-ar": {
+    riskLevel: "medium",
+    confidence: 0.78,
+    explanation: {
+      en: "Requires careful review.",
+      ar: "يتطلب مراجعة دقيقة.",
+    },
+  },
+  "high-risk-ar": {
+    riskLevel: "high",
+    confidence: 0.83,
+    explanation: {
+      en: "Significant potential impact.",
+      ar: "تأثير محتمل كبير.",
+    },
+  },
+  "critical-risk-ar": {
+    riskLevel: "critical",
+    confidence: 0.96,
+    explanation: {
+      en: "Could lead to severe financial or legal consequences.",
+      ar: "قد يؤدي إلى عواقب مالية أو قانونية وخيمة.",
+    },
+  },
 };
 
 // ── Test Data ────────────────────────────────────
@@ -110,12 +166,12 @@ const testClauses = [
 
 // ── Tests ────────────────────────────────────────
 
-describe("ClassifierAgent — Integration Tests for Accuracy", () => {
-  let agent: InstanceType<typeof ClassifierAgent>;
+describe("RiskClassifierAgent — Integration Tests for Accuracy", () => {
+  let agent: InstanceType<typeof RiskClassifierAgent>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    agent = new ClassifierAgent();
+    agent = new RiskClassifierAgent();
   });
 
   test.each(testClauses)(
@@ -130,14 +186,18 @@ describe("ClassifierAgent — Integration Tests for Accuracy", () => {
 
       expect(result).toBeDefined();
       expect(result.riskLevel).toBe(expectedRisk);
-      expect(result.rationale).toBeDefined();
-      expect(typeof result.rationale).toBe("string");
-      expect(result.rationale.length).toBeGreaterThan(0);
+      expect(result.confidence).toBeGreaterThanOrEqual(0);
+      expect(result.confidence).toBeLessThanOrEqual(1);
+      expect(result.explanation).toBeDefined();
+      expect(result.explanation.en).toBeDefined();
+      expect(result.explanation.ar).toBeDefined();
+      expect(typeof result.explanation.en).toBe("string");
+      expect(result.explanation.en.length).toBeGreaterThan(0);
     },
   );
 
   test("should handle invalid JSON response from LLM gracefully", async () => {
     mockInvoke.mockResolvedValueOnce({ content: "invalid json" });
-    await expect(agent.classify("some text", "some-type", "en")).rejects.toThrow("Failed to parse LLM classification response");
+    await expect(agent.classify("some text", "some-type", "en")).rejects.toThrow("Failed to parse JSON from LLM response");
   });
 });

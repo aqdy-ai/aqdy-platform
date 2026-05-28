@@ -38,6 +38,6 @@ test.describe('Contract Upload Flow', () => {
     await expect(analyzeBtn).toBeEnabled()
 
     // 6. Final UI check for the results containers (if implementation is ready)
-    await expect(page).toHaveTitle(/Aqdy/i)
+    await expect(page).toHaveTitle(/Aqdy|عقدي/i)
   })
 })
