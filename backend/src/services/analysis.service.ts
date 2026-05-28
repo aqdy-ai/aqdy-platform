@@ -4,7 +4,7 @@ import {
   RiskAnalysisZodSchema,
 } from "../models/riskAnalysis.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
-import { extractorAgent } from "../agents/extractor.agent.js";
+import { orchestratorService } from "../pipeline/orchestrator.service.js";
 import { logger } from "../utils/logger.js";
 import {
   AgentExecutionService,
@@ -90,39 +90,19 @@ export class AnalysisService {
   private async executeAnalysisAttempt(job: AgentJobPayload): Promise<void> {
     const startTime = Date.now();
 
-    const extractionResult = await extractorAgent.extract(
+    const result = await orchestratorService.run(
+      job.contractId,
+      job.userId,
       job.text,
       job.language,
     );
-
-    const clauseAnalysis = extractionResult.clauses.map((clause) => ({
-      clauseText: clause.clauseText,
-      clauseType: clause.clauseType,
-      riskLevel: "unknown" as const,
-      confidence: 1.0,
-      explanation: {
-        ar: "تم استخراج البند بنجاح.",
-        en: "Clause extracted successfully.",
-      },
-      sourceFromKB: null,
-    }));
-
-    const executiveSummary = {
-      overallRisk: "low" as const,
-      totalClauses: extractionResult.clauses.length,
-      riskyClausesCount: 0,
-      summary: {
-        ar: "تم استخراج البنود بنجاح.",
-        en: "Clauses extracted successfully.",
-      },
-    };
 
     const duration = Date.now() - startTime;
     await this.saveAnalysis({
       contractId: job.contractId,
       userId: job.userId,
-      executiveSummary,
-      clauseAnalysis,
+      executiveSummary: result.executiveSummary,
+      clauseAnalysis: result.clauseAnalysis,
       analysisDuration: duration,
     });
 
@@ -131,10 +111,10 @@ export class AnalysisService {
       userId: job.userId,
       action: "ANALYSIS_COMPLETED",
       metadata: {
-        totalClauses: extractionResult.clauses.length,
+        totalClauses: result.executiveSummary.totalClauses,
         durationMs: duration,
-        modelUsed: extractionResult.modelUsed,
-        usedFallback: extractionResult.usedFallback,
+        modelUsed: result.extractionMeta.modelUsed,
+        usedFallback: result.extractionMeta.usedFallback,
       },
     }).save();
 

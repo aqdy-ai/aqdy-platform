@@ -6,6 +6,10 @@ import { contractService } from "../services/contract.service.js";
 import { auditLogService } from "../services/auditLog.service.js";
 import { analysisService } from "../services/analysis.service.js";
 import { logger } from "../utils/logger.js";
+import {
+  detectPromptInjection,
+  sanitizeText,
+} from "../middlewares/security.middleware.js";
 
 const uploadRouter = Router();
 
@@ -46,6 +50,21 @@ uploadRouter.post(
       } else {
         parsed = await docxService.parseDocx(file);
       }
+
+      // ── Security Check & Sanitization ────────────────────────────────────
+      if (detectPromptInjection(parsed.text)) {
+        logger.warn(
+          `🛑 Security: Prompt Injection detected inside uploaded file: ${file.originalname}`,
+        );
+        return res.status(400).json({
+          error: "Security validation failed",
+          message:
+            "Suspicious instruction patterns detected in document text. Upload rejected.",
+        });
+      }
+
+      // Sanitize standard XSS / HTML tags
+      parsed.text = sanitizeText(parsed.text);
 
       // ── Step 2: Persist contract to DB ───────────────────────────────────
       const contract = await contractService.saveContract({
