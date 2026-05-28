@@ -1,0 +1,233 @@
+import swaggerJsdoc from 'swagger-jsdoc';
+
+const options: swaggerJsdoc.Options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Aqdy API',
+      version: '1.0.0',
+      description: 'AI-powered contract review API for MENA region',
+    },
+    servers: [
+      { url: 'http://localhost:5000', description: 'Development server' },
+    ],
+    components: {
+      schemas: {
+        Contract: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string', example: '64abc123def456' },
+            filename: { type: 'string', example: 'contract.pdf' },
+            language: { type: 'string', enum: ['ar', 'en'] },
+            text: { type: 'string', example: 'Contract text...' },
+            userId: { type: 'string', example: 'user_123' },
+            fileSize: { type: 'number', example: 1024 },
+            uploadedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        UploadContractRequest: {
+          type: 'object',
+          required: ['filename', 'language', 'text', 'userId', 'fileSize'],
+          properties: {
+            filename: { type: 'string', example: 'contract.pdf' },
+            language: { type: 'string', enum: ['ar', 'en'] },
+            text: { type: 'string', example: 'Contract text...' },
+            userId: { type: 'string', example: 'user_123' },
+            fileSize: { type: 'number', example: 1024 },
+          },
+        },
+        AnalyzeRequest: {
+          type: 'object',
+          required: ['contractId', 'userId'],
+          properties: {
+            contractId: { type: 'string', example: '64abc123def456' },
+            userId: { type: 'string', example: 'user_123' },
+          },
+        },
+        ClauseAnalysis: {
+          type: 'object',
+          properties: {
+            clauseText: { type: 'string' },
+            clauseType: { type: 'string', example: 'liability' },
+            riskLevel: {
+              type: 'string',
+              enum: ['low', 'medium', 'high', 'critical', 'unknown'],
+            },
+            confidence: { type: 'number', example: 0.95 },
+            explanation: {
+              type: 'object',
+              properties: {
+                ar: { type: 'string' },
+                en: { type: 'string' },
+              },
+            },
+            sourceFromKB: { type: 'string', nullable: true },
+            redlineSuggestion: { type: 'string' },
+          },
+        },
+        RiskAnalysis: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            contractId: { type: 'string' },
+            userId: { type: 'string' },
+            executiveSummary: {
+              type: 'object',
+              properties: {
+                overallRisk: {
+                  type: 'string',
+                  enum: ['low', 'medium', 'high', 'critical'],
+                },
+                totalClauses: { type: 'number' },
+                riskyClausesCount: { type: 'number' },
+                summary: {
+                  type: 'object',
+                  properties: {
+                    ar: { type: 'string' },
+                    en: { type: 'string' },
+                  },
+                },
+              },
+            },
+            clauseAnalysis: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/ClauseAnalysis' },
+            },
+            analysisDuration: { type: 'number', example: 2300 },
+          },
+        },
+        ApiResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'object' },
+            message: { type: 'string' },
+          },
+        },
+        ErrorResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: false },
+            message: { type: 'string', example: 'Error message' },
+          },
+        },
+      },
+    },
+    paths: {
+      '/api/health': {
+        get: {
+          tags: ['Health'],
+          summary: 'Health check',
+          responses: {
+            200: { description: 'Server is healthy' },
+          },
+        },
+      },
+      '/api/contracts/upload': {
+        post: {
+          tags: ['Contracts'],
+          summary: 'Upload a contract',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UploadContractRequest' },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Contract uploaded successfully',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/ApiResponse' },
+                },
+              },
+            },
+            400: { description: 'Validation error' },
+            500: { description: 'Server error' },
+          },
+        },
+      },
+      '/api/contracts/{id}': {
+        get: {
+          tags: ['Contracts'],
+          summary: 'Get contract by ID',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Contract found',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Contract' },
+                },
+              },
+            },
+            404: { description: 'Contract not found' },
+          },
+        },
+      },
+      '/api/analysis/analyze': {
+        post: {
+          tags: ['Analysis'],
+          summary: 'Start contract analysis',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AnalyzeRequest' },
+              },
+            },
+          },
+          responses: {
+            202: {
+              description: 'Analysis started',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/ApiResponse' },
+                },
+              },
+            },
+            400: { description: 'Validation error' },
+            404: { description: 'Contract not found' },
+          },
+        },
+      },
+      '/api/analysis/{contractId}': {
+        get: {
+          tags: ['Analysis'],
+          summary: 'Get analysis results',
+          parameters: [
+            {
+              name: 'contractId',
+              in: 'path',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Analysis results',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/RiskAnalysis' },
+                },
+              },
+            },
+            404: { description: 'Analysis not found' },
+          },
+        },
+      },
+    },
+  },
+  apis: [],
+};
+
+export const swaggerSpec = swaggerJsdoc(options);

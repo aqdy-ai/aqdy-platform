@@ -10,11 +10,15 @@ import contractRouter from "./routes/contract.route.js";
 import analysisRouter from "./routes/analysis.route.js";
 import connectDB from "./config/database.js";
 import uploadRouter from "./routes/upload.route.js";
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.config.js';
 
 // Initialize Database
 connectDB();
 
 const app: Application = express();
+
+
 
 // ── Middlewares ──────────────────────────────────
 app.use(helmet());
@@ -28,6 +32,9 @@ app.use("/api", healthRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
+
+// Use Swagger UI
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ── Error Handler ────────────────────────────────
 app.use(errorHandler);
