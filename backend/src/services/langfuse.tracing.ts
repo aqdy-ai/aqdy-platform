@@ -9,7 +9,10 @@
  */
 
 import { logger } from "../utils/logger.js";
-import { logAgentExecution, AgentTraceMetadata } from "../config/langfuse.config.js";
+import {
+  logAgentExecution,
+  AgentTraceMetadata,
+} from "../config/langfuse.config.js";
 
 // ── Types ─────────────────────────────────────────
 
@@ -186,7 +189,7 @@ export async function tracePipeline<T>(
       data,
       duration,
       metadata: {
-        agentName: "pipeline" as any,
+        agentName: "pipeline",
         contractId: options.contractId,
         timestamp,
       },
@@ -209,7 +212,7 @@ export async function tracePipeline<T>(
       error: errorMessage,
       duration,
       metadata: {
-        agentName: "pipeline" as any,
+        agentName: "pipeline",
         contractId: options.contractId,
         timestamp,
       },
@@ -223,7 +226,7 @@ export async function tracePipeline<T>(
  * @param result - The traced agent result
  * @returns Formatted metrics string
  */
-export function formatAgentMetrics(result: TracedAgentResult<any>): string {
+export function formatAgentMetrics(result: TracedAgentResult<unknown>): string {
   const status = result.success ? "✓" : "✗";
   const durationSec = (result.duration / 1000).toFixed(2);
   return `${status} ${result.metadata.agentName} [${durationSec}s]`;
@@ -236,7 +239,7 @@ export function formatAgentMetrics(result: TracedAgentResult<any>): string {
  * @param context - Additional context (e.g., contract ID)
  */
 export function logAgentMetricsReport(
-  results: TracedAgentResult<any>[],
+  results: TracedAgentResult<unknown>[],
   context?: string,
 ): void {
   const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
