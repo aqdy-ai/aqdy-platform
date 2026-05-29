@@ -15,7 +15,10 @@ export const metrics = (() => {
   }
 
   function getMetrics(): Record<string, unknown> {
-    const histogramStats: Record<string, { count: number; avg: number; min: number; max: number }> = {};
+    const histogramStats: Record<
+      string,
+      { count: number; avg: number; min: number; max: number }
+    > = {};
     for (const [k, arr] of Object.entries(histograms)) {
       if (!arr || arr.length === 0) {
         histogramStats[k] = { count: 0, avg: 0, min: 0, max: 0 };
