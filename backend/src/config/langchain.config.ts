@@ -6,30 +6,30 @@ import { env } from "./env.js";
 
 // ── Model Names ──────────────────────────────────
 
-export const GEMMA4_PRIMARY_MODEL = "gemma-4-31b-it";
-export const GEMMA4_FALLBACK_MODEL = "gemma-4-26b-a4b-it";
+export const GEMINI_PRIMARY_MODEL = "gemini-3.5-flash";
+export const GEMINI_FALLBACK_MODEL = "gemini-3.1-flash-lite";
 
 // ── Shared Model Instances ───────────────────────
 
 /**
- * Gemma 4 31B Dense — Primary model
+ * Gemini 3.5 Flash — Primary model
  * Best for: complex clause analysis, risk classification, redline generation
- * Context window: 256K tokens
+ * Context window: 1M tokens
  */
-export const gemma4Primary = new ChatGoogleGenerativeAI({
-  model: GEMMA4_PRIMARY_MODEL,
+export const geminiPrimary = new ChatGoogleGenerativeAI({
+  model: GEMINI_PRIMARY_MODEL,
   apiKey: env.GEMINI_API_KEY,
   temperature: 0.1,
   maxOutputTokens: 4096,
 });
 
 /**
- * Gemma 4 26B MoE — Fallback model
+ * Gemini 3.1 Flash Lite — Fallback model
  * Best for: simpler tasks, faster responses, cost optimization
- * Context window: 256K tokens
+ * Context window: 1M tokens
  */
-export const gemma4Fallback = new ChatGoogleGenerativeAI({
-  model: GEMMA4_FALLBACK_MODEL,
+export const geminiFallback = new ChatGoogleGenerativeAI({
+  model: GEMINI_FALLBACK_MODEL,
   apiKey: env.GEMINI_API_KEY,
   temperature: 0.1,
   maxOutputTokens: 4096,
@@ -45,7 +45,7 @@ export const outputParser = new StringOutputParser();
  * Used by all agents in Week 2.
  *
  * @param systemPrompt - The system instruction for the agent
- * @param useFallback  - If true, uses Gemma 4 26B MoE instead of 31B
+ * @param useFallback  - If true, uses Gemini 3.1 Flash Lite instead of 3.5 Flash
  *
  * @example
  * const chain = buildChain(EXTRACTION_SYSTEM_PROMPT);
@@ -55,7 +55,7 @@ export const buildChain = (
   systemPrompt: string,
   useFallback = false,
 ): RunnableSequence => {
-  const model = useFallback ? gemma4Fallback : gemma4Primary;
+  const model = useFallback ? geminiFallback : geminiPrimary;
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],

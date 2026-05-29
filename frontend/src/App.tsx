@@ -1,17 +1,35 @@
+/* src/App.tsx */
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
 import { HelmetProvider } from 'react-helmet-async'
+import { Toaster } from 'sonner'
 import MainLayout from './components/layout/MainLayout'
 import DisclaimerModal from './components/DisclaimerModal'
 
-// استخدام lazy loading لتحسين الأداء
 const Home = lazy(() => import('./pages/Home'))
+const TestDashboard = lazy(() => import('./pages/TestDashboard'))
+const RiskAnalysisDashboard = lazy(
+  () => import('./pages/RiskAnalysisDashboard')
+)
 
 function App() {
   return (
     <HelmetProvider>
       <Router>
-        {/* الـ Suspense ضروري عشان i18n و الـ Lazy Loading */}
+        <Toaster
+          position="bottom-left"
+          dir="rtl"
+          richColors
+          closeButton
+          toastOptions={{
+            classNames: {
+              toast: 'rounded-2xl border-border/50 shadow-xl font-semibold',
+              title: 'font-bold',
+              description: 'text-muted-foreground',
+            },
+          }}
+        />
+
         <Suspense
           fallback={
             <div className="bg-background flex h-screen items-center justify-center">
@@ -21,13 +39,11 @@ function App() {
             </div>
           }
         >
-          {/* المودال بيظهر في أي صفحة لو المستخدم لسه موافقش */}
           <DisclaimerModal />
 
           <MainLayout>
             <Routes>
               <Route path="/" element={<Home />} />
-              {/* أي صفحات تانية زي الـ Dashboard هتتضاف هنا */}
               <Route
                 path="/dashboard"
                 element={
@@ -35,6 +51,11 @@ function App() {
                     لوحة التحكم قيد الإنشاء
                   </div>
                 }
+              />
+              <Route path="/test-dashboard" element={<TestDashboard />} />
+              <Route
+                path="/risk-analysis"
+                element={<RiskAnalysisDashboard />}
               />
             </Routes>
           </MainLayout>

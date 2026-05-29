@@ -89,7 +89,7 @@ function normaliseFromV2(c: ClauseV2): NormalisedClause {
     category: c.category,
     riskLevel: c.riskLevel,
     clausePattern: c.clausePattern,
-    keywords: [],                          // v2 does not have a keywords field
+    keywords: [], // v2 does not have a keywords field
     explanation: c.explanation,
     whyRisky: c.whyRisky,
     saferAlternative: c.saferAlternative,
@@ -134,11 +134,11 @@ function normaliseFromV1(c: ClauseV1): NormalisedClause {
 function loadKB(cwd: string): NormalisedClause[] {
   const candidates = [
     // v2 — new expanded KB (preferred)
-    { file: "backend/src/data/legal_kb.json",  format: "v2" as const },
-    { file: "src/data/legal_kb.json",          format: "v2" as const },
+    { file: "backend/src/data/legal_kb.json", format: "v2" as const },
+    { file: "src/data/legal_kb.json", format: "v2" as const },
     // v1 — legacy flat-array KB
-    { file: "backend/src/data/legalKB.json",   format: "v1" as const },
-    { file: "src/data/legalKB.json",           format: "v1" as const },
+    { file: "backend/src/data/legalKB.json", format: "v1" as const },
+    { file: "src/data/legalKB.json", format: "v1" as const },
   ];
 
   for (const { file, format } of candidates) {
@@ -155,19 +155,24 @@ function loadKB(cwd: string): NormalisedClause[] {
       }
       console.log(
         `📂 Loaded ${kb.clauses.length} clauses from ${file}` +
-        ` (KB v${kb.version}, updated ${kb.lastUpdated})`
+          ` (KB v${kb.version}, updated ${kb.lastUpdated})`,
       );
       return kb.clauses.map(normaliseFromV2);
     }
 
     // v1 — plain array
     if (Array.isArray(raw)) {
-      console.log(`📂 Loaded ${raw.length} clauses from ${file} (KB v1 legacy format)`);
+      console.log(
+        `📂 Loaded ${raw.length} clauses from ${file} (KB v1 legacy format)`,
+      );
       return (raw as ClauseV1[]).map(normaliseFromV1);
     }
   }
 
-  console.error("❌ Legal KB file not found. Checked: " + candidates.map(c => c.file).join(", "));
+  console.error(
+    "❌ Legal KB file not found. Checked: " +
+      candidates.map((c) => c.file).join(", "),
+  );
   process.exit(1);
 }
 
@@ -176,7 +181,9 @@ function loadKB(cwd: string): NormalisedClause[] {
 const INDEX_NAME = "legal-kb";
 
 async function main() {
-  console.log("🚀 Starting Legal KB Embedding pipeline (multilingual-e5-large)...");
+  console.log(
+    "🚀 Starting Legal KB Embedding pipeline (multilingual-e5-large)...",
+  );
 
   // 1. Load and normalise clauses (auto-detects v1 or v2 schema)
   const clauses = loadKB(process.cwd());
@@ -195,7 +202,7 @@ async function main() {
   if (!indexExists) {
     console.log(
       `🏗️  Index "${INDEX_NAME}" does not exist. Creating serverless index` +
-      ` with model "multilingual-e5-large"…`
+        ` with model "multilingual-e5-large"…`,
     );
     await pc.createIndexForModel({
       name: INDEX_NAME,
@@ -221,38 +228,42 @@ async function main() {
     _id: c.id,
     text: `${c.clausePattern}\n${c.explanation.en}\n${c.explanation.ar}`,
     // Core fields
-    category:              c.category,
-    riskLevel:             c.riskLevel,
-    explanation_ar:        c.explanation.ar,
-    explanation_en:        c.explanation.en,
-    whyRisky_ar:           c.whyRisky.ar,
-    whyRisky_en:           c.whyRisky.en,
-    saferAlternative_ar:   c.saferAlternative.ar,
-    saferAlternative_en:   c.saferAlternative.en,
+    category: c.category,
+    riskLevel: c.riskLevel,
+    explanation_ar: c.explanation.ar,
+    explanation_en: c.explanation.en,
+    whyRisky_ar: c.whyRisky.ar,
+    whyRisky_en: c.whyRisky.en,
+    saferAlternative_ar: c.saferAlternative.ar,
+    saferAlternative_en: c.saferAlternative.en,
     // v2 extended fields (empty string for v1 clauses)
-    negotiationTips_ar:    c.negotiationTips_ar,
-    negotiationTips_en:    c.negotiationTips_en,
-    frequency:             c.frequency,
-    applicableRegions:     c.applicableRegions,
+    negotiationTips_ar: c.negotiationTips_ar,
+    negotiationTips_en: c.negotiationTips_en,
+    frequency: c.frequency,
+    applicableRegions: c.applicableRegions,
     // Shared fields
-    relatedLaw:            c.relatedLaw,
-    contractTypes:         c.contractTypes,
-    keywords:              c.keywords,
+    relatedLaw: c.relatedLaw,
+    contractTypes: c.contractTypes,
+    keywords: c.keywords,
   }));
 
   // 4. Batch upsert (25 records per batch to respect Pinecone rate limits)
-  console.log(`\n📤 Upserting ${records.length} clauses to Pinecone index "${INDEX_NAME}"…`);
+  console.log(
+    `\n📤 Upserting ${records.length} clauses to Pinecone index "${INDEX_NAME}"…`,
+  );
 
   const batchSize = 25;
   for (let i = 0; i < records.length; i += batchSize) {
     const batch = records.slice(i, i + batchSize);
-    console.log(`   Upserting batch ${Math.floor(i / batchSize) + 1} (${batch.length} records)…`);
+    console.log(
+      `   Upserting batch ${Math.floor(i / batchSize) + 1} (${batch.length} records)…`,
+    );
     await index.upsertRecords({ records: batch });
   }
 
   console.log(
     `\n🎉 Success: Confirmed that all ${records.length} clauses have been` +
-    ` embedded and upserted into Pinecone!`
+      ` embedded and upserted into Pinecone!`,
   );
 }
 
