@@ -36,6 +36,7 @@ export interface ClassificationResult {
   confidence: number;
   explanation: { ar: string; en: string };
   sourceFromKB: string | null;
+  durationMs: number;
 }
 
 // ── RiskClassifierAgent Class ────────────────────
@@ -64,6 +65,8 @@ export class RiskClassifierAgent {
     clauseType: string,
     language: "ar" | "en",
   ): Promise<ClassificationResult> {
+    const startTime = Date.now();
+
     // Input validation
     if (!clauseText || clauseText.trim().length === 0) {
       throw new Error("Clause text is empty — nothing to classify.");
@@ -148,11 +151,14 @@ export class RiskClassifierAgent {
       Math.max(0.0, Math.round(calibratedConfidence * 100) / 100),
     );
 
+    const durationMs = Date.now() - startTime;
+
     logger.info("RiskClassifierAgent: classification complete", {
       riskLevel: validated.riskLevel,
       confidence: calibratedConfidence,
       sourceFromKB,
       modelUsed: llmResponse.model,
+      durationMs,
     });
 
     return {
@@ -160,6 +166,7 @@ export class RiskClassifierAgent {
       confidence: calibratedConfidence,
       explanation: validated.explanation,
       sourceFromKB,
+      durationMs,
     };
   }
 }
