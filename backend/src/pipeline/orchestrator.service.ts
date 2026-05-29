@@ -15,9 +15,10 @@
 import { extractorAgent } from "../agents/extractor.agent.js";
 import { riskClassifierAgent } from "../agents/riskClassifier.agent.js";
 import { redlineAgent } from "../agents/redline.agent.js";
-import { ragService } from "../services/rag.service.js";
+import type { ExtractedClause } from "../agents/extractor.agent.js";
 import { logger } from "../utils/logger.js";
 import { createLangfuseHandler } from "../config/langfuse.config.js";
+import { getStableHash } from "../utils/text.utils.js";
 import type { IClauseAnalysis } from "../models/riskAnalysis.model.js";
 
 // ── Types ─────────────────────────────────────────
@@ -51,6 +52,15 @@ const RISK_WEIGHTS: Record<string, number> = {
 // ── OrchestratorService ───────────────────────────
 
 export class OrchestratorService {
+  private readonly extractionCache = new Map<string, {
+    clauses: ExtractedClause[];
+    language: "ar" | "en";
+    modelUsed: string;
+    usedFallback: boolean;
+    chunkCount: number;
+    durationMs: number;
+  }>();
+
   /**
    * Runs the full analysis pipeline for a contract.
    *
@@ -85,126 +95,107 @@ export class OrchestratorService {
     // ── Step 1: Extraction ────────────────────────
 
     logger.info("Orchestrator: Step 1 — Extraction");
-    const extractionResult = await extractorAgent.extract(text, language);
+    const extractionCacheKey = getStableHash(`${text.trim()}|${language}`);
+    const cachedExtraction = this.extractionCache.get(extractionCacheKey);
+    const extractionResult =
+      cachedExtraction ?? (await extractorAgent.extract(text, language));
+
+    if (!cachedExtraction) {
+      this.extractionCache.set(extractionCacheKey, extractionResult);
+    }
 
     logger.info("Orchestrator: extraction complete", {
       clauseCount: extractionResult.clauses.length,
       model: extractionResult.modelUsed,
+      cacheHit: !!cachedExtraction,
     });
 
     // ── Step 2 & 3: Classification + Redlining ───
 
-    const clauseAnalysis: IClauseAnalysis[] = [];
-    let riskyClausesCount = 0;
-    let maxRiskWeight = 0;
+    const clauseAnalysis = await Promise.all(
+      extractionResult.clauses.map(async (clause) => {
+        let riskLevel: IClauseAnalysis["riskLevel"] = "unknown";
+        let confidence = 0.0;
+        let explanation: { ar: string; en: string } = {
+          ar: "فشل تصنيف مخاطر هذا البند.",
+          en: "Failed to classify the risk of this clause.",
+        };
+        let sourceFromKB: string | null = null;
+        let classificationDurationMs: number | undefined;
+        let redlineSuggestion: string | undefined;
+        let redlineDurationMs: number | undefined;
 
-    for (const clause of extractionResult.clauses) {
-      // Step 2: Classify
-      let riskLevel: IClauseAnalysis["riskLevel"] = "unknown";
-      let confidence = 0.0;
-      let explanation: { ar: string; en: string } = {
-        ar: "فشل تصنيف مخاطر هذا البند.",
-        en: "Failed to classify the risk of this clause.",
-      };
-      let sourceFromKB: string | null = null;
-      let saferAlternativeText: string | undefined;
-      let classificationDurationMs: number | undefined;
-      let redlineDurationMs: number | undefined;
-
-      try {
-        logger.info(
-          `Orchestrator: Step 2 — Classifying clause ${clause.clauseNumber}`,
-        );
-
-        // Fetch RAG context for this clause (used by both classifier and redliner)
-        let ragMatches: Awaited<ReturnType<typeof ragService.searchKB>> | null =
-          null;
         try {
-          ragMatches = await ragService.searchKB(clause.clauseText);
-        } catch {
-          logger.warn(
-            `Orchestrator: RAG search failed for clause ${clause.clauseNumber}, continuing without KB`,
+          logger.info(
+            `Orchestrator: Step 2 — Classifying clause ${clause.clauseNumber}`,
+          );
+
+          const classification = await riskClassifierAgent.classify(
+            clause.clauseText,
+            clause.clauseType,
+            language,
+          );
+
+          riskLevel = classification.riskLevel;
+          confidence = classification.confidence;
+          explanation = classification.explanation;
+          sourceFromKB = classification.sourceFromKB;
+          classificationDurationMs = classification.durationMs;
+
+          if (riskLevel !== "low" && riskLevel !== "unknown") {
+            try {
+              logger.info(
+                `Orchestrator: Step 3 — Generating redline for clause ${clause.clauseNumber}`,
+              );
+
+              const redline = await redlineAgent.generate(
+                clause.clauseText,
+                riskLevel,
+                clause.clauseType,
+                language,
+                classification.saferAlternative,
+              );
+
+              redlineSuggestion = redline.suggestedText;
+              redlineDurationMs = redline.durationMs;
+            } catch (err) {
+              logger.error(
+                `Orchestrator: redline generation failed for clause ${clause.clauseNumber}`,
+                err,
+              );
+            }
+          }
+        } catch (err) {
+          logger.error(
+            `Orchestrator: classification failed for clause ${clause.clauseNumber}`,
+            err,
           );
         }
 
-        // Extract safer alternative from top KB match for redlining
-        if (
-          ragMatches &&
-          ragMatches.hasMatch &&
-          ragMatches.matches.length > 0
-        ) {
-          const topMatch = ragMatches.matches[0];
-          const lang = language === "ar" ? "ar" : "en";
-          saferAlternativeText = topMatch.saferAlternative?.[lang] || undefined;
-        }
+        return {
+          clauseText: clause.clauseText,
+          clauseType: clause.clauseType,
+          riskLevel,
+          confidence,
+          explanation,
+          sourceFromKB,
+          classificationDurationMs,
+          redlineSuggestion,
+          redlineDurationMs,
+        };
+      }),
+    );
 
-        const classification = await riskClassifierAgent.classify(
-          clause.clauseText,
-          clause.clauseType,
-          language,
-        );
-
-        riskLevel = classification.riskLevel;
-        confidence = classification.confidence;
-        explanation = classification.explanation;
-        sourceFromKB = classification.sourceFromKB;
-        classificationDurationMs = classification.durationMs;
-      } catch (err) {
-        logger.error(
-          `Orchestrator: classification failed for clause ${clause.clauseNumber}`,
-          err,
-        );
-        // Clause gets default "unknown" values set above
-      }
-
-      // Track risk metrics
-      if (riskLevel !== "low" && riskLevel !== "unknown") {
+    let riskyClausesCount = 0;
+    let maxRiskWeight = 0;
+    for (const analysis of clauseAnalysis) {
+      if (analysis.riskLevel !== "low" && analysis.riskLevel !== "unknown") {
         riskyClausesCount++;
       }
-      const weight = RISK_WEIGHTS[riskLevel] ?? 0;
+      const weight = RISK_WEIGHTS[analysis.riskLevel] ?? 0;
       if (weight > maxRiskWeight) {
         maxRiskWeight = weight;
       }
-
-      // Step 3: Redline (only for risky clauses)
-      let redlineSuggestion: string | undefined;
-
-      if (riskLevel !== "low" && riskLevel !== "unknown") {
-        try {
-          logger.info(
-            `Orchestrator: Step 3 — Generating redline for clause ${clause.clauseNumber}`,
-          );
-
-          const redline = await redlineAgent.generate(
-            clause.clauseText,
-            riskLevel,
-            clause.clauseType,
-            language,
-            saferAlternativeText,
-          );
-
-          redlineSuggestion = redline.suggestedText;
-          redlineDurationMs = redline.durationMs;
-        } catch (err) {
-          logger.error(
-            `Orchestrator: redline generation failed for clause ${clause.clauseNumber}`,
-            err,
-          );
-          // Clause still gets classification results, just no redline
-        }
-      }
-
-      clauseAnalysis.push({
-        clauseText: clause.clauseText,
-        clauseType: clause.clauseType,
-        riskLevel,
-        confidence,
-        explanation,
-        sourceFromKB,
-        classificationDurationMs,
-        redlineSuggestion,
-        redlineDurationMs,
-      });
     }
 
     // ── Executive Summary ─────────────────────────
