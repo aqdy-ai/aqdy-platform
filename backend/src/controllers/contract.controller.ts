@@ -17,7 +17,9 @@ export const getContract = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const contract = await contractService.getContractById(String(req.params.id));
+    const contract = await contractService.getContractById(
+      String(req.params.id),
+    );
 
     if (!contract) {
       throw new AppError(404, "Contract not found");
@@ -28,7 +30,10 @@ export const getContract = async (
     next(
       error instanceof AppError
         ? error
-        : new AppError(500, `Failed to get contract: ${error instanceof Error ? error.message : "Unknown error"}`)
+        : new AppError(
+            500,
+            `Failed to get contract: ${error instanceof Error ? error.message : "Unknown error"}`,
+          ),
     );
   }
 };
@@ -84,5 +89,4 @@ export const uploadContract = async (
           ),
     );
   }
-  
 };

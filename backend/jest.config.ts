@@ -10,6 +10,7 @@ export default {
 
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^langfuse$": "<rootDir>/tests/__mocks__/langfuse.ts",
   },
 
   setupFiles: ["<rootDir>/tests/setup-env.ts"],
