@@ -13,6 +13,7 @@
     "format": "prettier --write src/**/*.ts",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:performance": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --testPathPattern=tests/performance",
     "coverage:check": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --coverageThreshold='{\"global\":{\"lines\":60}}'",
     "prepare": "cd .. && husky install backend/.husky"
   },

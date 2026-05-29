@@ -77,6 +77,9 @@ const { contractService } = await import(
 const { analysisService } = await import(
   "../../src/services/analysis.service.js"
 );
+const { orchestratorService } = await import(
+  "../../src/pipeline/orchestrator.service.js"
+);
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
 
@@ -166,6 +169,8 @@ function makeDocxFile(
 describe("Upload → Extract → Store Pipeline", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Clear the orchestrator's extraction cache so each test drives a fresh LLM call
+    (orchestratorService as any).extractionCache.clear();
     (analysisService as any).executionQueue.retryDelayMs = 1;
     mockClassify.mockResolvedValue({
       riskLevel: "low",

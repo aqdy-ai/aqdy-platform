@@ -20,6 +20,7 @@
 import { Pinecone } from "@pinecone-database/pinecone";
 import { logger } from "../utils/logger.js";
 import { env } from "../config/env.js";
+import { getStableHash } from "../utils/text.utils.js";
 
 // ── Types ─────────────────────────────────────────
 
@@ -65,6 +66,7 @@ export interface RAGResult {
 export class RAGService {
   private readonly pinecone: Pinecone;
   private readonly indexName: string;
+  private readonly searchCache = new Map<string, RAGResult>();
 
   /**
    * @param indexName - Pinecone index name. Defaults to PINECONE_INDEX env var.
@@ -195,13 +197,29 @@ export class RAGService {
       return { matches: [], confidence: 0, hasMatch: false };
     }
 
+    const cacheKey = getStableHash(clauseText.trim().toLowerCase());
+    const cached = this.searchCache.get(cacheKey);
+    if (cached) {
+      logger.info("RAGService.searchKB: returning cached KB result", {
+        clauseHash: cacheKey,
+        matchCount: cached.matches.length,
+      });
+      return cached;
+    }
+
     try {
       // Step 1: Semantic search via Pinecone integrated inference
       const rawMatches = await this.semanticSearch(clauseText, 5);
 
       if (rawMatches.length === 0) {
         logger.info("RAGService: no KB matches found for clause");
-        return { matches: [], confidence: 0, hasMatch: false };
+        const result = {
+          matches: [],
+          confidence: 0,
+          hasMatch: false,
+        } as RAGResult;
+        this.searchCache.set(cacheKey, result);
+        return result;
       }
 
       // Step 2: MMR reranking for diversity
@@ -209,16 +227,18 @@ export class RAGService {
 
       // Step 3: Confidence scoring
       const confidence = this.calculateConfidence(rerankedMatches);
+      const result: RAGResult = {
+        matches: rerankedMatches,
+        confidence,
+        hasMatch: confidence >= 0.6,
+      };
 
       logger.info(
         `RAGService: ${rerankedMatches.length} matches, confidence: ${confidence}`,
       );
 
-      return {
-        matches: rerankedMatches,
-        confidence,
-        hasMatch: confidence >= 0.6,
-      };
+      this.searchCache.set(cacheKey, result);
+      return result;
     } catch (error) {
       // Degrade gracefully — classifier continues without KB context
       logger.error("RAGService.searchKB: Pinecone search failed", {
