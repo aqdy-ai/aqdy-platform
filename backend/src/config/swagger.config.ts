@@ -54,6 +54,7 @@ const options: swaggerJsdoc.Options = {
               enum: ["low", "medium", "high", "critical", "unknown"],
             },
             confidence: { type: "number", example: 0.95 },
+            classificationDurationMs: { type: "number", example: 420 },
             explanation: {
               type: "object",
               properties: {
@@ -63,6 +64,7 @@ const options: swaggerJsdoc.Options = {
             },
             sourceFromKB: { type: "string", nullable: true },
             redlineSuggestion: { type: "string" },
+            redlineDurationMs: { type: "number", example: 550 },
           },
         },
         RiskAnalysis: {

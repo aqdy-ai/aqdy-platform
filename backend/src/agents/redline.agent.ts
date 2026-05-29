@@ -37,6 +37,7 @@ export interface RedlineResult {
   explanation: { ar: string; en: string };
   talkingPoints: { ar: string[]; en: string[] };
   confidence: number;
+  durationMs: number;
 }
 
 // ── RedlineAgent Class ───────────────────────────
@@ -59,6 +60,8 @@ export class RedlineAgent {
     language: "ar" | "en",
     saferAlternative?: string,
   ): Promise<RedlineResult> {
+    const startTime = Date.now();
+
     // Input validation
     if (!clauseText || clauseText.trim().length === 0) {
       throw new Error(
@@ -111,10 +114,13 @@ export class RedlineAgent {
       Math.max(0.0, Math.round(calibratedConfidence * 100) / 100),
     );
 
+    const durationMs = Date.now() - startTime;
+
     logger.info("RedlineAgent: generation complete", {
       confidence: calibratedConfidence,
       modelUsed: llmResponse.model,
       usedFallback: llmResponse.usedFallback,
+      durationMs,
     });
 
     return {
@@ -122,6 +128,7 @@ export class RedlineAgent {
       explanation: validated.explanation,
       talkingPoints: validated.talkingPoints,
       confidence: calibratedConfidence,
+      durationMs,
     };
   }
 }

@@ -5,12 +5,14 @@ import "dotenv/config";
 import { env } from "./config/env.js";
 import { httpLogger, logger } from "./utils/logger.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import { responseTimeMiddleware } from "./middlewares/responseTime.middleware.js";
 import { initializeLangfuse, flushLangfuseTraces } from "./config/langfuse.config.js";
 import healthRouter from "./routes/health.route.js";
 import contractRouter from "./routes/contract.route.js";
 import analysisRouter from "./routes/analysis.route.js";
 import connectDB from "./config/database.js";
 import uploadRouter from "./routes/upload.route.js";
+import metricsRouter from "./routes/metrics.route.js";
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.config.js';
 
@@ -29,6 +31,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
+app.use(responseTimeMiddleware());
 app.use(httpLogger);
 
 // ── Routes ───────────────────────────────────────
@@ -36,6 +39,7 @@ app.use("/api", healthRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
+app.use("/api/metrics", metricsRouter);
 
 // Use Swagger UI
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

@@ -108,6 +108,8 @@ export class OrchestratorService {
       };
       let sourceFromKB: string | null = null;
       let saferAlternativeText: string | undefined;
+      let classificationDurationMs: number | undefined;
+      let redlineDurationMs: number | undefined;
 
       try {
         logger.info(
@@ -146,6 +148,7 @@ export class OrchestratorService {
         confidence = classification.confidence;
         explanation = classification.explanation;
         sourceFromKB = classification.sourceFromKB;
+        classificationDurationMs = classification.durationMs;
       } catch (err) {
         logger.error(
           `Orchestrator: classification failed for clause ${clause.clauseNumber}`,
@@ -181,6 +184,7 @@ export class OrchestratorService {
           );
 
           redlineSuggestion = redline.suggestedText;
+          redlineDurationMs = redline.durationMs;
         } catch (err) {
           logger.error(
             `Orchestrator: redline generation failed for clause ${clause.clauseNumber}`,
@@ -197,7 +201,9 @@ export class OrchestratorService {
         confidence,
         explanation,
         sourceFromKB,
+        classificationDurationMs,
         redlineSuggestion,
+        redlineDurationMs,
       });
     }
 
