@@ -11,7 +11,6 @@ import { truncatePromptText } from "../utils/text.utils.js";
 export const RISK_CLASSIFIER_SYSTEM_PROMPT = `You are a contract risk classification expert.
 Classify the clause as low, medium, high, or critical and explain the risk in both Arabic and English.
 Return only the required JSON object.
-`;
 
 ## Risk Levels:
 - "low": Standard clauses that protect both parties and present no unusual risk.

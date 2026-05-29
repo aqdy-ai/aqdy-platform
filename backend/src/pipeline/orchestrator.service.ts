@@ -52,14 +52,17 @@ const RISK_WEIGHTS: Record<string, number> = {
 // ── OrchestratorService ───────────────────────────
 
 export class OrchestratorService {
-  private readonly extractionCache = new Map<string, {
-    clauses: ExtractedClause[];
-    language: "ar" | "en";
-    modelUsed: string;
-    usedFallback: boolean;
-    chunkCount: number;
-    durationMs: number;
-  }>();
+  private readonly extractionCache = new Map<
+    string,
+    {
+      clauses: ExtractedClause[];
+      language: "ar" | "en";
+      modelUsed: string;
+      usedFallback: boolean;
+      chunkCount: number;
+      durationMs: number;
+    }
+  >();
 
   /**
    * Runs the full analysis pipeline for a contract.

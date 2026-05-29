@@ -213,7 +213,11 @@ export class RAGService {
 
       if (rawMatches.length === 0) {
         logger.info("RAGService: no KB matches found for clause");
-        const result = { matches: [], confidence: 0, hasMatch: false } as RAGResult;
+        const result = {
+          matches: [],
+          confidence: 0,
+          hasMatch: false,
+        } as RAGResult;
         this.searchCache.set(cacheKey, result);
         return result;
       }

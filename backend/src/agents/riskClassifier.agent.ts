@@ -88,10 +88,13 @@ export class RiskClassifierAgent {
 
     const cachedResult = this.classifyCache.get(cacheKey);
     if (cachedResult) {
-      logger.info("RiskClassifierAgent: returning cached classification result", {
-        clauseType,
-        language,
-      });
+      logger.info(
+        "RiskClassifierAgent: returning cached classification result",
+        {
+          clauseType,
+          language,
+        },
+      );
       return cachedResult;
     }
 

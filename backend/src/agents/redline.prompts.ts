@@ -12,7 +12,6 @@ import { truncatePromptText } from "../utils/text.utils.js";
 export const REDLINE_SYSTEM_PROMPT = `You are a contract redlining expert.
 Generate a balanced revision that reduces risk while preserving the clause intent.
 Return only valid JSON.
-`;
 
 ## Critical Guidelines:
 1. Suggestions, NOT Legal Advice: Your suggestions are strictly for educational and negotiation planning purposes. They DO NOT constitute legal advice or establish an attorney-client relationship.
