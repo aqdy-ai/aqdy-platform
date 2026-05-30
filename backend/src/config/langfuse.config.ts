@@ -120,15 +120,14 @@ export function createLangfuseHandler(
 
   try {
     const handler = new CallbackHandler({
-      publicKey: env.LANGFUSE_PUBLIC_KEY,
-      secretKey: env.LANGFUSE_SECRET_KEY,
-      baseUrl: env.LANGFUSE_URL,
       sessionId: options.sessionId,
       userId: options.userId,
-      traceName: options.traceName,
+      traceMetadata: options.traceName
+        ? { traceName: options.traceName }
+        : undefined,
     });
 
-    logger.debug("Langfuse handler created", {
+    logger.info("Langfuse handler created", {
       sessionId: options.sessionId,
       traceName: options.traceName,
     });
@@ -165,6 +164,7 @@ export function logAgentExecution(metadata: AgentTraceMetadata): void {
         contractId: metadata.contractId,
         clauseNumber: metadata.clauseNumber,
         language: metadata.language,
+        status: metadata.error ? "error" : "success",
       },
       input: metadata.input
         ? {
@@ -173,12 +173,10 @@ export function logAgentExecution(metadata: AgentTraceMetadata): void {
           }
         : undefined,
       output: metadata.output,
-      statusMessage: metadata.error ? "error" : "success",
-      level: metadata.error ? "error" : "default",
     });
 
     if (metadata.duration) {
-      logger.debug("Agent execution traced", {
+      logger.info("Agent execution traced", {
         agent: metadata.agentName,
         contractId: metadata.contractId,
         duration: metadata.duration,

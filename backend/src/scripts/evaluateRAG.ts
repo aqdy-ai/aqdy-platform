@@ -5,10 +5,8 @@ process.env.LANGFUSE_PUBLIC_KEY = process.env.LANGFUSE_PUBLIC_KEY || "dummy";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "dummy";
 
 import { ragService } from "../services/rag.service.js";
-import { logger } from "../utils/logger.js";
 
-// Disable noisy logger output for evaluation script
-logger.level = "warn";
+// Note: custom logger has no level property; pipe stderr to /dev/null if needed
 
 interface EvaluationTestCase {
   targetClauseId: string;

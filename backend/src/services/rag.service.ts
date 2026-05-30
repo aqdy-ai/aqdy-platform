@@ -465,12 +465,12 @@ export class RAGService {
         query: {
           inputs: { text: finalQueryText },
           topK: fetchK,
-          includeValues: enableMMR, // Vectors only needed if MMR is active
+          includeValues: enableMMR,
           ...(Object.keys(filter).length > 0 ? { filter } : {}),
         },
       });
 
-      const hits = response.result?.hits || [];
+      const hits = (response.result?.hits || []) as PineconeHit[];
 
       // 4. MMR Reranking
       const rerankedHits = enableMMR
@@ -520,7 +520,13 @@ export class RAGService {
     // Filter out low-similarity noise (score < 0.5)
     return hits
       .filter((hit) => (hit._score ?? 0) > 0.5)
-      .map((hit) => this.mapHitToKBMatch(hit));
+      .map((hit) =>
+        this.mapHitToKBMatch({
+          _id: String(hit._id ?? ""),
+          _score: hit._score,
+          fields: hit.fields as Record<string, unknown> | undefined,
+        }),
+      );
   }
 
   // ── Confidence Scoring ──────────────────────────
