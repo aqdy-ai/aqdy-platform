@@ -8,7 +8,7 @@
     "embed:kb": "tsx src/scripts/embedKB.ts",
     "build": "rimraf dist && tsc",
     "start": "node dist/index.js",
-    "lint": "eslint .",
+    "lint": "eslint src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",

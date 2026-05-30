@@ -34,8 +34,15 @@ export const analyzeContract = async (
     }
 
     // [Week 2][Day 6][Task 2] - Parsing Pipeline Validation
-    if (!contract.text || contract.text.trim().length === 0 || contractId === 'empty-file-id') {
-      throw new AppError(422, "Cannot analyze document: content is unreadable or empty");
+    if (
+      !contract.text ||
+      contract.text.trim().length === 0 ||
+      contractId === "empty-file-id"
+    ) {
+      throw new AppError(
+        422,
+        "Cannot analyze document: content is unreadable or empty",
+      );
     }
 
     // Audit trail — mark analysis as started
