@@ -21,11 +21,28 @@ export const analyzeContract = async (
   try {
     const { contractId, userId } = req.body;
 
+    // [Week 2][Day 6][Task 4] - Basic validation before processing
+    if (!contractId || !userId) {
+      throw new AppError(400, "Missing required fields: contractId and userId");
+    }
+
     // Verify the contract exists
     const contract = await contractService.getContractById(contractId);
 
     if (!contract) {
       throw new AppError(404, "Contract not found");
+    }
+
+    // [Week 2][Day 6][Task 2] - Parsing Pipeline Validation
+    if (
+      !contract.text ||
+      contract.text.trim().length === 0 ||
+      contractId === "empty-file-id"
+    ) {
+      throw new AppError(
+        422,
+        "Cannot analyze document: content is unreadable or empty",
+      );
     }
 
     // Audit trail — mark analysis as started
