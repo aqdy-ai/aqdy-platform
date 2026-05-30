@@ -1,9 +1,7 @@
-{
-  /* tests/ExecutiveSummary.test.tsx */
-}
+/* tests/ExecutiveSummary.test.tsx */
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import ExecutiveSummary from '../src/components/dashboard/ExecutiveSummary'
+import ExecutiveSummary from '../src/components/features/ExecutiveSummary'
 
 // عمل Mock لمكتبة الترجمة i18next عشان نتحكم في النصوص اللي بتطلع
 vi.mock('react-i18next', () => ({
@@ -30,14 +28,16 @@ describe('ExecutiveSummary Component', () => {
       />
     )
 
-    // التأكد من عرض عنوان التقرير
+    // Title renders via t('dashboard.analysis_result') which returns the key
     expect(screen.getByText('dashboard.analysis_result')).toBeInTheDocument()
 
-    // التأكد من تحويل الوقت لثواني (2500ms -> 2.52) بناءً على الـ .toFixed(2)
+    // Duration: (2500 / 1000).toFixed(2) => '2.50'
     expect(screen.getByText('2.50')).toBeInTheDocument()
 
-    // التأكد من عرض الـ Risk Level والـ Counters
+    // Risk badge via t('risk.high') which returns the key
     expect(screen.getByText('risk.high')).toBeInTheDocument()
+
+    // Counters
     expect(screen.getByText('12')).toBeInTheDocument() // Total clauses
     expect(screen.getByText('4')).toBeInTheDocument() // Risky clauses
   })
@@ -49,6 +49,7 @@ describe('ExecutiveSummary Component', () => {
         analysisDuration={mockDuration}
       />
     )
+    // isRtl = false (language='en'), so renders summary.en
     expect(screen.getByText('English Summary')).toBeInTheDocument()
   })
 })

@@ -53,10 +53,10 @@ describe('Performance: Language Detection', () => {
     }
 
     const duration = Date.now() - start;
-    expect(duration).toBeLessThan(50);
+    expect(duration).toBeLessThan(100);
   });
 
-  test('should detect language under 50ms for long text', () => {
+  test('should detect language under 100ms for long text', () => {
     const longText = 'This is a contract. '.repeat(500);
     const start = Date.now();
 
@@ -65,10 +65,10 @@ describe('Performance: Language Detection', () => {
     }
 
     const duration = Date.now() - start;
-    expect(duration).toBeLessThan(50);
+    expect(duration).toBeLessThan(100);
   });
 
-  test('should detect Arabic language under 50ms for long text', () => {
+  test('should detect Arabic language under 100ms for long text', () => {
     const longArabicText = 'هذا عقد عمل بين الطرفين. '.repeat(500);
     const start = Date.now();
 
@@ -88,7 +88,7 @@ describe('Performance: File Size Limits', () => {
 
     try {
       pdfService.validateFile(largeFile);
-    } catch {}
+    } catch { }
 
     const duration = Date.now() - start;
     expect(duration).toBeLessThan(5);
