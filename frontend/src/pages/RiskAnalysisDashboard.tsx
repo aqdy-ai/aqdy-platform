@@ -1,6 +1,7 @@
 /* src/pages/RiskAnalysisDashboard.tsx */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import {
   ShieldAlert,
   ShieldCheck,
@@ -14,7 +15,7 @@ import {
 } from 'lucide-react'
 import ClauseCard, { ClauseItem } from '../components/features/ClauseCard'
 
-// بيانات تجريبية تحاكي تحليل الذكاء الاصطناعي للعقد
+// بيانات تجريبية تحاكي تحليل الذكاء الاصطناعي للعقد (fallback)
 const MOCK_RISK_DATA = {
   contractName: 'عقد توريد برمجيات وتشغيل صيانة.pdf',
   overallScore: 68, // من 100
@@ -65,17 +66,256 @@ const MOCK_RISK_DATA = {
   ],
 }
 
+interface IClauseAnalysis {
+  _id?: string
+  clauseText: string
+  clauseType: string
+  riskLevel: 'low' | 'medium' | 'high' | 'critical' | 'unknown'
+  explanation: { ar: string; en: string }
+  redlineSuggestion?: string
+}
+
+interface IRiskAnalysis {
+  filename?: string
+  executiveSummary?: {
+    overallRisk: 'low' | 'medium' | 'high' | 'critical'
+    totalClauses: number
+    riskyClausesCount: number
+    summary: { ar: string; en: string }
+  }
+  clauseAnalysis: IClauseAnalysis[]
+  status?: string
+}
+
 export default function RiskAnalysisDashboard() {
   const { i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
+  const [searchParams] = useSearchParams()
+  const contractId = searchParams.get('id')
+
   const [activeFilter, setActiveFilter] = useState<
     'all' | 'high' | 'medium' | 'low'
   >('all')
 
-  const filteredItems = MOCK_RISK_DATA.items.filter((item) => {
+  // Real data state from the backend
+  const [analysis, setAnalysis] = useState<IRiskAnalysis | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
+  const [stepIndex, setStepIndex] = useState<number>(0)
+
+  // Loading steps animation
+  const loadingSteps = isRtl
+    ? [
+        '🚀 تفعيل وكلاء الذكاء الاصطناعي القانونيين...',
+        '📂 استخراج نصوص العحد وتحليل بنيته اللغوية...',
+        '🤖 استدعاء وكيل استخراج البنود والالتزامات...',
+        '⚖️ فحص ثغرات التعويضات والمسؤولية المفتوحة...',
+        '🔍 تشغيل محاكي تصنيف المخاطر وتحديد درجة الأمان...',
+        '📝 صياغة التوصيات والبدائل الصياغية الآمنة للمفاوضات...',
+      ]
+    : [
+        '🚀 Initializing Legal AI Agents...',
+        '📂 Extracting document text and linguistic mapping...',
+        '🤖 Invoking clause extraction & validation agent...',
+        '⚖️ Analyzing indemnification and open liability loops...',
+        '🔍 Running risk classifier models...',
+        '📝 Generating AI safe-harbor redline recommendations...',
+      ]
+
+  useEffect(() => {
+    if (isLoading) {
+      const interval = setInterval(() => {
+        setStepIndex((prev) => (prev + 1) % loadingSteps.length)
+      }, 2500)
+      return () => clearInterval(interval)
+    }
+  }, [isLoading, loadingSteps.length])
+
+  useEffect(() => {
+    if (!contractId) {
+      return
+    }
+
+    // Run asynchronously to prevent cascading renders and satisfy the linter
+    Promise.resolve().then(() => {
+      setIsLoading(true)
+      setError(null)
+    })
+
+    let pollCount = 0
+    const maxPolls = 60 // 2.5 minutes maximum polling duration
+
+    const checkAnalysis = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/analysis/${contractId}`
+        )
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}))
+          throw new Error(errData.message || 'Failed to fetch analysis details')
+        }
+
+        const resData = await response.json()
+
+        if (resData.success && resData.data) {
+          if (resData.data.status === 'processing') {
+            pollCount++
+            if (pollCount >= maxPolls) {
+              throw new Error('Analysis timed out. Please try again.')
+            }
+            return
+          }
+
+          setAnalysis(resData.data)
+          setIsLoading(false)
+          clearInterval(pollInterval)
+        }
+      } catch (err: unknown) {
+        const errorObj = err as Error
+        setError(errorObj.message || 'An error occurred during analysis')
+        setIsLoading(false)
+        clearInterval(pollInterval)
+      }
+    }
+
+    checkAnalysis()
+    const pollInterval = setInterval(checkAnalysis, 2500)
+
+    return () => clearInterval(pollInterval)
+  }, [contractId])
+
+  // Map real data from backend, falling back to mock data when accessed offline/directly
+  const dataToRender = analysis
+    ? {
+        contractName:
+          analysis.filename ||
+          (isRtl ? 'عقد قيد التحليل.pdf' : 'Analyzed Contract.pdf'),
+        overallScore: Math.max(
+          10,
+          100 -
+            analysis.clauseAnalysis?.filter(
+              (c: IClauseAnalysis) =>
+                c.riskLevel === 'critical' || c.riskLevel === 'high'
+            ).length *
+              20 -
+            analysis.clauseAnalysis?.filter(
+              (c: IClauseAnalysis) => c.riskLevel === 'medium'
+            ).length *
+              10 -
+            analysis.clauseAnalysis?.filter(
+              (c: IClauseAnalysis) => c.riskLevel === 'low'
+            ).length *
+              5
+        ),
+        overallRisk: analysis.executiveSummary?.overallRisk || 'medium',
+        summary: isRtl
+          ? analysis.executiveSummary?.summary?.ar || 'لا يوجد ملخص متاح.'
+          : analysis.executiveSummary?.summary?.en || 'No summary available.',
+        stats: {
+          high:
+            analysis.clauseAnalysis?.filter(
+              (c: IClauseAnalysis) =>
+                c.riskLevel === 'critical' || c.riskLevel === 'high'
+            ).length || 0,
+          medium:
+            analysis.clauseAnalysis?.filter(
+              (c: IClauseAnalysis) => c.riskLevel === 'medium'
+            ).length || 0,
+          low:
+            analysis.clauseAnalysis?.filter(
+              (c: IClauseAnalysis) => c.riskLevel === 'low'
+            ).length || 0,
+        },
+        items: (analysis.clauseAnalysis || []).map(
+          (item: IClauseAnalysis, idx: number) => {
+            const riskVal =
+              item.riskLevel === 'critical' || item.riskLevel === 'high'
+                ? 'high'
+                : item.riskLevel === 'medium'
+                  ? 'medium'
+                  : 'low'
+            return {
+              id: item._id || `clause-${idx}`,
+              severity: riskVal,
+              title: isRtl
+                ? `${item.clauseType === 'Liability' ? 'شرط المسؤولية والتعويضات' : item.clauseType === 'NonCompete' ? 'شرط عدم المنافسة' : item.clauseType || 'بند قانوني تحت الدراسة'}`
+                : `${item.clauseType || 'Analyzed Clause'}`,
+              clause: item.clauseText,
+              recommendation: isRtl
+                ? `${item.redlineSuggestion || 'ننصح بإعادة التفاوض حول هذا البند.'}\n\n💡 توضيح: ${item.explanation?.ar || ''}`
+                : `${item.redlineSuggestion || 'We recommend renegotiating this clause.'}\n\n💡 Explanation: ${item.explanation?.en || ''}`,
+            }
+          }
+        ),
+      }
+    : MOCK_RISK_DATA
+
+  const filteredItems = dataToRender.items.filter((item) => {
     if (activeFilter === 'all') return true
     return item.severity === activeFilter
   })
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[75vh] flex-col items-center justify-center px-4 py-20 text-center">
+        <div className="bg-primary/20 absolute top-1/3 left-1/2 -z-10 h-72 w-72 -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full blur-[100px]" />
+
+        <div className="relative mb-10">
+          <div
+            className="border-primary h-32 w-32 animate-spin rounded-full border-4 border-dashed"
+            style={{ animationDuration: '8s' }}
+          />
+          <div
+            className="border-secondary absolute inset-2 animate-spin rounded-full border-4 border-dotted"
+            style={{ animationDuration: '4s', animationDirection: 'reverse' }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <ShieldAlert className="text-primary animate-bounce" size={40} />
+          </div>
+        </div>
+
+        <h2 className="mb-4 text-2xl font-black tracking-tight md:text-3xl">
+          {isRtl
+            ? 'جاري فحص وتحليل العقد ذكياً...'
+            : 'Analyzing contract with Legal AI...'}
+        </h2>
+
+        <div className="bg-card/50 border-border/50 w-full max-w-md rounded-2xl border p-5 shadow-inner backdrop-blur-md">
+          <p className="text-primary animate-pulse text-base font-bold transition-all duration-500">
+            {loadingSteps[stepIndex]}
+          </p>
+        </div>
+
+        <p className="text-muted-foreground mt-4 max-w-[320px] text-sm leading-relaxed font-semibold">
+          {isRtl
+            ? 'يستغرق هذا عادةً من 10 إلى 20 ثانية حيث يقوم وكلاء الذكاء الاصطناعي بدراسة دقيقة لكل بند قانوني.'
+            : 'This usually takes 10 to 20 seconds while our specialized AI agents meticulously study every clause.'}
+        </p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[75vh] flex-col items-center justify-center px-4 py-20 text-center">
+        <div className="mb-6 rounded-3xl bg-red-500/10 p-5 text-red-500">
+          <ShieldAlert size={48} />
+        </div>
+        <h2 className="mb-3 text-2xl font-black text-red-600 dark:text-red-400">
+          {isRtl ? 'حدث خطأ أثناء التحليل' : 'Analysis Failed'}
+        </h2>
+        <p className="text-muted-foreground mb-8 max-w-md text-sm leading-relaxed font-medium font-semibold">
+          {error}
+        </p>
+        <button
+          onClick={() => window.history.back()}
+          className="bg-primary text-primary-foreground rounded-xl px-6 py-3 font-bold shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95"
+        >
+          {isRtl ? 'العودة للخلف' : 'Go Back'}
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="animate-in fade-in space-y-8 py-10 duration-500">
@@ -89,9 +329,9 @@ export default function RiskAnalysisDashboard() {
             <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight">
               {isRtl ? 'تحليل مخاطر العقد' : 'Contract Risk Analysis'}
             </h1>
-            <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm">
+            <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm font-semibold">
               <FileText size={16} />
-              {MOCK_RISK_DATA.contractName}
+              {dataToRender.contractName}
             </p>
           </div>
         </div>
@@ -135,15 +375,13 @@ export default function RiskAnalysisDashboard() {
                 strokeWidth="10"
                 fill="transparent"
                 strokeDasharray={402}
-                strokeDashoffset={
-                  402 - (402 * MOCK_RISK_DATA.overallScore) / 100
-                }
+                strokeDashoffset={402 - (402 * dataToRender.overallScore) / 100}
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute flex flex-col items-center">
               <span className="text-4xl font-black tracking-tight text-green-500">
-                {MOCK_RISK_DATA.overallScore}%
+                {dataToRender.overallScore}%
               </span>
               <span className="text-muted-foreground mt-0.5 text-[10px] font-bold tracking-wider uppercase">
                 {isRtl ? 'آمن ومستقر' : 'Safe & Stable'}
@@ -163,7 +401,7 @@ export default function RiskAnalysisDashboard() {
               </span>
             </div>
             <p className="text-foreground mt-2 text-start text-base leading-relaxed font-medium">
-              {MOCK_RISK_DATA.summary}
+              {dataToRender.summary}
             </p>
           </div>
           <div className="border-border/40 text-muted-foreground mt-4 flex items-center gap-2 border-t pt-4 text-xs font-semibold">
@@ -185,7 +423,7 @@ export default function RiskAnalysisDashboard() {
               : 'text-muted-foreground hover:bg-muted'
           }`}
         >
-          {isRtl ? 'كل الثغرات' : 'All Flaws'} ({MOCK_RISK_DATA.items.length})
+          {isRtl ? 'كل الثغرات' : 'All Flaws'} ({dataToRender.items.length})
         </button>
         <button
           onClick={() => setActiveFilter('high')}
@@ -196,7 +434,7 @@ export default function RiskAnalysisDashboard() {
           }`}
         >
           <ShieldAlert size={16} />
-          {isRtl ? 'مخاطر عالية' : 'High Risks'} ({MOCK_RISK_DATA.stats.high})
+          {isRtl ? 'مخاطر عالية' : 'High Risks'} ({dataToRender.stats.high})
         </button>
         <button
           onClick={() => setActiveFilter('medium')}
@@ -207,7 +445,7 @@ export default function RiskAnalysisDashboard() {
           }`}
         >
           <AlertTriangle size={16} />
-          {isRtl ? 'متوسطة' : 'Medium'} ({MOCK_RISK_DATA.stats.medium})
+          {isRtl ? 'متوسطة' : 'Medium'} ({dataToRender.stats.medium})
         </button>
         <button
           onClick={() => setActiveFilter('low')}
@@ -218,7 +456,7 @@ export default function RiskAnalysisDashboard() {
           }`}
         >
           <ShieldCheck size={16} />
-          {isRtl ? 'منخفضة' : 'Low'} ({MOCK_RISK_DATA.stats.low})
+          {isRtl ? 'منخفضة' : 'Low'} ({dataToRender.stats.low})
         </button>
       </div>
 

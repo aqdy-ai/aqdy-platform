@@ -16,6 +16,10 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
+vi.mock('react-router-dom', () => ({
+  useSearchParams: () => [new URLSearchParams(''), () => {}],
+}))
+
 // Internal MOCK_RISK_DATA constants used in assertions
 const INTERNAL_DATA = {
   totalItems: 4,
