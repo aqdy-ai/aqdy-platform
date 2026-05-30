@@ -1,7 +1,7 @@
 /* src/components/features/ClauseCard.tsx */
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   ShieldAlert,
   ShieldCheck,

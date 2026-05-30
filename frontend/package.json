@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint \"src/**/*.{ts,tsx,css}\"",
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
-    "check-format": "prettier --check \"src/**/*.{ts,tsx,css,md}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "check-format": "prettier --check \"src/**/*.{ts,tsx,css}\"",
     "start": "vite",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"

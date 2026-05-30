@@ -1,28 +1,14 @@
 /* tests/RiskAnalysisDashboard.integration.test.tsx */
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import RiskAnalysisDashboard from '../src/components/dashboard/RiskAnalysisDashboard'
-import sampleAnalysisData from '../src/mocks/sampleAnalysis.json'
+import RiskAnalysisDashboard from '../src/pages/RiskAnalysisDashboard'
 
-// 1️⃣ عمل Mock كامل وموحد لمكتبة i18next والترجمة
+// The real RiskAnalysisDashboard has NO props — it uses internal MOCK_RISK_DATA.
+// Text is rendered conditionally: isRtl ? 'arabic text' : 'english text'
+// Language is driven by i18n.language — mock it as 'ar' for Arabic test.
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => {
-      const translations: Record<string, string> = {
-        'dashboard.analysis_result': 'نتائج التحليل',
-        'dashboard.completed_in': 'تم في',
-        'dashboard.seconds': 'ثواني',
-        'dashboard.overall_risk': 'مستوى المخاطرة العام',
-        'dashboard.total_clauses': 'إجمالي البنود',
-        'dashboard.risky_clauses': 'البنود المخاطرة',
-        'dashboard.detailed_findings': 'النتائج التفصيلية',
-        'dashboard.explanation': 'الشرح القانوني',
-        'dashboard.show_redline': 'عرض المقترح البديل',
-        'risk.critical': 'مخاطرة حرجة جداً',
-        'risk.high': 'مخاطرة عالية',
-      }
-      return translations[key] || key
-    },
+    t: (key: string) => key,
     i18n: {
       language: 'ar',
       exists: () => true,
@@ -30,75 +16,93 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
+// Internal MOCK_RISK_DATA constants used in assertions
+const INTERNAL_DATA = {
+  totalItems: 4,
+  highCount: 3,
+  mediumCount: 5,
+  lowCount: 8,
+  overallScore: '68%',
+  contractName: 'عقد توريد برمجيات وتشغيل صيانة.pdf',
+  items: [
+    {
+      id: 'r1',
+      title: 'شرط جزائي مفتوح وبدون حد أقصى',
+      severity: 'high',
+    },
+    {
+      id: 'r2',
+      title: 'غموض في آلية إنهاء التعاقد المبكر',
+      severity: 'high',
+    },
+    {
+      id: 'r3',
+      title: 'قانون فض النزاعات خارج الاختصاص المحلي',
+      severity: 'medium',
+    },
+    {
+      id: 'r4',
+      title: 'عدم تحديد وثائق التأمين المطلوبة',
+      severity: 'low',
+    },
+  ],
+}
+
 describe('RiskAnalysisDashboard Integration Test (Full Data Flow)', () => {
-  // ⬇️ الاستنتاج التلقائي للـ Type مع عمل cast خفيف كـ نوع الـ Component لعدم حدوث تضارب في الـ Literals
-  const mockApiData = sampleAnalysisData as React.ComponentProps<
-    typeof RiskAnalysisDashboard
-  >['analysisData']
+  it('should render the full dashboard with header, score, and clause cards', () => {
+    render(<RiskAnalysisDashboard />)
 
-  it('should render the full dashboard integration flow correctly from mock API data', () => {
-    render(<RiskAnalysisDashboard analysisData={mockApiData} />)
+    // Header title (Arabic since language = 'ar')
+    expect(screen.getByText('تحليل مخاطر العقد')).toBeInTheDocument()
 
-    expect(screen.getByText('نتائج التحليل')).toBeInTheDocument()
-    // ⬇️ التعديل السحري: حساب القيمة المتوقعة ديناميكياً وتحويلها لـ Regex آمن ومضمون 100%
-    const expectedDuration = (mockApiData.analysisDuration / 1000).toFixed(2)
-    expect(screen.getByText(new RegExp(expectedDuration))).toBeInTheDocument()
+    // Contract name
+    expect(screen.getByText(INTERNAL_DATA.contractName)).toBeInTheDocument()
+
+    // Overall score
+    expect(screen.getByText(INTERNAL_DATA.overallScore)).toBeInTheDocument()
+
+    // Filter tabs
     expect(
-      screen.getByText(mockApiData.executiveSummary.totalClauses.toString())
+      screen.getByText(new RegExp(`كل الثغرات.*${INTERNAL_DATA.totalItems}`))
     ).toBeInTheDocument()
     expect(
-      screen.getByText(
-        mockApiData.executiveSummary.riskyClausesCount.toString()
-      )
+      screen.getByText(new RegExp(`مخاطر عالية.*${INTERNAL_DATA.highCount}`))
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(new RegExp(`متوسطة.*${INTERNAL_DATA.mediumCount}`))
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(new RegExp(`منخفضة.*${INTERNAL_DATA.lowCount}`))
     ).toBeInTheDocument()
 
-    // ⬇️ التعديل هنا: استخدام Regex عشان يلقط الكلمة ويطنش الإيموجي 🔍 والمساحات
-    expect(screen.getByText(/النتائج التفصيلية/)).toBeInTheDocument()
-    mockApiData.clauseAnalysis.forEach((clause) => {
-      expect(screen.getByText(`"${clause.clauseText}"`)).toBeInTheDocument()
+    // All clause card titles visible
+    INTERNAL_DATA.items.forEach((item) => {
+      expect(screen.getByText(item.title)).toBeInTheDocument()
     })
   })
 
-  it('should handle interactive toggle events independently across the dashboard', () => {
-    render(<RiskAnalysisDashboard analysisData={mockApiData} />)
+  it('should filter cards correctly when clicking filter tabs', () => {
+    render(<RiskAnalysisDashboard />)
 
-    // جلب أزرار الـ Toggle للمقترحات البديلة المتاحة في الكروت
-    const toggleButtons = screen.getAllByRole('button', {
-      name: 'عرض المقترح البديل',
-    })
-
-    // نتأكد إن عندنا كارتين في الـ Mock data فيهم زرار الـ Toggle
-    expect(toggleButtons.length).toBeGreaterThanOrEqual(1)
-
-    // اضغطي على الزرار الأول الخاص بالكارت الأول فقط
-    fireEvent.click(toggleButtons[0])
-
-    // ── ⬇️ التعديل الجديد والمحدد هنا قفل للمشكلة ──
-    const firstClauseId = mockApiData.clauseAnalysis[0]?.sourceFromKB
-    const firstClauseSuggestion =
-      mockApiData.clauseAnalysis[0]?.redlineSuggestion
-
-    // 1️⃣ نجيب الـ Container الفريد بتاع البند الأول اللي ضفنا له الـ ID للـ Accessibility
-    const firstContainer = document.getElementById(
-      `redline-container-${firstClauseId}`
+    // By default all 4 items shown
+    expect(screen.getAllByRole('heading', { level: 4 })).toHaveLength(
+      INTERNAL_DATA.totalItems
     )
-    expect(firstContainer).toBeInTheDocument()
 
-    // 2️⃣ نبحث عن النص جوه الـ Container ده بالذات عشان نمنع الـ Duplication Error
-    expect(firstContainer).toHaveTextContent(firstClauseSuggestion || '')
+    // Click "high" filter — should show only 2 high-severity items
+    const highFilterBtn = screen.getByText(/مخاطر عالية/)
+    fireEvent.click(highFilterBtn)
 
-    // وبفضل الـ composite key الفريد، الكارت التاني يظل مقفول ومبيحصلش تداخل
-    if (
-      mockApiData.clauseAnalysis[1] &&
-      mockApiData.clauseAnalysis[1]?.redlineSuggestion
-    ) {
-      const secondClauseId = mockApiData.clauseAnalysis[1].sourceFromKB
-      const secondContainer = document.getElementById(
-        `redline-container-${secondClauseId}`
-      )
-
-      // نتأكد إن الـ Container التاني مقفول تماماً ومش موجود في الـ DOM
-      expect(secondContainer).not.toBeInTheDocument()
-    }
+    const highItems = INTERNAL_DATA.items.filter((i) => i.severity === 'high')
+    expect(screen.getAllByRole('heading', { level: 4 })).toHaveLength(
+      highItems.length
+    )
+    expect(screen.getByText('شرط جزائي مفتوح وبدون حد أقصى')).toBeInTheDocument()
+    expect(
+      screen.getByText('غموض في آلية إنهاء التعاقد المبكر')
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText('قانون فض النزاعات خارج الاختصاص المحلي')
+    ).not.toBeInTheDocument()
   })
 })

@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 // SVG files — Vite transforms these into a URL string by default
-declare module "*.svg" {
+declare module '*.svg' {
   const src: string
   export default src
 }
@@ -14,33 +14,33 @@ declare module "*.svg" {
 // }
 
 // Image assets
-declare module "*.png" {
+declare module '*.png' {
   const src: string
   export default src
 }
 
-declare module "*.jpg" {
+declare module '*.jpg' {
   const src: string
   export default src
 }
 
-declare module "*.jpeg" {
+declare module '*.jpeg' {
   const src: string
   export default src
 }
 
-declare module "*.gif" {
+declare module '*.gif' {
   const src: string
   export default src
 }
 
-declare module "*.webp" {
+declare module '*.webp' {
   const src: string
   export default src
 }
 
 // Font / other binary assets
-declare module "*.woff2" {
+declare module '*.woff2' {
   const src: string
   export default src
 }

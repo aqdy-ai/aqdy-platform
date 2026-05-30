@@ -5,10 +5,10 @@
 // ── i18n ─────────────────────────────────────
 
 /** Supported UI languages */
-export type SupportedLocale = "en" | "ar"
+export type SupportedLocale = 'en' | 'ar'
 
 /** Direction derived from locale */
-export type TextDirection = "ltr" | "rtl"
+export type TextDirection = 'ltr' | 'rtl'
 
 /** Structure of every translation namespace (add more as needed) */
 export interface I18nNamespaces {
@@ -32,7 +32,9 @@ export interface I18nConfig {
 // ── ContractUpload ────────────────────────────
 
 /** Accepted MIME types for contract uploads */
-export type ContractMimeType = "application/pdf" | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+export type ContractMimeType =
+  | 'application/pdf'
+  | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
 /** Maximum allowed upload size in bytes (10 MB) */
 export const MAX_CONTRACT_SIZE_BYTES = 10 * 1024 * 1024
@@ -65,7 +67,7 @@ export interface ApiResponse<T> {
 export interface ContractAnalysisResult {
   id: string
   summary: string
-  riskLevel: "low" | "medium" | "high"
+  riskLevel: 'low' | 'medium' | 'high'
   clauses: ContractClause[]
   createdAt: string
 }
