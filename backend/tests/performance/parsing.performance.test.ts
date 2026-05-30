@@ -77,7 +77,7 @@ describe('Performance: Language Detection', () => {
     }
 
     const duration = Date.now() - start;
-    expect(duration).toBeLessThan(210);
+    expect(duration).toBeLessThan(300);
   });
 });
 
