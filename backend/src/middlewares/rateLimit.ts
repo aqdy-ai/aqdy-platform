@@ -40,7 +40,10 @@ const buildLimitResponse = (
   errorMessage: string,
   resetAt: number,
 ): void => {
-  const retryAfterSeconds = Math.max(1, Math.ceil((resetAt - Date.now()) / 1000));
+  const retryAfterSeconds = Math.max(
+    1,
+    Math.ceil((resetAt - Date.now()) / 1000),
+  );
   res.setHeader("Retry-After", String(retryAfterSeconds));
   res.status(statusCode).json({
     success: false,
@@ -80,7 +83,12 @@ export const userAnalysisRateLimit = () => {
     const limitKey = `${userId}:${dateKey}`;
     const resetAt = new Date(Date.now());
     resetAt.setUTCHours(24, 0, 0, 0);
-    const entry = ensureEntry(userDailyLimits, limitKey, 24 * 60 * 60 * 1000, resetAt.getTime());
+    const entry = ensureEntry(
+      userDailyLimits,
+      limitKey,
+      24 * 60 * 60 * 1000,
+      resetAt.getTime(),
+    );
 
     if (entry.count >= FREE_TIER_DAILY_LIMIT) {
       return buildLimitResponse(
@@ -104,7 +112,12 @@ export const anonymousIpRateLimit = () => {
 
     const ip = getClientIp(req);
     const resetAt = Date.now() + ANONYMOUS_IP_WINDOW_MS;
-    const entry = ensureEntry(anonymousIpLimits, ip, ANONYMOUS_IP_WINDOW_MS, resetAt);
+    const entry = ensureEntry(
+      anonymousIpLimits,
+      ip,
+      ANONYMOUS_IP_WINDOW_MS,
+      resetAt,
+    );
 
     if (entry.count >= ANONYMOUS_IP_REQUEST_LIMIT) {
       return buildLimitResponse(
