@@ -1,0 +1,34 @@
+NON-DISCLOSURE AGREEMENT
+
+This Non-Disclosure Agreement ("Agreement") is made effective as of March 1, 2025, by and between:
+
+Disclosing Party: InnovateTech Solutions SAE, a company registered in Egypt, with its principal office at Smart Village, Building B4, Giza, Egypt ("Discloser")
+
+Receiving Party: DataBridge Consulting Ltd., a company registered in the United Arab Emirates, with its principal office at DIFC, Dubai, UAE ("Recipient")
+
+Article 1: Definition of Confidential Information
+"Confidential Information" shall mean all non-public information disclosed by the Discloser to the Recipient, whether orally, in writing, or by any other means, including but not limited to: business plans, financial data, customer lists, technical specifications, source code, algorithms, marketing strategies, product roadmaps, and any information marked as "confidential" or reasonably understood to be confidential.
+
+Article 2: Obligations of the Receiving Party
+The Recipient agrees to: (a) hold all Confidential Information in strict confidence; (b) not disclose Confidential Information to any third party without prior written consent; (c) use Confidential Information solely for the purpose of evaluating a potential business relationship; (d) limit access to Confidential Information to employees and advisors who have a need to know and are bound by similar confidentiality obligations.
+
+Article 3: Exclusions
+The obligations of confidentiality shall not apply to information that: (a) is or becomes publicly available through no fault of the Recipient; (b) was rightfully in the Recipient's possession before disclosure; (c) is independently developed by the Recipient without use of Confidential Information; (d) is required to be disclosed by law, regulation, or court order, provided the Recipient gives prompt notice to the Discloser.
+
+Article 4: Term and Duration
+This Agreement shall remain in effect for a period of three (3) years from the date of execution. The obligations of confidentiality shall survive the expiration of this Agreement for an additional period of two (2) years.
+
+Article 5: Return of Materials
+Upon termination or expiration of this Agreement, or upon request by the Discloser, the Recipient shall promptly return or destroy all copies of Confidential Information in any form, including electronic copies, and shall certify in writing that such return or destruction has been completed.
+
+Article 6: Remedies
+The Recipient acknowledges that any breach of this Agreement may cause irreparable harm to the Discloser. In addition to any other remedies available at law or in equity, the Discloser shall be entitled to seek injunctive relief without the necessity of proving actual damages or posting a bond.
+
+Article 7: No License
+Nothing in this Agreement grants the Recipient any license or rights to the Confidential Information, except the limited right to use it for the purpose stated in Article 2.
+
+Article 8: Liability Limitation
+In no event shall either party be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to this Agreement, regardless of whether such damages were foreseeable. The total aggregate liability of either party shall not exceed USD 500,000.
+
+Article 9: Governing Law
+This Agreement shall be governed by and construed in accordance with the laws of the Arab Republic of Egypt, without regard to its conflict of laws provisions. Any disputes shall be submitted to binding arbitration under the rules of the Cairo Regional Centre for International Commercial Arbitration (CRCICA).

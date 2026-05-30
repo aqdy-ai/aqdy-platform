@@ -1,0 +1,100 @@
+{
+  "common": {
+    "upload": "Upload Contract",
+    "analyze": "Analyze",
+    "cancel": "Cancel",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Operation successful",
+    "brand_name": "Aqdy",
+    "tagline": "Secure AI Legal Assistant",
+    "get_started": "Get Started",
+    "remove": "Remove"
+  },
+  "nav": {
+    "home": "Home",
+    "how_it_works": "How it works?",
+    "pricing": "Pricing",
+    "contact": "Contact Us",
+    "language_toggle": "العربية"
+  },
+  "hero": {
+    "title": "Your Legal Future, Smarter.",
+    "title_part1": "Your Legal Future,",
+    "title_part2": "Smarter.",
+    "subtitle": "Upload your contracts now and get accurate AI-powered legal analysis tailored to Egyptian Law.",
+    "cta_primary": "Start Analysis",
+    "cta_secondary": "Watch Demo"
+  },
+  "upload": {
+    "title": "Upload your contract",
+    "subtitle": "Drag and drop your PDF file or click to browse",
+    "hint": "Supports PDF only (Max 10MB)",
+    "analyze_button": "Start AI Analysis",
+    "error_invalid_type": "Please select a PDF file only",
+    "error_too_large": "File size exceeds 10MB",
+    "dropzone_label": "Contract upload area",
+    "drag_drop_prompt": "Drag and drop your contract file here, or click to browse",
+    "supported_formats": "Supported formats: PDF, DOCX (Max 10 MB)",
+    "status_uploading": "Uploading and analyzing contract legally...",
+    "status_completed": "Upload completed, processing data...",
+    "success_title": "Contract uploaded successfully",
+    "success_desc": "Ready for analysis and risk extraction.",
+    "remove_file": "Remove file",
+    "error_invalid_type_desc": "Please select a valid PDF or Word document only.",
+    "error_large_file": "File size is too large. Maximum limit is 10 MB"
+  },
+  "disclaimer": {
+    "description": "Aqdy is an AI legal assistant designed to facilitate contract review and is not a formal legal advice.",
+    "warning": "Please consult a specialized lawyer before making any final legal decisions.",
+    "accept_button": "I Understand & Accept"
+  },
+  "features": {
+    "title_1": "Smart Analysis",
+    "desc_1": "Extract key clauses and identify legal loopholes accurately.",
+    "title_2": "Legal Compliance",
+    "desc_2": "Comprehensive review of contract compliance with Egyptian laws and regulations.",
+    "title_3": "Instant Recommendations",
+    "desc_3": "Legal advice to improve contract terms and protect your rights."
+  },
+  "risk": {
+    "low": "Low Risk",
+    "medium": "Medium Risk",
+    "high": "High Risk",
+    "critical": "Critical Risk"
+  },
+  "dashboard": {
+    "analysis_result": "Executive Analysis Summary",
+    "completed_in": "Analysis completed in",
+    "seconds": "seconds",
+    "overall_risk": "Overall Risk Level",
+    "total_clauses": "Total Clauses Found",
+    "risky_clauses": "Risky Clauses Count",
+    "detailed_findings": "Detailed Findings & Clause Analysis",
+    "explanation": "Risk Legal Explanation:",
+    "confidence": "Smart Confidence Score",
+    "show_redline": "Show Redline Suggestion",
+    "hide_redline": "Hide Redline Suggestion",
+    "suggested_safer": "Suggested Safer Clause (Redline):",
+    "original_risky": "Original Clause (Risky):",
+    "suggested_safer_label": "Suggested Safer Clause:",
+    "why_better": "Why is this better?",
+    "why_better_desc": "This adjustment establishes an industry-standard liability cap, protecting both parties from unfair or unlimited financial and legal claims.",
+    "ai_summary_title": "AI Executive Assessment:",
+    "kb_source": "KB Reference",
+    "kb_source_tooltip": "The verified reference clause ID within Aqdy's internal legal knowledge base",
+    "talking_points_title": "Suggested Negotiation Talking Points:",
+    "talking_points_copy": "Copy point",
+    "talking_points_copied": "Copied!",
+    "tp": {
+      "Liability_critical": "Unlimited liability poses an existential operational risk. An industry-standard liability cap protects both business entities.",
+      "Liability_high": "Capping liability at the total contract value is the standard legal framework for balanced risk distribution.",
+      "NonCompete_high": "An excessive non-compete duration unfairly restricts professional livelihood; reducing the scope balances both parties' interests.",
+      "default": "The suggested adjustment aligns with standard commercial practices, ensuring a balanced and fair contractual relationship."
+    },
+    "export_report": "Export Report",
+    "export_pdf": "PDF Document",
+    "export_docx": "Word Document (DOCX)"
+  }
+}

@@ -1,0 +1,1052 @@
+[
+  {
+    "id": "clause_001_unlimited_liability",
+    "category": "liability",
+    "riskLevel": "critical",
+    "clausePattern": "The Service Provider shall be liable for unlimited damages arising from any breach",
+    "keywords": ["unlimited liability", "liable", "damages", "مسؤولية غير محدودة", "تعويض", "مسؤول"],
+    "explanation": {
+      "ar": "هذا الشرط يجعلك مسؤولاً عن أي خسائر بدون حد أقصى مما يعرضك لخسائر مالية كارثية",
+      "en": "This clause makes you liable for unlimited damages without any cap, exposing you to catastrophic financial loss"
+    },
+    "whyRisky": {
+      "ar": "قد يؤدي إلى خسائر مالية كبيرة جداً لا يمكنك تحملها حتى لو كانت الأضرار الفعلية صغيرة",
+      "en": "May result in catastrophic financial losses even for minor breaches, far exceeding the contract value"
+    },
+    "saferAlternative": {
+      "ar": "يجب تحديد المسؤولية بحد أقصى يساوي قيمة العقد أو 12 شهر من الرسوم أيهما أقل",
+      "en": "Liability should be capped at the total contract value or 12 months of fees, whichever is lower"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 224",
+    "contractTypes": ["service_agreement", "freelance", "vendor"]
+  },
+  {
+    "id": "clause_002_automatic_renewal",
+    "category": "termination",
+    "riskLevel": "high",
+    "clausePattern": "This agreement shall automatically renew for successive periods unless terminated with 90 days written notice",
+    "keywords": ["automatic renewal", "auto-renew", "successive periods", "تجديد تلقائي", "يتجدد تلقائياً", "إشعار مسبق"],
+    "explanation": {
+      "ar": "العقد يتجدد تلقائياً وإذا نسيت إرسال إشعار الإنهاء قبل 90 يوماً ستكون ملزماً بسنة إضافية",
+      "en": "Contract auto-renews and if you miss the 90-day cancellation window, you are locked in for another full term"
+    },
+    "whyRisky": {
+      "ar": "فترة الإشعار الطويلة (90 يوماً) تجعل من السهل تفويت نافذة الإلغاء مما يكلفك سنة كاملة إضافية",
+      "en": "The long notice period (90 days) makes it easy to miss the cancellation window, costing you another full year"
+    },
+    "saferAlternative": {
+      "ar": "طلب تقليل فترة الإشعار إلى 30 يوماً أو تحويل التجديد من تلقائي إلى اختياري",
+      "en": "Request 30-day notice period or convert to opt-in renewal instead of opt-out"
+    },
+    "relatedLaw": "Egyptian Commercial Law Article 67",
+    "contractTypes": ["service_agreement", "subscription", "vendor"]
+  },
+  {
+    "id": "clause_003_unilateral_modification",
+    "category": "amendment",
+    "riskLevel": "critical",
+    "clausePattern": "The Company reserves the right to modify these terms at any time without prior notice",
+    "keywords": ["modify", "change terms", "at any time", "without notice", "تعديل", "يحق للشركة", "دون إشعار", "في أي وقت"],
+    "explanation": {
+      "ar": "هذا البند يمنح الطرف الآخر حق تغيير شروط العقد من طرف واحد في أي وقت دون الحاجة لموافقتك",
+      "en": "This clause allows the other party to change contract terms unilaterally at any time without your consent"
+    },
+    "whyRisky": {
+      "ar": "يمكن للشركة تغيير الأسعار أو الشروط أو الالتزامات بشكل كامل دون إبلاغك مما يجعل العقد غير مستقر",
+      "en": "The company can change prices, obligations, or scope entirely without informing you, making the contract unstable"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن تتطلب أي تعديلات موافقة خطية من الطرفين مع إشعار مسبق 30 يوماً على الأقل",
+      "en": "Any modifications should require written consent from both parties with at least 30 days advance notice"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 147",
+    "contractTypes": ["service_agreement", "employment", "subscription", "vendor"]
+  },
+  {
+    "id": "clause_004_ip_assignment_broad",
+    "category": "intellectual_property",
+    "riskLevel": "critical",
+    "clausePattern": "All work product and intellectual property created by Employee whether during or outside working hours shall be the sole property of the Company",
+    "keywords": ["intellectual property", "work product", "sole property", "outside working hours", "ملكية فكرية", "حقوق الملكية", "أوقات الفراغ"],
+    "explanation": {
+      "ar": "هذا البند يمنح صاحب العمل ملكية جميع ابتكاراتك حتى تلك التي تقوم بها في وقت فراغك وبأدواتك الخاصة",
+      "en": "This clause gives your employer ownership of ALL your inventions and creations, even those made in your personal time with your own resources"
+    },
+    "whyRisky": {
+      "ar": "قد تخسر ملكية مشاريع جانبية أو تطبيقات قمت بتطويرها خارج ساعات العمل تماماً",
+      "en": "You could lose ownership of side projects, personal apps, or inventions completely unrelated to your job"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن تقتصر ملكية الشركة على العمل المرتبط مباشرة بمجالها وعلى المنجز خلال ساعات العمل الرسمية بموارد الشركة فقط",
+      "en": "Company ownership should be limited to work directly related to company business, created during work hours using company resources only"
+    },
+    "relatedLaw": "Egyptian Intellectual Property Law No. 82/2002 Article 135",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_005_non_compete_broad",
+    "category": "non_compete",
+    "riskLevel": "high",
+    "clausePattern": "Employee shall not engage in any business competing with the Company for 2 years after termination within any geographic area where the Company operates",
+    "keywords": ["non-compete", "competing business", "2 years", "after termination", "منافسة", "عدم المنافسة", "بعد انتهاء العقد"],
+    "explanation": {
+      "ar": "هذا البند يمنعك من العمل في أي شركة منافسة لمدة سنتين بعد تركك للعمل في أي منطقة تعمل بها الشركة",
+      "en": "This clause prevents you from working for any competitor for 2 years after leaving, in any area where the company operates"
+    },
+    "whyRisky": {
+      "ar": "قد يمنعك من العمل في مجالك المهني بالكامل لسنتين مما يضر بمسيرتك المهنية ومصدر رزقك",
+      "en": "Could prevent you from working in your entire professional field for 2 years, harming your career and livelihood"
+    },
+    "saferAlternative": {
+      "ar": "تفاوض على تقليل المدة إلى 6 أشهر وتضييق النطاق الجغرافي والمهني مع تعويض مالي مقابل فترة التقييد",
+      "en": "Negotiate to 6 months, narrow geographic and professional scope, and add financial compensation for the restriction period"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Article 66",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_006_unilateral_termination",
+    "category": "termination",
+    "riskLevel": "high",
+    "clausePattern": "The Company may terminate this agreement at any time with or without cause with no obligation to provide notice or compensation",
+    "keywords": ["terminate at any time", "without cause", "no notice", "no compensation", "إنهاء فوري", "دون سبب", "دون تعويض"],
+    "explanation": {
+      "ar": "يحق للشركة إنهاء عقدك في أي وقت دون تقديم أسباب أو تعويض أو إشعار مسبق",
+      "en": "The company can terminate your contract at any time without reason, notice, or any compensation"
+    },
+    "whyRisky": {
+      "ar": "تفقد حماية الأمان الوظيفي تماماً ويمكن فصلك فجأة دون أي حماية مالية أو قانونية",
+      "en": "You lose all job security protection and can be dismissed suddenly with zero financial or legal protection"
+    },
+    "saferAlternative": {
+      "ar": "اطلب إضافة فترة إشعار لا تقل عن 30 يوماً وتعويض عند إنهاء العقد بدون سبب مشروع",
+      "en": "Request a minimum 30-day notice period and severance compensation for termination without cause"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Articles 120-122",
+    "contractTypes": ["employment", "freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_007_excessive_penalty",
+    "category": "penalties",
+    "riskLevel": "high",
+    "clausePattern": "In case of any breach the breaching party shall pay a penalty of 50% of the total contract value per incident",
+    "keywords": ["penalty", "50%", "per incident", "breach", "غرامة", "مخالفة", "جزاء", "عن كل مخالفة"],
+    "explanation": {
+      "ar": "يفرض هذا البند غرامة بنسبة 50% من قيمة العقد الكاملة عن كل مخالفة بصرف النظر عن حجمها",
+      "en": "This clause imposes a 50% contract value penalty per breach regardless of the actual severity of the violation"
+    },
+    "whyRisky": {
+      "ar": "حتى المخالفات الطفيفة غير المقصودة يمكن أن تكلفك نصف قيمة العقد مما يجعل هذا الشرط تعسفياً",
+      "en": "Even minor unintentional breaches could cost you half the contract value, making this clause grossly disproportionate"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن تكون الغرامات متدرجة ومتناسبة مع حجم الضرر الفعلي مع تحديد حد أقصى معقول",
+      "en": "Penalties should be proportional to actual damages incurred, graduated by severity, with a reasonable maximum cap"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 224",
+    "contractTypes": ["service_agreement", "vendor", "freelance"]
+  },
+  {
+    "id": "clause_008_payment_discretion",
+    "category": "payment",
+    "riskLevel": "high",
+    "clausePattern": "Payment shall be made at the sole discretion of the Client based on their assessment of work quality",
+    "keywords": ["sole discretion", "work quality", "client assessment", "تقدير العميل", "جودة العمل", "صلاحية الدفع"],
+    "explanation": {
+      "ar": "هذا البند يترك قرار دفع أجرك لتقدير العميل المنفرد مما يمنحه حق رفض الدفع بحجة عدم الرضا",
+      "en": "This clause leaves payment entirely to the client's subjective judgment, giving them the right to refuse payment claiming dissatisfaction"
+    },
+    "whyRisky": {
+      "ar": "يمكن للعميل رفض الدفع بأي حجة دون معيار موضوعي مما يعرضك لخطر عدم الحصول على مستحقاتك",
+      "en": "Client can refuse payment on any subjective grounds with no objective standard, risking non-payment for completed work"
+    },
+    "saferAlternative": {
+      "ar": "يجب تحديد معايير قبول واضحة وموضوعية وإجراء للاعتراض وإلزامية الدفع عند استيفاء المعايير",
+      "en": "Define clear objective acceptance criteria, an objection process, and mandatory payment upon meeting agreed standards"
+    },
+    "relatedLaw": "Egyptian Commercial Law Article 348",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_009_data_sharing_broad",
+    "category": "privacy",
+    "riskLevel": "high",
+    "clausePattern": "The Company may share your personal data with third parties for marketing and business purposes without further notice",
+    "keywords": ["share data", "third parties", "marketing", "without notice", "مشاركة البيانات", "أطراف ثالثة", "بياناتك الشخصية"],
+    "explanation": {
+      "ar": "يمنح هذا البند الشركة حق مشاركة بياناتك الشخصية مع أطراف أخرى لأغراض تسويقية دون إبلاغك",
+      "en": "This clause allows the company to share your personal data with third parties for marketing without notifying you"
+    },
+    "whyRisky": {
+      "ar": "تفقد السيطرة على بياناتك الشخصية وقد تتعرض لاتصالات غير مرغوب فيها أو خروقات خصوصية",
+      "en": "You lose control over your personal data and may be exposed to unwanted marketing or privacy violations"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن تتطلب مشاركة البيانات موافقة صريحة منك لكل غرض على حدة مع حق السحب في أي وقت",
+      "en": "Data sharing should require explicit opt-in consent for each purpose separately with the right to withdraw at any time"
+    },
+    "relatedLaw": "Egyptian Data Protection Law No. 151/2020",
+    "contractTypes": ["service_agreement", "subscription", "employment"]
+  },
+  {
+    "id": "clause_010_foreign_jurisdiction",
+    "category": "dispute_resolution",
+    "riskLevel": "high",
+    "clausePattern": "Any disputes shall be resolved exclusively in the courts of a foreign country under foreign law",
+    "keywords": ["exclusive jurisdiction", "foreign courts", "foreign law", "اختصاص حصري", "محاكم أجنبية", "قانون أجنبي"],
+    "explanation": {
+      "ar": "يلزمك هذا البند بحل أي نزاع في محاكم دولة أجنبية مما يجعل المطالبة بحقوقك مكلفة للغاية",
+      "en": "This clause forces you to resolve any dispute in foreign courts, making legal action prohibitively expensive"
+    },
+    "whyRisky": {
+      "ar": "تكاليف التقاضي في الخارج تتجاوز في الغالب قيمة المطالبة نفسها مما يجعل حقوقك القانونية غير عملية",
+      "en": "The cost of foreign litigation typically exceeds the claim value, making your legal rights practically worthless"
+    },
+    "saferAlternative": {
+      "ar": "اطلب إجراء التحكيم محلياً أو إضافة المحاكم المصرية كخيار للطرف المصري",
+      "en": "Request local arbitration or at minimum the option to use Egyptian courts for the Egyptian party"
+    },
+    "relatedLaw": "Egyptian Civil Procedure Law Article 1",
+    "contractTypes": ["service_agreement", "vendor", "employment"]
+  },
+  {
+    "id": "clause_011_compound_interest",
+    "category": "payment",
+    "riskLevel": "medium",
+    "clausePattern": "Late payments shall incur interest at 5% per month compounded monthly until full payment is received",
+    "keywords": ["late payment interest", "5% per month", "compounded monthly", "فوائد تأخير", "5% شهرياً", "فوائد مركبة"],
+    "explanation": {
+      "ar": "الفائدة المركبة بنسبة 5% شهرياً تعني أن دين 10,000 جنيه سيصبح 79,000 جنيه في سنة واحدة فقط",
+      "en": "Compound interest at 5% monthly means a 10,000 EGP debt becomes 79,000 EGP in just one year"
+    },
+    "whyRisky": {
+      "ar": "الفائدة المركبة الشهرية مرتفعة للغاية وقد تتحول ديون صغيرة إلى التزامات مالية ضخمة بسرعة",
+      "en": "Monthly compound interest is extremely high — small debts can snowball into massive obligations quickly"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن تكون فوائد التأخر بسيطة وغير مركبة ولا تتجاوز معدل البنك المركزي المصري زائد 2%",
+      "en": "Late payment interest should be simple not compound and should not exceed the Central Bank of Egypt rate plus 2%"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 226",
+    "contractTypes": ["service_agreement", "vendor", "freelance"]
+  },
+  {
+    "id": "clause_012_indefinite_nda",
+    "category": "confidentiality",
+    "riskLevel": "medium",
+    "clausePattern": "The confidentiality obligations under this agreement shall survive indefinitely and apply to all information disclosed",
+    "keywords": ["indefinitely", "confidentiality survive", "all information", "سرية مطلقة", "إلى الأبد", "جميع المعلومات"],
+    "explanation": {
+      "ar": "يلزمك بالحفاظ على سرية جميع المعلومات إلى الأبد دون تحديد نطاق واضح لما يعتبر سرياً",
+      "en": "Binds you to maintain confidentiality forever without defining what information is actually confidential"
+    },
+    "whyRisky": {
+      "ar": "الالتزام الأبدي بسرية معلومات غير محددة قد يمنعك من استخدام خبراتك العامة في وظائف مستقبلية",
+      "en": "Indefinite secrecy over undefined information could prevent you from using general expertise in future jobs"
+    },
+    "saferAlternative": {
+      "ar": "حدد نطاق المعلومات السرية بدقة وحدد مدة الالتزام بـ 3-5 سنوات مع استثناء المعلومات العامة",
+      "en": "Define confidential information precisely, set a 3-5 year time limit, and explicitly exclude publicly available information"
+    },
+    "relatedLaw": "Egyptian Commercial Law Article 66",
+    "contractTypes": ["employment", "freelance", "nda"]
+  },
+  {
+    "id": "clause_013_forced_arbitration",
+    "category": "dispute_resolution",
+    "riskLevel": "high",
+    "clausePattern": "By signing this agreement Employee waives the right to participate in any class action lawsuit and agrees to binding individual arbitration only",
+    "keywords": ["waive", "class action", "binding arbitration", "تنازل", "دعوى جماعية", "تحكيم إلزامي"],
+    "explanation": {
+      "ar": "يجبرك على التنازل عن حقك في اللجوء للمحاكم العادية والاكتفاء بالتحكيم الخاص",
+      "en": "Forces you to waive your right to courts in favor of private arbitration which tends to favor corporations"
+    },
+    "whyRisky": {
+      "ar": "التحكيم الخاص أقل شفافية وأكثر تكلفة للأفراد وغالباً ما يميل لصالح الشركات",
+      "en": "Private arbitration is less transparent, more expensive for individuals, and arbitrators often favor corporations"
+    },
+    "saferAlternative": {
+      "ar": "إذا كان التحكيم إلزامياً تفاوض على تقاسم التكاليف وضمان حيادية المحكم وإمكانية الطعن في القرار",
+      "en": "If arbitration is mandatory, negotiate cost-sharing, guarantees of arbitrator neutrality, and the ability to appeal"
+    },
+    "relatedLaw": "Egyptian Arbitration Law No. 27/1994",
+    "contractTypes": ["employment", "service_agreement"]
+  },
+  {
+    "id": "clause_014_scope_creep",
+    "category": "scope_of_work",
+    "riskLevel": "medium",
+    "clausePattern": "The Service Provider shall perform any additional tasks reasonably requested by the Client without additional compensation",
+    "keywords": ["additional tasks", "reasonably requested", "without additional compensation", "مهام إضافية", "بدون تعويض", "طلب العميل"],
+    "explanation": {
+      "ar": "يلزمك بتنفيذ أي مهام إضافية يطلبها العميل دون دفع إضافي مما يفتح الباب لاستغلالك",
+      "en": "Requires you to perform any additional tasks the client requests without extra payment, opening the door to exploitation"
+    },
+    "whyRisky": {
+      "ar": "مفهوم 'معقول' غامض جداً وقد يُستخدم لإضافة كميات كبيرة من العمل دون مقابل",
+      "en": "The term reasonably is vague and can be used to add substantial amounts of work without compensation"
+    },
+    "saferAlternative": {
+      "ar": "حدد نطاق العمل بدقة وأضف إجراء لطلب التغيير لأي عمل إضافي مع التسعير المقابل",
+      "en": "Define the scope precisely and add a change request process for any additional work with corresponding pricing"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 150",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_015_delayed_payment_90",
+    "category": "payment",
+    "riskLevel": "medium",
+    "clausePattern": "Payment shall be made within 90 days of invoice receipt subject to internal approval processes",
+    "keywords": ["90 days", "payment terms", "internal approval", "invoice", "90 يوم", "شروط الدفع", "موافقة داخلية"],
+    "explanation": {
+      "ar": "90 يوماً للدفع مدة طويلة جداً وإضافة شرط 'الموافقة الداخلية' يجعل المدة غير محددة فعلياً",
+      "en": "90 days is excessively long and the internal approval condition makes the payment timeline effectively undefined"
+    },
+    "whyRisky": {
+      "ar": "قد تضطر لانتظار 3 أشهر أو أكثر للحصول على مستحقاتك مما يضر بتدفقك النقدي الشهري",
+      "en": "You may wait 3 or more months for payment, seriously harming your cash flow and ability to cover expenses"
+    },
+    "saferAlternative": {
+      "ar": "تفاوض على 30 يوماً للدفع مع فوائد تأخير تلقائية وإمكانية إيقاف الخدمة عند التأخر",
+      "en": "Negotiate 30-day payment terms with automatic late fees and the right to suspend service for non-payment"
+    },
+    "relatedLaw": "Egyptian Commercial Law Article 369",
+    "contractTypes": ["freelance", "service_agreement", "vendor"]
+  },
+  {
+    "id": "clause_016_mandatory_unpaid_overtime",
+    "category": "working_conditions",
+    "riskLevel": "high",
+    "clausePattern": "Employee agrees to work such hours as required by the business including weekends and holidays without additional compensation",
+    "keywords": ["required hours", "weekends", "holidays", "without compensation", "overtime", "ساعات عمل", "عمل إضافي", "بدون مقابل"],
+    "explanation": {
+      "ar": "يلزمك بالعمل في أي وقت حتى في العطلات والإجازات دون أي أجر إضافي خلافاً لأحكام قانون العمل",
+      "en": "Requires you to work any hours including weekends and holidays without extra pay, violating Egyptian labor law"
+    },
+    "whyRisky": {
+      "ar": "ينتهك هذا الشرط قانون العمل المصري الذي يلزم بدفع بدل عمل إضافي للساعات الزائدة عن 8 ساعات يومياً",
+      "en": "This clause violates Egyptian Labor Law which mandates overtime pay for hours beyond 8 hours daily"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن ينص العقد على دفع بدل عمل إضافي وفق قانون العمل المصري وتحديد الحد الأقصى لساعات العمل",
+      "en": "Contract must provide overtime pay per Egyptian Labor Law and specify maximum working hours"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Articles 84-90",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_017_blanket_indemnity",
+    "category": "indemnification",
+    "riskLevel": "high",
+    "clausePattern": "The Contractor shall indemnify and hold harmless the Client from any and all claims damages or expenses arising from the Contractor's services",
+    "keywords": ["indemnify", "hold harmless", "any and all claims", "تعويض", "إبراء من المسؤولية", "جميع المطالبات"],
+    "explanation": {
+      "ar": "أنت مسؤول عن تعويض العميل عن أي مطالبات حتى تلك الخارجة عن سيطرتك أو التي تسبب فيها العميل نفسه",
+      "en": "You are responsible for compensating the client for any claims, even those beyond your control or caused by the client"
+    },
+    "whyRisky": {
+      "ar": "التعويض الشامل لجميع المطالبات دون استثناء قد يحمّلك مسؤولية مالية عن أخطاء العميل نفسه",
+      "en": "Blanket indemnification without exceptions could make you financially responsible for the client's own mistakes"
+    },
+    "saferAlternative": {
+      "ar": "حدد التعويض بالمطالبات الناتجة مباشرة عن إهمالك أو أخطائك المتعمدة فقط واستبعد الأضرار غير المباشرة",
+      "en": "Limit indemnification to claims directly caused by your negligence or willful misconduct only excluding indirect damages"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 216",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_018_leave_denial",
+    "category": "leave",
+    "riskLevel": "high",
+    "clausePattern": "Leave entitlement is subject to business requirements and may be denied at the Company's sole discretion",
+    "keywords": ["leave denied", "sole discretion", "business requirements", "إجازة", "تقدير الشركة", "احتياجات العمل"],
+    "explanation": {
+      "ar": "يمنح الشركة حق رفض إجازاتك المكتسبة بأي سبب يتعلق باحتياجات العمل مما ينتهك حقوقك القانونية",
+      "en": "Gives the company power to deny your earned leave for any business reason, violating your legal rights"
+    },
+    "whyRisky": {
+      "ar": "قانون العمل المصري يضمن لك الحق في إجازة سنوية مدفوعة لا يمكن انتزاعها بموجب شرط تعاقدي",
+      "en": "Egyptian Labor Law guarantees your right to paid annual leave which cannot be waived by contract"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن يكفل العقد الحد الأدنى القانوني للإجازة السنوية (21 يوماً في السنة الأولى) مع جدولة متفق عليها",
+      "en": "Contract must guarantee the legal minimum annual leave (21 days in first year) with mutually agreed scheduling"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Article 47",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_019_unilateral_salary_cut",
+    "category": "compensation",
+    "riskLevel": "critical",
+    "clausePattern": "The Company reserves the right to adjust the Employee's salary downward based on performance reviews at any time",
+    "keywords": ["adjust salary", "performance review", "reduce salary", "تعديل الراتب", "خفض الراتب", "تقييم الأداء"],
+    "explanation": {
+      "ar": "يمنح الشركة حق خفض راتبك من طرف واحد بناء على تقييم أداء غير موضوعي دون ضمان الحد الأدنى",
+      "en": "Gives the company unilateral power to cut your salary based on their subjective performance assessment"
+    },
+    "whyRisky": {
+      "ar": "قد تجد نفسك فجأة براتب أقل بكثير دون سابق إنذار وبناء على معايير غير واضحة أو متحيزة",
+      "en": "You could suddenly find yourself with a significantly lower salary without warning based on unclear criteria"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن يكون الراتب المتفق عليه مضموناً وأي تعديل يتطلب موافقتك الخطية مع معايير أداء واضحة ومحددة مسبقاً",
+      "en": "The agreed salary should be guaranteed and any adjustment requires your written consent with clear pre-defined performance criteria"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Article 35",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_020_warranty_disclaimer",
+    "category": "warranties",
+    "riskLevel": "medium",
+    "clausePattern": "Services are provided as is without any warranty express or implied including fitness for a particular purpose",
+    "keywords": ["as is", "no warranty", "fitness for purpose", "disclaimer", "بدون ضمان", "كما هي", "إخلاء مسؤولية"],
+    "explanation": {
+      "ar": "ينفي جميع الضمانات الصريحة والضمنية مما يعني أن الخدمة قد لا تفي بالغرض المطلوب دون أي مسؤولية",
+      "en": "Disclaims all warranties meaning the service may not work for your intended purpose with zero liability"
+    },
+    "whyRisky": {
+      "ar": "قد تدفع مقابل خدمة لا تؤدي الغرض المطلوب منها وليس لديك حق استرداد أو تعويض",
+      "en": "You could pay for a service that does not work for your needs with no right to refund or compensation"
+    },
+    "saferAlternative": {
+      "ar": "يجب تضمين ضمان أساسي بأن الخدمة ستؤدي الوظائف الرئيسية المتفق عليها مع إجراء للشكاوى",
+      "en": "Include a basic warranty that the service will perform its agreed core functions with a complaint and resolution process"
+    },
+    "relatedLaw": "Egyptian Consumer Protection Law No. 181/2018",
+    "contractTypes": ["service_agreement", "vendor", "subscription"]
+  },
+  {
+    "id": "clause_021_narrow_force_majeure",
+    "category": "force_majeure",
+    "riskLevel": "medium",
+    "clausePattern": "Force majeure events are limited to acts of God only and do not include epidemics government actions or supply chain disruptions",
+    "keywords": ["force majeure", "acts of God", "limited", "exclude epidemics", "قوة قاهرة", "محدودة", "الطوارئ"],
+    "explanation": {
+      "ar": "تعريف القوة القاهرة ضيق للغاية ولا يشمل الأوبئة أو قرارات الحكومة أو اضطرابات الإمداد",
+      "en": "The definition of force majeure is too narrow excluding epidemics, government actions, and supply chain disruptions"
+    },
+    "whyRisky": {
+      "ar": "قد تظل ملزماً بالعقد في حالات خارجة عن إرادتك مثل تداعيات وباء أو قرار حكومي مفاجئ",
+      "en": "You may remain bound by the contract even in situations beyond your control like pandemic effects or government orders"
+    },
+    "saferAlternative": {
+      "ar": "اطلب تعريفاً أشمل يشمل الأوبئة والكوارث الطبيعية وقرارات الحكومة واضطرابات سلاسل الإمداد",
+      "en": "Request a broader definition including pandemics, natural disasters, government orders, and supply chain disruptions"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 165",
+    "contractTypes": ["service_agreement", "vendor", "employment"]
+  },
+  {
+    "id": "clause_022_moral_rights_waiver",
+    "category": "intellectual_property",
+    "riskLevel": "high",
+    "clausePattern": "Contractor waives all moral rights in the work product including the right to attribution and the right to object to modifications",
+    "keywords": ["waive moral rights", "attribution", "work product", "التنازل عن الحقوق المعنوية", "حقوق الإسناد"],
+    "explanation": {
+      "ar": "يجبرك على التنازل عن حقك في الإشارة إليك كمؤلف للعمل الذي قمت بإنتاجه",
+      "en": "Forces you to waive your right to be credited as the creator or author of your own work"
+    },
+    "whyRisky": {
+      "ar": "قد يُستخدم عملك دون نسبته إليك مما يضر بسمعتك المهنية وسجلك الإبداعي",
+      "en": "Your work could be used without attribution harming your professional reputation and creative portfolio"
+    },
+    "saferAlternative": {
+      "ar": "تفاوض على الاحتفاظ بحق الإسناد على الأقل في محفظة أعمالك الشخصية حتى لو لم يكن علنياً",
+      "en": "Negotiate to retain attribution rights for your personal portfolio at minimum even if not public"
+    },
+    "relatedLaw": "Egyptian Intellectual Property Law No. 82/2002 Articles 143-145",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_023_long_probation",
+    "category": "employment_terms",
+    "riskLevel": "medium",
+    "clausePattern": "During the probationary period of 6 months the Company may terminate employment without notice cause or compensation",
+    "keywords": ["probation", "6 months", "terminate without notice", "فترة التجربة", "إنهاء دون إشعار", "6 أشهر"],
+    "explanation": {
+      "ar": "تمتد فترة التجربة لـ 6 أشهر مع إمكانية إنهاء العقد دون أي إشعار أو تعويض خلال هذه الفترة",
+      "en": "6-month probation where you can be dismissed without notice or compensation at any point during the period"
+    },
+    "whyRisky": {
+      "ar": "قانون العمل المصري يحدد فترة التجربة بـ 3 أشهر فقط مما يجعل هذا البند مخالفاً للقانون",
+      "en": "Egyptian Labor Law limits probation to 3 months making this clause illegal under Egyptian law"
+    },
+    "saferAlternative": {
+      "ar": "يجب ألا تتجاوز فترة التجربة 3 أشهر وفق القانون المصري مع توضيح معايير التقييم مسبقاً",
+      "en": "Probation should not exceed 3 months per Egyptian law with clear evaluation criteria stated upfront"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Article 28",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_024_device_monitoring",
+    "category": "privacy",
+    "riskLevel": "medium",
+    "clausePattern": "The Company reserves the right to monitor all communications including personal emails and messages on company devices",
+    "keywords": ["monitor communications", "personal emails", "company devices", "رسائل شخصية", "مراقبة الاتصالات"],
+    "explanation": {
+      "ar": "يمنح الشركة حق مراقبة جميع اتصالاتك حتى الشخصية منها على أجهزة الشركة",
+      "en": "Grants the company the right to monitor all your communications including personal ones on company devices"
+    },
+    "whyRisky": {
+      "ar": "مراقبة الرسائل الشخصية تنتهك الحق في الخصوصية ويمكن استخدام هذه المعلومات ضدك",
+      "en": "Monitoring personal messages violates privacy rights and this information can be used against you"
+    },
+    "saferAlternative": {
+      "ar": "يجب تحديد المراقبة بالاتصالات المهنية فقط مع إبلاغ الموظف بسياسة المراقبة وإجراءاتها",
+      "en": "Limit monitoring to professional communications only with clear notification of monitoring policy and procedures"
+    },
+    "relatedLaw": "Egyptian Data Protection Law No. 151/2020",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_025_no_subcontract",
+    "category": "performance",
+    "riskLevel": "low",
+    "clausePattern": "The Service Provider shall not subcontract any part of this agreement without prior written consent from the Client",
+    "keywords": ["subcontract", "prior written consent", "third party", "تعاقد من الباطن", "موافقة خطية مسبقة"],
+    "explanation": {
+      "ar": "يمنعك من الاستعانة بمتعاقدين آخرين دون موافقة خطية مسبقة مما يحد من مرونتك في التنفيذ",
+      "en": "Prevents you from using subcontractors without written approval limiting your delivery flexibility"
+    },
+    "whyRisky": {
+      "ar": "رفض العميل الموافقة قد يعيق إتمام العمل في الوقت المحدد مما يعرضك لغرامات التأخير",
+      "en": "Client refusal to grant approval could impede timely delivery exposing you to delay penalties"
+    },
+    "saferAlternative": {
+      "ar": "اطلب إضافة معيار 'عدم الرفض غير المعقول' وتحديد مهلة للرد على طلبات التعاقد من الباطن",
+      "en": "Request a not unreasonably withheld standard and a deadline for responding to subcontracting requests"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 706",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_026_ownership_dispute",
+    "category": "intellectual_property",
+    "riskLevel": "high",
+    "clausePattern": "Any dispute regarding ownership of deliverables shall be resolved in the Company's favor pending resolution",
+    "keywords": ["ownership dispute", "company's favor", "pending resolution", "نزاع الملكية", "لصالح الشركة", "معلق"],
+    "explanation": {
+      "ar": "أي نزاع حول ملكية المنتجات يُفترض أنه لصالح الشركة ريثما يتم حل النزاع مما يضعك في موقف ضعيف",
+      "en": "Any ownership dispute is presumed in the company's favor pending resolution putting you in a weak negotiating position"
+    },
+    "whyRisky": {
+      "ar": "الشركة تستفيد من عملك طوال فترة النزاع دون دفع بينما أنت تتحمل عبء الإثبات",
+      "en": "The company benefits from your work throughout the dispute period without payment while you bear the burden of proof"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن تظل ملكية المنتجات معلقة بشكل متساوٍ أثناء النزاع أو تعود إليك حتى يصدر حكم نهائي",
+      "en": "Ownership of deliverables should be held equally during disputes or revert to you until a final ruling is issued"
+    },
+    "relatedLaw": "Egyptian Intellectual Property Law No. 82/2002",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_027_non_solicitation",
+    "category": "non_solicitation",
+    "riskLevel": "medium",
+    "clausePattern": "For 1 year after termination Employee shall not solicit or hire any current employee of the Company",
+    "keywords": ["non-solicitation", "solicit employees", "1 year", "after termination", "عدم الاستقطاب", "استقطاب الموظفين"],
+    "explanation": {
+      "ar": "يمنعك من استقطاب موظفي الشركة السابقة لمدة سنة بعد انتهاء عقدك",
+      "en": "Prevents you from hiring former company employees for 1 year post-termination"
+    },
+    "whyRisky": {
+      "ar": "قد يمنعك من استقطاب زملاء سابقين موهوبين في حال بدأت مشروعاً خاصاً",
+      "en": "Could prevent you from hiring talented former colleagues if you start your own venture"
+    },
+    "saferAlternative": {
+      "ar": "تفاوض على تقليل المدة لـ 6 أشهر وتحديدها بالموظفين الذين عملت معهم مباشرة فقط",
+      "en": "Negotiate to 6 months and limit scope to only employees you directly managed or worked with"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_028_confidentiality_no_exceptions",
+    "category": "confidentiality",
+    "riskLevel": "medium",
+    "clausePattern": "Employee shall not disclose any information obtained during employment under any circumstances including legal proceedings",
+    "keywords": ["no disclosure", "any circumstances", "legal proceedings", "عدم الإفصاح", "أي ظروف", "الإجراءات القانونية"],
+    "explanation": {
+      "ar": "يمنعك من الإفصاح عن المعلومات حتى عند الإدلاء بشهادتك في إجراءات قانونية مما قد يعرضك لعقوبات",
+      "en": "Prevents you from disclosing information even in legal proceedings which could expose you to criminal penalties"
+    },
+    "whyRisky": {
+      "ar": "رفض الإدلاء بالشهادة في المحاكم قد يعرضك للملاحقة الجنائية بتهمة ازدراء المحكمة",
+      "en": "Refusing to testify in court could expose you to criminal contempt of court charges"
+    },
+    "saferAlternative": {
+      "ar": "يجب استثناء الإفصاحات المطلوبة قانوناً من قِبل جهات حكومية أو المحاكم صراحةً",
+      "en": "Explicitly exclude disclosures required by law, government authorities, or courts from confidentiality obligations"
+    },
+    "relatedLaw": "Egyptian Criminal Procedure Law",
+    "contractTypes": ["employment", "nda"]
+  },
+  {
+    "id": "clause_029_no_severance",
+    "category": "termination",
+    "riskLevel": "high",
+    "clausePattern": "Upon termination for any reason Employee shall not be entitled to any severance pay gratuity or compensation beyond the last day worked",
+    "keywords": ["no severance", "no gratuity", "last day worked", "لا تعويض", "مكافأة نهاية الخدمة", "إنهاء الخدمة"],
+    "explanation": {
+      "ar": "ينفي حقك في مكافأة نهاية الخدمة التي يكفلها لك قانون العمل المصري بعد سنة عمل أو أكثر",
+      "en": "Negates your right to end-of-service gratuity which is guaranteed by Egyptian Labor Law after one or more years of service"
+    },
+    "whyRisky": {
+      "ar": "قانون العمل المصري يضمن لك مكافأة نهاية الخدمة ولا يجوز التنازل عنها بموجب شرط تعاقدي",
+      "en": "Egyptian Labor Law guarantees end-of-service gratuity and this right cannot be waived by contract"
+    },
+    "saferAlternative": {
+      "ar": "هذا الشرط باطل قانوناً في مصر. يجب أن ينص العقد على مكافأة نهاية الخدمة وفق قانون العمل",
+      "en": "This clause is legally void in Egypt. The contract must include end-of-service gratuity as required by Labor Law"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Articles 126-130",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_030_exclusive_client",
+    "category": "exclusivity",
+    "riskLevel": "high",
+    "clausePattern": "Contractor agrees to work exclusively for Client and shall not accept any other projects during the contract term",
+    "keywords": ["exclusively", "no other projects", "full time", "حصرية", "عمل حصري", "مشاريع أخرى", "مزاولة العمل"],
+    "explanation": {
+      "ar": "يلزمك بالعمل لهذا العميل فقط دون قبول أي مشاريع أخرى مما يجعلك تابعاً كلياً له",
+      "en": "Forces you to work exclusively for this client and accept no other projects making you fully dependent on them"
+    },
+    "whyRisky": {
+      "ar": "إذا أخر العميل الدفع أو أنهى العقد تفقد مصادر دخل أخرى كنت تستطيع الاعتماد عليها",
+      "en": "If the client delays payment or terminates, you lose alternative income sources you could have relied on"
+    },
+    "saferAlternative": {
+      "ar": "رفض بنود الحصرية أو تقييدها بفئة معينة من العملاء المنافسين المباشرين مع تعويض مالي مناسب",
+      "en": "Reject exclusivity clauses or limit them to direct competitors only with appropriate financial compensation"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 67",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_031_contract_renewal_price_hike",
+    "category": "payment",
+    "riskLevel": "medium",
+    "clausePattern": "Upon renewal the Company may increase service fees by up to 30% without requiring the Client's consent",
+    "keywords": ["price increase", "30%", "renewal", "without consent", "زيادة الأسعار", "تجديد", "رفع الرسوم"],
+    "explanation": {
+      "ar": "يتيح للشركة رفع رسومها بنسبة تصل إلى 30% عند كل تجديد دون الحاجة لموافقتك",
+      "en": "Allows the company to raise its fees by up to 30% at each renewal without requiring your consent"
+    },
+    "whyRisky": {
+      "ar": "قد يرتفع سعر الخدمة بشكل كبير في كل سنة وأنت ملزم بالاستمرار إذا لم تُلغِ في الوقت المناسب",
+      "en": "The service price could rise significantly each year and you are locked in if you miss the cancellation window"
+    },
+    "saferAlternative": {
+      "ar": "تفاوض على تحديد سقف للزيادة السنوية (مثلاً معدل التضخم فقط) مع الحق في الإلغاء دون غرامة عند رفع الأسعار",
+      "en": "Negotiate a cap on annual increases (e.g. inflation rate only) and the right to cancel penalty-free upon any price increase"
+    },
+    "relatedLaw": "Egyptian Commercial Law Article 458",
+    "contractTypes": ["subscription", "vendor", "service_agreement"]
+  },
+  {
+    "id": "clause_032_unilateral_scope_reduction",
+    "category": "scope_of_work",
+    "riskLevel": "high",
+    "clausePattern": "The Company reserves the right to reduce the scope of deliverables without a corresponding reduction in the Contractor's obligations or fees",
+    "keywords": ["reduce scope", "no fee reduction", "obligations unchanged", "تقليص النطاق", "تخفيض النطاق", "التزامات"],
+    "explanation": {
+      "ar": "تستطيع الشركة تقليص نطاق العمل المطلوب منك دون تخفيض مقابل مما يخل بالتوازن التعاقدي",
+      "en": "The company can reduce required deliverables without reducing your obligations or fees destroying contractual balance"
+    },
+    "whyRisky": {
+      "ar": "قد تجد نفسك ملزماً بدفع نفس الرسوم مقابل خدمة أقل مما يُفقدك قيمة مالية حقيقية",
+      "en": "You may find yourself paying the same fees for less service resulting in real financial loss"
+    },
+    "saferAlternative": {
+      "ar": "أي تقليص في النطاق يجب أن يُقابله تخفيض متناسب في الرسوم أو الالتزامات",
+      "en": "Any reduction in scope must be matched by a proportional reduction in fees or obligations"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 148",
+    "contractTypes": ["service_agreement", "vendor"]
+  },
+  {
+    "id": "clause_033_no_dispute_period",
+    "category": "payment",
+    "riskLevel": "medium",
+    "clausePattern": "Any invoice disputes must be raised within 5 business days of receipt otherwise the invoice is deemed accepted",
+    "keywords": ["invoice dispute", "5 business days", "deemed accepted", "نزاع الفاتورة", "5 أيام عمل", "يُعتبر مقبولاً"],
+    "explanation": {
+      "ar": "يمنحك فقط 5 أيام عمل للاعتراض على الفاتورة وبعدها تُعتبر مقبولة تلقائياً",
+      "en": "Gives you only 5 business days to dispute an invoice after which it is automatically deemed accepted"
+    },
+    "whyRisky": {
+      "ar": "5 أيام فترة قصيرة جداً خاصةً إذا كنت في إجازة أو مشغولاً مما قد يجعلك ملزماً بدفع مبالغ مبالغ فيها",
+      "en": "5 days is extremely short especially if you are on leave or busy potentially binding you to inflated charges"
+    },
+    "saferAlternative": {
+      "ar": "اطلب مدة لا تقل عن 30 يوم تقويمي للاعتراض على الفواتير مع وصف تفصيلي لكل بند",
+      "en": "Request at least 30 calendar days to dispute invoices with detailed itemization required for each charge"
+    },
+    "relatedLaw": "Egyptian Commercial Law Article 369",
+    "contractTypes": ["service_agreement", "subscription", "vendor"]
+  },
+  {
+    "id": "clause_034_data_retention_forever",
+    "category": "privacy",
+    "riskLevel": "medium",
+    "clausePattern": "The Company may retain all data collected from the user indefinitely for business analysis and improvement purposes",
+    "keywords": ["data retention", "indefinitely", "business analysis", "الاحتفاظ بالبيانات", "إلى أجل غير مسمى", "تحليل الأعمال"],
+    "explanation": {
+      "ar": "تحتفظ الشركة ببياناتك إلى الأبد حتى بعد إنهاء العلاقة التعاقدية دون أي حق لك في الحذف",
+      "en": "The company retains your data forever even after the contractual relationship ends with no right to deletion"
+    },
+    "whyRisky": {
+      "ar": "يخالف قانون حماية البيانات المصري الذي يمنحك حق حذف بياناتك ويلزم بمحدودية الاحتفاظ",
+      "en": "Violates Egyptian Data Protection Law which grants you the right to data deletion and requires limited retention"
+    },
+    "saferAlternative": {
+      "ar": "يجب تحديد فترة احتفاظ محددة (مثلاً 3 سنوات) مع حقك في طلب حذف بياناتك في أي وقت",
+      "en": "Specify a defined retention period (e.g. 3 years) with your right to request data deletion at any time"
+    },
+    "relatedLaw": "Egyptian Data Protection Law No. 151/2020 Article 21",
+    "contractTypes": ["service_agreement", "subscription", "employment"]
+  },
+  {
+    "id": "clause_035_liquidated_damages_vague",
+    "category": "penalties",
+    "riskLevel": "medium",
+    "clausePattern": "In the event of any delay the Contractor shall pay liquidated damages in an amount to be determined by the Client",
+    "keywords": ["liquidated damages", "determined by client", "delay penalty", "أضرار محددة", "يحدد العميل", "غرامة تأخير"],
+    "explanation": {
+      "ar": "غرامات التأخير غير محددة المبلغ ويُترك تحديدها للعميل مما يمنحه سلطة مطلقة على العقوبة",
+      "en": "Liquidated damages are not set in advance and left for the client to determine giving them unchecked penalty power"
+    },
+    "whyRisky": {
+      "ar": "يمكن للعميل تحديد غرامة بالغة بعد وقوع التأخير مما يجعل المخاطرة المالية غير قابلة للتقدير مسبقاً",
+      "en": "The client can set an exorbitant penalty after the delay occurs making financial risk impossible to assess upfront"
+    },
+    "saferAlternative": {
+      "ar": "يجب تحديد مبلغ الغرامات مسبقاً في العقد مع سقف أقصى ومعايير واضحة للتطبيق",
+      "en": "Liquidated damages must be specified in advance in the contract with a maximum cap and clear application criteria"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 224",
+    "contractTypes": ["service_agreement", "vendor", "freelance"]
+  },
+  {
+    "id": "clause_036_right_to_assign",
+    "category": "assignment",
+    "riskLevel": "medium",
+    "clausePattern": "The Company may assign this agreement and all obligations hereunder to any third party without the Employee's consent",
+    "keywords": ["assign agreement", "without consent", "third party", "transfer obligations", "تحويل العقد", "بدون موافقة", "طرف ثالث"],
+    "explanation": {
+      "ar": "يحق للشركة تحويل العقد وجميع التزاماتها لشركة أخرى دون الحاجة لموافقتك أو علمك",
+      "en": "The company can transfer the contract and all its obligations to another company without your consent or knowledge"
+    },
+    "whyRisky": {
+      "ar": "قد تجد نفسك فجأة تعمل لصالح شركة مختلفة تماماً لم توافق على العمل معها",
+      "en": "You could suddenly find yourself working for a completely different company you never agreed to work for"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن يتطلب تحويل العقد موافقتك الخطية المسبقة مع الحق في الإنهاء برفض التحويل",
+      "en": "Contract assignment should require your prior written consent with the right to terminate if you refuse the transfer"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 318",
+    "contractTypes": ["employment", "service_agreement", "freelance"]
+  },
+  {
+    "id": "clause_037_indemnity_legal_fees",
+    "category": "indemnification",
+    "riskLevel": "high",
+    "clausePattern": "The Contractor shall bear all legal costs and attorney fees in any dispute arising from this agreement regardless of outcome",
+    "keywords": ["legal costs", "attorney fees", "regardless of outcome", "تكاليف قانونية", "أتعاب المحامي", "بصرف النظر عن النتيجة"],
+    "explanation": {
+      "ar": "تلزمك بدفع جميع التكاليف القانونية في أي نزاع حتى لو كنت المحق وفزت بالقضية",
+      "en": "Forces you to pay all legal costs in any dispute even if you are in the right and win the case"
+    },
+    "whyRisky": {
+      "ar": "تكاليف التقاضي المرتفعة قد تجعل المطالبة بحقوقك غير عملية حتى لو كانت المطالبة مشروعة تماماً",
+      "en": "High litigation costs may make claiming your rights impractical even if your claim is entirely legitimate"
+    },
+    "saferAlternative": {
+      "ar": "يجب أن يتحمل كل طرف تكاليفه القانونية أو يتحمل الخاسر الرسوم القانونية فقط لا الطرف الآخر",
+      "en": "Each party should bear their own legal costs or the losing party pays costs only not the other party regardless"
+    },
+    "relatedLaw": "Egyptian Civil Procedure Law",
+    "contractTypes": ["service_agreement", "freelance", "vendor"]
+  },
+  {
+    "id": "clause_038_social_media_restriction",
+    "category": "employment_terms",
+    "riskLevel": "low",
+    "clausePattern": "Employee shall not make any posts or statements on social media that could reflect negatively on the Company",
+    "keywords": ["social media", "negative posts", "reflect negatively", "وسائل التواصل الاجتماعي", "منشورات", "الإساءة للشركة"],
+    "explanation": {
+      "ar": "يقيد حريتك في التعبير على وسائل التواصل الاجتماعي ويمنعك من انتقاد الشركة علناً",
+      "en": "Restricts your freedom of expression on social media preventing you from publicly criticizing the company"
+    },
+    "whyRisky": {
+      "ar": "تعريف 'الانعكاس السلبي' غامض جداً وقد يُستخدم لمنعك من مشاركة تجربتك المهنية الصادقة",
+      "en": "The definition of negatively reflect is vague and could be used to prevent you from sharing honest professional experiences"
+    },
+    "saferAlternative": {
+      "ar": "تفاوض على تحديد القيود بالمعلومات السرية فقط وليس الآراء الشخصية العامة",
+      "en": "Negotiate to limit restrictions to confidential information only and not general personal opinions"
+    },
+    "relatedLaw": "Egyptian Constitution Article 65 (Freedom of Expression)",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_039_no_written_variation",
+    "category": "amendment",
+    "riskLevel": "low",
+    "clausePattern": "No amendment to this agreement shall be valid unless made in writing and signed by both parties",
+    "keywords": ["written amendment", "signed by both parties", "no oral variation", "تعديل خطي", "موقع من الطرفين", "تعديل شفهي"],
+    "explanation": {
+      "ar": "هذا بند إيجابي يشترط أن تكون جميع التعديلات خطية وموقعة من الطرفين مما يحمي كلا الطرفين",
+      "en": "This is a positive clause requiring all amendments to be written and signed by both parties protecting both sides"
+    },
+    "whyRisky": {
+      "ar": "البند جيد بشكل عام. تأكد أنه يُطبق بالفعل ولا تقبل أي تعديلات شفهية أو عبر البريد الإلكتروني غير الرسمي",
+      "en": "Generally good. Ensure it is actually enforced and never accept verbal amendments or informal email changes"
+    },
+    "saferAlternative": {
+      "ar": "البند مناسب. أضف وضوحاً حول التوقيع الإلكتروني وهل يُعتبر معادلاً للتوقيع الخطي",
+      "en": "Clause is appropriate. Add clarity on whether electronic signatures are considered equivalent to wet signatures"
+    },
+    "relatedLaw": "Egyptian Electronic Signature Law No. 15/2004",
+    "contractTypes": ["service_agreement", "employment", "nda", "vendor"]
+  },
+  {
+    "id": "clause_040_ambiguous_deliverables",
+    "category": "scope_of_work",
+    "riskLevel": "medium",
+    "clausePattern": "The Contractor shall deliver all necessary work as determined by the Client from time to time",
+    "keywords": ["necessary work", "as determined", "from time to time", "العمل الضروري", "يحدده العميل", "من وقت لآخر"],
+    "explanation": {
+      "ar": "تعريف نطاق العمل مبهم تماماً ويُترك للعميل تحديده بشكل متغير مما يفتح الباب لتوسيع العمل باستمرار",
+      "en": "The scope of work is completely undefined and left to the client to determine variably opening the door to constant expansion"
+    },
+    "whyRisky": {
+      "ar": "بدون نطاق عمل محدد لا يمكنك تقدير الوقت أو التكلفة مما يجعل العقد في غير صالحك تماماً",
+      "en": "Without a defined scope you cannot estimate time or cost making the contract entirely disadvantageous for you"
+    },
+    "saferAlternative": {
+      "ar": "يجب تحديد المخرجات بدقة في ملحق مفصل مع معايير قبول واضحة وإجراء رسمي لطلبات التغيير",
+      "en": "Define deliverables precisely in a detailed appendix with clear acceptance criteria and a formal change request process"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 150",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_041_termination_no_payment",
+    "category": "termination",
+    "riskLevel": "high",
+    "clausePattern": "Upon early termination by the Client no payment shall be made for work completed but not yet delivered",
+    "keywords": ["early termination", "no payment", "work completed", "إنهاء مبكر", "لا دفع", "عمل مكتمل"],
+    "explanation": {
+      "ar": "إذا أنهى العميل العقد مبكراً لن يدفع لك مقابل العمل الذي أكملته فعلاً ولم تسلمه بعد",
+      "en": "If the client terminates early they pay nothing for work you actually completed but have not yet delivered"
+    },
+    "whyRisky": {
+      "ar": "تخسر وقتك وجهدك في العمل المنجز بدون أي تعويض وهذا ضرر مباشر وواضح",
+      "en": "You lose time and effort on completed work with zero compensation which is a clear and direct financial harm"
+    },
+    "saferAlternative": {
+      "ar": "يجب الدفع عن نسبة العمل المنجز حتى تاريخ الإنهاء بغض النظر عن التسليم مع تعويض الإنهاء المبكر",
+      "en": "Payment must cover the percentage of work completed up to termination date regardless of delivery plus early termination compensation"
+    },
+    "relatedLaw": "Egyptian Civil Code Articles 157-162",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_042_governing_law_egypt",
+    "category": "governing_law",
+    "riskLevel": "low",
+    "clausePattern": "This agreement shall be governed by and construed in accordance with the laws of the Arab Republic of Egypt",
+    "keywords": ["governed by", "Arab Republic of Egypt", "Egyptian law", "القانون المصري", "جمهورية مصر العربية"],
+    "explanation": {
+      "ar": "هذا شرط جيد يحدد القانون المصري حاكماً للعقد مما يضمن تطبيق أحكام القانون المحلي المألوف لك",
+      "en": "This is a favorable clause establishing Egyptian law as governing ensuring familiar local legal protections apply"
+    },
+    "whyRisky": {
+      "ar": "هذا البند في صالحك كطرف مصري. تأكد أن شرط تسوية النزاعات يحدد المحاكم المصرية أيضاً",
+      "en": "This clause is in your favor as an Egyptian party. Ensure the dispute resolution clause also specifies Egyptian courts"
+    },
+    "saferAlternative": {
+      "ar": "البند مناسب تماماً. لا حاجة لتعديله",
+      "en": "Clause is entirely appropriate. No modification needed"
+    },
+    "relatedLaw": "Egyptian Civil Code",
+    "contractTypes": ["service_agreement", "employment", "nda", "vendor"]
+  },
+  {
+    "id": "clause_043_no_reference_guarantee",
+    "category": "employment_terms",
+    "riskLevel": "low",
+    "clausePattern": "The Company reserves the right to provide any reference or no reference at its sole discretion following termination",
+    "keywords": ["reference", "sole discretion", "no reference", "توصية", "خطاب توصية", "تقدير الشركة"],
+    "explanation": {
+      "ar": "يمنح الشركة حق رفض تقديم خطاب توصية أو تقديم توصية سلبية دون ضوابط",
+      "en": "Gives the company the right to refuse a reference or provide a negative one without any constraints"
+    },
+    "whyRisky": {
+      "ar": "رفض التوصية أو التوصية السلبية قد يضر بفرص توظيفك المستقبلية بشكل كبير",
+      "en": "Refusing a reference or providing a negative one can significantly harm your future employment prospects"
+    },
+    "saferAlternative": {
+      "ar": "تفاوض على الحصول على خطاب توصية محايد يؤكد مدة العمل والمسمى الوظيفي كحد أدنى",
+      "en": "Negotiate for a neutral reference confirming dates of employment and job title as a minimum right"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Article 132",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_044_joint_and_several_liability",
+    "category": "liability",
+    "riskLevel": "high",
+    "clausePattern": "In case of a joint venture all parties shall be jointly and severally liable for the full amount of any damages or penalties",
+    "keywords": ["jointly and severally liable", "full amount", "joint venture", "مسؤولية تضامنية", "كامل المبلغ", "شراكة مشتركة"],
+    "explanation": {
+      "ar": "في المشاريع المشتركة يمكن مطالبتك بدفع كامل التعويضات منفرداً حتى لو كان شركاؤك مسؤولين أكثر",
+      "en": "In joint ventures you can be required to pay the full damages alone even if your partners are more at fault"
+    },
+    "whyRisky": {
+      "ar": "إذا أفلس شركاؤك ستتحمل أنت وحدك كامل المسؤولية المالية حتى عن أخطائهم",
+      "en": "If your partners become insolvent you alone bear the full financial responsibility even for their mistakes"
+    },
+    "saferAlternative": {
+      "ar": "حاول تحديد مسؤولية كل طرف بحصته في المشروع مع وضع آلية واضحة للمطالبة بين الشركاء",
+      "en": "Try to limit each party's liability to their ownership share in the project with a clear mechanism for contribution between partners"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 280",
+    "contractTypes": ["vendor", "service_agreement"]
+  },
+  {
+    "id": "clause_045_insurance_requirement",
+    "category": "obligations",
+    "riskLevel": "medium",
+    "clausePattern": "The Contractor must maintain professional indemnity insurance of no less than 5 million EGP throughout the contract term",
+    "keywords": ["professional indemnity insurance", "5 million", "maintain insurance", "تأمين مهني", "5 مليون", "الاحتفاظ بتأمين"],
+    "explanation": {
+      "ar": "يلزمك بالحفاظ على تأمين مهني بقيمة 5 مليون جنيه طوال مدة العقد وهو التزام تكلفته مرتفعة",
+      "en": "Requires you to maintain 5 million EGP professional indemnity insurance throughout the contract at significant cost"
+    },
+    "whyRisky": {
+      "ar": "تكلفة التأمين المهني بهذا المبلغ عالية جداً وتقلل هامش ربحك من العقد بشكل ملحوظ",
+      "en": "Professional indemnity insurance at this level is expensive and significantly reduces your contract profit margin"
+    },
+    "saferAlternative": {
+      "ar": "تفاوض على تحديد مبلغ التأمين بما يتناسب مع قيمة العقد الفعلية أو مشاركة تكلفة التأمين",
+      "en": "Negotiate to set insurance amount proportional to the actual contract value or share the insurance cost"
+    },
+    "relatedLaw": "Egyptian Insurance Law No. 10/1981",
+    "contractTypes": ["service_agreement", "vendor"]
+  },
+  {
+    "id": "clause_046_right_of_first_refusal",
+    "category": "obligations",
+    "riskLevel": "low",
+    "clausePattern": "The Contractor grants the Client the right of first refusal on all future projects for a period of 2 years",
+    "keywords": ["right of first refusal", "future projects", "2 years", "حق الأفضلية", "مشاريع مستقبلية", "سنتين"],
+    "explanation": {
+      "ar": "يمنح العميل حق الأفضلية في جميع مشاريعك المستقبلية لمدة سنتين مما يقيد حريتك التجارية",
+      "en": "Grants the client first right of refusal on all your future projects for 2 years limiting your business freedom"
+    },
+    "whyRisky": {
+      "ar": "ملزم بعرض كل مشروع جديد على هذا العميل أولاً قبل أي طرف آخر مما قد يبطئ مسيرتك المهنية",
+      "en": "You must offer every new project to this client first before anyone else which can slow down your career"
+    },
+    "saferAlternative": {
+      "ar": "حدد حق الأفضلية بنوع معين من المشاريع المرتبطة بمجال العميل وبمدة أقصر لا تتجاوز 6 أشهر",
+      "en": "Limit the right of first refusal to project types related to the client's field and shorten the period to 6 months maximum"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 940",
+    "contractTypes": ["freelance", "service_agreement"]
+  },
+  {
+    "id": "clause_047_notice_valid_email_only",
+    "category": "notices",
+    "riskLevel": "low",
+    "clausePattern": "All notices under this agreement shall be sent by registered mail only and are deemed received 7 days after posting",
+    "keywords": ["registered mail only", "7 days", "deemed received", "بريد مسجل فقط", "7 أيام", "يُعتبر مستلماً"],
+    "explanation": {
+      "ar": "يحصر الإشعارات الرسمية بالبريد المسجل فقط ويفترض استلامها بعد 7 أيام حتى لو لم تستلمها فعلاً",
+      "en": "Restricts official notices to registered mail only and deems them received after 7 days even if not actually received"
+    },
+    "whyRisky": {
+      "ar": "قد تفوتك إشعارات مهمة مثل إنهاء العقد إذا لم تتحقق من بريدك الرسمي بانتظام",
+      "en": "You could miss critical notices like contract termination if you do not check your official mail regularly"
+    },
+    "saferAlternative": {
+      "ar": "اطلب قبول الإشعارات عبر البريد الإلكتروني الرسمي أيضاً مع تأكيد الاستلام",
+      "en": "Request that notices via official email with read receipt are also accepted as valid notification"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 67",
+    "contractTypes": ["service_agreement", "employment", "nda", "vendor"]
+  },
+  {
+    "id": "clause_048_benchmarking_clause",
+    "category": "payment",
+    "riskLevel": "medium",
+    "clausePattern": "The Client may reduce fees if market benchmarking shows the Contractor's rates exceed industry average by more than 10%",
+    "keywords": ["benchmarking", "reduce fees", "market average", "10%", "معيارية السوق", "تخفيض الرسوم", "متوسط السوق"],
+    "explanation": {
+      "ar": "يمنح العميل حق خفض رسومك الاتفاقية إذا أثبت أن أسعارك أعلى من متوسط السوق بأكثر من 10%",
+      "en": "Allows the client to reduce your agreed fees if they prove your rates exceed market average by more than 10%"
+    },
+    "whyRisky": {
+      "ar": "العميل يختار جهة المقارنة والمنهجية مما يمنحه سلطة تخفيض رسومك بشكل تعسفي",
+      "en": "The client chooses the benchmarking source and methodology giving them arbitrary power to reduce your fees"
+    },
+    "saferAlternative": {
+      "ar": "إذا قبلت مبدأ المعيارية فيجب الاتفاق على جهة محايدة لإجراء المقارنة مع حقك في رفضها أو الإنهاء",
+      "en": "If you accept benchmarking agree on a neutral third party to conduct it with your right to reject or terminate"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 148",
+    "contractTypes": ["vendor", "service_agreement"]
+  },
+  {
+    "id": "clause_049_waiver_of_claims",
+    "category": "termination",
+    "riskLevel": "critical",
+    "clausePattern": "Upon signing this agreement Employee waives all rights to bring any future claims against the Company relating to their employment",
+    "keywords": ["waive all rights", "future claims", "employment", "التنازل عن جميع الحقوق", "مطالبات مستقبلية", "العمل"],
+    "explanation": {
+      "ar": "يجبرك على التنازل عن حقك في تقديم أي مطالبات مستقبلية ضد الشركة قبل أن تعلم ما هي هذه المطالبات",
+      "en": "Forces you to waive all future claims against the company before you even know what those claims might be"
+    },
+    "whyRisky": {
+      "ar": "هذا التنازل المسبق الشامل يجردك من جميع حقوقك القانونية حتى في حالات الإساءة الصريحة",
+      "en": "This blanket advance waiver strips you of all legal rights even in cases of clear abuse or illegal conduct"
+    },
+    "saferAlternative": {
+      "ar": "هذا الشرط باطل قانوناً في مصر. لا يمكن التنازل عن حقوق قانونية لم تنشأ بعد",
+      "en": "This clause is legally void in Egypt. You cannot waive legal rights that have not yet arisen"
+    },
+    "relatedLaw": "Egyptian Labor Law No. 12/2003 Article 67",
+    "contractTypes": ["employment"]
+  },
+  {
+    "id": "clause_050_balanced_termination",
+    "category": "termination",
+    "riskLevel": "low",
+    "clausePattern": "Either party may terminate this agreement with 30 days written notice. In case of material breach the non-breaching party may terminate immediately after 15 days cure period",
+    "keywords": ["30 days notice", "material breach", "either party", "cure period", "إشعار 30 يوم", "خرق جوهري", "فترة الإصلاح"],
+    "explanation": {
+      "ar": "هذا بند إنهاء متوازن يعطي كلا الطرفين نفس الحقوق مع إشعار مناسب وفترة لإصلاح الأخطاء",
+      "en": "This is a balanced termination clause giving both parties equal rights with adequate notice and a cure period for breaches"
+    },
+    "whyRisky": {
+      "ar": "البند عادل بشكل عام. تأكد من تعريف الخرق الجوهري بوضوح لتجنب الخلافات حول تفعيل الإنهاء الفوري",
+      "en": "Generally fair. Ensure material breach is clearly defined to avoid disputes about triggering immediate termination"
+    },
+    "saferAlternative": {
+      "ar": "البند جيد ومتوازن. أضف تعريفاً واضحاً للخرق الجوهري في ملحق العقد",
+      "en": "Good balanced clause. Add a clear definition of material breach in a contract appendix"
+    },
+    "relatedLaw": "Egyptian Civil Code Article 157",
+    "contractTypes": ["service_agreement", "freelance", "vendor"]
+  }
+]
