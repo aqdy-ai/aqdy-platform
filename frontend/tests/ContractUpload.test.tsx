@@ -9,6 +9,10 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => vi.fn(),
+}))
+
 // Mock framer-motion to remove animation complexity in jsdom
 vi.mock('framer-motion', () => ({
   motion: {

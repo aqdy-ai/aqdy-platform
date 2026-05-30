@@ -20,6 +20,10 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
+vi.mock('react-router-dom', () => ({
+  useSearchParams: () => [new URLSearchParams(''), () => {}],
+}))
+
 describe('Bilingual Rendering & RTL/LTR Layout Tests', () => {
   beforeEach(() => {
     currentTestLanguage = 'ar'
