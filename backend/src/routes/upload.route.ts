@@ -128,7 +128,9 @@ uploadRouter.post(
         status: "processing",
       });
     } catch (error: unknown) {
-      logger.error("❌ Upload failed:", error);
+      logger.error("❌ Upload failed:", {
+        message: error instanceof Error ? error.message : String(error),
+      });
       return res.status(500).json({
         error: error instanceof Error ? error.message : "Unknown error",
       });

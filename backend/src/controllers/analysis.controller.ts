@@ -109,7 +109,7 @@ export const getContractAnalysis = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { contractId } = req.params;
+    const contractId = String(req.params.contractId);
 
     // Check if the contract exists
     const contract = await contractService.getContractById(contractId);
