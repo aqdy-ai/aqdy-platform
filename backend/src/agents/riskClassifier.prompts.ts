@@ -1,3 +1,5 @@
+import { truncatePromptText } from "../utils/text.utils.js";
+
 /**
  * Prompt templates for the RiskClassifierAgent.
  *
@@ -6,8 +8,9 @@
 
 // ── System Prompt ────────────────────────────────
 
-export const RISK_CLASSIFIER_SYSTEM_PROMPT = `You are a contract risk classification expert for the MENA region, with deep knowledge of Egyptian labor law and commercial practices.
-Your job is to analyze the provided contract clause, classify its risk level, and explain the risk.
+export const RISK_CLASSIFIER_SYSTEM_PROMPT = `You are a contract risk classification expert.
+Classify the clause as low, medium, high, or critical and explain the risk in both Arabic and English.
+Return only the required JSON object.
 
 ## Risk Levels:
 - "low": Standard clauses that protect both parties and present no unusual risk.
@@ -66,8 +69,9 @@ export function buildClassificationUserPrompt(
   language: "ar" | "en",
   kbMatch?: KBReference,
 ): string {
+  const clauseSnippet = truncatePromptText(clauseText, 1200);
   let prompt = `Analyze and classify the following contract clause:\n\n`;
-  prompt += `Clause Text:\n"""\n${clauseText}\n"""\n\n`;
+  prompt += `Clause Text:\n"""\n${clauseSnippet}\n"""\n\n`;
   prompt += `Clause Category/Type: ${clauseType}\n`;
   prompt += `Contract Language: ${language === "ar" ? "Arabic (العربية)" : "English"}\n\n`;
 

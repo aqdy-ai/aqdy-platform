@@ -1,4 +1,5 @@
 import { logger } from "../utils/logger.js";
+import { metrics } from "../utils/metrics.js";
 
 export interface AgentJobPayload {
   contractId: string;
@@ -44,6 +45,7 @@ export class AgentExecutionService<TPayload> {
       };
 
       this.queue.push(job);
+      metrics.increment("agent_jobs_queued");
       logger.info("AgentExecutionService: queued job", {
         jobId,
         queueLength: this.queue.length,
@@ -69,6 +71,7 @@ export class AgentExecutionService<TPayload> {
   private async processJob(job: AgentJob<TPayload>): Promise<void> {
     try {
       await this.worker(job.payload);
+      metrics.increment("agent_jobs_completed");
       logger.info("AgentExecutionService: job completed", {
         jobId: job.id,
         attempts: job.attempt,
@@ -86,6 +89,8 @@ export class AgentExecutionService<TPayload> {
         error: errorMessage,
         isFinalAttempt,
       });
+
+      metrics.increment("agent_jobs_failed");
 
       if (isFinalAttempt) {
         if (this.onFinalFailure) {

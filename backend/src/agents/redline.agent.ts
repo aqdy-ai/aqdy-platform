@@ -37,11 +37,14 @@ export interface RedlineResult {
   explanation: { ar: string; en: string };
   talkingPoints: { ar: string[]; en: string[] };
   confidence: number;
+  durationMs: number;
 }
 
 // ── RedlineAgent Class ───────────────────────────
 
 export class RedlineAgent {
+  private readonly redlineCache = new Map<string, RedlineResult>();
+
   /**
    * Generates realistic redline suggestions for a single contract clause.
    *
@@ -59,6 +62,8 @@ export class RedlineAgent {
     language: "ar" | "en",
     saferAlternative?: string,
   ): Promise<RedlineResult> {
+    const startTime = Date.now();
+
     // Input validation
     if (!clauseText || clauseText.trim().length === 0) {
       throw new Error(
@@ -74,6 +79,24 @@ export class RedlineAgent {
       hasAlternative: !!saferAlternative,
     });
 
+    const cacheKey = JSON.stringify({
+      clauseText: clauseText.trim(),
+      riskLevel,
+      clauseType,
+      language,
+      saferAlternative: saferAlternative?.trim() ?? "",
+    });
+
+    const cached = this.redlineCache.get(cacheKey);
+    if (cached) {
+      logger.info("RedlineAgent: returning cached redline result", {
+        clauseType,
+        riskLevel,
+        language,
+      });
+      return cached;
+    }
+
     // 1. Construct prompts
     const systemPrompt = REDLINE_SYSTEM_PROMPT;
     const userPrompt = buildRedlineUserPrompt(
@@ -88,7 +111,7 @@ export class RedlineAgent {
     const llmResponse = await llmService.call(userPrompt, {
       systemPrompt,
       temperature: 0.2, // slightly higher temp for creative/negotiation suggestions
-      maxTokens: 4096,
+      maxTokens: 2048,
     });
 
     // 3. Parse & Validate LLM Output
@@ -111,18 +134,25 @@ export class RedlineAgent {
       Math.max(0.0, Math.round(calibratedConfidence * 100) / 100),
     );
 
-    logger.info("RedlineAgent: generation complete", {
-      confidence: calibratedConfidence,
-      modelUsed: llmResponse.model,
-      usedFallback: llmResponse.usedFallback,
-    });
+    const durationMs = Date.now() - startTime;
 
-    return {
+    const result: RedlineResult = {
       suggestedText: validated.suggestedText,
       explanation: validated.explanation,
       talkingPoints: validated.talkingPoints,
       confidence: calibratedConfidence,
+      durationMs,
     };
+
+    logger.info("RedlineAgent: generation complete", {
+      confidence: calibratedConfidence,
+      modelUsed: llmResponse.model,
+      usedFallback: llmResponse.usedFallback,
+      durationMs,
+    });
+
+    this.redlineCache.set(cacheKey, result);
+    return result;
   }
 }
 

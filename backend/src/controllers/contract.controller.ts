@@ -11,6 +11,32 @@ import { AppError } from "../middlewares/errorHandler.js";
  * Saves the extracted contract text to MongoDB and creates an audit log entry.
  * Request body is pre-validated by the validate middleware using ContractZodSchema.
  */
+export const getContract = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const contract = await contractService.getContractById(
+      String(req.params.id),
+    );
+
+    if (!contract) {
+      throw new AppError(404, "Contract not found");
+    }
+
+    res.status(200).json(contract);
+  } catch (error) {
+    next(
+      error instanceof AppError
+        ? error
+        : new AppError(
+            500,
+            `Failed to get contract: ${error instanceof Error ? error.message : "Unknown error"}`,
+          ),
+    );
+  }
+};
 export const uploadContract = async (
   req: Request,
   res: Response,

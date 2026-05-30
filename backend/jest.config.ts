@@ -9,6 +9,7 @@ const jestConfig: JestConfigWithTsJest = {
     "^(\\.\\.?/.*)\\.js$": "$1",
     // Force resolution of hoisted monorepo packages
     "^@langfuse/langchain$": "<rootDir>/../node_modules/@langfuse/langchain",
+    "^langfuse$": "<rootDir>/tests/__mocks__/langfuse.ts",
   },
   moduleDirectories: ["node_modules", "<rootDir>/node_modules", "../../node_modules"],
   moduleFileExtensions: ["ts", "js", "json", "node"],
