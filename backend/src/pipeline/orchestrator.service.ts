@@ -101,18 +101,24 @@ export class OrchestratorService {
     const sanitizedText = sanitizationResult.text;
 
     if (!sanitizationResult.isSafe) {
-      logger.warn(`Orchestrator: Prompt Injection detected and sanitized for contract ${contractId}`, {
-        detections: sanitizationResult.detections,
-      });
+      logger.warn(
+        `Orchestrator: Prompt Injection detected and sanitized for contract ${contractId}`,
+        {
+          detections: sanitizationResult.detections,
+        },
+      );
     }
 
     // ── Step 1: Extraction ────────────────────────
 
     logger.info("Orchestrator: Step 1 — Extraction");
-    const extractionCacheKey = getStableHash(`${sanitizedText.trim()}|${language}`);
+    const extractionCacheKey = getStableHash(
+      `${sanitizedText.trim()}|${language}`,
+    );
     const cachedExtraction = this.extractionCache.get(extractionCacheKey);
     const extractionResult =
-      cachedExtraction ?? (await extractorAgent.extract(sanitizedText, language));
+      cachedExtraction ??
+      (await extractorAgent.extract(sanitizedText, language));
 
     if (!cachedExtraction) {
       this.extractionCache.set(extractionCacheKey, extractionResult);
