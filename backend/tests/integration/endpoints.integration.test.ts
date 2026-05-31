@@ -106,7 +106,7 @@ describe('POST /api/contracts/upload', () => {
         fileSize: 512,
       });
 
-    const logs = await AuditLog.find({ userId: 'user_audit' });
+    const logs = await AuditLog.find({ "metadata.originalUserId": 'user_audit' });
     expect(logs).toHaveLength(1);
     expect(logs[0].action).toBe('CONTRACT_UPLOADED');
   });
