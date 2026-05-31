@@ -14,6 +14,9 @@ const stopMongo = async () => {
   }
 };
 
+// Do not stop the in-memory server per-test (setupFilesAfterEnv runs for each test file).
+// Rely on process exit handlers to stop the server once the whole Jest run finishes.
+process.on("beforeExit", stopMongo);
 process.on("exit", stopMongo);
 process.on("SIGINT", stopMongo);
 process.on("SIGTERM", stopMongo);
