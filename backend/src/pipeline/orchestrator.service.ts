@@ -15,6 +15,7 @@
 import { extractorAgent } from "../agents/extractor.agent.js";
 import { riskClassifierAgent } from "../agents/riskClassifier.agent.js";
 import { redlineAgent } from "../agents/redline.agent.js";
+import { sanitizationService } from "../services/sanitization.service.js";
 import type { ExtractedClause } from "../agents/extractor.agent.js";
 import { logger } from "../utils/logger.js";
 import { createLangfuseHandler } from "../config/langfuse.config.js";
@@ -95,13 +96,29 @@ export class OrchestratorService {
       tracingEnabled: !!langfuseHandler,
     });
 
+    // ── Step 0: Sanitization Layer ────────────────
+    const sanitizationResult = sanitizationService.sanitize(text);
+    const sanitizedText = sanitizationResult.text;
+
+    if (!sanitizationResult.isSafe) {
+      logger.warn(
+        `Orchestrator: Prompt Injection detected and sanitized for contract ${contractId}`,
+        {
+          detections: sanitizationResult.detections,
+        },
+      );
+    }
+
     // ── Step 1: Extraction ────────────────────────
 
     logger.info("Orchestrator: Step 1 — Extraction");
-    const extractionCacheKey = getStableHash(`${text.trim()}|${language}`);
+    const extractionCacheKey = getStableHash(
+      `${sanitizedText.trim()}|${language}`,
+    );
     const cachedExtraction = this.extractionCache.get(extractionCacheKey);
     const extractionResult =
-      cachedExtraction ?? (await extractorAgent.extract(text, language));
+      cachedExtraction ??
+      (await extractorAgent.extract(sanitizedText, language));
 
     if (!cachedExtraction) {
       this.extractionCache.set(extractionCacheKey, extractionResult);
