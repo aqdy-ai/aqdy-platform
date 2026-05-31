@@ -56,11 +56,14 @@ export function detectLanguage(text: string): "ar" | "en" {
     return "en";
   }
 
-  const arabicMatches = text.match(ARABIC_REGEX);
+  // Sample at most the first 200 characters to make detection extremely fast
+  const sample = text.length > 200 ? text.slice(0, 200) : text;
+
+  const arabicMatches = sample.match(ARABIC_REGEX);
   const arabicCount = arabicMatches ? arabicMatches.length : 0;
 
   // Count total alphabetic characters (Latin + Arabic)
-  const latinMatches = text.match(/[a-zA-Z]/g);
+  const latinMatches = sample.match(/[a-zA-Z]/g);
   const latinCount = latinMatches ? latinMatches.length : 0;
 
   const totalAlpha = arabicCount + latinCount;
