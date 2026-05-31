@@ -10,6 +10,7 @@ import {
   detectPromptInjection,
   sanitizeText,
 } from "../middlewares/security.middleware.js";
+import { redactPII } from "../services/piiFiltering.js";
 
 const uploadRouter = Router();
 
@@ -65,6 +66,9 @@ uploadRouter.post(
 
       // Sanitize standard XSS / HTML tags
       parsed.text = sanitizeText(parsed.text);
+
+      // ── PII Filtering ────────────────────────────────────────────────────
+      parsed.text = redactPII(parsed.text);
 
       // ── Step 2: Persist contract to DB ───────────────────────────────────
       const contract = await contractService.saveContract({
