@@ -195,6 +195,8 @@ export class OrchestratorService {
         clauseType: clause.clauseType,
         riskLevel,
         confidence,
+        lowConfidenceWarning: confidence < 0.6,
+        kbCitationMissing: sourceFromKB === null,
         explanation,
         sourceFromKB,
         redlineSuggestion,
