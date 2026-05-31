@@ -12,7 +12,6 @@ export class AuditLogService {
     metadata?: Record<string, unknown>;
   }): Promise<IAuditLog> {
     const isUserIdValid = mongoose.Types.ObjectId.isValid(data.userId);
-    const isContractIdValid = mongoose.Types.ObjectId.isValid(data.contractId);
 
     const log = new AuditLog({
       action: data.action,
