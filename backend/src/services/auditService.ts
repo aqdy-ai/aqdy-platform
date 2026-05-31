@@ -1,34 +1,41 @@
-import { AuditLog, IAuditLog, AuditAction, AuditOutcome } from "../models/auditLog.model.js";
+import {
+  AuditLog,
+  IAuditLog,
+  AuditAction,
+  AuditOutcome,
+} from "../models/auditLog.model.js";
 import mongoose from "mongoose";
 
 // Helper to extract IP address
 export function getIP(req: any): string {
   if (!req) return "unknown";
-  
+
   // 1. x-forwarded-for (could be a comma-separated list)
   const xForwardedFor = req.headers?.["x-forwarded-for"];
   if (xForwardedFor) {
-    const ip = typeof xForwardedFor === "string" 
-      ? xForwardedFor.split(",")[0].trim() 
-      : Array.isArray(xForwardedFor) 
-        ? xForwardedFor[0] 
-        : "";
+    const ip =
+      typeof xForwardedFor === "string"
+        ? xForwardedFor.split(",")[0].trim()
+        : Array.isArray(xForwardedFor)
+          ? xForwardedFor[0]
+          : "";
     if (ip) return ip;
   }
-  
+
   // 2. x-real-ip
   const xRealIp = req.headers?.["x-real-ip"];
   if (xRealIp) {
     return typeof xRealIp === "string" ? xRealIp.trim() : "";
   }
-  
+
   // 3. remoteAddress
-  const remoteAddress = req.connection?.remoteAddress || req.socket?.remoteAddress;
+  const remoteAddress =
+    req.connection?.remoteAddress || req.socket?.remoteAddress;
   if (remoteAddress) return remoteAddress;
-  
+
   // 4. req.ip
   if (req.ip) return req.ip;
-  
+
   return "unknown";
 }
 
@@ -63,16 +70,23 @@ function extractRequestDetails(req: any) {
   const userAgent = req.headers?.["user-agent"] || null;
   const requestId = req.requestId || req.headers?.["x-request-id"] || null;
   const langfuseTraceId = req.langfuseTraceId || null;
-  
+
   let userId = null;
   let userEmail = null;
-  
+
   if (req.user) {
     userId = safeObjectId(req.user._id);
     userEmail = req.user.email || null;
   }
-  
-  return { ipAddress, userAgent, requestId, langfuseTraceId, userId, userEmail };
+
+  return {
+    ipAddress,
+    userAgent,
+    requestId,
+    langfuseTraceId,
+    userId,
+    userEmail,
+  };
 }
 
 // --- LOG AUTHENTICATION GROUP ---
@@ -144,16 +158,16 @@ export const logContract = {
     contract: any,
     language: string,
     outcome: AuditOutcome = "success",
-    error?: any
+    error?: any,
   ) {
     const reqDetails = extractRequestDetails(req);
-    
+
     // Attempt to get userId from req or contract
     let userId = reqDetails.userId;
     if (!userId && contract?.userId) {
       userId = safeObjectId(contract.userId);
     }
-    
+
     const metadata: Record<string, any> = {
       fileName: file?.originalname || file?.filename || "",
       fileSizeBytes: file?.size || 0,
@@ -176,7 +190,11 @@ export const logContract = {
     });
   },
 
-  async delete(req: any, contractId: string, outcome: AuditOutcome = "success") {
+  async delete(
+    req: any,
+    contractId: string,
+    outcome: AuditOutcome = "success",
+  ) {
     const reqDetails = extractRequestDetails(req);
     return await writeLog({
       action: "CONTRACT_DELETE",
@@ -211,7 +229,7 @@ export const logContract = {
 export const logAgent = {
   async run(req: any, data: any) {
     const reqDetails = extractRequestDetails(req);
-    
+
     let action: AuditAction = "AGENT_EXTRACTOR";
     if (data.agentName === "extractor") {
       action = "AGENT_EXTRACTOR";
@@ -278,17 +296,21 @@ export const logKB = {
     const reqDetails = extractRequestDetails(req);
     const langfuseTraceId = data.langfuseTraceId || reqDetails.langfuseTraceId;
     const results = data.results || [];
-    
+
     const topResultIds = results.slice(0, 3).map((r: any) => {
       if (r && typeof r === "object") {
         return r._id || r.id || String(r);
       }
       return String(r);
     });
-    
+
     const topScores = results.slice(0, 3).map((r: any) => {
       if (r && typeof r === "object") {
-        return r.score !== undefined ? r.score : (r.confidence !== undefined ? r.confidence : 0);
+        return r.score !== undefined
+          ? r.score
+          : r.confidence !== undefined
+            ? r.confidence
+            : 0;
       }
       return 0;
     });

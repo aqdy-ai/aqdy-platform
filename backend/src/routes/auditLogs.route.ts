@@ -25,8 +25,13 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
 
     // Validate and filter by userId
     if (userId) {
-      if (typeof userId !== "string" || !mongoose.Types.ObjectId.isValid(userId)) {
-        return res.status(400).json({ success: false, error: "Invalid userId format" });
+      if (
+        typeof userId !== "string" ||
+        !mongoose.Types.ObjectId.isValid(userId)
+      ) {
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid userId format" });
       }
       filter.userId = new mongoose.Types.ObjectId(userId);
     }
@@ -34,7 +39,9 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
     // Validate and filter by action
     if (action) {
       if (typeof action !== "string" || !ACTION_TYPES.includes(action as any)) {
-        return res.status(400).json({ success: false, error: "Invalid action value" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid action value" });
       }
       filter.action = action;
     }
@@ -42,7 +49,9 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
     // Validate and filter by outcome
     if (outcome) {
       if (typeof outcome !== "string" || !OUTCOMES.includes(outcome as any)) {
-        return res.status(400).json({ success: false, error: "Invalid outcome value" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid outcome value" });
       }
       filter.outcome = outcome;
     }
@@ -139,15 +148,29 @@ router.get("/stats", requireAdmin, async (req: Request, res: Response) => {
   try {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const [totalEvents, failedLogins, contractUploads, agentRuns] = await Promise.all([
-      AuditLog.countDocuments({ timestamp: { $gte: oneDayAgo } }),
-      AuditLog.countDocuments({ action: "AUTH_LOGIN_FAILED", timestamp: { $gte: oneDayAgo } }),
-      AuditLog.countDocuments({ action: { $in: ["CONTRACT_UPLOAD", "CONTRACT_UPLOADED"] }, timestamp: { $gte: oneDayAgo } }),
-      AuditLog.countDocuments({
-        action: { $in: ["AGENT_EXTRACTOR", "AGENT_RISK_CLASSIFIER", "AGENT_REDLINE", "AGENT_PIPELINE"] },
-        timestamp: { $gte: oneDayAgo },
-      }),
-    ]);
+    const [totalEvents, failedLogins, contractUploads, agentRuns] =
+      await Promise.all([
+        AuditLog.countDocuments({ timestamp: { $gte: oneDayAgo } }),
+        AuditLog.countDocuments({
+          action: "AUTH_LOGIN_FAILED",
+          timestamp: { $gte: oneDayAgo },
+        }),
+        AuditLog.countDocuments({
+          action: { $in: ["CONTRACT_UPLOAD", "CONTRACT_UPLOADED"] },
+          timestamp: { $gte: oneDayAgo },
+        }),
+        AuditLog.countDocuments({
+          action: {
+            $in: [
+              "AGENT_EXTRACTOR",
+              "AGENT_RISK_CLASSIFIER",
+              "AGENT_REDLINE",
+              "AGENT_PIPELINE",
+            ],
+          },
+          timestamp: { $gte: oneDayAgo },
+        }),
+      ]);
 
     return res.status(200).json({
       success: true,

@@ -34,7 +34,12 @@ export class AuditLogService {
   // Get logs by contract (backward compatibility)
   async getLogsByContract(contractId: string): Promise<IAuditLog[]> {
     const query = mongoose.Types.ObjectId.isValid(contractId)
-      ? { $or: [{ contractId: new mongoose.Types.ObjectId(contractId) }, { "metadata.contractId": contractId }] }
+      ? {
+          $or: [
+            { contractId: new mongoose.Types.ObjectId(contractId) },
+            { "metadata.contractId": contractId },
+          ],
+        }
       : { "metadata.contractId": contractId };
     return await AuditLog.find(query).sort({ timestamp: -1 });
   }
@@ -42,7 +47,12 @@ export class AuditLogService {
   // Get logs by user (backward compatibility)
   async getLogsByUser(userId: string): Promise<IAuditLog[]> {
     const query = mongoose.Types.ObjectId.isValid(userId)
-      ? { $or: [{ userId: new mongoose.Types.ObjectId(userId) }, { "metadata.originalUserId": userId }] }
+      ? {
+          $or: [
+            { userId: new mongoose.Types.ObjectId(userId) },
+            { "metadata.originalUserId": userId },
+          ],
+        }
       : { "metadata.originalUserId": userId };
     return await AuditLog.find(query).sort({ timestamp: -1 });
   }

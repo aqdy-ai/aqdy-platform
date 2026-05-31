@@ -104,7 +104,7 @@ const AuditLogSchema = new Schema<IAuditLog>(
   },
   {
     collection: "AuditLog",
-  }
+  },
 );
 
 // Compounds
