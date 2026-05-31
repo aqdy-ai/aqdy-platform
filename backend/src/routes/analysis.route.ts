@@ -4,6 +4,7 @@ import {
   analyzeContract,
   getContractAnalysis,
 } from "../controllers/analysis.controller.js";
+import { userAnalysisRateLimit } from "../middlewares/rateLimit.js";
 import { validate } from "../middlewares/validate.js";
 
 /**
@@ -36,7 +37,12 @@ const router = Router();
  *
  * Body: { contractId, userId }
  */
-router.post("/analyze", validate(AnalyzeRequestSchema), analyzeContract);
+router.post(
+  "/analyze",
+  validate(AnalyzeRequestSchema),
+  userAnalysisRateLimit(),
+  analyzeContract,
+);
 
 /**
  * GET /api/analysis/:contractId

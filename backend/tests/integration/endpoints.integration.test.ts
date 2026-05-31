@@ -150,6 +150,7 @@ describe('POST /api/analysis/analyze', () => {
 
     const res = await request(app)
       .post('/api/analysis/analyze')
+      .set('x-user-tier', 'premium')
       .send({ contractId, userId: 'user_123' });
 
     expect(res.status).toBe(202);
@@ -162,6 +163,7 @@ describe('POST /api/analysis/analyze', () => {
 
     const res = await request(app)
       .post('/api/analysis/analyze')
+      .set('x-user-tier', 'premium')
       .send({ contractId: fakeId, userId: 'user_123' });
 
     expect(res.status).toBe(404);
@@ -170,6 +172,7 @@ describe('POST /api/analysis/analyze', () => {
   test('should reject analysis with missing contractId', async () => {
     const res = await request(app)
       .post('/api/analysis/analyze')
+      .set('x-user-tier', 'premium')
       .send({ userId: 'user_123' });
 
     expect(res.status).toBe(400);

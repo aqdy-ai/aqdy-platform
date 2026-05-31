@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { upload, handleUploadError } from "../middlewares/upload.middleware.js";
+import { anonymousIpRateLimit } from "../middlewares/rateLimit.js";
 import { pdfService } from "../services/pdf.service.js";
 import { docxService } from "../services/docx.service.js";
 import { contractService } from "../services/contract.service.js";
@@ -13,6 +14,7 @@ import {
 import { redactPII } from "../services/piiFiltering.js";
 
 const uploadRouter = Router();
+uploadRouter.use(anonymousIpRateLimit());
 
 /**
  * POST /api/upload/

@@ -12,6 +12,12 @@ let emptyContractId: string;
 let realContractId: string;
 let largeContractId: string;
 
+const analysisRequest = (payload: object) =>
+  request(app)
+    .post('/api/analysis/analyze')
+    .set('x-user-tier', 'premium')
+    .send(payload);
+
 beforeAll(async () => {
   const testContract = await contractService.saveContract({
     filename: 'test.pdf',
@@ -87,12 +93,10 @@ beforeAll(async () => {
 
 describe('Analysis API Integration', () => {
   it('should accept a contract for analysis and return 202', async () => {
-    const response = await request(app)
-      .post('/api/analysis/analyze')
-      .send({
-        contractId: testContractId,
-        userId: 'user-123',
-      });
+    const response = await analysisRequest({
+      contractId: testContractId,
+      userId: 'user-123',
+    });
 
     expect(response.status).toBe(202);
     expect(response.body.data).toHaveProperty('status', 'processing');
@@ -104,12 +108,10 @@ describe('Analysis API Integration', () => {
    * يتحقق من أن النظام يرفض الملفات غير الصالحة بعد تفعيل الـ Parsing Pipeline
    */
   it('should return 422 if the document content is unreadable or empty', async () => {
-    const response = await request(app)
-      .post('/api/analysis/analyze')
-      .send({
-        contractId: emptyContractId,
-        userId: 'user-123',
-      });
+    const response = await analysisRequest({
+      contractId: emptyContractId,
+      userId: 'user-123',
+    });
     
     // If validation logic is not yet in controller, this remains a failing test for T2
     expect(response.status).toBe(422);
@@ -120,9 +122,7 @@ describe('Analysis API Integration', () => {
    * يتأكد من أن الرد يحتوي على الهيكل المطلوب للنتائج (Risk Score & Clauses)
    */
   it('should eventually include analysis results structure in the processing flow', async () => {
-    const response = await request(app)
-      .post('/api/analysis/analyze')
-      .send({ contractId: testContractId, userId: 'user-123' });
+    const response = await analysisRequest({ contractId: testContractId, userId: 'user-123' });
 
     expect(response.body.data).toHaveProperty('contractId');
     expect(response.body.data).toHaveProperty('status', 'processing');
@@ -137,9 +137,7 @@ describe('Analysis API Integration', () => {
     const userId = 'user-123';
 
     // 1. إرسال طلب التحليل (يؤدي لحفظ سجل التدقيق ANALYSIS_STARTED)
-    await request(app)
-      .post('/api/analysis/analyze')
-      .send({ contractId, userId });
+    await analysisRequest({ contractId, userId });
 
     // 2. محاولة استرجاع الحالة (يجب أن يقرأ من قاعدة البيانات ويعيد حالة المعالجة)
     const response = await request(app)
@@ -228,12 +226,10 @@ describe('Analysis API Integration', () => {
    * يتحقق من قدرة النظام على التعامل مع عقد توظيف حقيقي وتنسيق النتائج
    */
   it('should handle a full analysis request for a real employment contract fixture', async () => {
-    const response = await request(app)
-      .post('/api/analysis/analyze')
-      .send({ 
-        contractId: realContractId, 
-        userId: 'user-123' 
-      });
+    const response = await analysisRequest({ 
+      contractId: realContractId, 
+      userId: 'user-123' 
+    });
 
     expect(response.status).toBe(202);
     expect(response.body.data.status).toBe('processing');
@@ -249,9 +245,7 @@ describe('Analysis API Integration', () => {
     const userId = 'user-123';
 
     const requests = Array.from({ length: concurrentCount }).map(() =>
-      request(app)
-        .post('/api/analysis/analyze')
-        .send({ contractId, userId })
+      analysisRequest({ contractId, userId })
     );
 
     const responses = await Promise.all(requests);
@@ -267,23 +261,19 @@ describe('Analysis API Integration', () => {
    * يتحقق من قدرة النظام على قبول ومعالجة العقود الطويلة جداً التي قد تتطلب تقسيماً (Chunking) في مرحلة الاستخراج
    */
   it('should handle a large contract with 50+ clauses and return 202', async () => {
-    const response = await request(app)
-      .post('/api/analysis/analyze')
-      .send({ 
-        contractId: largeContractId, 
-        userId: 'user-123' 
-      });
+    const response = await analysisRequest({ 
+      contractId: largeContractId, 
+      userId: 'user-123' 
+    });
 
     expect(response.status).toBe(202);
     expect(response.body.data.status).toBe('processing');
   });
 
   it('should return 400 if contractId is missing', async () => {
-    const response = await request(app)
-      .post('/api/analysis/analyze')
-      .send({
-        userId: 'user-123'
-      });
+    const response = await analysisRequest({
+      userId: 'user-123'
+    });
 
     expect(response.status).toBe(400);
     expect(response.body.message).toContain('contractId');
