@@ -18,6 +18,8 @@ import uploadRouter from "./routes/upload.route.js";
 import metricsRouter from "./routes/metrics.route.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.config.js";
+import requestIdMiddleware from "./middleware/requestId.middleware.js";
+import auditLogsRouter from "./routes/auditLogs.route.js";
 
 // Initialize Langfuse observability
 initializeLangfuse();
@@ -28,6 +30,7 @@ connectDB();
 const app: Application = express();
 
 // ── Middlewares ──────────────────────────────────
+app.use(requestIdMiddleware);
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -41,6 +44,7 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
 app.use("/api/metrics", metricsRouter);
+app.use("/api/admin/audit-logs", auditLogsRouter);
 
 // Use Swagger UI
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
