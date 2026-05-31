@@ -11,6 +11,7 @@ const jestConfig: JestConfigWithTsJest = {
     "^@langfuse/langchain$": "<rootDir>/../node_modules/@langfuse/langchain",
     "^langfuse$": "<rootDir>/tests/__mocks__/langfuse.ts",
     "pdfjs-dist/legacy/build/pdf.mjs": "<rootDir>/src/__mocks__/pdfjs-dist.js",
+    "^pdf-parse$": "<rootDir>/src/__mocks__/pdf-parse.js",
   },
   moduleDirectories: ["node_modules", "<rootDir>/node_modules", "../../node_modules"],
   moduleFileExtensions: ["ts", "js", "json", "node"],
