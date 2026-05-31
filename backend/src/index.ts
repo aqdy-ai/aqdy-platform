@@ -12,6 +12,7 @@ import {
 } from "./config/langfuse.config.js";
 import healthRouter from "./routes/health.route.js";
 import contractRouter from "./routes/contract.route.js";
+import authRouter from "./routes/auth.route.js";
 import analysisRouter from "./routes/analysis.route.js";
 import connectDB from "./config/database.js";
 import uploadRouter from "./routes/upload.route.js";
@@ -41,6 +42,7 @@ app.use(httpLogger);
 // ── Routes ───────────────────────────────────────
 app.use("/api", healthRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
 app.use("/api/metrics", metricsRouter);
@@ -55,9 +57,12 @@ app.use(errorHandler);
 // ── Start Server ─────────────────────────────────
 const PORT = parseInt(env.PORT, 10);
 
-const server = app.listen(PORT, () => {
-  logger.info(`🚀 Aqdy backend running on port ${PORT} [${env.NODE_ENV}]`);
-});
+let server: any;
+if (env.NODE_ENV !== "test") {
+  server = app.listen(PORT, () => {
+    logger.info(`🚀 Aqdy backend running on port ${PORT} [${env.NODE_ENV}]`);
+  });
+}
 
 // ── Graceful Shutdown ────────────────────────────
 const gracefulShutdown = async () => {
@@ -66,11 +71,15 @@ const gracefulShutdown = async () => {
   // Flush Langfuse traces
   await flushLangfuseTraces();
 
-  // Close server
-  server.close(() => {
-    logger.info("✓ Server closed");
+  // Close server if it was started
+  if (server && typeof server.close === "function") {
+    server.close(() => {
+      logger.info("✓ Server closed");
+      process.exit(0);
+    });
+  } else {
     process.exit(0);
-  });
+  }
 
   // Timeout if shutdown takes too long
   setTimeout(() => {

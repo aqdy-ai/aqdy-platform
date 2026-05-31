@@ -1,4 +1,9 @@
+import dotenv from "dotenv";
 import swaggerJsdoc from "swagger-jsdoc";
+
+dotenv.config();
+
+const swaggerServerUrl = `http://localhost:${process.env.PORT || "3000"}`;
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -8,10 +13,15 @@ const options: swaggerJsdoc.Options = {
       version: "1.0.0",
       description: "AI-powered contract review API for MENA region",
     },
-    servers: [
-      { url: "http://localhost:5000", description: "Development server" },
-    ],
+    servers: [{ url: swaggerServerUrl, description: "Development server" }],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
       schemas: {
         Contract: {
           type: "object",
@@ -42,6 +52,87 @@ const options: swaggerJsdoc.Options = {
           properties: {
             contractId: { type: "string", example: "64abc123def456" },
             userId: { type: "string", example: "user_123" },
+          },
+        },
+        RegisterRequest: {
+          type: "object",
+          required: ["name", "email", "password"],
+          properties: {
+            name: { type: "string", example: "Ahmed Ali" },
+            email: {
+              type: "string",
+              format: "email",
+              example: "ahmed@example.com",
+            },
+            password: { type: "string", example: "StrongPass123!" },
+          },
+        },
+        LoginRequest: {
+          type: "object",
+          required: ["email", "password"],
+          properties: {
+            email: {
+              type: "string",
+              format: "email",
+              example: "ahmed@example.com",
+            },
+            password: { type: "string", example: "StrongPass123!" },
+          },
+        },
+        RefreshRequest: {
+          type: "object",
+          required: ["refreshToken"],
+          properties: {
+            refreshToken: {
+              type: "string",
+              example: "refresh_token_example_123",
+            },
+          },
+        },
+        AuthResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean" },
+            data: {
+              type: "object",
+              properties: {
+                token: { type: "string" },
+                refreshToken: { type: "string" },
+                user: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string" },
+                    email: { type: "string" },
+                    name: { type: "string" },
+                    role: { type: "string" },
+                    plan: { type: "string" },
+                  },
+                },
+              },
+            },
+            message: { type: "string" },
+          },
+        },
+        UserResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean" },
+            data: {
+              type: "object",
+              properties: {
+                user: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string" },
+                    email: { type: "string" },
+                    name: { type: "string" },
+                    role: { type: "string" },
+                    plan: { type: "string" },
+                  },
+                },
+              },
+            },
+            message: { type: "string" },
           },
         },
         ClauseAnalysis: {
@@ -148,6 +239,202 @@ const options: swaggerJsdoc.Options = {
             },
             400: { description: "Validation error" },
             500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/auth/register": {
+        post: {
+          tags: ["Authentication"],
+          summary: "Register a new user",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/RegisterRequest" },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: "User registered successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/AuthResponse" },
+                },
+              },
+            },
+            400: {
+              description: "Validation error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            409: {
+              description: "Email already in use",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/auth/login": {
+        post: {
+          tags: ["Authentication"],
+          summary: "Log in with email and password",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/LoginRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Login successful",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/AuthResponse" },
+                },
+              },
+            },
+            400: {
+              description: "Validation error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Invalid credentials",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/auth/logout": {
+        post: {
+          tags: ["Authentication"],
+          summary: "Logout a refresh token",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/RefreshRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Logout successful",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            400: {
+              description: "Validation error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Invalid refresh token",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/auth/refresh": {
+        post: {
+          tags: ["Authentication"],
+          summary: "Refresh JWT using a valid refresh token",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/RefreshRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Token refreshed successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/AuthResponse" },
+                },
+              },
+            },
+            400: { description: "Validation error" },
+            401: { description: "Invalid or expired refresh token" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/auth/me": {
+        get: {
+          tags: ["Authentication"],
+          summary: "Fetch authenticated user profile",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: {
+              description: "Authenticated user information",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/UserResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
           },
         },
       },
