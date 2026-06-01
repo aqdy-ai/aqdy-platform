@@ -63,7 +63,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 {t('nav.how_it_works')}
                 <ExternalLink size={12} className="opacity-50" />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
+              <a
+                href="/pricing"
+                className="hover:text-primary transition-colors"
+              >
                 {t('nav.pricing')}
               </a>
             </div>

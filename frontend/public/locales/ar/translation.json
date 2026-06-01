@@ -96,5 +96,22 @@
     "export_report": "تصدير التقرير",
     "export_pdf": "ملف PDF طباعي",
     "export_docx": "مستند وورد Word"
+  },
+  "pricing": {
+    "title": "الخطط",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "most_popular": "الأكثر شعبية",
+    "current_plan": "الخطة الحالية",
+    "monthly": "شهري",
+    "annual": "سنوي",
+    "price": "{{price}} / {{cycle}}",
+    "per_month": "في الشهر",
+    "per_year": "في السنة",
+    "get_started_free": "ابدأ مجاناً",
+    "upgrade_to_pro": "الترقية إلى برو",
+    "contact_us": "اتصل بنا",
+    "analysis_limit": "حد التحليل",
+    "storage_limit": "حد التخزين"
   }
 }

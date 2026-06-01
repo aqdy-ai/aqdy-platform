@@ -7,9 +7,10 @@ import MainLayout from './components/layout/MainLayout'
 import DisclaimerModal from './components/DisclaimerModal'
 
 const Home = lazy(() => import('./pages/Home'))
+const Pricing = lazy(() => import('./pages/Pricing.tsx'))
 const TestDashboard = lazy(() => import('./pages/TestDashboard'))
 const RiskAnalysisDashboard = lazy(
-  () => import('./pages/RiskAnalysisDashboard')
+  () => import('./pages/RiskAnalysisDashboard.tsx')
 )
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
           <MainLayout>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route
                 path="/dashboard"
                 element={

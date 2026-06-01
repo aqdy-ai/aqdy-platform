@@ -90,6 +90,12 @@
   }
 }
 
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-primary text-primary-foreground font-semibold rounded hover:bg-primary/80 transition-colors duration-200;
+  }
+}
+
 #root {
   width: 100%;
   margin: 0;
