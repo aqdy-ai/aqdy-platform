@@ -22,8 +22,6 @@ import { swaggerSpec } from "./config/swagger.config.js";
 import requestIdMiddleware from "./middleware/requestId.middleware.js";
 import auditLogsRouter from "./routes/auditLogs.route.js";
 
-
-
 // Initialize Langfuse observability
 initializeLangfuse();
 
@@ -53,7 +51,7 @@ app.use("/api/admin/audit-logs", auditLogsRouter);
 // Use Swagger UI
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use('/api/metrics', metricsRouter);
+app.use("/api/metrics", metricsRouter);
 
 // ── Error Handler ────────────────────────────────
 app.use(errorHandler);
