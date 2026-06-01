@@ -9,7 +9,8 @@ export function verifyJWT(token: string): any {
     const [headerB64, payloadB64, signatureB64] = parts;
 
     // Verify signature
-    const hmac = crypto.createHmac("sha256", env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET || env.JWT_SECRET;
+    const hmac = crypto.createHmac("sha256", jwtSecret);
     hmac.update(`${headerB64}.${payloadB64}`);
     const expectedSignature = hmac.digest("base64url");
 

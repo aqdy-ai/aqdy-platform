@@ -70,9 +70,9 @@ describe("Admin Account Management API & Role Guard", () => {
   test("GET /api/admin/accounts lists paginated, filtered, and searched accounts", async () => {
     // Seed test users
     await User.create([
-      { name: "Alice Blue", email: "alice@test.com", role: "user", status: "active", planSlug: "free" },
-      { name: "Bob Green", email: "bob@test.com", role: "user", status: "suspended", planSlug: "premium" },
-      { name: "Charlie Red", email: "charlie@test.com", role: "admin", status: "active", planSlug: "enterprise" },
+      { name: "Alice Blue", email: "alice@test.com", role: "user", status: "active", planSlug: "free", passwordHash: "dummyHash" },
+      { name: "Bob Green", email: "bob@test.com", role: "user", status: "suspended", planSlug: "premium", passwordHash: "dummyHash" },
+      { name: "Charlie Red", email: "charlie@test.com", role: "admin", status: "active", planSlug: "enterprise", passwordHash: "dummyHash" },
     ]);
 
     // List all
@@ -115,6 +115,7 @@ describe("Admin Account Management API & Role Guard", () => {
       role: "user",
       status: "active",
       planSlug: "premium",
+      passwordHash: "dummyHash",
     });
 
     const userIdStr = user._id.toString();
@@ -156,6 +157,7 @@ describe("Admin Account Management API & Role Guard", () => {
       role: "user",
       status: "active",
       planSlug: "free",
+      passwordHash: "dummyHash",
     });
 
     const userIdStr = user._id.toString();
@@ -189,6 +191,7 @@ describe("Admin Account Management API & Role Guard", () => {
       role: "user",
       status: "active",
       planSlug: "free",
+      passwordHash: "dummyHash",
     });
 
     const userIdStr = user._id.toString();

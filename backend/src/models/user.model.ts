@@ -1,22 +1,3 @@
-import mongoose, { Document, Schema } from "mongoose";
-import { z } from "zod";
-
-export const UserZodSchema = z.object({
-  name: z.string().min(1).max(255),
-  email: z.string().email(),
-  role: z.enum(["admin", "user"]).default("user"),
-  status: z.enum(["active", "suspended"]).default("active"),
-  planSlug: z.enum(["free", "premium", "enterprise"]).default("free"),
-});
-
-export interface IUser extends Document {
-  name: string;
-  email: string;
-  role: "admin" | "user";
-  status: "active" | "suspended";
-  planSlug: "free" | "premium" | "enterprise";
-  createdAt: Date;
-  updatedAt: Date;
 import bcrypt from "bcryptjs";
 import mongoose, { Document, Schema } from "mongoose";
 import { z } from "zod";
@@ -45,6 +26,7 @@ export interface IUser extends Document {
   passwordHash: string;
   role: UserRole;
   plan: string;
+  planSlug: string;
   status: UserStatus;
   lastLogin?: Date;
   refreshToken?: string;
@@ -54,7 +36,6 @@ export interface IUser extends Document {
 
 const UserSchema = new Schema<IUser>(
   {
-    name: { type: String, required: true, trim: true, maxlength: 255 },
     name: { type: String, required: true, trim: true, maxlength: 100 },
     email: {
       type: String,
@@ -64,37 +45,20 @@ const UserSchema = new Schema<IUser>(
       lowercase: true,
       index: true,
     },
-    role: {
-      type: String,
-      enum: ["admin", "user"],
-      default: "user",
-    },
-    status: {
-      type: String,
-      enum: ["active", "suspended"],
-      default: "active",
-      index: true,
-    },
+    passwordHash: { type: String, required: true, select: false },
+    role: { type: String, enum: ["user", "admin"], default: "user" },
+    plan: { type: String, required: true, default: "free" },
     planSlug: {
       type: String,
       enum: ["free", "premium", "enterprise"],
       default: "free",
       index: true,
     },
-  },
-  {
-    timestamps: true,
-    collection: "User",
-  },
-);
-
-    passwordHash: { type: String, required: true, select: false },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
-    plan: { type: String, required: true, default: "free" },
     status: {
       type: String,
       enum: ["active", "suspended", "deleted"],
       default: "active",
+      index: true,
     },
     lastLogin: { type: Date },
     refreshToken: { type: String, select: false },

@@ -135,11 +135,13 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, error: "Invalid plan type" });
       }
       user.planSlug = plan;
+      user.plan = plan;
     } else if (planSlug !== undefined) {
       if (!["free", "premium", "enterprise"].includes(planSlug)) {
         return res.status(400).json({ success: false, error: "Invalid plan slug type" });
       }
       user.planSlug = planSlug;
+      user.plan = planSlug;
     }
 
     if (status !== undefined) {
