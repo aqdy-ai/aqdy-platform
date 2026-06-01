@@ -10,7 +10,13 @@ const router = Router();
 // GET /api/admin/accounts
 router.get("/", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { page: pageRaw, pageSize: pageSizeRaw, planSlug, status, search } = req.query;
+    const {
+      page: pageRaw,
+      pageSize: pageSizeRaw,
+      planSlug,
+      status,
+      search,
+    } = req.query;
 
     const filter: Record<string, any> = {};
 
@@ -70,7 +76,9 @@ router.get("/:id", requireAdmin, async (req: Request, res: Response) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, error: "Invalid user ID format" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid user ID format" });
     }
 
     const user = await User.findById(id);
@@ -88,7 +96,10 @@ router.get("/:id", requireAdmin, async (req: Request, res: Response) => {
 
     // Fetch recent activity from AuditLog
     const recentActivity = await AuditLog.find({
-      $or: [{ userId: new mongoose.Types.ObjectId(id) }, { userEmail: user.email }],
+      $or: [
+        { userId: new mongoose.Types.ObjectId(id) },
+        { userEmail: user.email },
+      ],
     })
       .sort({ timestamp: -1 })
       .limit(10);
@@ -121,7 +132,9 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
     const { plan, planSlug, status, role } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, error: "Invalid user ID format" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid user ID format" });
     }
 
     const user = await User.findById(id);
@@ -132,13 +145,17 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
     // Handle updates
     if (plan !== undefined) {
       if (!["free", "premium", "enterprise"].includes(plan)) {
-        return res.status(400).json({ success: false, error: "Invalid plan type" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid plan type" });
       }
       user.planSlug = plan;
       user.plan = plan;
     } else if (planSlug !== undefined) {
       if (!["free", "premium", "enterprise"].includes(planSlug)) {
-        return res.status(400).json({ success: false, error: "Invalid plan slug type" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid plan slug type" });
       }
       user.planSlug = planSlug;
       user.plan = planSlug;
@@ -146,14 +163,18 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
 
     if (status !== undefined) {
       if (!["active", "suspended"].includes(status)) {
-        return res.status(400).json({ success: false, error: "Invalid status type" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid status type" });
       }
       user.status = status;
     }
 
     if (role !== undefined) {
       if (!["admin", "user"].includes(role)) {
-        return res.status(400).json({ success: false, error: "Invalid role type" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid role type" });
       }
       user.role = role;
     }
@@ -179,12 +200,15 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
     if (!confirm) {
       return res.status(400).json({
         success: false,
-        error: "Confirmation flag 'confirm: true' is required in the body to delete this user",
+        error:
+          "Confirmation flag 'confirm: true' is required in the body to delete this user",
       });
     }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, error: "Invalid user ID format" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid user ID format" });
     }
 
     const user = await User.findById(id);
