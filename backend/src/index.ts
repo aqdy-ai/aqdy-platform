@@ -13,6 +13,7 @@ import {
 import healthRouter from "./routes/health.route.js";
 import contractRouter from "./routes/contract.route.js";
 import authRouter from "./routes/auth.route.js";
+import accountRouter from "./routes/account.route.js";
 import analysisRouter from "./routes/analysis.route.js";
 import connectDB from "./config/database.js";
 import uploadRouter from "./routes/upload.route.js";
@@ -21,6 +22,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.config.js";
 import requestIdMiddleware from "./middleware/requestId.middleware.js";
 import auditLogsRouter from "./routes/auditLogs.route.js";
+import accountsRouter from "./routes/accounts.route.js";
 import plansRouter from "./routes/plans.route.js";
 
 // Initialize Langfuse observability
@@ -44,14 +46,18 @@ app.use(httpLogger);
 app.use("/api", healthRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/account", accountRouter);
 app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/admin/audit-logs", auditLogsRouter);
+app.use("/api/admin/accounts", accountsRouter);
 app.use("/api/plans", plansRouter);
 
 // Use Swagger UI
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use("/api/metrics", metricsRouter);
 
 // ── Error Handler ────────────────────────────────
 app.use(errorHandler);
@@ -59,7 +65,7 @@ app.use(errorHandler);
 // ── Start Server ─────────────────────────────────
 const PORT = parseInt(env.PORT, 10);
 
-let server: import('http').Server | undefined;
+let server: import("http").Server | undefined;
 if (env.NODE_ENV !== "test") {
   server = app.listen(PORT, () => {
     logger.info(`🚀 Aqdy backend running on port ${PORT} [${env.NODE_ENV}]`);
