@@ -7,7 +7,11 @@ export const SubscriptionZodSchema = z.object({
   status: z.enum(["active", "cancelled", "expired", "past_due"]),
 });
 
-export type SubscriptionStatus = "active" | "cancelled" | "expired" | "past_due";
+export type SubscriptionStatus =
+  | "active"
+  | "cancelled"
+  | "expired"
+  | "past_due";
 
 export interface ISubscription extends Document {
   userId: mongoose.Types.ObjectId;

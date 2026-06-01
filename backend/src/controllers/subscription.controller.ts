@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { subscriptionService } from '../services/subscription.service.js';
-import { AppError } from '../middlewares/errorHandler.js';
-import { ApiResponse } from '../types/index.js';
-import { logger } from '../utils/logger.js';
+import { Request, Response, NextFunction } from "express";
+import { subscriptionService } from "../services/subscription.service.js";
+import { AppError } from "../middlewares/errorHandler.js";
+import { ApiResponse } from "../types/index.js";
+import { logger } from "../utils/logger.js";
 
 // GET /api/account/subscription
 export const getSubscriptionHandler = async (
@@ -16,7 +16,7 @@ export const getSubscriptionHandler = async (
     const subscription = await subscriptionService.getUserSubscription(userId);
 
     if (!subscription) {
-      throw new AppError(404, 'No active subscription found.');
+      throw new AppError(404, "No active subscription found.");
     }
 
     const usageCount = await subscriptionService.getUsageStats(
@@ -36,7 +36,7 @@ export const getSubscriptionHandler = async (
           renewalDate: subscription.renewalDate,
         },
       },
-      message: 'Subscription retrieved successfully',
+      message: "Subscription retrieved successfully",
     };
 
     res.status(200).json(response);
@@ -44,7 +44,10 @@ export const getSubscriptionHandler = async (
     next(
       error instanceof AppError
         ? error
-        : new AppError(500, `Failed to get subscription: ${error instanceof Error ? error.message : 'Unknown error'}`),
+        : new AppError(
+            500,
+            `Failed to get subscription: ${error instanceof Error ? error.message : "Unknown error"}`,
+          ),
     );
   }
 };
@@ -60,17 +63,20 @@ export const upgradeSubscriptionHandler = async (
     const { planId } = req.body;
 
     if (!planId) {
-      throw new AppError(400, 'planId is required.');
+      throw new AppError(400, "planId is required.");
     }
 
-    const subscription = await subscriptionService.upgradeSubscription(userId, planId);
+    const subscription = await subscriptionService.upgradeSubscription(
+      userId,
+      planId,
+    );
 
-    logger.info('Subscription upgraded', { userId, planId });
+    logger.info("Subscription upgraded", { userId, planId });
 
     const response: ApiResponse<object> = {
       success: true,
       data: { subscription },
-      message: 'Subscription upgraded successfully',
+      message: "Subscription upgraded successfully",
     };
 
     res.status(200).json(response);
@@ -78,7 +84,10 @@ export const upgradeSubscriptionHandler = async (
     next(
       error instanceof AppError
         ? error
-        : new AppError(500, `Failed to upgrade subscription: ${error instanceof Error ? error.message : 'Unknown error'}`),
+        : new AppError(
+            500,
+            `Failed to upgrade subscription: ${error instanceof Error ? error.message : "Unknown error"}`,
+          ),
     );
   }
 };
@@ -94,15 +103,16 @@ export const cancelSubscriptionHandler = async (
 
     const subscription = await subscriptionService.cancelSubscription(userId);
 
-    logger.info('Subscription cancelled', { userId });
+    logger.info("Subscription cancelled", { userId });
 
     const response: ApiResponse<object> = {
       success: true,
       data: {
         subscription,
-        message: 'Your subscription will remain active until the end of the current billing period.',
+        message:
+          "Your subscription will remain active until the end of the current billing period.",
       },
-      message: 'Subscription cancelled successfully',
+      message: "Subscription cancelled successfully",
     };
 
     res.status(200).json(response);
@@ -110,7 +120,10 @@ export const cancelSubscriptionHandler = async (
     next(
       error instanceof AppError
         ? error
-        : new AppError(500, `Failed to cancel subscription: ${error instanceof Error ? error.message : 'Unknown error'}`),
+        : new AppError(
+            500,
+            `Failed to cancel subscription: ${error instanceof Error ? error.message : "Unknown error"}`,
+          ),
     );
   }
 };

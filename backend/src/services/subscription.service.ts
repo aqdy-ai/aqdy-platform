@@ -1,14 +1,17 @@
-import mongoose from 'mongoose';
-import { Subscription, ISubscription, SubscriptionStatus } from '../models/subscription.model.js';
-import { Plan, IPlan } from '../models/plan.model.js';
-import { RiskAnalysis } from '../models/riskAnalysis.model.js';
-import { logger } from '../utils/logger.js';
+import mongoose from "mongoose";
+import {
+  Subscription,
+  ISubscription,
+  SubscriptionStatus,
+} from "../models/subscription.model.js";
+import { Plan, IPlan } from "../models/plan.model.js";
+import { RiskAnalysis } from "../models/riskAnalysis.model.js";
+import { logger } from "../utils/logger.js";
 
 export class SubscriptionService {
-
   // جيب الـ Free plan
   async getFreePlan(): Promise<IPlan | null> {
-    return await Plan.findOne({ slug: 'free', isActive: true });
+    return await Plan.findOne({ slug: "free", isActive: true });
   }
 
   // عمل Free subscription للـ user الجديد
@@ -16,7 +19,7 @@ export class SubscriptionService {
     const freePlan = await this.getFreePlan();
 
     if (!freePlan) {
-      throw new Error('Free plan not found. Please seed the database.');
+      throw new Error("Free plan not found. Please seed the database.");
     }
 
     const now = new Date();
@@ -26,7 +29,7 @@ export class SubscriptionService {
     const subscription = new Subscription({
       userId: new mongoose.Types.ObjectId(userId),
       planId: freePlan._id,
-      status: 'active',
+      status: "active",
       startDate: now,
       endDate,
       renewalDate: endDate,
@@ -39,8 +42,8 @@ export class SubscriptionService {
 
   // جيب الـ subscription بتاعت الـ user
   async getUserSubscription(userId: string): Promise<ISubscription | null> {
-    return await Subscription.findOne({ userId, status: 'active' })
-      .populate('planId')
+    return await Subscription.findOne({ userId, status: "active" })
+      .populate("planId")
       .sort({ createdAt: -1 });
   }
 
@@ -57,15 +60,18 @@ export class SubscriptionService {
     userId: string,
     newPlanId: string,
   ): Promise<ISubscription> {
-    const subscription = await Subscription.findOne({ userId, status: 'active' });
+    const subscription = await Subscription.findOne({
+      userId,
+      status: "active",
+    });
 
     if (!subscription) {
-      throw new Error('No active subscription found.');
+      throw new Error("No active subscription found.");
     }
 
     const newPlan = await Plan.findById(newPlanId);
     if (!newPlan) {
-      throw new Error('Plan not found.');
+      throw new Error("Plan not found.");
     }
 
     const now = new Date();
@@ -73,26 +79,31 @@ export class SubscriptionService {
     newEndDate.setMonth(newEndDate.getMonth() + 1);
 
     subscription.planId = new mongoose.Types.ObjectId(newPlanId);
-    subscription.status = 'active';
+    subscription.status = "active";
     subscription.startDate = now;
     subscription.endDate = newEndDate;
     subscription.renewalDate = newEndDate;
     subscription.cancelledAt = undefined;
 
     await subscription.save();
-    logger.info(`✅ Subscription upgraded for user: ${userId} to plan: ${newPlan.name}`);
+    logger.info(
+      `✅ Subscription upgraded for user: ${userId} to plan: ${newPlan.name}`,
+    );
     return subscription;
   }
 
   // Cancel الـ subscription
   async cancelSubscription(userId: string): Promise<ISubscription> {
-    const subscription = await Subscription.findOne({ userId, status: 'active' });
+    const subscription = await Subscription.findOne({
+      userId,
+      status: "active",
+    });
 
     if (!subscription) {
-      throw new Error('No active subscription found.');
+      throw new Error("No active subscription found.");
     }
 
-    subscription.status = 'cancelled';
+    subscription.status = "cancelled";
     subscription.cancelledAt = new Date();
 
     await subscription.save();

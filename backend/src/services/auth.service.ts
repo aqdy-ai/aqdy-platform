@@ -3,8 +3,8 @@ import jwt from "jsonwebtoken";
 import { AppError } from "../middlewares/errorHandler.js";
 import { env } from "../config/env.js";
 import { User, IUser } from "../models/user.model.js";
-import { subscriptionService } from './subscription.service.js';
-import { logger } from '../utils/logger.js';
+import { subscriptionService } from "./subscription.service.js";
+import { logger } from "../utils/logger.js";
 
 export interface RegisterInput {
   name: string;
@@ -100,7 +100,10 @@ export const registerUser = async (
   try {
     await subscriptionService.createFreeSubscription(String(user._id));
   } catch (error) {
-    logger.warn(`Failed to create free subscription for user ${user._id}:`, error);
+    logger.warn(
+      `Failed to create free subscription for user ${user._id}:`,
+      error,
+    );
   }
 
   const { token, refreshToken } = await issueTokens(user);
