@@ -39,7 +39,7 @@ beforeEach(() => {
           ],
         }),
     })
-  ) as unknown as any
+  ) as unknown as typeof fetch
 })
 
 afterEach(() => {
