@@ -53,6 +53,8 @@ app.use("/api/plans", plansRouter);
 // Use Swagger UI
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.use("/api/metrics", metricsRouter);
+
 // ── Error Handler ────────────────────────────────
 app.use(errorHandler);
 
