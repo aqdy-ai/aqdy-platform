@@ -204,6 +204,53 @@ const options: swaggerJsdoc.Options = {
             message: { type: "string", example: "Error message" },
           },
         },
+        Plan: {
+          type: "object",
+          properties: {
+            _id: { type: "string", example: "64abc123def456" },
+            name: { type: "string", example: "Pro" },
+            slug: { type: "string", example: "pro" },
+            price: { type: "number", nullable: true, example: 29 },
+            billingCycle: {
+              type: "string",
+              enum: ["monthly", "annual"],
+              example: "monthly",
+            },
+            features: {
+              type: "array",
+              items: { type: "string" },
+              example: ["100 analyses/month", "Unlimited contracts"],
+            },
+            analysisLimit: { type: "number", example: 100 },
+            storageLimit: { type: "number", example: -1 },
+            isActive: { type: "boolean", example: true },
+          },
+        },
+        PlanResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            data: { $ref: "#/components/schemas/Plan" },
+            message: {
+              type: "string",
+              example: "Plan details retrieved successfully",
+            },
+          },
+        },
+        PlansListResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Plan" },
+            },
+            message: {
+              type: "string",
+              example: "Active plans retrieved successfully",
+            },
+          },
+        },
       },
     },
     paths: {
@@ -213,6 +260,71 @@ const options: swaggerJsdoc.Options = {
           summary: "Health check",
           responses: {
             200: { description: "Server is healthy" },
+          },
+        },
+      },
+      "/api/plans": {
+        get: {
+          tags: ["Plans"],
+          summary: "Get all active pricing plans",
+          responses: {
+            200: {
+              description: "Active plans retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/PlansListResponse" },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/plans/{slug}": {
+        get: {
+          tags: ["Plans"],
+          summary: "Get details for a specific plan by slug",
+          parameters: [
+            {
+              name: "slug",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              example: "pro",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Plan details retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/PlanResponse" },
+                },
+              },
+            },
+            404: {
+              description: "Plan not found",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
           },
         },
       },
