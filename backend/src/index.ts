@@ -13,6 +13,7 @@ import {
 import healthRouter from "./routes/health.route.js";
 import contractRouter from "./routes/contract.route.js";
 import authRouter from "./routes/auth.route.js";
+import accountRouter from "./routes/account.route.js";
 import analysisRouter from "./routes/analysis.route.js";
 import connectDB from "./config/database.js";
 import uploadRouter from "./routes/upload.route.js";
@@ -43,6 +44,7 @@ app.use(httpLogger);
 app.use("/api", healthRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/account", accountRouter);
 app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
 app.use("/api/metrics", metricsRouter);

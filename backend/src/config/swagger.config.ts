@@ -135,6 +135,32 @@ const options: swaggerJsdoc.Options = {
             message: { type: "string" },
           },
         },
+        ProfileResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean" },
+            data: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                email: { type: "string" },
+                plan: { type: "string" },
+                memberSince: { type: "string", format: "date-time" },
+                lastLogin: { type: "string", format: "date-time" },
+              },
+            },
+            message: { type: "string" },
+          },
+        },
+        UpdateProfileRequest: {
+          type: "object",
+          properties: {
+            name: { type: "string", example: "Ahmed Ali" },
+            email: { type: "string", format: "email", example: "ahmed@example.com" },
+            password: { type: "string", example: "NewStrongPass123!" },
+            currentPassword: { type: "string", example: "OldStrongPass123!" },
+          },
+        },
         ClauseAnalysis: {
           type: "object",
           properties: {
@@ -435,6 +461,79 @@ const options: swaggerJsdoc.Options = {
                 },
               },
             },
+          },
+        },
+      },
+      "/api/account/profile": {
+        get: {
+          tags: ["Account"],
+          summary: "Fetch user profile",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: {
+              description: "Profile information",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ProfileResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            404: { description: "User not found" },
+          },
+        },
+        patch: {
+          tags: ["Account"],
+          summary: "Update user profile",
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/UpdateProfileRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Profile updated successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/UserResponse" },
+                },
+              },
+            },
+            400: { description: "Validation error" },
+            401: { description: "Authentication required" },
+            403: { description: "Invalid current password" },
+            404: { description: "User not found" },
+            409: { description: "Email already in use" },
+          },
+        },
+      },
+      "/api/account": {
+        delete: {
+          tags: ["Account"],
+          summary: "Delete user account (soft delete)",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: {
+              description: "Account deleted successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            404: { description: "User not found or already deleted" },
           },
         },
       },
