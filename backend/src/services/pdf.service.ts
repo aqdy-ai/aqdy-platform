@@ -48,7 +48,9 @@ export class PdfService {
       }
 
       const language = this.detectLanguage(data.text);
-      logger.info(`✅ PDF parsed: ${file.originalname} (${data.numpages} pages)`);
+      logger.info(
+        `✅ PDF parsed: ${file.originalname} (${data.numpages} pages)`,
+      );
 
       return {
         text: data.text.trim(),
