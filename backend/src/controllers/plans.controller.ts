@@ -33,6 +33,7 @@ export const getActivePlans = async (
   }
 };
 
+
 /**
  * GET /api/plans/:slug
  *
