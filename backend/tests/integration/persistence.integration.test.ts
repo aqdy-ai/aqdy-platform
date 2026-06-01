@@ -1,8 +1,6 @@
+import "dotenv/config";
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import mongoose from 'mongoose';
-import { config } from 'dotenv';
-
-config();
 
 import { Contract } from '../../src/models/contract.model.js';
 import { RiskAnalysis } from '../../src/models/riskAnalysis.model.js';
@@ -17,8 +15,16 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.dropDatabase();
-  await mongoose.connection.close();
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.dropDatabase();
+    await mongoose.connection.close();
+  } else {
+    try {
+      await mongoose.disconnect();
+    } catch (e) {
+      // ignore
+    }
+  }
 });
 
 beforeEach(async () => {
