@@ -21,6 +21,9 @@ import { logger } from "../utils/logger.js";
 import { createLangfuseHandler } from "../config/langfuse.config.js";
 import { getStableHash } from "../utils/text.utils.js";
 import type { IClauseAnalysis } from "../models/riskAnalysis.model.js";
+import { metrics } from "../utils/metrics.js";
+import { metricsService } from "../services/metrics.service.js";
+
 
 // ── Types ─────────────────────────────────────────
 
@@ -239,6 +242,49 @@ export class OrchestratorService {
       overallRisk,
       durationMs,
     });
+
+    logger.info("Orchestrator: pipeline complete", {
+      contractId,
+      totalClauses,
+      riskyClausesCount,
+      overallRisk,
+      durationMs,
+    });
+
+    // Track metrics
+    metrics.increment("analyses.total");
+    metrics.increment(`analyses.risk.${overallRisk}`);
+    metrics.observe("analyses.latencyMs", durationMs);
+    metrics.observe("analyses.clauseCount", totalClauses);
+
+    const tokenEstimate = {
+      inputTokens: Math.ceil(text.length / 4),
+      outputTokens: Math.ceil(text.length / 8),
+      totalTokens: Math.ceil(text.length / 4) + Math.ceil(text.length / 8),
+    };
+
+    metrics.observe("analyses.tokens.total", tokenEstimate.totalTokens);
+
+    const cost = metricsService.calculateCost(
+      "gemini-3.5-flash",
+      tokenEstimate,
+    );
+    metrics.observe("analyses.costUSD", cost);
+
+    metricsService.trackAnalysis({
+      contractId,
+      userId,
+      totalTokens: tokenEstimate,
+      totalCostUSD: cost,
+      totalLatencyMs: durationMs,
+      agentCalls: [],
+      clauseCount: totalClauses,
+      success: true,
+    });
+
+    if (durationMs > 5000) {
+      metrics.increment("alerts.highLatency");
+    }
 
     // Flush Langfuse traces
     if (langfuseHandler) {
