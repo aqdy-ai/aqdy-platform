@@ -1,10 +1,10 @@
-// src/pages/__tests__/Pricing.test.jsx
+// src/pages/__tests__/Pricing.test.tsx
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
-// import userEvent from '@testing-library/user-event'
-import Pricing from '../src/pages/Pricing'
+import { MemoryRouter } from 'react-router-dom'
+import Pricing from '@/pages/Pricing'
 import { I18nextProvider } from 'react-i18next'
-import i18n from '../src/lib/i18n'
+import i18n from '@/lib/i18n'
 
 // Mock fetch globally for this test file
 beforeEach(() => {
@@ -13,27 +13,28 @@ beforeEach(() => {
       ok: true,
       json: () =>
         Promise.resolve({
-          plans: [
+          success: true,
+          data: [
             {
-              id: 'free',
+              id: '1',
               name: 'Free',
-              price: '$0',
-              features: ['Feature A', 'Feature B'],
-              limits: { analysis: '10k', storage: '1GB' },
+              price: '0',
+              limits: { analysis: '3', storage: '100MB' },
+              features: ['Basic AI contract check', 'Standard support'],
             },
             {
-              id: 'pro',
+              id: '2',
               name: 'Pro',
-              price: '$49',
-              features: ['Feature A', 'Feature B', 'Feature C'],
-              limits: { analysis: '100k', storage: '10GB' },
+              price: '29',
+              limits: { analysis: '50', storage: '2GB' },
+              features: ['Advanced AI classification', 'Priority support'],
             },
             {
-              id: 'enterprise',
+              id: '3',
               name: 'Enterprise',
-              price: 'Contact us',
-              features: ['All features'],
+              price: 'Custom',
               limits: { analysis: 'Unlimited', storage: 'Unlimited' },
+              features: ['Custom fine-tuning'],
             },
           ],
         }),
@@ -45,44 +46,92 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-const renderWithI18n = (ui: React.ReactElement) => {
-  return render(<I18nextProvider i18n={i18n}>{ui}</I18nextProvider>)
+// 🌟 الحل الجذري: تحويل الـ ui إلى دالة تستقبل الـ props وتُرجع المكون مضبوط التايب بنسبة 100%
+const renderWithProviders = (
+  renderUi: (props: {
+    isLoggedIn: boolean
+    userPlan: string | null
+  }) => React.ReactElement,
+  {
+    isLoggedIn = false,
+    userPlan = null,
+  }: { isLoggedIn?: boolean; userPlan?: string | null } = {}
+) => {
+  return render(
+    <I18nextProvider i18n={i18n}>
+      <MemoryRouter>{renderUi({ isLoggedIn, userPlan })}</MemoryRouter>
+    </I18nextProvider>
+  )
 }
 
 describe('Pricing Page', () => {
   test('shows loading state initially', async () => {
-    renderWithI18n(<Pricing />)
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    // نمرر الـ component كـ دالة ترجع العنصر (Arrow Function)
+    renderWithProviders((props) => <Pricing {...props} />)
+    expect(screen.getByText(/loading|جاري/i)).toBeInTheDocument()
   })
 
   test('renders plan cards after fetching', async () => {
-    renderWithI18n(<Pricing />)
-    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
-    // Wait for cards to appear
+    renderWithProviders((props) => <Pricing {...props} />)
+
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /free/i })).toBeInTheDocument()
-      expect(screen.getByRole('heading', { name: /pro/i })).toBeInTheDocument()
       expect(
-        screen.getByRole('heading', { name: /enterprise/i })
+        screen.getByRole('heading', { name: /free|مجانية/i })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /pro|برو/i })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /enterprise|شركات/i })
       ).toBeInTheDocument()
     })
   })
 
-  test('CTA button behavior', async () => {
-    renderWithI18n(<Pricing />)
-    await waitFor(() =>
-      screen.getByRole('button', { name: /get started free/i })
+  test('CTA links and navigation targets', async () => {
+    renderWithProviders((props) => <Pricing {...props} />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('link', { name: /get started free|ابدأ مجاناً/i })
+      ).toBeInTheDocument()
+    })
+
+    const freeLink = screen.getByRole('link', {
+      name: /get started free|ابدأ مجاناً/i,
+    })
+    expect(freeLink).toHaveAttribute('href', '/register')
+
+    const proLink = screen.getByRole('link', {
+      name: /upgrade to pro|اشترك الآن/i,
+    })
+    expect(proLink).toHaveAttribute(
+      'href',
+      expect.stringContaining('/checkout?plan=pro')
     )
-    const freeBtn = screen.getByRole('button', { name: /get started free/i })
-    expect(freeBtn).toBeInTheDocument()
-    // The Pro button is disabled placeholder
-    const proBtn = screen.getByRole('button', { name: /upgrade to pro/i })
-    expect(proBtn).toBeDisabled()
-    // Enterprise CTA is a link
-    const enterpriseLink = screen.getByRole('link', { name: /contact us/i })
+
+    const enterpriseLink = screen.getByRole('link', {
+      name: /contact us|تواصل معنا/i,
+    })
     expect(enterpriseLink).toHaveAttribute(
       'href',
-      expect.stringContaining('mailto:')
+      expect.stringContaining('mailto:partnerships@aqdy.ai')
     )
+  })
+
+  test('disables current plan interactions when user is logged in', async () => {
+    // تمرير الـ custom props بأمان تام والـ TS هيكمل الباقي بدون أخطاء
+    renderWithProviders((props) => <Pricing {...props} />, {
+      isLoggedIn: true,
+      userPlan: 'pro',
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText(/current plan|خطتك الحالية/i)).toBeInTheDocument()
+    })
+
+    const proLink = screen.getByRole('link', {
+      name: /upgrade to pro|اشترك الآن/i,
+    })
+    expect(proLink).toHaveClass('pointer-events-none')
   })
 })
