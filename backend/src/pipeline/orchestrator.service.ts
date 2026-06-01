@@ -216,7 +216,6 @@ export class OrchestratorService {
       if (weight > maxRiskWeight) {
         maxRiskWeight = weight;
       }
-
     }
 
     // ── Executive Summary ─────────────────────────

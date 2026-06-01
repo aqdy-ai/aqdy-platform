@@ -12,8 +12,8 @@ export interface IClauseAnalysis {
   clauseType: string;
   riskLevel: "low" | "medium" | "high" | "critical" | "unknown";
   confidence: number;
-  lowConfidenceWarning: boolean;    // ← جديد
-  kbCitationMissing: boolean;       // ← جديد
+  lowConfidenceWarning: boolean; // ← جديد
+  kbCitationMissing: boolean; // ← جديد
   explanation: { ar: string; en: string };
   sourceFromKB: string | null;
   classificationDurationMs?: number;
@@ -44,8 +44,8 @@ const ClauseAnalysisSchema = new Schema<IClauseAnalysis>({
     required: true,
   },
   confidence: { type: Number, min: 0, max: 1, required: true },
-  lowConfidenceWarning: { type: Boolean, default: false },    // ← جديد
-  kbCitationMissing: { type: Boolean, default: false },       // ← جديد
+  lowConfidenceWarning: { type: Boolean, default: false }, // ← جديد
+  kbCitationMissing: { type: Boolean, default: false }, // ← جديد
   explanation: {
     ar: { type: String, required: true },
     en: { type: String, required: true },
