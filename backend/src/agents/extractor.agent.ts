@@ -36,6 +36,7 @@ export const ExtractedClauseSchema = z.object({
   clauseNumber: z.number().int().positive(),
   clauseText: z.string().min(1),
   clauseType: z.string().min(1),
+  confidence: z.number().min(0).max(1).default(1.0),
 });
 
 export type ExtractedClause = z.infer<typeof ExtractedClauseSchema>;
@@ -215,6 +216,7 @@ export class ExtractorAgent {
         clauseText: clauseText.trim(),
         clauseType:
           typeof item.clauseType === "string" ? item.clauseType : "other",
+        confidence: typeof item.confidence === "number" ? item.confidence : 0.8, // ← جديد
       });
     }
 
