@@ -227,6 +227,177 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      "/api/admin/accounts": {
+        get: {
+          tags: ["Admin Accounts"],
+          summary: "Get paginated, filterable, and searchable list of user accounts",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: "page", in: "query", schema: { type: "integer", default: 1 } },
+            { name: "pageSize", in: "query", schema: { type: "integer", default: 20 } },
+            { name: "planSlug", in: "query", schema: { type: "string", enum: ["free", "premium", "enterprise"] } },
+            { name: "status", in: "query", schema: { type: "string", enum: ["active", "suspended"] } },
+            { name: "search", in: "query", schema: { type: "string" }, description: "Search by email or name" }
+          ],
+          responses: {
+            200: {
+              description: "List of accounts retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      pagination: {
+                        type: "object",
+                        properties: {
+                          page: { type: "integer" },
+                          pageSize: { type: "integer" },
+                          total: { type: "integer" },
+                          totalPages: { type: "integer" },
+                          hasNext: { type: "boolean" },
+                          hasPrev: { type: "boolean" }
+                        }
+                      },
+                      data: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            _id: { type: "string" },
+                            name: { type: "string" },
+                            email: { type: "string" },
+                            role: { type: "string" },
+                            status: { type: "string" },
+                            planSlug: { type: "string" },
+                            createdAt: { type: "string", format: "date-time" },
+                            updatedAt: { type: "string", format: "date-time" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            401: { description: "Unauthorized" },
+            403: { description: "Forbidden" }
+          }
+        }
+      },
+      "/api/admin/accounts/{id}": {
+        get: {
+          tags: ["Admin Accounts"],
+          summary: "Get full account detail including subscription, usage stats, and recent activity",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } }
+          ],
+          responses: {
+            200: {
+              description: "Account details retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      data: {
+                        type: "object",
+                        properties: {
+                          user: { type: "object" },
+                          subscription: {
+                            type: "object",
+                            properties: {
+                              planSlug: { type: "string" },
+                              status: { type: "string" }
+                            }
+                          },
+                          usageStats: {
+                            type: "object",
+                            properties: {
+                              contractsCount: { type: "integer" },
+                              totalFileSizeBytes: { type: "integer" }
+                            }
+                          },
+                          recentActivity: {
+                            type: "array",
+                            items: { type: "object" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            400: { description: "Invalid user ID format" },
+            401: { description: "Unauthorized" },
+            403: { description: "Forbidden" },
+            404: { description: "User not found" }
+          }
+        },
+        patch: {
+          tags: ["Admin Accounts"],
+          summary: "Update user plan, status, or role",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    plan: { type: "string", enum: ["free", "premium", "enterprise"] },
+                    planSlug: { type: "string", enum: ["free", "premium", "enterprise"] },
+                    status: { type: "string", enum: ["active", "suspended"] },
+                    role: { type: "string", enum: ["admin", "user"] }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: { description: "User updated successfully" },
+            400: { description: "Invalid payload or user ID format" },
+            401: { description: "Unauthorized" },
+            403: { description: "Forbidden" },
+            404: { description: "User not found" }
+          }
+        },
+        delete: {
+          tags: ["Admin Accounts"],
+          summary: "Hard delete user account (requires confirmation flag)",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["confirm"],
+                  properties: {
+                    confirm: { type: "boolean", example: true }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: { description: "User hard deleted successfully" },
+            400: { description: "Confirmation flag missing or invalid user ID format" },
+            401: { description: "Unauthorized" },
+            403: { description: "Forbidden" },
+            404: { description: "User not found" }
+          }
+        }
+      }
     },
   },
   apis: [],

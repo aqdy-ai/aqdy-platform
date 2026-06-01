@@ -20,6 +20,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.config.js";
 import requestIdMiddleware from "./middleware/requestId.middleware.js";
 import auditLogsRouter from "./routes/auditLogs.route.js";
+import accountsRouter from "./routes/accounts.route.js";
 
 // Initialize Langfuse observability
 initializeLangfuse();
@@ -45,6 +46,7 @@ app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/admin/audit-logs", auditLogsRouter);
+app.use("/api/admin/accounts", accountsRouter);
 
 // Use Swagger UI
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
