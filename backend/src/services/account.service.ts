@@ -58,9 +58,12 @@ export const updateProfile = async (
 
   if (data.password) {
     if (!data.currentPassword) {
-      throw new AppError(400, "Current password is required to set a new password.");
+      throw new AppError(
+        400,
+        "Current password is required to set a new password.",
+      );
     }
-    
+
     const isPasswordValid = await user.verifyPassword(data.currentPassword);
     if (!isPasswordValid) {
       throw new AppError(403, "Invalid current password.");
@@ -83,6 +86,6 @@ export const deleteAccount = async (userId: string): Promise<void> => {
   // We can also nullify refresh tokens to log them out globally
   user.refreshToken = undefined;
   user.refreshTokenExpiresAt = undefined;
-  
+
   await user.save();
 };

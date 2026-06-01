@@ -156,7 +156,11 @@ const options: swaggerJsdoc.Options = {
           type: "object",
           properties: {
             name: { type: "string", example: "Ahmed Ali" },
-            email: { type: "string", format: "email", example: "ahmed@example.com" },
+            email: {
+              type: "string",
+              format: "email",
+              example: "ahmed@example.com",
+            },
             password: { type: "string", example: "NewStrongPass123!" },
             currentPassword: { type: "string", example: "OldStrongPass123!" },
           },

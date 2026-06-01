@@ -2,29 +2,38 @@ import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { ApiResponse } from "../types/index.js";
 import { AppError } from "../middlewares/errorHandler.js";
-import { getProfile, updateProfile, deleteAccount } from "../services/account.service.js";
+import {
+  getProfile,
+  updateProfile,
+  deleteAccount,
+} from "../services/account.service.js";
 
-const updateProfileSchema = z.object({
-  name: z.string().min(3).max(100).optional(),
-  email: z.string().email().optional(),
-  password: z
-    .string()
-    .min(8)
-    .regex(
-      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      "Password must include uppercase, lowercase, number, and special character"
-    )
-    .optional(),
-  currentPassword: z.string().optional(),
-}).refine(data => {
-  if (data.password && !data.currentPassword) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Current password is required to change password",
-  path: ["currentPassword"]
-});
+const updateProfileSchema = z
+  .object({
+    name: z.string().min(3).max(100).optional(),
+    email: z.string().email().optional(),
+    password: z
+      .string()
+      .min(8)
+      .regex(
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+        "Password must include uppercase, lowercase, number, and special character",
+      )
+      .optional(),
+    currentPassword: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.password && !data.currentPassword) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Current password is required to change password",
+      path: ["currentPassword"],
+    },
+  );
 
 const parseRequestBody = <T>(schema: z.ZodSchema<T>, body: unknown): T => {
   const result = schema.safeParse(body);
