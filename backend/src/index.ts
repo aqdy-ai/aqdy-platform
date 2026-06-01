@@ -22,6 +22,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.config.js";
 import requestIdMiddleware from "./middleware/requestId.middleware.js";
 import auditLogsRouter from "./routes/auditLogs.route.js";
+import plansRouter from "./routes/plans.route.js";
 
 // Initialize Langfuse observability
 initializeLangfuse();
@@ -49,9 +50,12 @@ app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/admin/audit-logs", auditLogsRouter);
+app.use("/api/plans", plansRouter);
 
 // Use Swagger UI
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use("/api/metrics", metricsRouter);
 
 // ── Error Handler ────────────────────────────────
 app.use(errorHandler);
@@ -59,7 +63,7 @@ app.use(errorHandler);
 // ── Start Server ─────────────────────────────────
 const PORT = parseInt(env.PORT, 10);
 
-let server: any;
+let server: import('http').Server | undefined;
 if (env.NODE_ENV !== "test") {
   server = app.listen(PORT, () => {
     logger.info(`🚀 Aqdy backend running on port ${PORT} [${env.NODE_ENV}]`);
