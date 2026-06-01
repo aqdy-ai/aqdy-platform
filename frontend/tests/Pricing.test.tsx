@@ -8,7 +8,7 @@ import i18n from '@/lib/i18n'
 
 // Mock fetch globally for this test file
 beforeEach(() => {
-  global.fetch = jest.fn(() =>
+  global.fetch = vi.fn(() =>
     Promise.resolve({
       ok: true,
       json: () =>
@@ -39,11 +39,11 @@ beforeEach(() => {
           ],
         }),
     })
-  ) as unknown as jest.Mock
+  ) as unknown as any
 })
 
 afterEach(() => {
-  jest.restoreAllMocks()
+  vi.restoreAllMocks()
 })
 
 // 🌟 الحل الجذري: تحويل الـ ui إلى دالة تستقبل الـ props وتُرجع المكون مضبوط التايب بنسبة 100%
