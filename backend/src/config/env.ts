@@ -14,6 +14,7 @@ const envSchema = z.object({
   PINECONE_INDEX: z.string().min(1, "PINECONE_INDEX is required"),
   LANGFUSE_SECRET_KEY: z.string().min(1, "LANGFUSE_SECRET_KEY is required"),
   LANGFUSE_PUBLIC_KEY: z.string().min(1, "LANGFUSE_PUBLIC_KEY is required"),
+  LANGFUSE_URL: z.string().default("https://cloud.langfuse.com"),
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
 });
 
@@ -22,7 +23,9 @@ const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
   console.error("❌ Invalid environment variables:");
   console.error(parsed.error.flatten().fieldErrors);
-  process.exit(1);
+  throw new Error(
+    `Invalid environment variables: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`,
+  );
 }
 
 export const env = parsed.data;

@@ -5,7 +5,13 @@ export default tseslint.config(
     eslint.configs.recommended,
     ...tseslint.configs.recommended,
     {
-        files: ["src/**/*.ts"],
+        files: ["**/*.ts"],
+        languageOptions: {
+            parserOptions: {
+                project: true,
+                tsconfigRootDir: import.meta.dirname,
+            },
+        },
         rules: {
             "@typescript-eslint/no-unused-vars": [
                 "warn",

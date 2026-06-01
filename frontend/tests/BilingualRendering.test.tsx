@@ -1,76 +1,64 @@
 /* tests/BilingualRendering.test.tsx */
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import RiskAnalysisDashboard from '../src/components/dashboard/RiskAnalysisDashboard'
-import sampleAnalysisData from '../src/mocks/sampleAnalysis.json'
+import RiskAnalysisDashboard from '../src/pages/RiskAnalysisDashboard'
 
-// متغير محلي للتحكم في اللغة النشطة داخل الـ Mocks ديناميكياً
+// متغير محلي للتحكم في اللغة النشطة
 let currentTestLanguage = 'ar'
 
-// 1️⃣ عمل Mock موحد ومرن لـ i18next يعتمد على المتغير الديناميكي
+// The real RiskAnalysisDashboard renders text using isRtl (i18n.language === 'ar')
+// conditionally — NOT via t(). So we mock the language here.
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => {
-      const translations: Record<string, Record<string, string>> = {
-        ar: {
-          'dashboard.analysis_result': 'نتائج التحليل',
-          'dashboard.detailed_findings': 'النتائج التفصيلية',
-        },
-        en: {
-          'dashboard.analysis_result': 'Analysis Result',
-          'dashboard.detailed_findings': 'Detailed Findings',
-        },
-      }
-      return translations[currentTestLanguage]?.[key] || key
-    },
+    t: (key: string) => key,
     i18n: {
-      language: currentTestLanguage,
+      get language() {
+        return currentTestLanguage
+      },
       exists: () => true,
     },
   }),
 }))
 
-describe('Bilingual Rendering & RTL/LTR Layout Tests', () => {
-  const mockApiData = sampleAnalysisData as React.ComponentProps<
-    typeof RiskAnalysisDashboard
-  >['analysisData']
+vi.mock('react-router-dom', () => ({
+  useSearchParams: () => [new URLSearchParams(''), () => {}],
+}))
 
+describe('Bilingual Rendering & RTL/LTR Layout Tests', () => {
   beforeEach(() => {
-    // إعادة تعيين اللغة الافتراضية قبل كل تست
     currentTestLanguage = 'ar'
   })
 
   it('should render full Arabic UI layout with RTL directions', () => {
     currentTestLanguage = 'ar'
-    render(<RiskAnalysisDashboard analysisData={mockApiData} />)
+    render(<RiskAnalysisDashboard />)
 
-    // التأكد من ظهور العناوين العربية
-    expect(screen.getByText(/نتائج التحليل/)).toBeInTheDocument()
-    expect(screen.getByText(/النتائج التفصيلية/)).toBeInTheDocument()
+    // The component renders: isRtl ? 'تحليل مخاطر العقد' : 'Contract Risk Analysis'
+    expect(screen.getByText('تحليل مخاطر العقد')).toBeInTheDocument()
+    // The filter button: isRtl ? 'كل الثغرات' + count
+    expect(screen.getByText(/كل الثغرات/)).toBeInTheDocument()
   })
 
   it('should render full English UI layout with LTR directions', () => {
-    // ⬇️ بمجرد تغيير المتغير، الـ Mock هيقرأ القيمة الجديدة بدون ري-إمبورت أو require
     currentTestLanguage = 'en'
-    render(<RiskAnalysisDashboard analysisData={mockApiData} />)
+    render(<RiskAnalysisDashboard />)
 
-    // التأكد من ظهور العناوين الإنجليزية
-    expect(screen.getByText(/Analysis Result/)).toBeInTheDocument()
-    expect(screen.getByText(/Detailed Findings/)).toBeInTheDocument()
+    // The component renders: isRtl ? 'تحليل مخاطر العقد' : 'Contract Risk Analysis'
+    expect(screen.getByText('Contract Risk Analysis')).toBeInTheDocument()
+    // The filter button: 'All Flaws' + count
+    expect(screen.getByText(/All Flaws/)).toBeInTheDocument()
   })
 
-  it('should preserve text direction integrity for mixed contract content using dir="auto"', () => {
-    currentTestLanguage = 'ar' // الواجهة عربية والعقد إنجليزي
-    render(<RiskAnalysisDashboard analysisData={mockApiData} />)
+  it('should render clause items from the internal mock data', () => {
+    currentTestLanguage = 'ar'
+    render(<RiskAnalysisDashboard />)
 
-    // جلب نص العقد الإنجليزي من الـ Mock
-    const contractText = mockApiData.clauseAnalysis[0].clauseText
-    const contractParagraph = screen
-      .getByText(new RegExp(contractText))
-      .closest('p')
-
-    // 🎯 التأكد من أن الحاوية تمتلك خاصية dir="auto" بنجاح وبدون ميثودز مجهولة
-    expect(contractParagraph).toBeInTheDocument()
-    expect(contractParagraph).toHaveAttribute('dir', 'auto')
+    // Verify known clause titles from MOCK_RISK_DATA are rendered
+    expect(
+      screen.getByText('شرط جزائي مفتوح وبدون حد أقصى')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('غموض في آلية إنهاء التعاقد المبكر')
+    ).toBeInTheDocument()
   })
 })

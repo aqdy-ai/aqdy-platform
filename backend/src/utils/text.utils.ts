@@ -56,11 +56,14 @@ export function detectLanguage(text: string): "ar" | "en" {
     return "en";
   }
 
-  const arabicMatches = text.match(ARABIC_REGEX);
+  // Sample at most the first 200 characters to make detection extremely fast
+  const sample = text.length > 200 ? text.slice(0, 200) : text;
+
+  const arabicMatches = sample.match(ARABIC_REGEX);
   const arabicCount = arabicMatches ? arabicMatches.length : 0;
 
   // Count total alphabetic characters (Latin + Arabic)
-  const latinMatches = text.match(/[a-zA-Z]/g);
+  const latinMatches = sample.match(/[a-zA-Z]/g);
   const latinCount = latinMatches ? latinMatches.length : 0;
 
   const totalAlpha = arabicCount + latinCount;
@@ -241,6 +244,8 @@ function splitBySentences(text: string): string[] {
  * @returns Parsed JSON value
  * @throws Error if no valid JSON can be extracted
  */
+import { createHash } from "crypto";
+
 export function safeParseJSON<T = unknown>(raw: string): T {
   if (!raw || raw.trim().length === 0) {
     throw new Error("Empty response — cannot parse JSON");
@@ -274,6 +279,23 @@ export function safeParseJSON<T = unknown>(raw: string): T {
   throw new Error(
     `Failed to parse JSON from LLM response. Raw output (first 200 chars): ${raw.substring(0, 200)}`,
   );
+}
+
+/**
+ * Truncates prompt content to reduce token usage while preserving the beginning of the text.
+ */
+export function truncatePromptText(text: string, maxLength = 1200): string {
+  if (!text) return "";
+  const trimmed = text.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  return `${trimmed.slice(0, maxLength)}\n... [truncated for prompt size]`;
+}
+
+/**
+ * Produces a stable SHA-256 hash for caching keys.
+ */
+export function getStableHash(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
 }
 
 // ── Merge Extraction Results ─────────────────────

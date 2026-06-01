@@ -2,26 +2,31 @@
  * Health Check Integration Test
  * Path: backend/tests/health.test.ts
  */
-import {jest, describe, test, expect ,afterAll} from '@jest/globals';
+import "dotenv/config";
+import {jest, describe, test, expect ,afterAll, beforeAll} from '@jest/globals';
 import request from 'supertest';
-// Ensure the path to app.js is correct and includes the extension
-import app from '../src/index.js'; 
 
-jest.spyOn(app, "listen").mockImplementation(() => {
-  return {} as any;
-});
+let app: any;
+
 describe('Backend Health Check', () => {
+  beforeAll(async () => {
+    const imported = await import('../src/index.js');
+    app = imported.default;
+    jest.spyOn(app, 'listen').mockImplementation(() => ({} as any));
+  });
+
   test('it should respond with 200 OK', async () => {
     const response = await request(app).get('/api/health');
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.data.status).toBe("ok");
+    expect(response.body.data.status).toBe('ok');
     expect(response.body.data.timestamp).toBeDefined();
   });
 
 });
-  afterAll(() => {
+
+afterAll(() => {
   jest.clearAllMocks();
 });
 

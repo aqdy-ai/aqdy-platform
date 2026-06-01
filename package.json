@@ -1,0 +1,31 @@
+{
+  "name": "aqdy-platform",
+  "version": "1.0.0",
+  "description": "AI-powered contract risk analyzer designed for the Arabic-speaking market.  Aqdy helps freelancers, startups, and small businesses understand legal contracts by providing clause-by-clause risk analysis in Arabic and English using LLMs, RAG pipelines, and legal knowledge bases.",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aqdy-ai/aqdy-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/aqdy-ai/aqdy-platform/issues"
+  },
+  "homepage": "https://github.com/aqdy-ai/aqdy-platform#readme",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.8.0",
+    "@types/validator": "^13.15.10"
+  },
+  "dependencies": {
+    "validator": "^13.15.35"
+  }
+}

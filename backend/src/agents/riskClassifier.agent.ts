@@ -36,12 +36,15 @@ export interface ClassificationResult {
   confidence: number;
   explanation: { ar: string; en: string };
   sourceFromKB: string | null;
+  saferAlternative?: string;
+  durationMs: number;
 }
 
 // ── RiskClassifierAgent Class ────────────────────
 
 export class RiskClassifierAgent {
   private readonly similarityThreshold: number;
+  private readonly classifyCache = new Map<string, ClassificationResult>();
 
   /**
    * @param similarityThreshold - The similarity score cut-off above which a KB match is considered valid.
@@ -64,6 +67,8 @@ export class RiskClassifierAgent {
     clauseType: string,
     language: "ar" | "en",
   ): Promise<ClassificationResult> {
+    const startTime = Date.now();
+
     // Input validation
     if (!clauseText || clauseText.trim().length === 0) {
       throw new Error("Clause text is empty — nothing to classify.");
@@ -75,9 +80,28 @@ export class RiskClassifierAgent {
       textLength: clauseText.length,
     });
 
+    const cacheKey = JSON.stringify({
+      text: clauseText.trim(),
+      type: clauseType,
+      language,
+    });
+
+    const cachedResult = this.classifyCache.get(cacheKey);
+    if (cachedResult) {
+      logger.info(
+        "RiskClassifierAgent: returning cached classification result",
+        {
+          clauseType,
+          language,
+        },
+      );
+      return cachedResult;
+    }
+
     // 1. Query legal Knowledge Base (RAG)
     let kbMatch = null;
     let sourceFromKB: string | null = null;
+    let saferAlternative: string | undefined;
 
     try {
       const ragResult = await ragService.searchKB(clauseText);
@@ -87,6 +111,7 @@ export class RiskClassifierAgent {
         if (bestMatch.score >= this.similarityThreshold) {
           kbMatch = bestMatch;
           sourceFromKB = bestMatch.id;
+          saferAlternative = bestMatch.saferAlternative?.[language];
           logger.info("RiskClassifierAgent: KB match found and accepted", {
             matchId: bestMatch.id,
             score: bestMatch.score,
@@ -125,7 +150,7 @@ export class RiskClassifierAgent {
     const llmResponse = await llmService.call(userPrompt, {
       systemPrompt,
       temperature: 0.1,
-      maxTokens: 4096,
+      maxTokens: 2048,
     });
 
     // 4. Parse & Validate LLM Output
@@ -148,19 +173,28 @@ export class RiskClassifierAgent {
       Math.max(0.0, Math.round(calibratedConfidence * 100) / 100),
     );
 
-    logger.info("RiskClassifierAgent: classification complete", {
-      riskLevel: validated.riskLevel,
-      confidence: calibratedConfidence,
-      sourceFromKB,
-      modelUsed: llmResponse.model,
-    });
+    const durationMs = Date.now() - startTime;
 
-    return {
+    const result: ClassificationResult = {
       riskLevel: validated.riskLevel,
       confidence: calibratedConfidence,
       explanation: validated.explanation,
       sourceFromKB,
+      saferAlternative,
+      durationMs,
     };
+
+    logger.info("RiskClassifierAgent: classification complete", {
+      riskLevel: validated.riskLevel,
+      confidence: calibratedConfidence,
+      sourceFromKB,
+      hasSaferAlternative: !!saferAlternative,
+      modelUsed: llmResponse.model,
+      durationMs,
+    });
+
+    this.classifyCache.set(cacheKey, result);
+    return result;
   }
 }
 

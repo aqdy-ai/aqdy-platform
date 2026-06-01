@@ -1,9 +1,9 @@
 /* tests/ClauseCard.test.tsx */
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import ClauseCard from '../src/components/dashboard/ClauseCard'
+import ClauseCard from '../src/components/features/ClauseCard'
 
-// عمل Mock للترجمة
+// عمل Mock للترجمة - ClauseCard uses i18n.language directly, not t()
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -11,78 +11,49 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-// عمل Mock مبسط لمكون المقارنة
-vi.mock('../src/components/dashboard/RedlineComparison', () => ({
-  default: ({
-    originalText,
-    suggestedText,
-  }: {
-    originalText: string
-    suggestedText: string
-  }) => (
-    <div data-testid="redline-comparison">
-      <span>{originalText}</span>
-      <span>{suggestedText}</span>
-    </div>
-  ),
-}))
-
+// The real ClauseCard renders item.recommendation inline, no redline toggle
+// ClauseCard interface: { id, severity, title, clause, recommendation }
 describe('ClauseCard Component', () => {
   const mockClause = {
-    clauseText: 'The Service Provider shall be liable for all damages.',
-    clauseType: 'Liability',
-    riskLevel: 'critical' as const,
-    confidence: 0.95,
-    explanation: { ar: 'شرح عربي', en: 'English Explanation' },
-    redlineSuggestion: 'Liability shall be capped at contract value.',
-    sourceFromKB: 'clause_001',
+    id: 'clause_001',
+    severity: 'high' as const,
+    title: 'The Service Provider shall be liable for all damages.',
+    clause:
+      'The Service Provider shall be liable for all damages, losses, and injuries of any kind.',
+    recommendation:
+      'Liability shall be capped at contract value.',
   }
 
-  it('renders static content properly and hides redline by default', () => {
-    render(<ClauseCard clause={mockClause} />)
+  it('renders static content properly', () => {
+    render(<ClauseCard item={mockClause} />)
 
+    // title is rendered inside h4
     expect(
-      screen.getByText(
-        /"The Service Provider shall be liable for all damages."/
-      )
+      screen.getByText(/The Service Provider shall be liable for all damages\./)
     ).toBeInTheDocument()
-    expect(screen.getByText('English Explanation')).toBeInTheDocument()
-    expect(screen.getByText('#001')).toBeInTheDocument()
 
-    // المقترح البديل والـ Container لازم يكونوا مخفيين في الأول
-    const container = document.getElementById(
-      `redline-container-${mockClause.sourceFromKB}`
-    )
-    expect(container).not.toBeInTheDocument()
+    // recommendation is rendered inside the green box
+    expect(
+      screen.getByText(/Liability shall be capped at contract value\./)
+    ).toBeInTheDocument()
+
+    // The copy button is rendered (not expanded text toggle)
+    expect(
+      screen.getByTitle(/Copy Recommendation/i)
+    ).toBeInTheDocument()
   })
 
-  it('toggles the redline comparison view smoothly when the button is clicked', () => {
-    render(<ClauseCard clause={mockClause} />)
+  it('toggles the clause text expansion when clicking the clause area', () => {
+    render(<ClauseCard item={mockClause} />)
 
-    const toggleButton = screen.getByRole('button', {
-      name: /dashboard.show_redline/i,
-    })
-    expect(toggleButton).toBeInTheDocument()
+    // Initially shows "Read full clause" toggle hint
+    expect(screen.getByText(/Read full clause/i)).toBeInTheDocument()
 
-    // 1. كليك أولى: إظهار المقترح البديل وفحص الـ Container بالـ ID الجديد للـ Accessibility
-    fireEvent.click(toggleButton)
-    const container = document.getElementById(
-      `redline-container-${mockClause.sourceFromKB}`
-    )
-    expect(container).toBeInTheDocument()
-    expect(container).toHaveTextContent(
-      'Liability shall be capped at contract value.'
-    )
+    // Click the clause area to expand
+    const clauseArea = screen.getByText(/The Service Provider shall be liable for all damages, losses/i).closest('div')!
+    fireEvent.click(clauseArea)
 
-    // 2. كليك ثانية: إخفاء المقترح البديل
-    const hideButton = screen.getByRole('button', {
-      name: /dashboard.hide_redline/i,
-    })
-    fireEvent.click(hideButton)
-
-    const containerAfterHide = document.getElementById(
-      `redline-container-${mockClause.sourceFromKB}`
-    )
-    expect(containerAfterHide).not.toBeInTheDocument()
+    // After expanding, shows "Show less"
+    expect(screen.getByText(/Show less/i)).toBeInTheDocument()
   })
 })

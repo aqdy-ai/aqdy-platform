@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Remove husky prepare script during docker builds to avoid failures
+RUN npm pkg delete scripts.prepare
+
 # Install dependencies
 RUN npm ci --omit=dev && \
     npm install --save-dev typescript ts-node @types/node rimraf
@@ -28,6 +31,9 @@ ENV NODE_ENV=production
 
 # Copy package files
 COPY package*.json ./
+
+# Remove husky prepare script during docker builds to avoid failures
+RUN npm pkg delete scripts.prepare
 
 # Install only production dependencies
 RUN npm ci --omit=dev

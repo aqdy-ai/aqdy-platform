@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { upload, handleUploadError } from "../middlewares/upload.middleware.js";
+import { anonymousIpRateLimit } from "../middlewares/rateLimit.js";
 import { pdfService } from "../services/pdf.service.js";
 import { docxService } from "../services/docx.service.js";
 import { contractService } from "../services/contract.service.js";
@@ -10,8 +11,10 @@ import {
   detectPromptInjection,
   sanitizeText,
 } from "../middlewares/security.middleware.js";
+import { redactPII } from "../services/piiFiltering.js";
 
 const uploadRouter = Router();
+uploadRouter.use(anonymousIpRateLimit());
 
 /**
  * POST /api/upload/
@@ -65,6 +68,9 @@ uploadRouter.post(
 
       // Sanitize standard XSS / HTML tags
       parsed.text = sanitizeText(parsed.text);
+
+      // ── PII Filtering ────────────────────────────────────────────────────
+      parsed.text = redactPII(parsed.text);
 
       // ── Step 2: Persist contract to DB ───────────────────────────────────
       const contract = await contractService.saveContract({
@@ -128,7 +134,9 @@ uploadRouter.post(
         status: "processing",
       });
     } catch (error: unknown) {
-      logger.error("❌ Upload failed:", error);
+      logger.error("❌ Upload failed:", {
+        message: error instanceof Error ? error.message : String(error),
+      });
       return res.status(500).json({
         error: error instanceof Error ? error.message : "Unknown error",
       });

@@ -10,6 +10,7 @@ import {
   AgentExecutionService,
   AgentJobPayload,
 } from "../pipeline/agentExecution.service.js";
+import { metrics } from "../utils/metrics.js";
 
 export class AnalysisService {
   private readonly executionQueue: AgentExecutionService<AgentJobPayload>;
@@ -98,6 +99,9 @@ export class AnalysisService {
     );
 
     const duration = Date.now() - startTime;
+    // record analysis metrics
+    metrics.increment("analyses_completed");
+    metrics.observe("analysis_duration_ms", duration);
     await this.saveAnalysis({
       contractId: job.contractId,
       userId: job.userId,

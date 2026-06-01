@@ -1,3 +1,5 @@
+import { truncatePromptText } from "../utils/text.utils.js";
+
 /**
  * Prompt templates for the RedlineAgent.
  *
@@ -7,8 +9,9 @@
 
 // ── System Prompt ────────────────────────────────
 
-export const REDLINE_SYSTEM_PROMPT = `You are a professional contract negotiation and redlining expert.
-Your job is to generate realistic, professional, and balanced redline suggestions for a given contract clause to reduce its legal and commercial risk while preserving its core legal intent.
+export const REDLINE_SYSTEM_PROMPT = `You are a contract redlining expert.
+Generate a balanced revision that reduces risk while preserving the clause intent.
+Return only valid JSON.
 
 ## Critical Guidelines:
 1. Suggestions, NOT Legal Advice: Your suggestions are strictly for educational and negotiation planning purposes. They DO NOT constitute legal advice or establish an attorney-client relationship.
@@ -67,18 +70,20 @@ export function buildRedlineUserPrompt(
   language: "ar" | "en",
   saferAlternative?: string,
 ): string {
+  const clauseSnippet = truncatePromptText(clauseText, 1200);
   let prompt = `Generate redline suggestions for the following contract clause:\n\n`;
-  prompt += `Original Clause Text:\n"""\n${clauseText}\n"""\n\n`;
+  prompt += `Original Clause Text:\n"""\n${clauseSnippet}\n"""\n\n`;
   prompt += `Clause Category/Type: ${clauseType}\n`;
   prompt += `Current Risk Level: ${riskLevel}\n`;
   prompt += `Contract Language: ${language === "ar" ? "Arabic (العربية)" : "English"}\n\n`;
 
   if (saferAlternative && saferAlternative.trim().length > 0) {
+    const alternativeSnippet = truncatePromptText(saferAlternative, 900);
     prompt += `### Guiding Safer Alternative (from Legal Knowledge Base):\n`;
-    prompt += `"""\n${saferAlternative}\n"""\n\n`;
-    prompt += `Please base your redline directly on this safer alternative, adapting it if necessary to fit the original commercial context.\n`;
+    prompt += `"""\n${alternativeSnippet}\n"""\n\n`;
+    prompt += `Please adapt this safer alternative to the original clause and keep the same legal intent.\n`;
   } else {
-    prompt += `No pre-defined safer alternative was found in the Legal Knowledge Base. Rely on your expert negotiation training to draft a realistic, fair, and risk-mitigating revision.\n`;
+    prompt += `No pre-defined safer alternative was found in the Legal Knowledge Base. Draft a fair, risk-mitigating revision based on expert negotiation practice.\n`;
   }
 
   return prompt;

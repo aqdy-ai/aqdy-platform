@@ -215,6 +215,7 @@ describe("OrchestratorService", () => {
       confidence: 0.9,
       explanation: { ar: "شرح", en: "Explain" },
       sourceFromKB: "kb_match_99",
+      saferAlternative: "The safer alternative text from KB",
     });
 
     mockGenerateRedline.mockResolvedValue({
@@ -226,7 +227,8 @@ describe("OrchestratorService", () => {
 
     await orchestrator.run("contract_123", "user_123", "Contract Text", "en");
 
-    expect(mockSearchKB).toHaveBeenCalledTimes(1);
+    // mockSearchKB is internal to riskClassifierAgent.classify which is fully mocked —
+    // the safer alternative is propagated via classification.saferAlternative instead.
     expect(mockGenerateRedline).toHaveBeenCalledWith(
       "Risky clause",
       "high",

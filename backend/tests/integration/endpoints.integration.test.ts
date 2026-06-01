@@ -1,11 +1,9 @@
+import "dotenv/config";
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import mongoose from 'mongoose';
 import request from 'supertest';
-import { config } from 'dotenv';
 
-config();
-
-import app from '../../src/index.js';
+let app: any;
 import { Contract } from '../../src/models/contract.model.js';
 import { RiskAnalysis } from '../../src/models/riskAnalysis.model.js';
 import { AuditLog } from '../../src/models/auditLog.model.js';
@@ -13,11 +11,22 @@ import { AuditLog } from '../../src/models/auditLog.model.js';
 beforeAll(async () => {
   const mongoURI = process.env.MONGODB_URI!.replace('aqdy_db', 'aqdy_test');
   await mongoose.connect(mongoURI);
+
+  const imported = await import('../../src/index.js');
+  app = imported.default;
 });
 
 afterAll(async () => {
-  await mongoose.connection.dropDatabase();
-  await mongoose.connection.close();
+  if (mongoose.connection.readyState === 1) {
+    await mongoose.connection.dropDatabase();
+    await mongoose.connection.close();
+  } else {
+    try {
+      await mongoose.disconnect();
+    } catch (e) {
+      // ignore
+    }
+  }
 });
 
 beforeEach(async () => {
@@ -29,6 +38,7 @@ beforeEach(async () => {
 // ── Contract Upload Endpoint ──────────────────────────────────────────────
 
 describe('POST /api/contracts/upload', () => {
+
   test('should upload a contract successfully', async () => {
     const res = await request(app)
       .post('/api/contracts/upload')
@@ -96,7 +106,7 @@ describe('POST /api/contracts/upload', () => {
         fileSize: 512,
       });
 
-    const logs = await AuditLog.find({ userId: 'user_audit' });
+    const logs = await AuditLog.find({ "metadata.originalUserId": 'user_audit' });
     expect(logs).toHaveLength(1);
     expect(logs[0].action).toBe('CONTRACT_UPLOADED');
   });
@@ -150,6 +160,7 @@ describe('POST /api/analysis/analyze', () => {
 
     const res = await request(app)
       .post('/api/analysis/analyze')
+      .set('x-user-tier', 'premium')
       .send({ contractId, userId: 'user_123' });
 
     expect(res.status).toBe(202);
@@ -162,6 +173,7 @@ describe('POST /api/analysis/analyze', () => {
 
     const res = await request(app)
       .post('/api/analysis/analyze')
+      .set('x-user-tier', 'premium')
       .send({ contractId: fakeId, userId: 'user_123' });
 
     expect(res.status).toBe(404);
@@ -170,6 +182,7 @@ describe('POST /api/analysis/analyze', () => {
   test('should reject analysis with missing contractId', async () => {
     const res = await request(app)
       .post('/api/analysis/analyze')
+      .set('x-user-tier', 'premium')
       .send({ userId: 'user_123' });
 
     expect(res.status).toBe(400);

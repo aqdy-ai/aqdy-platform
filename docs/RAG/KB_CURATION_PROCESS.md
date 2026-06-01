@@ -1,6 +1,6 @@
 # Knowledge Base Curation Process — Aqdy Platform
 
-> This document defines the **end-to-end process** for maintaining, extending, and quality-controlling the Aqdy Legal Knowledge Base (`legalKB.json`).  
+> This document defines the **end-to-end process** for maintaining, extending, and quality-controlling the Aqdy Legal Knowledge Base (`legal_kb.json` — v2 schema).  
 > All team members adding or editing KB clauses must follow this process to ensure accuracy, legal validity, and embedding quality.
 
 ---
@@ -36,44 +36,58 @@ The KB is injected directly into LLM prompts via the RAG pipeline. Poor-quality 
 
 ### KB Files
 
-| File | Role |
-|---|---|
-| `backend/src/data/legalKB.json` | **Primary** — source of truth |
-| `backend/src/data/legal_kb.json` | Mirror copy — keep in sync manually |
+| File | Schema | Role |
+|---|---|---|
+| `backend/src/data/legal_kb.json` | **v2** | **Active** — source of truth (102 clauses) |
+| `backend/src/data/legalKB.json` | v1 | Legacy — 50-clause flat array, kept for reference |
 
-Always edit `legalKB.json`. After editing, copy it to `legal_kb.json` to keep them identical.
+Always edit `legal_kb.json` (v2). The v1 `legalKB.json` is retained as a historical reference only — do not add new clauses to it.
 
 ---
 
 ## 2. KB File Structure
 
-The KB is a **JSON array** of clause objects at the top level:
+The active KB (`legal_kb.json`) is a **structured JSON object** with a metadata header:
 
 ```json
-[
-  { ...clause_001 },
-  { ...clause_002 },
-  ...
-]
+{
+  "version": "1.0",
+  "lastUpdated": "2025-05-21",
+  "totalEntries": 102,
+  "embeddingModel": "multilingual-e5-large",
+  "embeddingDimensions": 1024,
+  "clauses": [
+    { ...clause_001 },
+    { ...clause_002 }
+  ]
+}
 ```
 
-### Required Fields per Clause
+### Required Fields per Clause (v2 Schema)
 
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `id` | `string` | ✅ | Unique slug — see [ID convention](#9-id-naming-convention) |
-| `category` | `string` | ✅ | Topic category — see [Category Guide](#10-category--risk-level-guidelines) |
+| `category` | `string` | ✅ | **Title case**, e.g. `"Liability"` — see [Category Guide](#10-category--risk-level-guidelines) |
 | `riskLevel` | `string` | ✅ | `"critical"` \| `"high"` \| `"medium"` \| `"low"` |
 | `clausePattern` | `string` | ✅ | Template text in English of the risky clause |
-| `keywords` | `string[]` | ✅ | Bilingual keyword array (min 4 keywords) |
 | `explanation.ar` | `string` | ✅ | Arabic explanation of what the clause means |
 | `explanation.en` | `string` | ✅ | English explanation |
 | `whyRisky.ar` | `string` | ✅ | Why it is dangerous (Arabic) |
 | `whyRisky.en` | `string` | ✅ | Why it is dangerous (English) |
 | `saferAlternative.ar` | `string` | ✅ | Recommended safer wording (Arabic) |
 | `saferAlternative.en` | `string` | ✅ | Recommended safer wording (English) |
-| `relatedLaw` | `string \| null` | ⚠️ optional | Egyptian law citation |
-| `contractTypes` | `string[]` | ✅ | Min 1 contract type from allowed list |
+| `negotiationTips.ar` | `string` | ⚠️ recommended | Actionable negotiation advice (Arabic) |
+| `negotiationTips.en` | `string` | ⚠️ recommended | Actionable negotiation advice (English) |
+| `context.contractTypes` | `string[]` | ✅ | Title-case contract types, e.g. `["Service Agreement", "NDA"]` |
+| `context.frequency` | `string` | ⚠️ optional | `"very_common"` \| `"common"` \| `"occasional"` |
+| `context.applicableRegions` | `string[]` | ⚠️ optional | e.g. `["Egypt", "MENA"]` |
+| `relatedLaw.egyptianLaw` | `string` | ⚠️ optional | Egyptian law citation, e.g. `"Egyptian Civil Code Article 224"` |
+| `relatedLaw.country` | `string` | ⚠️ optional | Usually `"Egypt"` |
+| `precedents` | `string[]` | ⚠️ optional | Reference contract filenames |
+| `version` | `number` | ⚠️ optional | Clause revision number (start at `1`) |
+| `createdAt` | `string` | ⚠️ optional | ISO 8601, e.g. `"2025-05-21T10:00:00Z"` |
+| `updatedAt` | `string` | ⚠️ optional | ISO 8601 timestamp of last edit |
 
 ---
 
@@ -90,20 +104,14 @@ Follow this step-by-step process every time you add a clause:
 
 ### Step 2 — Draft the Clause Object
 
-Use this template:
+Use this v2 schema template:
 
 ```json
 {
   "id": "clause_0XX_short_description",
-  "category": "category_name",
+  "category": "Title Case Category",
   "riskLevel": "critical|high|medium|low",
   "clausePattern": "The exact clause text in English as it appears in contracts...",
-  "keywords": [
-    "english keyword 1",
-    "english keyword 2",
-    "كلمة عربية 1",
-    "كلمة عربية 2"
-  ],
   "explanation": {
     "ar": "شرح واضح وبسيط لما يعنيه هذا البند بالعربية",
     "en": "Clear and simple explanation of what this clause means in English"
@@ -116,46 +124,52 @@ Use this template:
     "ar": "الصياغة البديلة الأكثر أماناً بالعربية",
     "en": "The safer alternative wording in English"
   },
-  "relatedLaw": "Egyptian Law Name Article XXX",
-  "contractTypes": ["type1", "type2"]
+  "negotiationTips": {
+    "ar": "نصيحة عملية للتفاوض على هذا البند بالعربية",
+    "en": "Practical tip for negotiating this clause in English"
+  },
+  "context": {
+    "contractTypes": ["Service Agreement", "NDA"],
+    "frequency": "very_common",
+    "applicableRegions": ["Egypt", "MENA"]
+  },
+  "relatedLaw": {
+    "egyptianLaw": "Egyptian Civil Code Article XXX",
+    "country": "Egypt"
+  },
+  "precedents": [],
+  "version": 1,
+  "createdAt": "YYYY-MM-DDTHH:MM:SSZ",
+  "updatedAt": "YYYY-MM-DDTHH:MM:SSZ"
 }
 ```
 
-### Step 3 — Append to the JSON Array
+### Step 3 — Append to the `clauses` Array
 
-- Open `backend/src/data/legalKB.json`
-- Add the new clause at the **end of the array** (before the closing `]`)
-- Ensure proper JSON formatting — no trailing commas on last item
+- Open `backend/src/data/legal_kb.json`
+- Add the new clause at the **end of the `"clauses"` array** (before the closing `]` of the array)
+- Update the `"totalEntries"` count and `"lastUpdated"` date in the header
+- Ensure proper JSON formatting — no trailing commas on the last item
 
 ```json
-  { ...clause_049 },
-  { ...clause_050 },
+  { ...clause_101 },
+  { ...clause_102 },
   { ...your_new_clause }   ← no trailing comma here
-]
+  ]
+}
 ```
 
 ### Step 4 — Run the Quality Control Checklist
 
 Complete the [QC Checklist](#6-quality-control-checklist) before committing.
 
-### Step 5 — Sync the Mirror File
-
-```bash
-# Copy legalKB.json to legal_kb.json
-cp backend/src/data/legalKB.json backend/src/data/legal_kb.json
-```
-
-On Windows:
-```powershell
-Copy-Item backend\src\data\legalKB.json backend\src\data\legal_kb.json
-```
-
-### Step 6 — Re-embed
+### Step 5 — Re-embed
 
 Run the embedding pipeline to add the new clause to Pinecone:
 
 ```bash
-npx ts-node backend/src/scripts/embedKB.ts
+# From the project root (recommended)
+npx tsx backend/src/scripts/embedKB.ts
 ```
 
 See [Re-Embedding After Changes](#8-re-embedding-after-changes) for full instructions.
@@ -177,19 +191,21 @@ Add the new clause entry to [LEGAL_KB.md](./LEGAL_KB.md) in the appropriate risk
 | `clausePattern` | ✅ Yes |
 | `explanation.en` | ✅ Yes |
 | `explanation.ar` | ✅ Yes |
-| `keywords` | ⚠️ Recommended |
 | `whyRisky` | ❌ No (metadata only) |
 | `saferAlternative` | ❌ No (metadata only) |
+| `negotiationTips` | ❌ No (metadata only) |
 | `riskLevel` | ❌ No (metadata only) |
 | `relatedLaw` | ❌ No (metadata only) |
-| `contractTypes` | ❌ No (metadata only) |
+| `context.contractTypes` | ❌ No (metadata only) |
+| `context.frequency` | ❌ No (metadata only) |
+| `context.applicableRegions` | ❌ No (metadata only) |
 | `category` | ❌ No (metadata only) |
 
 ### Edit Process
 
-1. Edit the field(s) in `legalKB.json`
-2. Sync to `legal_kb.json`
-3. If re-embedding required: run `embedKB.ts`
+1. Edit the field(s) in `legal_kb.json`
+2. Update `"lastUpdated"` and bump `"updatedAt"` on the clause
+3. If re-embedding required: run `npx tsx backend/src/scripts/embedKB.ts`
 4. Update `LEGAL_KB.md` accordingly
 5. Add an entry to the [Change Log](#13-versioning--change-log)
 
@@ -207,8 +223,8 @@ Deleting a clause removes it from both the JSON file and Pinecone.
 
 ### Deletion Process
 
-1. Remove the clause object from `legalKB.json`
-2. Sync to `legal_kb.json`
+1. Remove the clause object from the `"clauses"` array in `legal_kb.json`
+2. Update `"totalEntries"` and `"lastUpdated"` in the header
 3. **Delete from Pinecone manually** using the Pinecone console or API:
    ```typescript
    await index.deleteOne("clause_XXX_name");
@@ -240,9 +256,10 @@ Run this checklist for every new or edited clause before committing:
 ### Technical Quality
 - [ ] `id` follows the [naming convention](#9-id-naming-convention)
 - [ ] `id` is **unique** — search the file before adding
-- [ ] `keywords` array has **at least 4 entries** (2 English + 2 Arabic minimum)
-- [ ] Arabic keywords are the actual terms that appear in Arabic contracts
-- [ ] `contractTypes` contains only values from the [allowed list](#10-category--risk-level-guidelines)
+- [ ] `category` uses **Title Case** (e.g. `"Liability"`, not `"liability"`)
+- [ ] `context.contractTypes` uses Title-case values from the [allowed list](#10-category--risk-level-guidelines)
+- [ ] `relatedLaw` is an **object** with `egyptianLaw` and `country` keys (not a plain string)
+- [ ] `"totalEntries"` and `"lastUpdated"` in the file header are updated
 - [ ] JSON is **valid** — run a JSON linter
 - [ ] No trailing commas in the JSON
 
@@ -256,52 +273,52 @@ Run this checklist for every new or edited clause before committing:
 
 These are hard rules — violations will cause pipeline failures or degraded AI quality:
 
-### JSON Structure Rules
+### JSON Structure Rules (v2)
 ```
-✅ Valid JSON array — no trailing commas
-✅ All required fields present
+✅ Top-level object with "version", "lastUpdated", "totalEntries", "embeddingModel", "embeddingDimensions", "clauses"
+✅ "clauses" is a non-empty array
+✅ "totalEntries" matches the actual number of objects in "clauses"
+✅ All required fields present on each clause
 ✅ No null values for required string fields
-✅ contractTypes is a non-empty array
-✅ keywords is a non-empty array
 ✅ riskLevel is exactly one of: "critical", "high", "medium", "low"
 ✅ id is unique across all clauses
 ```
 
 ### Content Rules
 ```
-✅ clausePattern: English only, 15–200 characters
-✅ explanation.ar: Arabic only, 20–300 characters
-✅ explanation.en: English only, 20–300 characters
-✅ whyRisky.ar: Arabic only, 20–300 characters
-✅ whyRisky.en: English only, 20–300 characters
-✅ saferAlternative.ar: Arabic only, 20–300 characters
-✅ saferAlternative.en: English only, 20–300 characters
-✅ keywords: minimum 4 items, no duplicates
-✅ relatedLaw: null OR valid citation string (not empty string)
+✅ clausePattern: English only, 15–300 characters
+✅ explanation.ar: Arabic only, 20–500 characters
+✅ explanation.en: English only, 20–500 characters
+✅ whyRisky.ar: Arabic only, 20–400 characters
+✅ whyRisky.en: English only, 20–400 characters
+✅ saferAlternative.ar: Arabic only, 20–400 characters
+✅ saferAlternative.en: English only, 20–400 characters
+✅ category: Title Case (e.g. "Liability", "IP Rights", "Non-Compete")
+✅ relatedLaw: object with egyptianLaw (string) and country (string)
 ```
 
-### Allowed `contractTypes` Values
+### Allowed `context.contractTypes` Values (Title Case)
 
 ```
-employment
-freelance
-service_agreement
-vendor
-subscription
-nda
+Employment Agreement
+Freelance Contract
+Service Agreement
+Consulting Agreement
+NDA
+Vendor Agreement
+Subscription Agreement
 ```
 
-### Allowed `category` Values
+### Allowed `category` Values (Title Case)
 
 ```
-liability          termination       payment
-intellectual_property  non_compete  confidentiality
-dispute_resolution privacy          working_conditions
-compensation       leave             scope_of_work
-force_majeure      warranties        non_solicitation
-exclusivity        employment_terms  performance
-amendment          indemnification   obligations
-penalties          notices           governing_law
+Liability          Termination        Payment
+IP Rights          Non-Compete        Confidentiality
+Dispute Resolution Privacy            Working Conditions
+Compensation       Leave              Scope of Work
+Force Majeure      Warranties         Non-Solicitation
+Exclusivity        Employment Terms   Amendment
+Indemnification    Governing Law
 ```
 
 > To add a new category, update this list AND the category reference in [`rag-and-embedding.md`](./rag-and-embedding.md) and [`LEGAL_KB.md`](./LEGAL_KB.md).
@@ -323,35 +340,37 @@ Re-embedding is required when the searchable text (`clausePattern`, `explanation
 ### Re-Embedding Command
 
 ```bash
-# From project root
-npx ts-node backend/src/scripts/embedKB.ts
+# From the project root (recommended)
+npx tsx backend/src/scripts/embedKB.ts
 
-# From backend directory
-npx ts-node src/scripts/embedKB.ts
+# From the backend directory
+npx tsx src/scripts/embedKB.ts
 ```
 
-### Expected Output
+### Expected Output (102 clauses)
 
 ```
 🚀 Starting Legal KB Embedding pipeline (multilingual-e5-large)...
-📂 Loaded 52 clauses from backend/src/data/legalKB.json
+📂 Loaded 102 clauses from backend/src/data/legal_kb.json (KB v1.0, updated 2025-05-21)
 ✅ Index "legal-kb" already exists.
 
-📤 Upserting 52 clauses to Pinecone index "legal-kb"…
+📤 Upserting 102 clauses to Pinecone index "legal-kb"…
    Upserting batch 1 (25 records)…
    Upserting batch 2 (25 records)…
-   Upserting batch 3 (2 records)…
+   Upserting batch 3 (25 records)…
+   Upserting batch 4 (25 records)…
+   Upserting batch 5 (2 records)…
 
-🎉 Success: Confirmed that all 52 clauses have been embedded and upserted into Pinecone!
+🎉 Success: Confirmed that all 102 clauses have been embedded and upserted into Pinecone!
 ```
 
 ### Verifying the Embedding
 
 After re-embedding, verify via Pinecone Console:
 1. Navigate to the `legal-kb` index
-2. Confirm record count matches clause count in `legalKB.json`
-3. Sample a record and verify the `text` field contains the expected content
-4. Run a test query to ensure retrieval quality
+2. Confirm record count is **102** (matching `totalEntries` in `legal_kb.json`)
+3. Sample a record and verify the `text` field contains Arabic text from `explanation.ar`
+4. Run a test query using the evaluation script: `npx tsx backend/src/scripts/evaluateRAG.ts`
 
 ---
 
@@ -384,15 +403,15 @@ clause_001                          ❌  (no description)
 
 ### Next Available Number
 
-The current KB has clauses `001` through `050`. New clauses start at `051`.
+The current KB has clauses `001` through `102`. New clauses start at `103`.
 
 To find the next available number:
 ```bash
 # On Linux/Mac
-grep '"id"' backend/src/data/legalKB.json | tail -5
+grep '"id"' backend/src/data/legal_kb.json | tail -5
 
 # On Windows PowerShell
-Select-String '"id"' backend\src\data\legalKB.json | Select-Object -Last 5
+Select-String '"id"' backend\src\data\legal_kb.json | Select-Object -Last 5
 ```
 
 ---
@@ -640,6 +659,29 @@ Track all significant KB changes in this section. Most recent first.
 - `clause_050_balanced_termination` — Balanced mutual termination clause (positive)
 
 **Total at v1.0:** 50 clauses across 24 categories
+
+---
+
+### v2.0 — 2025-05-21
+
+**KB expanded from 50 to 102 clauses with a new v2 JSON schema.**
+
+#### Schema Changes
+- Top-level structure changed from plain array `[]` to structured object with metadata header
+- `keywords` field removed; replaced with semantic embedding (no keyword matching needed)
+- `negotiationTips` (bilingual) added to every clause
+- `context` block added: `contractTypes`, `frequency`, `applicableRegions`
+- `relatedLaw` changed from plain string to `{ egyptianLaw, country }` object
+- `contractTypes` moved from top-level to `context.contractTypes`
+- `category` casing changed from `snake_case` to `Title Case`
+- `precedents`, `version`, `createdAt`, `updatedAt` fields added per clause
+
+#### Added (52 new clauses)
+- `clause_051` through `clause_102` covering Employment, NDA, Service Agreement, and Consulting categories
+- More Arabic/MENA-specific clause patterns
+- Safer alternatives for all high-risk clauses now include actionable `negotiationTips`
+
+**Total at v2.0:** 102 clauses
 
 ---
 

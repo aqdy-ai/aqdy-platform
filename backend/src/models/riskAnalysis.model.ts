@@ -16,7 +16,9 @@ export interface IClauseAnalysis {
   kbCitationMissing: boolean;       // ← جديد
   explanation: { ar: string; en: string };
   sourceFromKB: string | null;
+  classificationDurationMs?: number;
   redlineSuggestion?: string;
+  redlineDurationMs?: number;
 }
 
 export interface IRiskAnalysis extends Document {
@@ -49,7 +51,9 @@ const ClauseAnalysisSchema = new Schema<IClauseAnalysis>({
     en: { type: String, required: true },
   },
   sourceFromKB: { type: String, default: null },
+  classificationDurationMs: { type: Number, min: 0 },
   redlineSuggestion: { type: String },
+  redlineDurationMs: { type: Number, min: 0 },
 });
 
 const RiskAnalysisSchema = new Schema<IRiskAnalysis>(

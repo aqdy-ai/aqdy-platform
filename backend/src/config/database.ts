@@ -6,11 +6,13 @@ const connectDB = async (): Promise<void> => {
     const mongoURI = process.env.MONGODB_URI;
     if (!mongoURI) throw new Error("MONGODB_URI not defined");
 
-    await mongoose.connect(mongoURI);
-    logger.info("✅ MongoDB connected successfully");
+    const conn = await mongoose.connect(mongoURI);
+    logger.info(
+      `✅ MongoDB connected successfully to: ${conn.connection.host}/${conn.connection.name}`,
+    );
   } catch (error) {
     logger.error("❌ MongoDB connection failed:", error as object);
-    process.exit(1);
+    throw error;
   }
 };
 
