@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec tsx src/index.ts",
     "embed:kb": "tsx src/scripts/embedKB.ts",
+    "seed:plans": "tsx src/scripts/seedPlans.ts",
     "build": "rimraf dist && tsc",
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",
