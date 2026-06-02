@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import pdfParse from "pdf-parse";
-=======
 import pdf from "pdf-parse";
->>>>>>> develop
 import { logger } from "../utils/logger.js";
 
 export interface ParsedDocument {
@@ -45,11 +41,7 @@ export class PdfService {
     this.validateFile(file);
 
     try {
-<<<<<<< HEAD
-      const data = await pdfParse(file.buffer);
-=======
       const data = await pdf(file.buffer);
->>>>>>> develop
 
       if (!data.text || data.text.trim().length === 0) {
         throw new Error("Could not extract text from PDF.");
@@ -67,25 +59,9 @@ export class PdfService {
         filename: file.originalname,
         language,
       };
-<<<<<<< HEAD
-    } catch (err) {
-      if (
-        err instanceof Error &&
-        err.message === "Could not extract text from PDF."
-      ) {
-        throw err;
-      }
-
-      logger.error("PDF parse error:", err);
-
-      throw new Error("Failed to parse PDF file.", {
-        cause: err,
-      });
-=======
     } catch (error) {
       logger.error("Error parsing PDF:", error);
       throw error;
->>>>>>> develop
     }
   }
 }
