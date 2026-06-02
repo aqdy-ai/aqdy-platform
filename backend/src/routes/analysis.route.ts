@@ -6,6 +6,7 @@ import {
 } from "../controllers/analysis.controller.js";
 import { userAnalysisRateLimit } from "../middlewares/rateLimit.js";
 import { validate } from "../middlewares/validate.js";
+import { enforceAnalysisLimit } from "../middlewares/planEnforcement.middleware.js";
 
 /**
  * Validation schema for the analyze request.
@@ -42,6 +43,7 @@ router.post(
   validate(AnalyzeRequestSchema),
   userAnalysisRateLimit(),
   analyzeContract,
+  enforceAnalysisLimit,
 );
 
 /**

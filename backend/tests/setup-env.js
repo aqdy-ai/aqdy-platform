@@ -1,8 +1,35 @@
+import os from "os";
+import path from "path";
 import { MongoMemoryServer } from "mongodb-memory-server";
 
-const mongoServer = await MongoMemoryServer.create({
-  binary: { version: process.env.MONGOMS_BINARY_VERSION || "6.0.12" },
-});
+const MONGO_STARTUP_ATTEMPTS = 5;
+const MONGO_RETRY_DELAY_MS = 5000;
+const downloadDir = path.join(
+  os.tmpdir(),
+  `mongodb-binaries-worker-${process.pid}`,
+);
+
+let mongoServer;
+for (let attempt = 1; attempt <= MONGO_STARTUP_ATTEMPTS; attempt += 1) {
+  try {
+    mongoServer = await MongoMemoryServer.create({
+      binary: {
+        version: process.env.MONGOMS_BINARY_VERSION || "6.0.12",
+        downloadDir,
+      },
+    });
+    break;
+  } catch (err) {
+    if (attempt === MONGO_STARTUP_ATTEMPTS) throw err;
+    // wait then retry
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((resolve) => setTimeout(resolve, MONGO_RETRY_DELAY_MS));
+  }
+}
+
+if (!mongoServer) {
+  throw new Error("Failed to start in-memory MongoDB server");
+}
 
 process.env.MONGODB_URI = mongoServer.getUri();
 
