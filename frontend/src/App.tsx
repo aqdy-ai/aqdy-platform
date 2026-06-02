@@ -13,7 +13,7 @@ import { AuthProvider } from './hooks/AuthContext'
 import { useAuth } from './hooks/useAuth'
 
 const Home = lazy(() => import('./pages/Home'))
-const TestDashboard = lazy(() => import('./pages/TestDashboard'))
+const TestDashboard = lazy(() => import('./pages/Dashboard'))
 const RiskAnalysisDashboard = lazy(
   () => import('./pages/RiskAnalysisDashboard')
 )
