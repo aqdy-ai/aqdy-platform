@@ -1,13 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, ShieldCheck, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const DisclaimerModal = () => {
   const { t, i18n } = useTranslation()
+  const [mounted, setMounted] = useState(false)
+
+  // Ensure component only renders on client side after mount
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => setMounted(true))
+    return () => cancelAnimationFrame(frameId)
+  }, [])
 
   // قراءة الحالة مباشرة من الـ localStorage
-  // ده بيغنينا عن استخدام useEffect و setMounted
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window !== 'undefined') {
       const hasAccepted = localStorage.getItem('aqdy_disclaimer_accepted')
@@ -23,8 +29,8 @@ const DisclaimerModal = () => {
     setIsOpen(false)
   }
 
-  // مش محتاجين شرط الـ !mounted دلوقتي
-  if (!isOpen) return null
+  // Don't render until mounted to prevent hydration issues
+  if (!mounted || !isOpen) return null
 
   return (
     <AnimatePresence>

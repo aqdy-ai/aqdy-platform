@@ -7,7 +7,7 @@ import { User } from "../../src/models/user.model.js";
 
 config();
 
-let app: any;
+let app: unknown;
 
 jest.setTimeout(30000);
 
@@ -42,8 +42,9 @@ describe("Authentication routes", () => {
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data.user.email).toBe("auth-test@example.com");
-    expect(res.body.data.token).toBeDefined();
-    expect(res.body.data.refreshToken).toBeDefined();
+    const setCookies = res.headers["set-cookie"] || [];
+    expect(setCookies.some((c: string) => c.startsWith("accessToken="))).toBe(true);
+    expect(setCookies.some((c: string) => c.startsWith("refreshToken="))).toBe(true);
 
     const user = await User.findOne({ email: "auth-test@example.com" }).select(
       "+passwordHash",
@@ -67,8 +68,9 @@ describe("Authentication routes", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.token).toBeDefined();
-    expect(res.body.data.refreshToken).toBeDefined();
+    const loginCookies = res.headers["set-cookie"] || [];
+    expect(loginCookies.some((c: string) => c.startsWith("accessToken="))).toBe(true);
+    expect(loginCookies.some((c: string) => c.startsWith("refreshToken="))).toBe(true);
     expect(res.body.data.user.email).toBe("login-test@example.com");
   });
 
@@ -171,17 +173,28 @@ describe("Authentication routes", () => {
       password: "StrongPass123!",
     });
 
+    const getCookieValue = (res: request.Response, name: string) => {
+      const setCookies = res.headers["set-cookie"] || [];
+      for (const c of setCookies) {
+        const match = c.match(new RegExp(`${name}=([^;]+)`));
+        if (match) return match[1];
+      }
+      return undefined;
+    };
+
+    const oldRefresh = getCookieValue(registerRes as any, "refreshToken");
+
     const refreshRes = await request(app)
       .post("/api/auth/refresh")
-      .send({ refreshToken: registerRes.body.data.refreshToken });
+      .set("Cookie", `refreshToken=${oldRefresh}`);
 
     expect(refreshRes.status).toBe(200);
     expect(refreshRes.body.success).toBe(true);
-    expect(refreshRes.body.data.token).toBeDefined();
-    expect(refreshRes.body.data.refreshToken).toBeDefined();
-    expect(refreshRes.body.data.refreshToken).not.toBe(
-      registerRes.body.data.refreshToken,
-    );
+    const newRefresh = getCookieValue(refreshRes as any, "refreshToken");
+    const newAccess = getCookieValue(refreshRes as any, "accessToken");
+    expect(newAccess).toBeDefined();
+    expect(newRefresh).toBeDefined();
+    expect(newRefresh).not.toBe(oldRefresh);
   });
 
   test("POST /api/auth/logout invalidates the refresh token", async () => {
@@ -191,16 +204,25 @@ describe("Authentication routes", () => {
       password: "StrongPass123!",
     });
 
+    const oldRefresh = (() => {
+      const setCookies = registerRes.headers["set-cookie"] || [];
+      for (const c of setCookies) {
+        const m = c.match(/refreshToken=([^;]+)/);
+        if (m) return m[1];
+      }
+      return undefined;
+    })();
+
     const logoutRes = await request(app)
       .post("/api/auth/logout")
-      .send({ refreshToken: registerRes.body.data.refreshToken });
+      .set("Cookie", `refreshToken=${oldRefresh}`);
 
     expect(logoutRes.status).toBe(200);
     expect(logoutRes.body.success).toBe(true);
 
     const refreshRes = await request(app)
       .post("/api/auth/refresh")
-      .send({ refreshToken: registerRes.body.data.refreshToken });
+      .set("Cookie", `refreshToken=${oldRefresh}`);
 
     expect(refreshRes.status).toBe(401);
     expect(refreshRes.body.success).toBe(false);
@@ -213,9 +235,20 @@ describe("Authentication routes", () => {
       password: "StrongPass123!",
     });
 
+    const getCookieValue = (res: request.Response, name: string) => {
+      const setCookies = res.headers["set-cookie"] || [];
+      for (const c of setCookies) {
+        const match = c.match(new RegExp(`${name}=([^;]+)`));
+        if (match) return match[1];
+      }
+      return undefined;
+    };
+
+    const access = getCookieValue(registerRes as any, "accessToken");
+
     const res = await request(app)
       .get("/api/auth/me")
-      .set("Authorization", `Bearer ${registerRes.body.data.token}`);
+      .set("Cookie", `accessToken=${access}`);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

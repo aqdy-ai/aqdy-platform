@@ -5,9 +5,16 @@ import {
   AuditOutcome,
 } from "../models/auditLog.model.js";
 import mongoose from "mongoose";
+import {
+  AuditRequest,
+  AuditData,
+  AuditFilters,
+  AuditFile,
+  AuditContractReference,
+} from "../types/audit.js";
 
 // Helper to extract IP address
-export function getIP(req: any): string {
+export function getIP(req?: AuditRequest): string {
   if (!req) return "unknown";
 
   // 1. x-forwarded-for (could be a comma-separated list)
@@ -40,7 +47,9 @@ export function getIP(req: any): string {
 }
 
 // Safely cast string/object to Mongoose ObjectId or null
-function safeObjectId(id: any): mongoose.Types.ObjectId | null {
+function safeObjectId(
+  id: string | mongoose.Types.ObjectId | null | undefined,
+): mongoose.Types.ObjectId | null {
   if (!id) return null;
   if (id instanceof mongoose.Types.ObjectId) return id;
   if (typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id)) {
@@ -64,7 +73,7 @@ async function writeLog(data: Partial<IAuditLog>): Promise<IAuditLog | null> {
 }
 
 // Helper to extract common request information
-function extractRequestDetails(req: any) {
+function extractRequestDetails(req?: AuditRequest) {
   if (!req) return {};
   const ipAddress = getIP(req);
   const userAgent = req.headers?.["user-agent"] || null;
@@ -91,7 +100,10 @@ function extractRequestDetails(req: any) {
 
 // --- LOG AUTHENTICATION GROUP ---
 export const logAuth = {
-  async loginSuccess(req: any, user: any) {
+  async loginSuccess(
+    req: AuditRequest,
+    user?: { _id?: string; email?: string } | null,
+  ) {
     const reqDetails = extractRequestDetails(req);
     const userId = safeObjectId(user?._id);
     const userEmail = user?.email || null;
@@ -108,7 +120,7 @@ export const logAuth = {
     });
   },
 
-  async loginFailed(req: any, email: string, failReason: string) {
+  async loginFailed(req: AuditRequest, email: string, failReason: string) {
     const reqDetails = extractRequestDetails(req);
     return await writeLog({
       action: "AUTH_LOGIN_FAILED",
@@ -122,7 +134,7 @@ export const logAuth = {
     });
   },
 
-  async logout(req: any) {
+  async logout(req: AuditRequest) {
     const reqDetails = extractRequestDetails(req);
     return await writeLog({
       action: "AUTH_LOGOUT",
@@ -136,7 +148,7 @@ export const logAuth = {
     });
   },
 
-  async passwordReset(req: any, email: string) {
+  async passwordReset(req: AuditRequest, email: string) {
     const reqDetails = extractRequestDetails(req);
     return await writeLog({
       action: "AUTH_PASSWORD_RESET",
@@ -153,12 +165,12 @@ export const logAuth = {
 // --- LOG CONTRACT GROUP ---
 export const logContract = {
   async upload(
-    req: any,
-    file: any,
-    contract: any,
+    req: AuditRequest,
+    file?: AuditFile | null,
+    contract?: AuditContractReference | null,
     language: string,
     outcome: AuditOutcome = "success",
-    error?: any,
+    error?: Error | null,
   ) {
     const reqDetails = extractRequestDetails(req);
 
@@ -168,7 +180,7 @@ export const logContract = {
       userId = safeObjectId(contract.userId);
     }
 
-    const metadata: Record<string, any> = {
+    const metadata: Record<string, unknown> = {
       fileName: file?.originalname || file?.filename || "",
       fileSizeBytes: file?.size || 0,
       mimeType: file?.mimetype || "",
@@ -191,7 +203,7 @@ export const logContract = {
   },
 
   async delete(
-    req: any,
+    req: AuditRequest,
     contractId: string,
     outcome: AuditOutcome = "success",
   ) {
@@ -209,7 +221,7 @@ export const logContract = {
     });
   },
 
-  async view(req: any, contractId: string) {
+  async view(req: AuditRequest, contractId: string) {
     const reqDetails = extractRequestDetails(req);
     return await writeLog({
       action: "CONTRACT_VIEW",
@@ -227,7 +239,7 @@ export const logContract = {
 
 // --- LOG AGENT GROUP ---
 export const logAgent = {
-  async run(req: any, data: any) {
+  async run(req: AuditRequest, data: AuditData = {}) {
     const reqDetails = extractRequestDetails(req);
 
     let action: AuditAction = "AGENT_EXTRACTOR";
@@ -239,9 +251,12 @@ export const logAgent = {
       action = "AGENT_REDLINE";
     }
 
-    const outcome = data.outcome || "success";
-    const errorMessage = data.error?.message || null;
-    const langfuseTraceId = data.langfuseTraceId || reqDetails.langfuseTraceId;
+    const outcome = (data.outcome as string) || "success";
+    const errorMessage =
+      (data.error as { message?: string } | undefined)?.message || null;
+    const langfuseTraceId =
+      (data.langfuseTraceId as string | undefined) ||
+      reqDetails.langfuseTraceId;
 
     return await writeLog({
       action,
@@ -263,11 +278,14 @@ export const logAgent = {
     });
   },
 
-  async pipeline(req: any, data: any) {
+  async pipeline(req: AuditRequest, data: AuditData = {}) {
     const reqDetails = extractRequestDetails(req);
-    const outcome = data.outcome || "success";
-    const errorMessage = data.error?.message || null;
-    const langfuseTraceId = data.langfuseTraceId || reqDetails.langfuseTraceId;
+    const outcome = (data.outcome as string) || "success";
+    const errorMessage =
+      (data.error as { message?: string } | undefined)?.message || null;
+    const langfuseTraceId =
+      (data.langfuseTraceId as string | undefined) ||
+      reqDetails.langfuseTraceId;
 
     return await writeLog({
       action: "AGENT_PIPELINE",
@@ -292,24 +310,33 @@ export const logAgent = {
 
 // --- LOG KB GROUP ---
 export const logKB = {
-  async search(req: any, data: any) {
+  async search(req: AuditRequest, data: AuditData = {}) {
     const reqDetails = extractRequestDetails(req);
-    const langfuseTraceId = data.langfuseTraceId || reqDetails.langfuseTraceId;
-    const results = data.results || [];
+    const langfuseTraceId =
+      (data.langfuseTraceId as string | undefined) ||
+      reqDetails.langfuseTraceId;
+    const results = Array.isArray(data.results) ? data.results : [];
 
-    const topResultIds = results.slice(0, 3).map((r: any) => {
+    const topResultIds = results.slice(0, 3).map((r: unknown) => {
       if (r && typeof r === "object") {
-        return r._id || r.id || String(r);
+        const record = r as { _id?: string; id?: string | number };
+        return record._id || record.id
+          ? String(record._id ?? record.id)
+          : String(r);
       }
       return String(r);
     });
 
-    const topScores = results.slice(0, 3).map((r: any) => {
+    const topScores = results.slice(0, 3).map((r: unknown) => {
       if (r && typeof r === "object") {
-        return r.score !== undefined
-          ? r.score
-          : r.confidence !== undefined
-            ? r.confidence
+        const record = r as {
+          score?: number;
+          confidence?: number;
+        };
+        return record.score !== undefined
+          ? record.score
+          : record.confidence !== undefined
+            ? record.confidence
             : 0;
       }
       return 0;
@@ -325,12 +352,12 @@ export const logKB = {
       requestId: reqDetails.requestId,
       langfuseTraceId,
       metadata: {
-        query: data.query,
-        language: data.language,
+        query: data.query as string | undefined,
+        language: data.language as string | undefined,
         resultCount: results.length,
         topResultIds,
         topScores,
-        durationMs: data.durationMs,
+        durationMs: data.durationMs as number | undefined,
       },
     });
   },
@@ -338,7 +365,11 @@ export const logKB = {
 
 // --- LOG ADMIN GROUP ---
 export const logAdmin = {
-  async viewLogs(req: any, filters: any, resultsReturned: number) {
+  async viewLogs(
+    req: AuditRequest,
+    filters: AuditFilters,
+    resultsReturned: number,
+  ) {
     const reqDetails = extractRequestDetails(req);
     return await writeLog({
       action: "ADMIN_VIEW_LOGS",

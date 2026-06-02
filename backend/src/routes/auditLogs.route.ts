@@ -1,6 +1,12 @@
 import { Router, Request, Response } from "express";
 import mongoose from "mongoose";
-import { AuditLog, ACTION_TYPES, OUTCOMES } from "../models/auditLog.model.js";
+import {
+  AuditAction,
+  AuditLog,
+  ACTION_TYPES,
+  AuditOutcome,
+  OUTCOMES,
+} from "../models/auditLog.model.js";
 import { logAdmin } from "../services/auditService.js";
 import { requireAdmin } from "../middlewares/auth.middleware.js";
 
@@ -21,7 +27,7 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
       traceId,
     } = req.query;
 
-    const filter: Record<string, any> = {};
+    const filter: Record<string, unknown> = {};
 
     // Validate and filter by userId
     if (userId) {
@@ -38,7 +44,10 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
 
     // Validate and filter by action
     if (action) {
-      if (typeof action !== "string" || !ACTION_TYPES.includes(action as any)) {
+      if (
+        typeof action !== "string" ||
+        !ACTION_TYPES.includes(action as AuditAction)
+      ) {
         return res
           .status(400)
           .json({ success: false, error: "Invalid action value" });
@@ -48,7 +57,10 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
 
     // Validate and filter by outcome
     if (outcome) {
-      if (typeof outcome !== "string" || !OUTCOMES.includes(outcome as any)) {
+      if (
+        typeof outcome !== "string" ||
+        !OUTCOMES.includes(outcome as AuditOutcome)
+      ) {
         return res
           .status(400)
           .json({ success: false, error: "Invalid outcome value" });
@@ -124,9 +136,12 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
       filters: activeFilters,
       data,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in GET /api/admin/audit-logs:", error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 });
 
@@ -137,9 +152,12 @@ router.get("/actions", requireAdmin, async (req: Request, res: Response) => {
       success: true,
       data: ACTION_TYPES,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in GET /api/admin/audit-logs/actions:", error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 });
 
@@ -181,9 +199,12 @@ router.get("/stats", requireAdmin, async (req: Request, res: Response) => {
         agentRuns,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in GET /api/admin/audit-logs/stats:", error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 });
 
