@@ -37,7 +37,7 @@ export interface IAuditLog extends Document {
   userEmail?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   errorMessage?: string | null;
   errorCode?: string | null;
   langfuseTraceId?: string | null;

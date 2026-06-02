@@ -97,6 +97,7 @@
     "export_pdf": "PDF Document",
     "export_docx": "Word Document (DOCX)"
   },
+<<<<<<< HEAD
   "pricing": {
     "title": "Pricing",
     "loading": "Loading...",
@@ -113,5 +114,46 @@
     "contact_us": "Contact Us",
     "analysis_limit": "Analysis limit",
     "storage_limit": "Storage limit"
+=======
+  "auth": {
+    "loginTitle": "Login",
+    "loginSubtitle": "Join us today and unlock the power of AI legal analysis",
+    "wellcomeBack": "Welcome back",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "No account?",
+    "registerNow": "Register now",
+    "loginAction": "Login",
+    "loginSuccess": "Login successful",
+    "registerSuccess": "Account created successfully",
+    "dontHaveAccount": "Don't have an account?",
+    "registerTitle": "Register new account",
+    "createAccount": "Create a new account",
+    "registerSubtitle": "Join us today and unlock the power of AI legal analysis",
+    "nameLabel": "Full name",
+    "namePlaceholder": "Enter your full name",
+    "emailLabel": "Email address",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm password",
+    "registerAction": "Register account",
+    "haveAccount": "Already have an account?",
+    "loginNow": "Login now",
+    "errors": {
+      "invalidEmail": "Email address is invalid",
+      "passwordTooShort": "Password must be at least 8 characters long",
+      "passwordWeak": "Password is too weak",
+      "confirmPasswordRequired": "Please confirm password",
+      "passwordsMismatch": "Passwords do not match",
+      "nameTooShort": "Name must be at least 3 characters long",
+      "emailExists": "Email address is already in use",
+      "passwordRequired": "Please check password requirements",
+      "invalidCredentials": "Invalid credentials",
+      "generic": "Something went wrong, please try again later",
+      "emailInUse": "Email address is already in use",
+      "forgotPasswordComingSoon": "Sorry, this feature is not available yet. Please try again later"
+      
+    }
+>>>>>>> develop
   }
+
+
 }

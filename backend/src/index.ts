@@ -1,4 +1,6 @@
+import { Server } from "http";
 import express, { Application } from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
 import "dotenv/config";
@@ -36,7 +38,13 @@ const app: Application = express();
 // ── Middlewares ──────────────────────────────────
 app.use(requestIdMiddleware);
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
+app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(responseTimeMiddleware());
@@ -65,7 +73,7 @@ app.use(errorHandler);
 // ── Start Server ─────────────────────────────────
 const PORT = parseInt(env.PORT, 10);
 
-let server: import("http").Server | undefined;
+let server: Server | undefined;
 if (env.NODE_ENV !== "test") {
   server = app.listen(PORT, () => {
     logger.info(`🚀 Aqdy backend running on port ${PORT} [${env.NODE_ENV}]`);

@@ -27,5 +27,14 @@
       "@/*": ["./src/*"]
     }
   },
+<<<<<<< HEAD
   "include": ["src", "tests/Pricing.test.jsx"]
+=======
+  "include": [
+    "src",
+    "tests/Register.test.tsx",
+    "tests/e2e/useAuth.test.ts",
+    "tests/Login.test.tsx"
+  ]
+>>>>>>> develop
 }
