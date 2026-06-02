@@ -37,7 +37,15 @@ export const authenticateJwt = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const token = req.cookies?.accessToken;
+    let token = req.cookies?.accessToken;
+
+    // Fallback to Authorization Bearer header
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
+      }
+    }
 
     if (!token) {
       throw new AppError(401, "Authentication token is required.");
@@ -99,7 +107,7 @@ export const requireAdmin = (
   }
 
   if (req.user.role !== "admin") {
-    next(new AppError(403, "Forbidden."));
+    next(new AppError(403, "Forbidden"));
     return;
   }
 
