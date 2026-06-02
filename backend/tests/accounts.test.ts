@@ -8,11 +8,13 @@ import { Contract } from "../src/models/contract.model.js";
 import { AuditLog } from "../src/models/auditLog.model.js";
 import accountsRouter from "../src/routes/accounts.route.js";
 import requestIdMiddleware from "../src/middleware/requestId.middleware.js";
+import { errorHandler } from "../src/middlewares/errorHandler.js";
 
 const testApp = express();
 testApp.use(express.json());
 testApp.use(requestIdMiddleware);
 testApp.use("/api/admin/accounts", accountsRouter);
+testApp.use(errorHandler);
 
 const TEST_JWT_SECRET = "test_jwt_secret_key_123456";
 process.env.JWT_SECRET = TEST_JWT_SECRET;

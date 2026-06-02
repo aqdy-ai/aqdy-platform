@@ -9,20 +9,13 @@ import {
   logoutUser,
   refreshTokens,
 } from "../services/auth.service.js";
+import { AuthenticatedRequest } from "../types/auth.js";
 
 const registerSchema = UserZodSchema;
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-});
-
-const refreshSchema = z.object({
-  refreshToken: z.string().min(1),
-});
-
-const logoutSchema = z.object({
-  refreshToken: z.string().min(1),
 });
 
 const parseRequestBody = <T>(schema: z.ZodSchema<T>, body: unknown): T => {
@@ -43,23 +36,26 @@ export const register = async (
 ): Promise<void> => {
   try {
     const body = parseRequestBody(registerSchema, req.body);
+
     const { user, token, refreshToken } = await registerUser(body);
 
-    const response: ApiResponse<{
-      token: string;
-      refreshToken: string;
-      user: {
-        id: string;
-        email: string;
-        name: string;
-        role: string;
-        plan: string;
-      };
-    }> = {
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({
       success: true,
       data: {
-        token,
-        refreshToken,
         user: {
           id: String(user._id),
           email: user.email,
@@ -67,22 +63,12 @@ export const register = async (
           role: user.role,
           plan: user.plan,
         },
+        token,
       },
       message: "Registration successful.",
-    };
-
-    res.status(201).json(response);
+    });
   } catch (error) {
-    next(
-      error instanceof AppError
-        ? error
-        : new AppError(
-            500,
-            `Registration failed: ${
-              error instanceof Error ? error.message : "Unknown error"
-            }`,
-          ),
-    );
+    next(error);
   }
 };
 
@@ -93,23 +79,26 @@ export const login = async (
 ): Promise<void> => {
   try {
     const body = parseRequestBody(loginSchema, req.body);
+
     const { user, token, refreshToken } = await loginUser(body);
 
-    const response: ApiResponse<{
-      token: string;
-      refreshToken: string;
-      user: {
-        id: string;
-        email: string;
-        name: string;
-        role: string;
-        plan: string;
-      };
-    }> = {
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
       success: true,
       data: {
-        token,
-        refreshToken,
         user: {
           id: String(user._id),
           email: user.email,
@@ -117,22 +106,12 @@ export const login = async (
           role: user.role,
           plan: user.plan,
         },
+        token,
       },
       message: "Login successful.",
-    };
-
-    res.status(200).json(response);
+    });
   } catch (error) {
-    next(
-      error instanceof AppError
-        ? error
-        : new AppError(
-            500,
-            `Login failed: ${
-              error instanceof Error ? error.message : "Unknown error"
-            }`,
-          ),
-    );
+    next(error);
   }
 };
 
@@ -142,26 +121,21 @@ export const logout = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const body = parseRequestBody(logoutSchema, req.body);
-    await logoutUser(body.refreshToken);
+    const refreshToken = req.cookies?.refreshToken;
 
-    const response: ApiResponse<null> = {
+    if (refreshToken) {
+      await logoutUser(refreshToken);
+    }
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    res.status(200).json({
       success: true,
       message: "Logout successful.",
-    };
-
-    res.status(200).json(response);
+    });
   } catch (error) {
-    next(
-      error instanceof AppError
-        ? error
-        : new AppError(
-            500,
-            `Logout failed: ${
-              error instanceof Error ? error.message : "Unknown error"
-            }`,
-          ),
-    );
+    next(error);
   }
 };
 
@@ -171,37 +145,44 @@ export const refresh = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const body = parseRequestBody(refreshSchema, req.body);
-    const { token, refreshToken } = await refreshTokens(body.refreshToken);
+    const refreshToken = req.cookies?.refreshToken;
 
-    const response: ApiResponse<{ token: string; refreshToken: string }> = {
+    if (!refreshToken) {
+      throw new AppError(401, "Refresh token is required.");
+    }
+
+    const tokens = await refreshTokens(refreshToken);
+
+    res.cookie("accessToken", tokens.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
       success: true,
-      data: { token, refreshToken },
-      message: "Token refreshed successfully.",
-    };
-
-    res.status(200).json(response);
+      message: "Token refreshed.",
+    });
   } catch (error) {
-    next(
-      error instanceof AppError
-        ? error
-        : new AppError(
-            500,
-            `Token refresh failed: ${
-              error instanceof Error ? error.message : "Unknown error"
-            }`,
-          ),
-    );
+    next(error);
   }
 };
 
 export const me = async (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
 
     if (!user) {
       throw new AppError(401, "Authentication required.");

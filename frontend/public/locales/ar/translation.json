@@ -96,5 +96,45 @@
     "export_report": "تصدير التقرير",
     "export_pdf": "ملف PDF طباعي",
     "export_docx": "مستند وورد Word"
+  },
+  "auth": {
+    "loginTitle": "تسجيل دخول",
+    "loginSubtitle": "انضم إلينا اليوم وابدأ في تحليل عقودك بذكاء",
+    "wellcomeBack": "مرحبا بعودتك",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "noAccount": "لا يوجد حساب؟",
+    "registerNow": "سجل حساب جديد",
+    "loginAction": "تسجيل الدخول",
+    "loginSuccess": "تم تسجيل الدخول بنجاح",
+    "registerSuccess": "تم إنشاء الحساب بنجاح",
+    "dontHaveAccount": "ليس لديك حساب؟",
+    "registerTitle": "تسجيل جديد",
+    "createAccount": "أنشئ حساباً جديداً",
+    "registerSubtitle": "انضم إلينا اليوم وابدأ في تحليل عقودك بذكاء",
+    "nameLabel": "الاسم الكامل",
+    "namePlaceholder": "أدخل اسمك الكامل",
+    "emailLabel": "البريد الإلكتروني",
+    "passwordLabel": "كلمة المرور",
+    "confirmPasswordLabel": "تأكيد كلمة المرور",
+    "registerAction": "إنشاء الحساب",
+    "haveAccount": "لديك حساب بالفعل؟",
+    "loginNow": "سجل دخولك من هنا",
+    "errors": {
+      "invalidEmail": "صيغة البريد الإلكتروني غير صحيحة",
+      "passwordTooShort": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+      "passwordWeak": "كلمة المرور ضعيفة جداً",
+      "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+      "passwordsMismatch": "كلمات المرور غير متطابقة",
+      "nameTooShort": "الاسم يجب أن يكون 3 أحرف على الأقل",
+      "emailExists": "البريد الإلكتروني مستخدم بالفعل",
+      "passwordRequired": "يرجى تدقيق كلمة المرور",
+      "invalidCredentials": "بيانات الدخول غير صحيحة",
+      "generic": "حدث خطأ ، يرجى المحاولة مرة أخرى",
+      "emailInUse": "البريد الالكتروني مستخدم بالفعل",
+      "forgotPasswordComingSoon": "عذراً ، هذه الميزة غير متوفرة حالياً. يرجى المحاولة لاحقاً"
+      
+    }
   }
+
+
 }

@@ -1,0 +1,16 @@
+import { z } from 'zod'
+import { loginSchema, registerSchema } from '../hooks/useAuth'
+
+/** Input types derived from Zod schemas */
+export type LoginInput = z.infer<typeof loginSchema>
+export type RegisterInput = z.infer<typeof registerSchema>
+
+/**
+ * Data structure sent to the backend registration API.
+ * Excludes confirmPassword which is only for frontend validation.
+ */
+export interface RegisterApiData {
+  name: string
+  email: string
+  password: string
+}

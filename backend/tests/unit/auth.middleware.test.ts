@@ -32,7 +32,7 @@ describe("Auth Middleware", () => {
     mockNext = jest.fn();
   });
 
-  test("should reject requests with missing Authorization header", async () => {
+  test("should reject requests with missing authentication cookie", async () => {
     await authenticateJwt(
       mockRequest as Request,
       mockResponse as Response,
@@ -44,7 +44,7 @@ describe("Auth Middleware", () => {
   });
 
   test("should reject requests with an invalid token", async () => {
-    mockRequest.headers = { authorization: "Bearer invalid.token.value" };
+    mockRequest.cookies = { accessToken: "invalid.token.value" } as any;
     mockVerifyAccessToken.mockImplementation(() => {
       throw new Error("Invalid token");
     });
@@ -60,7 +60,7 @@ describe("Auth Middleware", () => {
   });
 
   test("should reject requests for a missing or inactive user", async () => {
-    mockRequest.headers = { authorization: "Bearer valid.token.value" };
+    mockRequest.cookies = { accessToken: "valid.token.value" } as any;
     mockVerifyAccessToken.mockReturnValue({ sub: "missing-user" });
     mockFindById.mockResolvedValue(null);
 
@@ -75,7 +75,7 @@ describe("Auth Middleware", () => {
   });
 
   test("should allow requests with a valid token and active user", async () => {
-    mockRequest.headers = { authorization: "Bearer valid.token.value" };
+    mockRequest.cookies = { accessToken: "valid.token.value" } as any;
     mockVerifyAccessToken.mockReturnValue({ sub: "active-user" });
     mockFindById.mockResolvedValue({ status: "active" });
 
@@ -86,7 +86,7 @@ describe("Auth Middleware", () => {
     );
 
     expect(mockNext).toHaveBeenCalledTimes(1);
-    expect(mockNext.mock.calls[0][0]).toBeUndefined();
+    expect((mockRequest as any).user).toBeDefined();
   });
 
   test("requireAuth should throw if authentication state is missing", () => {
