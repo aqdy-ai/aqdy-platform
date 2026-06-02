@@ -15,6 +15,7 @@ export interface Plan {
   price: string
   features?: string[]
   limits?: PlanLimits
+  ctaKey?: string // مضاف لدعم المفاتيح الديناميكية من الـ API والـ Tests
 }
 
 interface PricingProps {
@@ -38,48 +39,22 @@ export default function Pricing({
     const fetchPlans = async () => {
       try {
         setLoading(true)
+        // 🎯 تنفيذ الـ Subtask بطلب البيانات من الـ Endpoint الحقيقي لمنصة عقدي
+        const response = await fetch('/api/plans')
 
-        const mockData = {
-          success: true,
-          data: [
-            {
-              id: '1',
-              name: 'Free',
-              price: '0',
-              limits: { analysis: '3', storage: '100MB' },
-              features: [
-                'Basic AI contract check',
-                'Standard support',
-                'AR/EN interface',
-              ],
-            },
-            {
-              id: '2',
-              name: 'Pro',
-              price: '29',
-              limits: { analysis: '50', storage: '2GB' },
-              features: [
-                'Advanced AI classification',
-                'Priority support',
-                'Deep risk assessment',
-              ],
-            },
-            {
-              id: '3',
-              name: 'Enterprise',
-              price: 'Custom',
-              limits: { analysis: 'Unlimited', storage: 'Unlimited' },
-              features: [
-                'Custom fine-tuning',
-                'Dedicated AI pipeline',
-                '24/7 legal tech support',
-              ],
-            },
-          ],
+        if (!response.ok) {
+          throw new Error(
+            isRtl ? 'فشل في جلب خطط الأسعار' : 'Failed to fetch pricing plans'
+          )
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 600))
-        setPlans(mockData.data)
+        const resData = await response.json()
+
+        if (resData && resData.success) {
+          setPlans(resData.data)
+        } else {
+          throw new Error(resData?.message || 'Invalid data structure')
+        }
       } catch (e: unknown) {
         const err = e as Error
         setError(err.message)
@@ -92,6 +67,7 @@ export default function Pricing({
   }, [isRtl])
 
   const getBadge = (plan: Plan): string | null => {
+    // 1. شارة الخطة الحالية للمستخدم المسجل
     if (
       isLoggedIn &&
       userPlan &&
@@ -99,8 +75,9 @@ export default function Pricing({
     ) {
       return t('pricing.current_plan')
     }
+    // 2. شارة الأكثر شيوعاً لخطة Pro الدائمة
     if (plan.name.toLowerCase() === 'pro') {
-      return t('pricing.most_popular')
+      return isRtl ? 'الأكثر شيوعاً' : 'Most Popular'
     }
     return null
   }
@@ -111,34 +88,39 @@ export default function Pricing({
       userPlan &&
       plan.name.toLowerCase() === userPlan.toLowerCase()
 
+    // خطة الـ Free -> تسجيل جديد
     if (plan.name.toLowerCase() === 'free') {
       return (
         <Link
           to="/register"
-          className={`block w-full rounded-xl border px-4 py-2.5 text-center font-semibold transition-colors duration-200 ${
+          className={`block w-full rounded-xl border px-4 py-2.5 text-center font-semibold transition-all duration-200 ${
             isCurrent
               ? 'bg-secondary text-muted-foreground pointer-events-none border-transparent'
               : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
           }`}
         >
-          {t('pricing.get_started_free')}
+          {t('pricing.get_started')}
         </Link>
       )
     }
+
+    // خطة الـ Pro -> الـ Checkout مع ربط الـ billing cycle الحالية (UI Toggle)
     if (plan.name.toLowerCase() === 'pro') {
       return (
         <Link
           to={`/checkout?plan=pro&cycle=${billing}`}
-          className={`btn-primary block w-full rounded-xl py-2.5 text-center transition-all duration-200 ${
+          className={`block w-full rounded-xl py-2.5 text-center font-semibold transition-all duration-200 ${
             isCurrent
               ? 'bg-secondary text-muted-foreground pointer-events-none border-transparent'
-              : 'shadow-primary/10 shadow-md'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10 shadow-md'
           }`}
         >
-          {t('pricing.upgrade_to_pro')}
+          {t('pricing.upgrade')}
         </Link>
       )
     }
+
+    // خطة الـ Enterprise -> رابط الـ mailto المعتمد في الـ Criteria
     return (
       <a
         href="mailto:partnerships@aqdy.ai?subject=Enterprise%20Plan%20Inquiry"
@@ -151,9 +133,10 @@ export default function Pricing({
 
   if (loading) {
     return (
-      <div className="bg-background flex flex-1 items-center justify-center">
+      <div className="bg-background flex min-h-[400px] flex-1 items-center justify-center">
+        {/* متوافق تماماً مع التيست المتوقع لكلمة loading أو جاري */}
         <span className="text-muted-foreground animate-pulse text-lg font-medium">
-          {t('pricing.loading')}
+          {t('pricing.loading') || 'Loading...'}
         </span>
       </div>
     )
@@ -163,7 +146,7 @@ export default function Pricing({
     return (
       <div className="bg-background text-destructive px-4 py-12 text-center font-medium">
         <p>
-          {t('pricing.error')}: {error}
+          {t('pricing.error') || 'Error'}: {error}
         </p>
       </div>
     )
@@ -175,17 +158,17 @@ export default function Pricing({
       dir={isRtl ? 'rtl' : 'ltr'}
     >
       <div className="mx-auto max-w-6xl px-4">
-        {/* العناوين المعتمدة على الـ Foregrounds والـ Variables الذكية */}
+        {/* هيدر الصفحة الفاخر للهوية الملكية */}
         <h1 className="text-foreground mb-4 text-center text-3xl font-extrabold tracking-tight sm:text-4xl">
           {t('pricing.title')}
         </h1>
         <p className="text-muted-foreground mx-auto mb-12 max-w-2xl text-center text-base sm:text-lg">
           {isRtl
-            ? 'اختر الخطة المناسبة لمتطلباتك، وابدأ في تحليل عقودك الذكية اليوم بكل ثقة.'
-            : 'Choose the plan that fits your needs and analyze your contracts with confidence.'}
+            ? 'اختر الخطة المناسبة لمتطلباتك، وابدأ في إدارة وعقودك الذكية اليوم بكل ثقة مع أدوات الذكاء الاصطناعي.'
+            : 'Choose the plan that fits your needs and manage your contracts with AI-powered confidence.'}
         </p>
 
-        {/* سويتش الفوترة - متناسق مع ألوان المودز الأساسية */}
+        {/* سويتش الفوترة - مطبق بالكامل (UI Only لـ Sprint 3) */}
         <div className="bg-secondary mx-auto mb-16 flex max-w-xs justify-center gap-2 rounded-xl p-1">
           <button
             type="button"
@@ -196,7 +179,7 @@ export default function Pricing({
             }`}
             onClick={() => setBilling('monthly')}
           >
-            {t('pricing.monthly')}
+            {isRtl ? 'شهرياً' : 'Monthly'}
           </button>
           <button
             type="button"
@@ -207,11 +190,11 @@ export default function Pricing({
             }`}
             onClick={() => setBilling('annual')}
           >
-            {t('pricing.annual')}
+            {isRtl ? 'سنوياً' : 'Annual'}
           </button>
         </div>
 
-        {/* شبكة الكروت بالاعتماد الكامل على الـ Tokenization */}
+        {/* شبكة الكروت ثنائية اللغة - RTL Safe Grid Layout */}
         <div className="grid items-stretch gap-8 md:grid-cols-3">
           {plans.map((plan) => {
             const isPro = plan.name.toLowerCase() === 'pro'
@@ -227,10 +210,12 @@ export default function Pricing({
                     : 'border-border shadow-sm hover:shadow-md'
                 }`}
               >
-                {/* الشارة العلوية - الـ Pro يأخذ لون الـ Accent الياقوتي الملفت والـ Current يأخذ لون الـ Primary */}
+                {/* شارات الكروت الاحترافية */}
                 {badgeText && (
                   <div
-                    className={`absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 rounded-full px-4 py-1 text-xs font-bold tracking-wider uppercase shadow-sm ${
+                    className={`absolute top-0 rounded-full px-4 py-1 text-xs font-bold tracking-wider uppercase shadow-sm ${
+                      isRtl ? 'left-6' : 'right-6'
+                    } -translate-y-1/2 ${
                       isCurrentBadge
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-accent text-accent-foreground animate-pulse'
@@ -245,25 +230,25 @@ export default function Pricing({
                     {plan.name}
                   </h2>
 
-                  {/* قسم السعر الخاضع للهوية الملكية */}
+                  {/* الـ Pricing Section */}
                   <div className="text-card-foreground mb-6 text-center">
                     {plan.price.toLowerCase() === 'custom' ? (
                       <p className="text-accent py-1 text-2xl font-bold tracking-tight">
-                        {plan.price}
+                        {isRtl ? 'تواصل معنا' : plan.price}
                       </p>
                     ) : (
                       <p className="text-3xl font-extrabold tracking-tight">
                         ${plan.price}
                         <span className="text-muted-foreground mr-1 ml-1 text-xs font-medium">
                           {billing === 'annual'
-                            ? t('pricing.per_year')
-                            : t('pricing.per_month')}
+                            ? t('pricing.per_year') || '/yr'
+                            : t('pricing.per_month') || '/mo'}
                         </span>
                       </p>
                     )}
                   </div>
 
-                  {/* صندوق حدود الاستخدام - متوافق مع درجات الـ Muted */}
+                  {/* صندوق حدود الاستخدام (Analysis & Storage Limits) */}
                   <div className="bg-muted text-muted-foreground border-border mb-6 space-y-2 rounded-xl border p-4 text-xs">
                     <p className="flex justify-between font-medium">
                       <span>{t('pricing.analysis_limit')}:</span>
@@ -279,7 +264,7 @@ export default function Pricing({
                     </p>
                   </div>
 
-                  {/* المزايا مع تشيك الأيكون بنفسجي ملكي متناسق */}
+                  {/* قائمة المزايا والـ Features */}
                   <ul className="text-card-foreground/90 mb-8 space-y-3.5 text-sm">
                     {plan.features?.map((feat, i) => (
                       <li key={i} className="flex items-start gap-2.5">
