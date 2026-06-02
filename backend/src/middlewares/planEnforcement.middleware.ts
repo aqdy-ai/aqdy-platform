@@ -1,15 +1,15 @@
-import { Request, Response, NextFunction } from 'express';
-import { Subscription } from '../models/subscription.model.js';
-import { Plan } from '../models/plan.model.js';
-import { RiskAnalysis } from '../models/riskAnalysis.model.js';
-import { logger } from '../utils/logger.js';
+import { Request, Response, NextFunction } from "express";
+import { Subscription } from "../models/subscription.model.js";
+import { Plan } from "../models/plan.model.js";
+import { RiskAnalysis } from "../models/riskAnalysis.model.js";
+import { logger } from "../utils/logger.js";
 
-const UPGRADE_URL = 'https://aqdy.ai/pricing';
+const UPGRADE_URL = "https://aqdy.ai/pricing";
 
 const FREE_PLAN_DEFAULTS = {
   analysisLimit: 5,
   storageLimit: 10,
-  planName: 'Free',
+  planName: "Free",
 };
 
 // جيب الـ subscription أو استخدم الـ Free defaults
@@ -22,8 +22,8 @@ async function getActivePlanLimits(userId: string): Promise<{
   try {
     const subscription = await Subscription.findOne({
       userId,
-      status: 'active',
-    }).populate('planId');
+      status: "active",
+    }).populate("planId");
 
     // لو مفيش subscription أو expired → Free tier
     if (!subscription) {
@@ -50,7 +50,7 @@ async function getActivePlanLimits(userId: string): Promise<{
       startDate: subscription.startDate,
     };
   } catch (error) {
-    logger.error('planEnforcement: failed to get plan limits', error);
+    logger.error("planEnforcement: failed to get plan limits", error);
     return {
       ...FREE_PLAN_DEFAULTS,
       startDate: new Date(new Date().setDate(1)),
@@ -72,7 +72,8 @@ export async function enforceAnalysisLimit(
       return;
     }
 
-    const { analysisLimit, planName, startDate } = await getActivePlanLimits(userId);
+    const { analysisLimit, planName, startDate } =
+      await getActivePlanLimits(userId);
 
     // -1 means unlimited
     if (analysisLimit === -1) {
@@ -84,7 +85,7 @@ export async function enforceAnalysisLimit(
     if (analysisLimit === 0) {
       res.status(403).json({
         success: false,
-        error: 'Analysis limit reached',
+        error: "Analysis limit reached",
         details: {
           analysesUsed: 0,
           analysisLimit: 0,
@@ -111,7 +112,7 @@ export async function enforceAnalysisLimit(
 
       res.status(403).json({
         success: false,
-        error: 'Analysis limit reached',
+        error: "Analysis limit reached",
         details: {
           analysesUsed,
           analysisLimit,
@@ -125,7 +126,7 @@ export async function enforceAnalysisLimit(
 
     next();
   } catch (error) {
-    logger.error('planEnforcement: unexpected error', error);
+    logger.error("planEnforcement: unexpected error", error);
     next();
   }
 }
@@ -153,7 +154,7 @@ export async function enforceStorageLimit(
     }
 
     // عد الـ contracts الموجودة
-    const { Contract } = await import('../models/contract.model.js');
+    const { Contract } = await import("../models/contract.model.js");
     const contractsCount = await Contract.countDocuments({ userId });
 
     if (contractsCount >= storageLimit) {
@@ -165,7 +166,7 @@ export async function enforceStorageLimit(
 
       res.status(403).json({
         success: false,
-        error: 'Storage limit reached',
+        error: "Storage limit reached",
         details: {
           contractsUsed: contractsCount,
           storageLimit,
@@ -179,7 +180,7 @@ export async function enforceStorageLimit(
 
     next();
   } catch (error) {
-    logger.error('planEnforcement: unexpected error in storage check', error);
+    logger.error("planEnforcement: unexpected error in storage check", error);
     next();
   }
 }
