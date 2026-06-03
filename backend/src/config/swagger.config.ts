@@ -81,13 +81,8 @@ const options: swaggerJsdoc.Options = {
         },
         RefreshRequest: {
           type: "object",
-          required: ["refreshToken"],
-          properties: {
-            refreshToken: {
-              type: "string",
-              example: "refresh_token_example_123",
-            },
-          },
+          description: "No request body required. The refresh token is expected in the httpOnly cookie named 'refreshToken'.",
+          properties: {},
         },
         AuthResponse: {
           type: "object",
@@ -96,8 +91,6 @@ const options: swaggerJsdoc.Options = {
             data: {
               type: "object",
               properties: {
-                token: { type: "string" },
-                refreshToken: { type: "string" },
                 user: {
                   type: "object",
                   properties: {
@@ -256,7 +249,8 @@ const options: swaggerJsdoc.Options = {
           },
           responses: {
             201: {
-              description: "User registered successfully",
+              description:
+                "User registered successfully. Access and refresh tokens are set in httpOnly cookies named 'accessToken' and 'refreshToken'.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -304,7 +298,8 @@ const options: swaggerJsdoc.Options = {
           },
           responses: {
             200: {
-              description: "Login successful",
+              description:
+                "Login successful. Access and refresh tokens are set in httpOnly cookies named 'accessToken' and 'refreshToken'.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -341,18 +336,10 @@ const options: swaggerJsdoc.Options = {
       "/api/auth/logout": {
         post: {
           tags: ["Authentication"],
-          summary: "Logout a refresh token",
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/RefreshRequest" },
-              },
-            },
-          },
+          summary: "Logout (clear refresh token from httpOnly cookie)",
           responses: {
             200: {
-              description: "Logout successful",
+              description: "Logout successful.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/ApiResponse" },
@@ -389,18 +376,10 @@ const options: swaggerJsdoc.Options = {
       "/api/auth/refresh": {
         post: {
           tags: ["Authentication"],
-          summary: "Refresh JWT using a valid refresh token",
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/RefreshRequest" },
-              },
-            },
-          },
+          summary: "Refresh JWT (reads refresh token from httpOnly cookie)",
           responses: {
             200: {
-              description: "Token refreshed successfully",
+              description: "Token refreshed successfully.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -416,11 +395,10 @@ const options: swaggerJsdoc.Options = {
       "/api/auth/me": {
         get: {
           tags: ["Authentication"],
-          summary: "Fetch authenticated user profile",
-          security: [{ bearerAuth: [] }],
+          summary: "Fetch authenticated user profile (requires accessToken cookie)",
           responses: {
             200: {
-              description: "Authenticated user information",
+              description: "Authenticated user information (reads from httpOnly accessToken cookie)",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/UserResponse" },
