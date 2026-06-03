@@ -8,7 +8,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './tests/setup.ts',
-    exclude: ['tests/e2e/**'],
+    exclude: ['**/node_modules/**','tests/e2e/**',
+      '**/dist/**', '**/.idea/**', '**/.idea/**', '**/.cache/**'],
     reporters: process.env.GITHUB_ACTIONS
       ? ['default', 'github-actions']
       : ['default'],

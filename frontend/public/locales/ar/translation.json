@@ -129,12 +129,39 @@
       "emailExists": "البريد الإلكتروني مستخدم بالفعل",
       "passwordRequired": "يرجى تدقيق كلمة المرور",
       "invalidCredentials": "بيانات الدخول غير صحيحة",
-      "generic": "حدث خطأ ، يرجى المحاولة مرة أخرى",
-      "emailInUse": "البريد الالكتروني مستخدم بالفعل",
-      "forgotPasswordComingSoon": "عذراً ، هذه الميزة غير متوفرة حالياً. يرجى المحاولة لاحقاً"
-      
+        "generic": "حدث خطأ، يرجى المحاولة مرة أخرى",
+        "emailInUse": "البريد الالكتروني مستخدم بالفعل",
+        "forgotPasswordComingSoon": "عذراً، هذه الميزة غير متوفرة حالياً. يرجى المحاولة لاحقاً"
+      }
+    },
+    "account": {
+      "settingsTitle": "إعدادات الحساب",
+      "settingsDescription": "قم بإدارة ملفك الشخصي وكلمة المرور واشتراكك في مكان واحد آمن.",
+      "profileSectionTitle": "معلومات الملف الشخصي",
+      "profileSectionDescription": "قم بتحديث الاسم والبريد الإلكتروني وكلمة المرور.",
+      "planSectionTitle": "الباقة الحالية",
+      "analysesUsageLabel": "التحليلات المستخدمة",
+      "analysesAllowedLabel": "التحليلات المسموح بها",
+      "renewalDateLabel": "تاريخ التجديد",
+      "upgradeAction": "ترقية الباقة",
+      "statusLabel": "حالة الحساب",
+      "metadataTitle": "تفاصيل الحساب",
+      "memberSinceLabel": "عضو منذ",
+      "currentPasswordLabel": "كلمة المرور الحالية",
+      "newPasswordLabel": "كلمة المرور الجديدة",
+      "saveChangesButton": "حفظ التغييرات",
+      "profileUpdatedSuccess": "تم تحديث الملف الشخصي بنجاح",
+      "updateFailed": "فشل تحديث الملف الشخصي",
+      "errorLoadingProfile": "تعذر تحميل بيانات الحساب. يرجى إعادة التحميل.",
+      "errorLoadingSubscription": "تعذر تحميل بيانات الاشتراك. يرجى إعادة التحميل.",
+      "upgradeNotAvailable": "خيار الترقية قادم قريباً.",
+      "errors": {
+        "currentPasswordRequired": "كلمة المرور الحالية مطلوبة لتغيير كلمة المرور",
+        "passwordTooShort": "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
+      },
+      "status_active": "نشط",
+      "status_suspended": "معلق",
+      "status_pending": "قيد المراجعة"
     }
-  }
-
-
+    
 }

@@ -132,9 +132,36 @@
       "generic": "Something went wrong, please try again later",
       "emailInUse": "Email address is already in use",
       "forgotPasswordComingSoon": "Sorry, this feature is not available yet. Please try again later"
-      
+      }
+    },
+    "account": {
+      "settingsTitle": "Account Settings",
+      "settingsDescription": "Manage your profile, password, and subscription information in one secure place.",
+      "profileSectionTitle": "Profile Information",
+      "profileSectionDescription": "Update your name, email, and password preferences.",
+      "planSectionTitle": "Current Plan",
+      "analysesUsageLabel": "Analyses used",
+      "analysesAllowedLabel": "Analyses allowed",
+      "renewalDateLabel": "Renewal date",
+      "upgradeAction": "Upgrade plan",
+      "statusLabel": "Account status",
+      "metadataTitle": "Account details",
+      "memberSinceLabel": "Member since",
+      "currentPasswordLabel": "Current password",
+      "newPasswordLabel": "New password",
+      "saveChangesButton": "Save changes",
+      "profileUpdatedSuccess": "Profile updated successfully",
+      "updateFailed": "Failed to update profile",
+      "errorLoadingProfile": "Unable to load account details. Please refresh.",
+      "errorLoadingSubscription": "Unable to load subscription details. Please refresh.",
+      "upgradeNotAvailable": "Upgrade is coming soon.",
+      "errors": {
+        "currentPasswordRequired": "Current password is required to change your password",
+        "passwordTooShort": "Password must be at least 8 characters long"
+      },
+      "status_active": "Active",
+      "status_suspended": "Suspended",
+      "status_pending": "Pending"
     }
-  }
-
-
+    
 }
