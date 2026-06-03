@@ -14,3 +14,11 @@ export interface RegisterApiData {
   email: string
   password: string
 }
+
+/** Shared User interface for the platform */
+export interface User {
+  id: string
+  name: string
+  email: string
+  role: string
+}

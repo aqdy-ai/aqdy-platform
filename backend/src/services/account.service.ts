@@ -1,20 +1,7 @@
 import { AppError } from "../middlewares/errorHandler.js";
 import { User, IUser } from "../models/user.model.js";
+import { UpdateProfileInput, ProfileResponse } from "../types/account.js";
 
-export interface UpdateProfileInput {
-  name?: string;
-  email?: string;
-  password?: string;
-  currentPassword?: string;
-}
-
-export interface ProfileResponse {
-  name: string;
-  email: string;
-  plan: string;
-  memberSince: Date;
-  lastLogin?: Date;
-}
 
 export const getProfile = async (userId: string): Promise<ProfileResponse> => {
   const user = await User.findById(userId);

@@ -1,8 +1,49 @@
 // ─────────────────────────────────────────────
 //  Global Application Types & Interfaces
 // ─────────────────────────────────────────────
+//
+// This file centralizes all TypeScript type definitions for the Aqdy frontend.
+// Organized by feature domain for easy navigation and maintenance.
 
-// ── i18n ─────────────────────────────────────
+// ── Re-export Domain-Specific Types ──────────
+
+// Account Management types
+export type {
+  AccountProfile,
+  SubscriptionInfo,
+  UpdateProfilePayload,
+} from './account'
+
+// Authentication types
+export type { LoginInput, RegisterInput, RegisterApiData, User } from './auth'
+
+// Contract Management types
+export type { Contract, AnalysisResult } from './contract'
+
+// Analysis Result types
+export type { IRiskAnalysis, IClauseAnalysis } from './analysis'
+
+// Billing & Subscription types
+export type {
+  BillingCycle,
+  PlanName,
+  Plan,
+  Invoice,
+  PaymentMethod,
+  BillingInfo,
+} from './billing'
+
+// API & HTTP types
+export type {
+  ApiResponse,
+  ApiErrorResponse,
+  PaginationInfo,
+  PaginatedApiResponse,
+  ListQueryParams,
+  RequestOptions,
+} from './api'
+
+// ── i18n (Internationalization) ──────────────
 
 /** Supported UI languages */
 export type SupportedLocale = 'en' | 'ar'
@@ -52,15 +93,6 @@ export interface ContractFile {
   extension: string
   /** File size in bytes */
   sizeBytes: number
-}
-
-// ── API / Query ───────────────────────────────
-
-/** Generic API response wrapper */
-export interface ApiResponse<T> {
-  data: T
-  message: string
-  success: boolean
 }
 
 /** Contract analysis result returned from the backend */

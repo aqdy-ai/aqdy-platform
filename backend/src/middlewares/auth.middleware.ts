@@ -86,9 +86,8 @@ export const requireAdmin = (
   next: NextFunction,
 ): void => {
   if (!req.user) {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.split(" ")[1];
+    const token = req.cookies?.accessToken;
+    if (token) {
       const decoded = verifyJWT(token);
       if (decoded) {
         req.user = {

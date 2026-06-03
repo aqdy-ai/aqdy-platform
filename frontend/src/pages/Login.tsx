@@ -35,7 +35,7 @@ export default function Login() {
       <div className="bg-card border-border/50 w-full max-w-md space-y-8 rounded-3xl border p-8 shadow-2xl">
         <div className="text-center">
           <h2 className="text-foreground text-3xl font-extrabold tracking-tight">
-            {t('auth.wellcomeBack')}
+            {t('auth.welcomeBack')}
           </h2>
           <p className="text-muted-foreground mt-2 text-sm">
             {t('auth.loginSubtitle')}

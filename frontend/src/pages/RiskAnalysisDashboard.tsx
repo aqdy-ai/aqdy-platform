@@ -1,4 +1,3 @@
-/* src/pages/RiskAnalysisDashboard.tsx */
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
@@ -14,6 +13,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import ClauseCard, { ClauseItem } from '../components/features/ClauseCard'
+import { IClauseAnalysis, IRiskAnalysis } from '../types/analysis'
 
 // بيانات تجريبية تحاكي تحليل الذكاء الاصطناعي للعقد (fallback)
 const MOCK_RISK_DATA = {
@@ -66,28 +66,8 @@ const MOCK_RISK_DATA = {
   ],
 }
 
-interface IClauseAnalysis {
-  _id?: string
-  clauseText: string
-  clauseType: string
-  riskLevel: 'low' | 'medium' | 'high' | 'critical' | 'unknown'
-  explanation: { ar: string; en: string }
-  redlineSuggestion?: string
-}
-
-interface IRiskAnalysis {
-  filename?: string
-  executiveSummary?: {
-    overallRisk: 'low' | 'medium' | 'high' | 'critical'
-    totalClauses: number
-    riskyClausesCount: number
-    summary: { ar: string; en: string }
-  }
-  clauseAnalysis: IClauseAnalysis[]
-  status?: string
-}
-
 export default function RiskAnalysisDashboard() {
+  const { t } = useTranslation()
   const { i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
   const [searchParams] = useSearchParams()
@@ -103,24 +83,9 @@ export default function RiskAnalysisDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [stepIndex, setStepIndex] = useState<number>(0)
 
-  // Loading steps animation
-  const loadingSteps = isRtl
-    ? [
-        '🚀 تفعيل وكلاء الذكاء الاصطناعي القانونيين...',
-        '📂 استخراج نصوص العحد وتحليل بنيته اللغوية...',
-        '🤖 استدعاء وكيل استخراج البنود والالتزامات...',
-        '⚖️ فحص ثغرات التعويضات والمسؤولية المفتوحة...',
-        '🔍 تشغيل محاكي تصنيف المخاطر وتحديد درجة الأمان...',
-        '📝 صياغة التوصيات والبدائل الصياغية الآمنة للمفاوضات...',
-      ]
-    : [
-        '🚀 Initializing Legal AI Agents...',
-        '📂 Extracting document text and linguistic mapping...',
-        '🤖 Invoking clause extraction & validation agent...',
-        '⚖️ Analyzing indemnification and open liability loops...',
-        '🔍 Running risk classifier models...',
-        '📝 Generating AI safe-harbor redline recommendations...',
-      ]
+  const loadingSteps = Object.values(
+    t('dashboard.loading_steps', { returnObjects: true })
+  ) as string[]
 
   useEffect(() => {
     if (isLoading) {
@@ -187,9 +152,7 @@ export default function RiskAnalysisDashboard() {
   // Map real data from backend, falling back to mock data when accessed offline/directly
   const dataToRender = analysis
     ? {
-        contractName:
-          analysis.filename ||
-          (isRtl ? 'عقد قيد التحليل.pdf' : 'Analyzed Contract.pdf'),
+        contractName: analysis.filename || t('dashboard.default_filename'),
         overallScore: Math.max(
           10,
           100 -
@@ -237,13 +200,12 @@ export default function RiskAnalysisDashboard() {
             return {
               id: item._id || `clause-${idx}`,
               severity: riskVal,
-              title: isRtl
-                ? `${item.clauseType === 'Liability' ? 'شرط المسؤولية والتعويضات' : item.clauseType === 'NonCompete' ? 'شرط عدم المنافسة' : item.clauseType || 'بند قانوني تحت الدراسة'}`
-                : `${item.clauseType || 'Analyzed Clause'}`,
+              title: t(`auth.errors.${item.clauseType}_title`, {
+                defaultValue:
+                  item.clauseType || t('auth.errors.default_clause_title'),
+              }),
               clause: item.clauseText,
-              recommendation: isRtl
-                ? `${item.redlineSuggestion || 'ننصح بإعادة التفاوض حول هذا البند.'}\n\n💡 توضيح: ${item.explanation?.ar || ''}`
-                : `${item.redlineSuggestion || 'We recommend renegotiating this clause.'}\n\n💡 Explanation: ${item.explanation?.en || ''}`,
+              recommendation: `${item.redlineSuggestion || t('auth.errors.recommend_negotiate')}\n\n${t('auth.errors.explanation_prefix')}${isRtl ? item.explanation?.ar : item.explanation?.en}`,
             }
           }
         ),
