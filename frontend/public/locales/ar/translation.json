@@ -97,11 +97,29 @@
     "export_pdf": "ملف PDF طباعي",
     "export_docx": "مستند وورد Word"
   },
+  "pricing": {
+    "title": "الخطط",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "most_popular": "الأكثر شعبية",
+    "current_plan": "الخطة الحالية",
+    "monthly": "شهري",
+    "annual": "سنوي",
+    "price": "{{price}} / {{cycle}}",
+    "per_month": "في الشهر",
+    "per_year": "في السنة",
+    "get_started_free": "ابدأ مجاناً",
+    "upgrade_to_pro": "الترقية إلى برو",
+    "contact_us": "اتصل بنا",
+    "analysis_limit": "حد التحليل",
+    "storage_limit": "حد التخزين"
+  },
   "auth": {
     "loginTitle": "تسجيل دخول",
     "loginSubtitle": "انضم إلينا اليوم وابدأ في تحليل عقودك بذكاء",
     "wellcomeBack": "مرحبا بعودتك",
     "forgotPassword": "نسيت كلمة المرور؟",
+    "forgotPasswordComingSoon": "عذراً، هذه الخيار غير متاحة حالياً. يرجى المحاولة مرة أخرى لاحقاً",
     "noAccount": "لا يوجد حساب؟",
     "registerNow": "سجل حساب جديد",
     "loginAction": "تسجيل الدخول",
@@ -126,42 +144,43 @@
       "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
       "passwordsMismatch": "كلمات المرور غير متطابقة",
       "nameTooShort": "الاسم يجب أن يكون 3 أحرف على الأقل",
+      "nameTooLong": "الاسم يجب ان لا يتعدى 100 حرف",
+      "nameInvalid": "الاسم يجب ان يكون حروف فقط",
       "emailExists": "البريد الإلكتروني مستخدم بالفعل",
       "passwordRequired": "يرجى تدقيق كلمة المرور",
       "invalidCredentials": "بيانات الدخول غير صحيحة",
-        "generic": "حدث خطأ، يرجى المحاولة مرة أخرى",
-        "emailInUse": "البريد الالكتروني مستخدم بالفعل",
-        "forgotPasswordComingSoon": "عذراً، هذه الميزة غير متوفرة حالياً. يرجى المحاولة لاحقاً"
-      }
-    },
-    "account": {
-      "settingsTitle": "إعدادات الحساب",
-      "settingsDescription": "قم بإدارة ملفك الشخصي وكلمة المرور واشتراكك في مكان واحد آمن.",
-      "profileSectionTitle": "معلومات الملف الشخصي",
-      "profileSectionDescription": "قم بتحديث الاسم والبريد الإلكتروني وكلمة المرور.",
-      "planSectionTitle": "الباقة الحالية",
-      "analysesUsageLabel": "التحليلات المستخدمة",
-      "analysesAllowedLabel": "التحليلات المسموح بها",
-      "renewalDateLabel": "تاريخ التجديد",
-      "upgradeAction": "ترقية الباقة",
-      "statusLabel": "حالة الحساب",
-      "metadataTitle": "تفاصيل الحساب",
-      "memberSinceLabel": "عضو منذ",
-      "currentPasswordLabel": "كلمة المرور الحالية",
-      "newPasswordLabel": "كلمة المرور الجديدة",
-      "saveChangesButton": "حفظ التغييرات",
-      "profileUpdatedSuccess": "تم تحديث الملف الشخصي بنجاح",
-      "updateFailed": "فشل تحديث الملف الشخصي",
-      "errorLoadingProfile": "تعذر تحميل بيانات الحساب. يرجى إعادة التحميل.",
-      "errorLoadingSubscription": "تعذر تحميل بيانات الاشتراك. يرجى إعادة التحميل.",
-      "upgradeNotAvailable": "خيار الترقية قادم قريباً.",
-      "errors": {
-        "currentPasswordRequired": "كلمة المرور الحالية مطلوبة لتغيير كلمة المرور",
-        "passwordTooShort": "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
-      },
-      "status_active": "نشط",
-      "status_suspended": "معلق",
-      "status_pending": "قيد المراجعة"
+      "generic": "حدث خطأ ، يرجى المحاولة مرة أخرى",
+      "emailInUse": "البريد الالكتروني مستخدم بالفعل",
+      "forgotPasswordComingSoon": "عذراً ، هذه الميزة غير متوفرة حالياً. يرجى المحاولة لاحقاً"
     }
-    
+  },
+  "account": {
+    "settingsTitle": "إعدادات الحساب",
+    "settingsDescription": "قم بإدارة ملفك الشخصي وكلمة المرور واشتراكك في مكان واحد آمن.",
+    "profileSectionTitle": "معلومات الملف الشخصي",
+    "profileSectionDescription": "قم بتحديث الاسم والبريد الإلكتروني وكلمة المرور.",
+    "planSectionTitle": "الباقة الحالية",
+    "analysesUsageLabel": "التحليلات المستخدمة",
+    "analysesAllowedLabel": "التحليلات المسموح بها",
+    "renewalDateLabel": "تاريخ التجديد",
+    "upgradeAction": "ترقية الباقة",
+    "statusLabel": "حالة الحساب",
+    "metadataTitle": "تفاصيل الحساب",
+    "memberSinceLabel": "عضو منذ",
+    "currentPasswordLabel": "كلمة المرور الحالية",
+    "newPasswordLabel": "كلمة المرور الجديدة",
+    "saveChangesButton": "حفظ التغييرات",
+    "profileUpdatedSuccess": "تم تحديث الملف الشخصي بنجاح",
+    "updateFailed": "فشل تحديث الملف الشخصي",
+    "errorLoadingProfile": "تعذر تحميل بيانات الحساب. يرجى إعادة التحميل.",
+    "errorLoadingSubscription": "تعذر تحميل بيانات الاشتراك. يرجى إعادة التحميل.",
+    "upgradeNotAvailable": "خيار الترقية قادم قريباً.",
+    "errors": {
+      "currentPasswordRequired": "كلمة المرور الحالية مطلوبة لتغيير كلمة المرور",
+      "passwordTooShort": "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
+    },
+    "status_active": "نشط",
+    "status_suspended": "معلق",
+    "status_pending": "قيد المراجعة"
+  }
 }

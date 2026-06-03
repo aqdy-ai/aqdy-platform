@@ -97,6 +97,23 @@
     "export_pdf": "PDF Document",
     "export_docx": "Word Document (DOCX)"
   },
+  "pricing": {
+    "title": "Pricing",
+    "loading": "Loading...",
+    "error": "Error",
+    "most_popular": "Most Popular",
+    "current_plan": "Current Plan",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "price": "{{price}} / {{cycle}}",
+    "per_month": "per month",
+    "per_year": "per year",
+    "get_started_free": "Get Started Free",
+    "upgrade_to_pro": "Upgrade to Pro",
+    "contact_us": "Contact Us",
+    "analysis_limit": "Analysis limit",
+    "storage_limit": "Storage limit"
+  },
   "auth": {
     "loginTitle": "Login",
     "loginSubtitle": "Join us today and unlock the power of AI legal analysis",
@@ -119,6 +136,7 @@
     "registerAction": "Register account",
     "haveAccount": "Already have an account?",
     "loginNow": "Login now",
+    "forgotPasswordComingSoon": "Sorry, this feature is not available yet. Please try again later",
     "errors": {
       "invalidEmail": "Email address is invalid",
       "passwordTooShort": "Password must be at least 8 characters long",
@@ -126,42 +144,42 @@
       "confirmPasswordRequired": "Please confirm password",
       "passwordsMismatch": "Passwords do not match",
       "nameTooShort": "Name must be at least 3 characters long",
+      "nameTooLong": "Name must not exceed 100 characters",
+      "nameInvalid": "Name must contain only letters",
       "emailExists": "Email address is already in use",
       "passwordRequired": "Please check password requirements",
       "invalidCredentials": "Invalid credentials",
       "generic": "Something went wrong, please try again later",
-      "emailInUse": "Email address is already in use",
-      "forgotPasswordComingSoon": "Sorry, this feature is not available yet. Please try again later"
-      }
-    },
-    "account": {
-      "settingsTitle": "Account Settings",
-      "settingsDescription": "Manage your profile, password, and subscription information in one secure place.",
-      "profileSectionTitle": "Profile Information",
-      "profileSectionDescription": "Update your name, email, and password preferences.",
-      "planSectionTitle": "Current Plan",
-      "analysesUsageLabel": "Analyses used",
-      "analysesAllowedLabel": "Analyses allowed",
-      "renewalDateLabel": "Renewal date",
-      "upgradeAction": "Upgrade plan",
-      "statusLabel": "Account status",
-      "metadataTitle": "Account details",
-      "memberSinceLabel": "Member since",
-      "currentPasswordLabel": "Current password",
-      "newPasswordLabel": "New password",
-      "saveChangesButton": "Save changes",
-      "profileUpdatedSuccess": "Profile updated successfully",
-      "updateFailed": "Failed to update profile",
-      "errorLoadingProfile": "Unable to load account details. Please refresh.",
-      "errorLoadingSubscription": "Unable to load subscription details. Please refresh.",
-      "upgradeNotAvailable": "Upgrade is coming soon.",
-      "errors": {
-        "currentPasswordRequired": "Current password is required to change your password",
-        "passwordTooShort": "Password must be at least 8 characters long"
-      },
-      "status_active": "Active",
-      "status_suspended": "Suspended",
-      "status_pending": "Pending"
+      "emailInUse": "Email address is already in use"
     }
-    
+  },
+  "account": {
+    "settingsTitle": "Account Settings",
+    "settingsDescription": "Manage your profile, password, and subscription information in one secure place.",
+    "profileSectionTitle": "Profile Information",
+    "profileSectionDescription": "Update your name, email, and password preferences.",
+    "planSectionTitle": "Current Plan",
+    "analysesUsageLabel": "Analyses used",
+    "analysesAllowedLabel": "Analyses allowed",
+    "renewalDateLabel": "Renewal date",
+    "upgradeAction": "Upgrade plan",
+    "statusLabel": "Account status",
+    "metadataTitle": "Account details",
+    "memberSinceLabel": "Member since",
+    "currentPasswordLabel": "Current password",
+    "newPasswordLabel": "New password",
+    "saveChangesButton": "Save changes",
+    "profileUpdatedSuccess": "Profile updated successfully",
+    "updateFailed": "Failed to update profile",
+    "errorLoadingProfile": "Unable to load account details. Please refresh.",
+    "errorLoadingSubscription": "Unable to load subscription details. Please refresh.",
+    "upgradeNotAvailable": "Upgrade is coming soon.",
+    "errors": {
+      "currentPasswordRequired": "Current password is required to change your password",
+      "passwordTooShort": "Password must be at least 8 characters long"
+    },
+    "status_active": "Active",
+    "status_suspended": "Suspended",
+    "status_pending": "Pending"
+  }
 }

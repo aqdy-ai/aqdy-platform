@@ -1,3 +1,4 @@
+// src/App.tsx
 import {
   BrowserRouter as Router,
   Routes,
@@ -12,8 +13,10 @@ import DisclaimerModal from './components/DisclaimerModal'
 import { AuthProvider } from './hooks/AuthContext'
 import { useAuth } from './hooks/useAuth'
 
+// 🌟 Lazy Loading للمكونات والـ Pages الخاصة بمنصة عقدي
 const Home = lazy(() => import('./pages/Home'))
-const TestDashboard = lazy(() => import('./pages/TestDashboard'))
+const Pricing = lazy(() => import('./pages/Pricing'))
+const TestDashboard = lazy(() => import('./pages/Dashboard'))
 const RiskAnalysisDashboard = lazy(
   () => import('./pages/RiskAnalysisDashboard')
 )
@@ -22,7 +25,7 @@ const Register = lazy(() => import('./pages/Register'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
 
 /**
- * GuestRoute: Redirects authenticated users away from Login/Register
+ * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
  */
 const GuestRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, isInitialLoading } = useAuth()
@@ -34,7 +37,7 @@ const GuestRoute = ({ children }: { children: ReactNode }) => {
 }
 
 /**
- * ProtectedRoute: Redirects unauthenticated users to Login
+ * ProtectedRoute: يحمي الصفحات الداخلية وبيرجع المستخدم لصفحة الـ Login لو مش مسجل
  */
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, isInitialLoading } = useAuth()
@@ -45,7 +48,18 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+/**
+ * 🎯 المكون الداخلي المسؤول عن توزيع الـ Routes مع الـ Layout والـ Suspense المحمي ثنائي اللغة
+ */
 function AppContent() {
+  // 🌟 استخراج الخصائص الموجودة فعلياً والمؤكدة داخل الـ useAuth
+  const { isAuthenticated } = useAuth()
+
+  // 🎯 قراءة الـ plan بطريقة آمنة تماماً ومتوافقة مع الـ ESLint (بدون any وبدون خصائص مفقودة)
+  // بنحاول نقراها من الـ localStorage لو متسجلة هناك أثناء الـ login، أو بنخليها null كـ Fallback
+  const userPlan: string | null =
+    typeof window !== 'undefined' ? localStorage.getItem('user_plan') : null
+
   return (
     <Suspense
       fallback={
@@ -60,7 +74,20 @@ function AppContent() {
 
       <MainLayout>
         <Routes>
+          {/* الـ Public Routes */}
           <Route path="/" element={<Home />} />
+
+          {/* 🌟 دمج صفحة الأسعار وتمرير الـ Props المتوافقة مع الـ Types بنجاح */}
+          <Route
+            path="/pricing"
+            element={
+              <Pricing isLoggedIn={isAuthenticated} userPlan={userPlan} />
+            }
+          />
+
+          <Route path="/test-dashboard" element={<TestDashboard />} />
+
+          {/* الـ Protected Routes (المحمية) */}
           <Route
             path="/dashboard"
             element={
@@ -71,7 +98,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          <Route path="/test-dashboard" element={<TestDashboard />} />
           <Route
             path="/risk-analysis"
             element={
@@ -80,6 +106,8 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+
+          {/* الـ Guest Routes (ممنوعة على المسجلين) */}
           <Route
             path="/account-settings"
             element={
@@ -104,13 +132,18 @@ function AppContent() {
               </GuestRoute>
             }
           />
+
+          {/* Fallback في حال كتابة مسار خاطئ */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </MainLayout>
     </Suspense>
   )
 }
-
-function App() {
+/**
+ * 👑 المكون الأساسي للـ App ومغلف بالـ Providers بالترتيب السليم
+ */
+export default function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
@@ -134,5 +167,3 @@ function App() {
     </HelmetProvider>
   )
 }
-
-export default App

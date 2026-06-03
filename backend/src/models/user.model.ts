@@ -6,7 +6,14 @@ export type UserRole = "user" | "admin";
 export type UserStatus = "active" | "suspended" | "deleted";
 
 export const UserZodSchema = z.object({
-  name: z.string().min(3).max(100),
+  name: z
+    .string()
+    .min(3)
+    .max(100)
+    .refine((val) => /\p{L}/u.test(val), {
+      message: "Name must include at least 3 letter",
+    })
+    .transform((s) => s.trim()),
   email: z.string().email(),
   password: z
     .string()

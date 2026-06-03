@@ -24,7 +24,13 @@ export const loginSchema = z.object({
 
 export const registerSchema = z
   .object({
-    name: z.string().min(3, 'auth.errors.nameTooShort'),
+    name: z
+      .string()
+      .min(3, 'auth.errors.nameTooShort')
+      .max(100, 'auth.errors.nameTooLong')
+      .refine((val) => /\p{L}/u.test(val), {
+        message: 'auth.errors.nameInvalid',
+      }),
     email: z.string().email('auth.errors.invalidEmail'),
     password: z
       .string()
