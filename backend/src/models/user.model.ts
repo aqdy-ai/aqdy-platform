@@ -33,6 +33,7 @@ export interface IUser extends Document {
   passwordHash: string;
   role: UserRole;
   plan: string;
+  planSlug: string;
   status: UserStatus;
   lastLogin?: Date;
   refreshToken?: string;
@@ -54,10 +55,17 @@ const UserSchema = new Schema<IUser>(
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     plan: { type: String, required: true, default: "free" },
+    planSlug: {
+      type: String,
+      enum: ["free", "premium", "enterprise"],
+      default: "free",
+      index: true,
+    },
     status: {
       type: String,
       enum: ["active", "suspended", "deleted"],
       default: "active",
+      index: true,
     },
     lastLogin: { type: Date },
     refreshToken: { type: String, select: false },

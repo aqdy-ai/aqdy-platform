@@ -97,6 +97,24 @@
     "export_pdf": "PDF Document",
     "export_docx": "Word Document (DOCX)"
   },
+<<<<<<< HEAD
+  "pricing": {
+    "title": "Pricing",
+    "loading": "Loading...",
+    "error": "Error",
+    "most_popular": "Most Popular",
+    "current_plan": "Current Plan",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "price": "{{price}} / {{cycle}}",
+    "per_month": "per month",
+    "per_year": "per year",
+    "get_started_free": "Get Started Free",
+    "upgrade_to_pro": "Upgrade to Pro",
+    "contact_us": "Contact Us",
+    "analysis_limit": "Analysis limit",
+    "storage_limit": "Storage limit"
+=======
   "auth": {
     "loginTitle": "Login",
     "loginSubtitle": "Join us today and unlock the power of AI legal analysis",
@@ -136,6 +154,7 @@
       "emailInUse": "Email address is already in use"
       
     }
+>>>>>>> develop
   }
 
 
