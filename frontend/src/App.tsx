@@ -16,12 +16,13 @@ import { useAuth } from './hooks/useAuth'
 // 🌟 Lazy Loading للمكونات والـ Pages الخاصة بمنصة عقدي
 const Home = lazy(() => import('./pages/Home'))
 const Pricing = lazy(() => import('./pages/Pricing'))
-const TestDashboard = lazy(() => import('./pages/TestDashboard'))
+const TestDashboard = lazy(() => import('./pages/Dashboard'))
 const RiskAnalysisDashboard = lazy(
   () => import('./pages/RiskAnalysisDashboard')
 )
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
+const AccountSettings = lazy(() => import('./pages/AccountSettings'))
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
@@ -107,6 +108,14 @@ function AppContent() {
           />
 
           {/* الـ Guest Routes (ممنوعة على المسجلين) */}
+          <Route
+            path="/account-settings"
+            element={
+              <ProtectedRoute>
+                <AccountSettings />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/login"
             element={
