@@ -116,6 +116,14 @@ export default function ClauseCard({ item }: ClauseCardProps) {
         {/* النص الأصلي للبند من العقد مع خاصية التوسيع الذكي */}
         <div
           onClick={() => setIsExpanded(!isExpanded)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setIsExpanded(!isExpanded)
+            }
+          }}
+          role="button"
+          tabIndex={0}
           className="bg-muted/40 border-muted-foreground/20 hover:bg-muted/60 text-muted-foreground relative cursor-pointer rounded-r-lg border-l-2 px-3 py-2.5 text-sm leading-relaxed font-medium italic transition-colors"
         >
           <p className={isExpanded ? '' : 'line-clamp-2'}>{item.clause}</p>
