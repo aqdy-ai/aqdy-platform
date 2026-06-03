@@ -104,4 +104,36 @@ describe("Rate Limit Middleware", () => {
       }),
     );
   });
+
+  test("should reset the daily analysis limit counter when a new day starts (date changes)", () => {
+    jest.useFakeTimers();
+    // Set explicit starting time
+    const initialTime = new Date("2026-06-02T12:00:00.000Z").getTime();
+    jest.setSystemTime(initialTime);
+
+    const middleware = userAnalysisRateLimit();
+    mockRequest.body = { userId: "user-reset-test" } as any;
+
+    // Day 1: Consume all 10 free analysis limits
+    for (let i = 0; i < 10; i += 1) {
+      middleware(mockRequest as Request, mockResponse as Response, mockNext);
+    }
+    expect(mockNext).toHaveBeenCalledTimes(10);
+
+    // 11th request on Day 1 is blocked
+    middleware(mockRequest as Request, mockResponse as Response, mockNext);
+    expect(mockStatus).toHaveBeenCalledWith(429);
+    expect(mockNext).toHaveBeenCalledTimes(10);
+
+    // Travel 24.5 hours in the future to Day 2
+    jest.setSystemTime(initialTime + 24.5 * 60 * 60 * 1000);
+    mockStatus.mockClear();
+    
+    // Day 2: Request should bypass blocks and proceed successfully
+    middleware(mockRequest as Request, mockResponse as Response, mockNext);
+    expect(mockNext).toHaveBeenCalledTimes(11);
+    expect(mockStatus).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
+  });
 });
