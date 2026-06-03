@@ -63,6 +63,7 @@ export const register = async (
           role: user.role,
           plan: user.plan,
         },
+        token,
       },
       message: "Registration successful.",
     });
@@ -105,6 +106,7 @@ export const login = async (
           role: user.role,
           plan: user.plan,
         },
+        token,
       },
       message: "Login successful.",
     });

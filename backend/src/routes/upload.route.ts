@@ -12,9 +12,11 @@ import {
   sanitizeText,
 } from "../middlewares/security.middleware.js";
 import { redactPII } from "../services/piiFiltering.js";
+import { enforceStorageLimit } from "../middlewares/planEnforcement.middleware.js";
 
 const uploadRouter = Router();
 uploadRouter.use(anonymousIpRateLimit());
+uploadRouter.use(enforceStorageLimit);
 
 /**
  * POST /api/upload/
