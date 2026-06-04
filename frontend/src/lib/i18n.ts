@@ -48,6 +48,11 @@ const i18nOptions: i18nOptionsType = {
   interpolation: {
     escapeValue: false,
   },
+  // Add Arabic plural rules
+  pluralSeparator: '_',
+  contextSeparator: '_',
+  nsSeparator: ':',
+  keySeparator: '.',
 }
 
 i18n

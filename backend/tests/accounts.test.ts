@@ -2,34 +2,26 @@ import { describe, test, expect, beforeAll, afterAll, beforeEach } from "@jest/g
 import mongoose from "mongoose";
 import request from "supertest";
 import express from "express";
-import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 import { User } from "../src/models/user.model.js";
 import { Contract } from "../src/models/contract.model.js";
 import { AuditLog } from "../src/models/auditLog.model.js";
 import accountsRouter from "../src/routes/accounts.route.js";
 import requestIdMiddleware from "../src/middleware/requestId.middleware.js";
 import { errorHandler } from "../src/middlewares/errorHandler.js";
+import { env } from "../src/config/env.js";
 
 const testApp = express();
 testApp.use(express.json());
+testApp.use(cookieParser());
 testApp.use(requestIdMiddleware);
 testApp.use("/api/admin/accounts", accountsRouter);
 testApp.use(errorHandler);
 
-const TEST_JWT_SECRET = "test_jwt_secret_key_123456";
-process.env.JWT_SECRET = TEST_JWT_SECRET;
-
 // Helper to sign JWT manually
 function generateToken(payload: any): string {
-  const header = { alg: "HS256", typ: "JWT" };
-  const headerB64 = Buffer.from(JSON.stringify(header)).toString("base64url");
-  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
-
-  const hmac = crypto.createHmac("sha256", TEST_JWT_SECRET);
-  hmac.update(`${headerB64}.${payloadB64}`);
-  const signatureB64 = hmac.digest("base64url");
-
-  return `${headerB64}.${payloadB64}.${signatureB64}`;
+  return jwt.sign(payload, env.JWT_SECRET);
 }
 
 beforeAll(async () => {
@@ -63,7 +55,7 @@ describe("Admin Account Management API & Role Guard", () => {
   test("returns 403 when regular user attempts to access endpoints", async () => {
     const res = await request(testApp)
       .get("/api/admin/accounts")
-      .set("Authorization", `Bearer ${userToken}`);
+      .set("Cookie", `accessToken=${userToken}`);
     expect(res.status).toBe(403);
     expect(res.body.success).toBe(false);
     expect(res.body.error).toBe("Forbidden");
@@ -80,7 +72,7 @@ describe("Admin Account Management API & Role Guard", () => {
     // List all
     let res = await request(testApp)
       .get("/api/admin/accounts")
-      .set("Authorization", `Bearer ${adminToken}`);
+      .set("Cookie", `accessToken=${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(3);
     expect(res.body.pagination.total).toBe(3);
@@ -88,7 +80,7 @@ describe("Admin Account Management API & Role Guard", () => {
     // Search by name
     res = await request(testApp)
       .get("/api/admin/accounts?search=Alice")
-      .set("Authorization", `Bearer ${adminToken}`);
+      .set("Cookie", `accessToken=${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].name).toBe("Alice Blue");
@@ -96,7 +88,7 @@ describe("Admin Account Management API & Role Guard", () => {
     // Filter by status
     res = await request(testApp)
       .get("/api/admin/accounts?status=suspended")
-      .set("Authorization", `Bearer ${adminToken}`);
+      .set("Cookie", `accessToken=${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].name).toBe("Bob Green");
@@ -104,7 +96,7 @@ describe("Admin Account Management API & Role Guard", () => {
     // Filter by planSlug
     res = await request(testApp)
       .get("/api/admin/accounts?planSlug=enterprise")
-      .set("Authorization", `Bearer ${adminToken}`);
+      .set("Cookie", `accessToken=${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].name).toBe("Charlie Red");
@@ -140,7 +132,7 @@ describe("Admin Account Management API & Role Guard", () => {
 
     const res = await request(testApp)
       .get(`/api/admin/accounts/${userIdStr}`)
-      .set("Authorization", `Bearer ${adminToken}`);
+      .set("Cookie", `accessToken=${adminToken}`);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -166,7 +158,7 @@ describe("Admin Account Management API & Role Guard", () => {
 
     const res = await request(testApp)
       .patch(`/api/admin/accounts/${userIdStr}`)
-      .set("Authorization", `Bearer ${adminToken}`)
+      .set("Cookie", `accessToken=${adminToken}`)
       .send({
         plan: "premium",
         status: "suspended",
@@ -201,7 +193,7 @@ describe("Admin Account Management API & Role Guard", () => {
     // Try without confirmation flag
     let res = await request(testApp)
       .delete(`/api/admin/accounts/${userIdStr}`)
-      .set("Authorization", `Bearer ${adminToken}`)
+      .set("Cookie", `accessToken=${adminToken}`)
       .send({});
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
@@ -210,7 +202,7 @@ describe("Admin Account Management API & Role Guard", () => {
     // Try with confirmation flag
     res = await request(testApp)
       .delete(`/api/admin/accounts/${userIdStr}`)
-      .set("Authorization", `Bearer ${adminToken}`)
+      .set("Cookie", `accessToken=${adminToken}`)
       .send({ confirm: true });
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

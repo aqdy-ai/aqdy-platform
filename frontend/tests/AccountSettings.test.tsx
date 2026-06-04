@@ -141,14 +141,12 @@ const profileResponse = createMockResponse({
   },
 })
 
-const subscriptionResponse = createMockResponse({
-  data: {
-    planName: 'Free',
-    analysesUsed: 3,
-    analysesAllowed: 10,
-    renewalDate: '2024-12-31T00:00:00.000Z',
-  },
-})
+const subscriptionData = {
+  planName: 'Free',
+  analysesUsed: 3,
+  analysesAllowed: 10,
+  renewalDate: '2024-12-31T00:00:00.000Z',
+}
 
 describe('AccountSettings page', () => {
   beforeEach(() => {
@@ -181,7 +179,7 @@ describe('AccountSettings page', () => {
 
   it('should render loading state on initial fetch', async () => {
     vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionResponse as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
 
     renderWithProviders(<AccountSettings />)
     expect(screen.getByText('Loading')).toBeInTheDocument()
@@ -192,7 +190,7 @@ describe('AccountSettings page', () => {
 
   it('should render bilingual layout for English and Arabic modes', async () => {
     vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionResponse as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
 
     currentTestLanguage = 'ar'
     renderWithProviders(<AccountSettings />)
@@ -212,7 +210,7 @@ describe('AccountSettings page', () => {
 
   it('should display profile and subscription data after successful fetch', async () => {
     vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionResponse as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
 
     renderWithProviders(<AccountSettings />)
 
@@ -232,7 +230,7 @@ describe('AccountSettings page', () => {
 
   it('should handle form submission and show success toast', async () => {
     vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionResponse as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
     
     vi.mocked(accountApi.updateProfile).mockResolvedValue({
       data: {
@@ -280,7 +278,7 @@ describe('AccountSettings page', () => {
 
   it('should render an error message when profile fetch fails', async () => {
     vi.mocked(accountApi.getProfile).mockRejectedValue(new Error('Fail'))
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionResponse as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
 
     renderWithProviders(<AccountSettings />)
 

@@ -4,9 +4,9 @@ import { env } from "../config/env.js";
 import { AppError } from "./errorHandler.js";
 import { verifyAccessToken } from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
-import { AuthenticatedRequest } from "../types/auth.js";
+import { AuthenticatedRequest, JwtPayload } from "../types/auth.js";
 
-export function verifyJWT(token: string): any {
+export function verifyJWT(token: string): JwtPayload | null {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
@@ -25,8 +25,8 @@ export function verifyJWT(token: string): any {
     const payload = JSON.parse(
       Buffer.from(payloadB64, "base64url").toString("utf8"),
     );
-    return payload;
-  } catch (err) {
+    return payload as JwtPayload;
+  } catch {
     return null;
   }
 }
@@ -86,9 +86,8 @@ export const requireAdmin = (
   next: NextFunction,
 ): void => {
   if (!req.user) {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.split(" ")[1];
+    const token = req.cookies?.accessToken;
+    if (token) {
       const decoded = verifyJWT(token);
       if (decoded) {
         req.user = {
@@ -96,7 +95,7 @@ export const requireAdmin = (
           email: decoded.email,
           role: decoded.role,
           plan: decoded.plan,
-        } as any;
+        } as AuthenticatedRequest["user"];
       }
     }
   }

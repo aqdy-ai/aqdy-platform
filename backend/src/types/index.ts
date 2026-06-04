@@ -1,6 +1,34 @@
+/**
+ * ─────────────────────────────────────────────
+ *  Backend Type Definitions
+ * ─────────────────────────────────────────────
+ *
+ * Centralized type definitions for the Aqdy backend.
+ * Organized by feature domain for easy navigation and maintenance.
+ */
+
+// ── Re-export Domain-Specific Types ──────────
+
+// Authentication & Request types
+export type { AuthenticatedRequest } from "./auth.js";
+
+// Audit & Request ID types
+export type {
+  RequestWithId,
+  AuditRequest,
+  AuditData,
+  AuditFilters,
+  AuditFile,
+  AuditContractReference,
+} from "./audit.js";
+
+// ── Core Type Definitions ────────────────────
+
 export type SupportedLanguage = "ar" | "en";
 
 export type RiskLevel = "low" | "medium" | "high" | "critical";
+
+// ── API Response Types ───────────────────────
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -8,6 +36,8 @@ export interface ApiResponse<T> {
   error?: string;
   message?: string;
 }
+
+// ── Contract Analysis Types ──────────────────
 
 export interface ClauseAnalysis {
   clauseText: string;
@@ -43,5 +73,3 @@ export interface ContractAnalysisResult {
   analysisDuration: number;
   createdAt: Date;
 }
-
-export * from "./audit.js";

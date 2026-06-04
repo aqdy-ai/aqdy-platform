@@ -115,10 +115,7 @@ export default function AccountSettings() {
 
   const subscriptionQuery = useQuery({
     queryKey: ['account-subscription'],
-    queryFn: async () => {
-      const response = await accountApi.getSubscription()
-      return response.data.data
-    },
+    queryFn: async () => await accountApi.getSubscription(),
     staleTime: 1000 * 60 * 5,
     retry: false,
   })
@@ -386,7 +383,7 @@ export default function AccountSettings() {
                   </div>
                 </div>
 
-                {planDetails?.planName.toLowerCase().includes('free') && (
+                {planDetails?.planName?.toLowerCase().includes('free') && (
                   <button
                     type="button"
                     onClick={() => toast.info(t('account.upgradeNotAvailable'))}

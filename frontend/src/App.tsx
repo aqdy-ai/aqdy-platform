@@ -5,13 +5,16 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom'
-import { Suspense, lazy, ReactNode } from 'react'
+import { Suspense, lazy, ReactNode, useEffect } from 'react'
 import { HelmetProvider } from 'react-helmet-async'
 import { Toaster } from 'sonner'
 import MainLayout from './components/layout/MainLayout'
 import DisclaimerModal from './components/DisclaimerModal'
 import { AuthProvider } from './hooks/AuthContext'
 import { useAuth } from './hooks/useAuth'
+import { useTranslation } from 'react-i18next'
+import { getDirection } from './lib/i18n'
+import type { SupportedLocale } from './types'
 
 // 🌟 Lazy Loading للمكونات والـ Pages الخاصة بمنصة عقدي
 const Home = lazy(() => import('./pages/Home'))
@@ -54,6 +57,14 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 function AppContent() {
   // 🌟 استخراج الخصائص الموجودة فعلياً والمؤكدة داخل الـ useAuth
   const { isAuthenticated } = useAuth()
+  const { i18n } = useTranslation()
+
+  // تحديث اتجاه الصفحة (LTR/RTL) بناءً على اللغة المختارة
+  useEffect(() => {
+    document.documentElement.dir =
+      getDirection(i18n.language as SupportedLocale) || 'ltr'
+    document.documentElement.lang = i18n.language
+  }, [i18n.language])
 
   // 🎯 قراءة الـ plan بطريقة آمنة تماماً ومتوافقة مع الـ ESLint (بدون any وبدون خصائص مفقودة)
   // بنحاول نقراها من الـ localStorage لو متسجلة هناك أثناء الـ login، أو بنخليها null كـ Fallback
@@ -85,7 +96,14 @@ function AppContent() {
             }
           />
 
-          <Route path="/test-dashboard" element={<TestDashboard />} />
+          <Route
+            path="/test-dashboard"
+            element={
+              <ProtectedRoute>
+                <TestDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* الـ Protected Routes (المحمية) */}
           <Route

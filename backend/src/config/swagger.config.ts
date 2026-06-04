@@ -16,10 +16,11 @@ const options: swaggerJsdoc.Options = {
     servers: [{ url: swaggerServerUrl, description: "Development server" }],
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
+        cookieAuth: {
+          type: "apiKey",
+          in: "cookie",
+          name: "accessToken",
+          description: "Authenticated users must have an accessToken cookie.",
         },
       },
       schemas: {
@@ -81,13 +82,9 @@ const options: swaggerJsdoc.Options = {
         },
         RefreshRequest: {
           type: "object",
-          required: ["refreshToken"],
-          properties: {
-            refreshToken: {
-              type: "string",
-              example: "refresh_token_example_123",
-            },
-          },
+          description:
+            "No request body required. The refresh token is expected in the httpOnly cookie named 'refreshToken'.",
+          properties: {},
         },
         AuthResponse: {
           type: "object",
@@ -96,8 +93,6 @@ const options: swaggerJsdoc.Options = {
             data: {
               type: "object",
               properties: {
-                token: { type: "string" },
-                refreshToken: { type: "string" },
                 user: {
                   type: "object",
                   properties: {
@@ -163,6 +158,52 @@ const options: swaggerJsdoc.Options = {
             },
             password: { type: "string", example: "NewStrongPass123!" },
             currentPassword: { type: "string", example: "OldStrongPass123!" },
+          },
+        },
+        SubscriptionResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            data: {
+              type: "object",
+              required: ["subscription", "usage"],
+              properties: {
+                subscription: {
+                  type: "object",
+                  properties: {
+                    _id: { type: "string" },
+                    planId: { type: "string" },
+                    status: { type: "string", example: "active" },
+                  },
+                  additionalProperties: true,
+                },
+                usage: {
+                  type: "object",
+                  required: ["analysesUsed", "analysesAllowed"],
+                  properties: {
+                    analysesUsed: { type: "number", example: 5 },
+                    analysesAllowed: { type: "number", example: 10 },
+                    periodStart: { type: "string", format: "date-time" },
+                    periodEnd: { type: "string", format: "date-time" },
+                    renewalDate: { type: "string", example: "2025-06-21" },
+                  },
+                },
+              },
+            },
+            message: {
+              type: "string",
+              example: "Subscription retrieved successfully",
+            },
+          },
+        },
+        UpgradeSubscriptionRequest: {
+          type: "object",
+          required: ["planId"],
+          properties: {
+            planId: {
+              type: "string",
+              example: "64abc123def456",
+            },
           },
         },
         ClauseAnalysis: {
@@ -398,7 +439,8 @@ const options: swaggerJsdoc.Options = {
           },
           responses: {
             201: {
-              description: "User registered successfully",
+              description:
+                "User registered successfully. Access and refresh tokens are set in httpOnly cookies named 'accessToken' and 'refreshToken'.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -446,7 +488,8 @@ const options: swaggerJsdoc.Options = {
           },
           responses: {
             200: {
-              description: "Login successful",
+              description:
+                "Login successful. Access and refresh tokens are set in httpOnly cookies named 'accessToken' and 'refreshToken'.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -483,18 +526,10 @@ const options: swaggerJsdoc.Options = {
       "/api/auth/logout": {
         post: {
           tags: ["Authentication"],
-          summary: "Logout a refresh token",
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/RefreshRequest" },
-              },
-            },
-          },
+          summary: "Logout (clear refresh token from httpOnly cookie)",
           responses: {
             200: {
-              description: "Logout successful",
+              description: "Logout successful.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/ApiResponse" },
@@ -531,18 +566,10 @@ const options: swaggerJsdoc.Options = {
       "/api/auth/refresh": {
         post: {
           tags: ["Authentication"],
-          summary: "Refresh JWT using a valid refresh token",
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/RefreshRequest" },
-              },
-            },
-          },
+          summary: "Refresh JWT (reads refresh token from httpOnly cookie)",
           responses: {
             200: {
-              description: "Token refreshed successfully",
+              description: "Token refreshed successfully.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/AuthResponse" },
@@ -558,11 +585,12 @@ const options: swaggerJsdoc.Options = {
       "/api/auth/me": {
         get: {
           tags: ["Authentication"],
-          summary: "Fetch authenticated user profile",
-          security: [{ bearerAuth: [] }],
+          summary:
+            "Fetch authenticated user profile (requires accessToken cookie)",
           responses: {
             200: {
-              description: "Authenticated user information",
+              description:
+                "Authenticated user information (reads from httpOnly accessToken cookie)",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/UserResponse" },
@@ -584,7 +612,7 @@ const options: swaggerJsdoc.Options = {
         get: {
           tags: ["Account"],
           summary: "Fetch user profile",
-          security: [{ bearerAuth: [] }],
+
           responses: {
             200: {
               description: "Profile information",
@@ -608,7 +636,7 @@ const options: swaggerJsdoc.Options = {
         patch: {
           tags: ["Account"],
           summary: "Update user profile",
-          security: [{ bearerAuth: [] }],
+
           requestBody: {
             required: true,
             content: {
@@ -638,7 +666,7 @@ const options: swaggerJsdoc.Options = {
         delete: {
           tags: ["Account"],
           summary: "Delete user account (soft delete)",
-          security: [{ bearerAuth: [] }],
+
           responses: {
             200: {
               description: "Account deleted successfully",
@@ -650,6 +678,93 @@ const options: swaggerJsdoc.Options = {
             },
             401: { description: "Authentication required" },
             404: { description: "User not found or already deleted" },
+          },
+        },
+      },
+      "/api/account/subscription": {
+        get: {
+          tags: ["Account"],
+          summary:
+            "Get current user subscription (requires accessToken cookie)",
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: "Subscription retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/SubscriptionResponse",
+                  },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/account/subscription/upgrade": {
+        post: {
+          tags: ["Account"],
+          summary: "Upgrade user subscription (requires accessToken cookie)",
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/UpgradeSubscriptionRequest",
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Subscription upgraded successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ApiResponse",
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid plan",
+            },
+            401: {
+              description: "Authentication required",
+            },
+          },
+        },
+      },
+      "/api/account/subscription/cancel": {
+        post: {
+          tags: ["Account"],
+          summary: "Cancel current subscription (requires accessToken cookie)",
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: "Subscription cancelled successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ApiResponse",
+                  },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+            },
           },
         },
       },
@@ -734,7 +849,7 @@ const options: swaggerJsdoc.Options = {
           tags: ["Admin Accounts"],
           summary:
             "Get paginated, filterable, and searchable list of user accounts",
-          security: [{ bearerAuth: [] }],
+
           parameters: [
             {
               name: "page",
@@ -817,7 +932,7 @@ const options: swaggerJsdoc.Options = {
           tags: ["Admin Accounts"],
           summary:
             "Get full account detail including subscription, usage stats, and recent activity",
-          security: [{ bearerAuth: [] }],
+
           parameters: [
             {
               name: "id",
@@ -873,7 +988,7 @@ const options: swaggerJsdoc.Options = {
         patch: {
           tags: ["Admin Accounts"],
           summary: "Update user plan, status, or role",
-          security: [{ bearerAuth: [] }],
+
           parameters: [
             {
               name: "id",
@@ -915,7 +1030,7 @@ const options: swaggerJsdoc.Options = {
         delete: {
           tags: ["Admin Accounts"],
           summary: "Hard delete user account (requires confirmation flag)",
-          security: [{ bearerAuth: [] }],
+
           parameters: [
             {
               name: "id",

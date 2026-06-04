@@ -31,8 +31,20 @@ export class PdfService {
   }
 
   detectLanguage(text: string): "ar" | "en" {
-    const arabicChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
-    const totalChars = text.replace(/\s/g, "").length;
+    if (!text) return "en";
+
+    // Sample the first 5000 characters for high performance on long contracts
+    const sample = text.slice(0, 5000);
+    let arabicChars = 0;
+    let totalChars = 0;
+
+    for (let i = 0; i < sample.length; i++) {
+      const code = sample.charCodeAt(i);
+      if (code <= 32) continue; // Skip whitespace and control characters
+      totalChars++;
+      if (code >= 0x0600 && code <= 0x06ff) arabicChars++;
+    }
+
     if (totalChars === 0) return "en";
     return arabicChars / totalChars > 0.3 ? "ar" : "en";
   }
