@@ -1,24 +1,44 @@
 /* src/components/layout/Navbar.tsx */
-import { Sun, Moon, ExternalLink } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Sun, Moon, ExternalLink, User, Settings, LogOut } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import SubscriptionBadge from '../SubscriptionBadge'
+import { useAuth } from '../../hooks/useAuth'
+import { Link } from 'react-router-dom'
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const { isAuthenticated, logout, user } = useAuth()
+  const isRtl = i18n.language === 'ar'
+
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
     <nav className="border-border/40 bg-background/70 sticky top-0 z-[60] border-b backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
         {/* قسم اللوجو والهوية البراندية */}
-        <motion.div
-          whileHover={{ scale: 1.02 }}
+        <Link
+          to="/"
           className="group focus-visible:ring-primary flex cursor-pointer items-center gap-3 focus-visible:ring-2"
-          role="link"
-          tabIndex={0}
           aria-label={t('nav.home')}
         >
           <div className="relative flex items-center">
@@ -39,19 +59,19 @@ const Navbar = () => {
               {t('common.tagline')}
             </span>
           </div>
-        </motion.div>
+        </Link>
 
         {/* قسم الروابط والأزرار التفاعلية */}
         <div className="flex items-center gap-6">
           {/* روابط التنقل الأساسية */}
           <div className="text-muted-foreground hidden items-center gap-8 text-sm font-bold md:flex">
-            <a
-              href="/"
+            <Link
+              to="/"
               className="hover:text-primary focus-visible:ring-primary transition-colors focus-visible:ring-2"
               aria-label={t('nav.home')}
             >
               {t('nav.home')}
-            </a>
+            </Link>
 
             <a
               href="/how-it-works"
@@ -66,13 +86,13 @@ const Navbar = () => {
               />
             </a>
 
-            <a
-              href="/pricing"
+            <Link
+              to="/pricing"
               className="hover:text-primary focus-visible:ring-primary transition-colors focus-visible:ring-2"
               aria-label={t('nav.pricing')}
             >
               {t('nav.pricing')}
-            </a>
+            </Link>
           </div>
 
           {/* الخط الفاصل الجمالي */}
@@ -95,6 +115,75 @@ const Navbar = () => {
 
             {/* سويتش اللغات ثنائي اللغة (AR/EN) */}
             <LanguageSwitcher />
+
+            {/* قسم المصادقة - تسجيل الدخول أو قائمة المستخدم */}
+            {isAuthenticated ? (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  aria-expanded={dropdownOpen}
+                  aria-haspopup="true"
+                  aria-label={t('nav.settings') || 'User settings'}
+                  className="bg-card/30 border-border/50 hover:bg-muted text-foreground/80 hover:text-primary focus-visible:ring-primary flex items-center justify-center rounded-xl border p-3 transition-all focus-visible:ring-2 active:scale-90"
+                  id="user-menu-button"
+                >
+                  <User size={18} strokeWidth={2.5} aria-hidden="true" />
+                </button>
+
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className={`border-border/50 bg-card/95 absolute z-[70] mt-2 w-48 rounded-2xl border shadow-xl backdrop-blur-md focus:outline-none ${
+                        isRtl ? 'left-0' : 'right-0'
+                      }`}
+                      role="menu"
+                      aria-orientation="vertical"
+                      aria-labelledby="user-menu-button"
+                    >
+                      <div className="space-y-1 p-2">
+                        {user?.name && (
+                          <div className="border-border/30 text-muted-foreground mb-1 truncate border-b px-4 py-2 text-xs font-bold">
+                            {user.name}
+                          </div>
+                        )}
+                        <Link
+                          to="/account-settings"
+                          onClick={() => setDropdownOpen(false)}
+                          className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+                          role="menuitem"
+                        >
+                          <Settings size={16} />
+                          {t('nav.settings')}
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setDropdownOpen(false)
+                            logout()
+                          }}
+                          className="hover:bg-destructive/10 hover:text-destructive text-foreground flex w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-start text-sm font-semibold transition-colors"
+                          role="menuitem"
+                        >
+                          <LogOut size={16} />
+                          {t('nav.logout')}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary rounded-xl px-5 py-2.5 text-sm font-bold shadow-md transition-all focus-visible:ring-2 active:scale-95"
+                aria-label={t('nav.login')}
+              >
+                {t('nav.login')}
+              </Link>
+            )}
           </div>
         </div>
       </div>
