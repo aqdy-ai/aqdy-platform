@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "lastUpdated": "2025-05-21",
-  "totalEntries": 102,
+  "lastUpdated": "2026-06-04",
+  "totalEntries": 157,
   "embeddingModel": "multilingual-e5-large",
   "embeddingDimensions": 1024,
   "clauses": [
@@ -294,7 +294,7 @@
         "contractTypes": [
           "Service Agreement",
           "Employment Agreement",
-          "Subscription"
+          "Subscription Agreement"
         ],
         "frequency": "common",
         "applicableRegions": [
@@ -424,7 +424,7 @@
         "contractTypes": [
           "Service Agreement",
           "Vendor Agreement",
-          "Subscription"
+          "Subscription Agreement"
         ],
         "frequency": "very_common",
         "applicableRegions": [
@@ -595,7 +595,7 @@
       "context": {
         "contractTypes": [
           "Service Agreement",
-          "Subscription",
+          "Subscription Agreement",
           "Employment Agreement"
         ],
         "frequency": "common",
@@ -2814,7 +2814,7 @@
       "context": {
         "contractTypes": [
           "Service Agreement",
-          "Subscription",
+          "Subscription Agreement",
           "Vendor Agreement"
         ],
         "frequency": "very_common",
@@ -3763,7 +3763,7 @@
         "contractTypes": [
           "Vendor Agreement",
           "Service Agreement",
-          "Subscription"
+          "Subscription Agreement"
         ],
         "frequency": "common",
         "applicableRegions": [
@@ -4293,6 +4293,2341 @@
       "version": 1,
       "createdAt": "2025-05-21T10:00:00Z",
       "updatedAt": "2025-05-21T10:00:00Z"
+    },
+    {
+      "id": "clause_103_unilateral_scope_expansion",
+      "category": "Scope of Work",
+      "riskLevel": "high",
+      "clausePattern": "Contractor shall perform the Services described in Exhibit A and such other additional tasks as Client may reasonably request from time to time without any adjustment to the Fees.",
+      "explanation": {
+        "ar": "يلزم هذا البند مقدم الخدمة بأداء مهام إضافية غير محددة بناءً على طلب العميل دون زيادة في المقابل المالي المتفق عليه.",
+        "en": "This clause forces the contractor to perform extra, unspecified tasks requested by the client without receiving any additional compensation."
+      },
+      "whyRisky": {
+        "ar": "يؤدي هذا الشرط إلى تضخم نطاق العمل بشكل غير محدود وضياع وقتك وجهدك دون تعويض مالي، مما يمثل ضرراً مالياً جسيماً ويخالف مبدأ استقرار المعاملات في القانون المدني المصري المادة 147.",
+        "en": "This leads to unlimited scope creep, forcing you to expend extra time and resources without pay, which causes direct financial harm and violates the stability of contracts under Egyptian Civil Code Article 147."
+      },
+      "saferAlternative": {
+        "ar": "أي مهام إضافية يطلبها العميل خارج نطاق العمل المحدد تخضع لملحق إضافي مكتوب وموافقة الطرفين على الرسوم الجديدة قبل البدء فيها.",
+        "en": "Any additional tasks requested by the Client outside the specified Scope of Work shall be subject to a written amendment and mutual agreement on additional fees prior to execution."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن تسعيرك مبني على مهام محددة بدقة، وأن أي طلبات جديدة تتطلب وقتاً وموارد إضافية تستحق تقديراً مالياً عادلاً.",
+        "en": "Explain to the client that your pricing is based on a defined set of tasks, and any new requests consume additional time and resources that require fair pricing."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 658",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_104_ambiguous_acceptance",
+      "category": "Scope of Work",
+      "riskLevel": "medium",
+      "clausePattern": "Deliverables shall be deemed complete only when they are accepted as satisfactory by the Client at the Client's sole discretion.",
+      "explanation": {
+        "ar": "يعني هذا البند أن تسليم العمل يعتمد كلياً على رضا العميل الشخصي وتقديره المنفرد دون وجود معايير فنية واضحة وموضوعية للقبول.",
+        "en": "This clause means that completion of the work depends entirely on the client's subjective satisfaction and sole discretion without clear and objective technical criteria."
+      },
+      "whyRisky": {
+        "ar": "قد يرفض العميل استلام العمل أو يؤجل الدفع بحجة عدم الرضا الشخصي، مما يؤدي إلى العمل دون مقابل مادي أو الدخول في نزاعات مستمرة حول جودة العمل.",
+        "en": "The client can refuse acceptance or delay payment indefinitely by claiming subjective dissatisfaction, forcing you to perform unpaid revisions or enter disputes."
+      },
+      "saferAlternative": {
+        "ar": "تُعتبر المخرجات مقبولة إذا استوفت معايير القبول المحددة في ملحق العمل، ويُعتبر العمل مقبولاً ضمناً إذا لم يرسل العميل رفضاً مكتوباً خلال 5 أيام عمل.",
+        "en": "Deliverables shall be deemed accepted if they meet the acceptance criteria in the SOW. Deliverables are deemed accepted if no written rejection is received within 5 business days."
+      },
+      "negotiationTips": {
+        "ar": "حدد معايير القبول الفنية بوضوح في ملحق العقد، وضع جدولاً زمنياً قصيراً ومحدداً للعميل لمراجعة وإبداء الملاحظات على المخرجات.",
+        "en": "Define technical acceptance criteria in detail in a contract annex, and set a short, strict deadline for the client to review and comment on deliverables."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 148",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_105_scope_reduction_unilateral",
+      "category": "Scope of Work",
+      "riskLevel": "high",
+      "clausePattern": "Client reserves the right to reduce or eliminate any portion of the Services at any time and may reduce total Fees payable proportionally at Client's option",
+      "explanation": {
+        "ar": "يمنح هذا البند العميل الحق في تقليص أو إلغاء أجزاء من العمل المطلوب في أي وقت، مع تخفيض مستحقاتك المالية بنسبة توافق التقليص دون السماح لك بإعادة تسعير العمل المتبقي.",
+        "en": "This clause gives the client the right to reduce or cancel parts of the work at any time, proportionally reducing your fees without allowing you to reprice the remaining work."
+      },
+      "whyRisky": {
+        "ar": "قد تفقد جزءاً كبيراً من أرباحك المتوقعة بعد أن قمت بحجز وقتك ومواردك لهذا المشروع، كما أن العمل المتبقي قد يصبح غير مربح أو أعلى تكلفة عند تنفيذه منفرداً.",
+        "en": "You could lose a major portion of expected revenue after allocating time and resources, while the remaining work may become unprofitable or costlier to perform in isolation."
+      },
+      "saferAlternative": {
+        "ar": "في حال رغبة العميل في تقليص نطاق العمل، يجب إشعار المتعاقد قبل 15 يوماً، ويخضع السعر الإجمالي لإعادة التفاوض والاتفاق المكتوب بين الطرفين قبل سريان التقليص.",
+        "en": "If Client wishes to reduce the Scope of Work, it must provide 15 days' notice, and the total fees shall be subject to renegotiation and mutual written agreement before such reduction takes effect."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن تسعير حزم العمل يعتمد على الحجم الإجمالي، وتقليص النطاق يخل بالتوازن المالي للعقد مما يتطلب إعادة حساب التكلفة للمهام المتبقية.",
+        "en": "Explain to the client that package pricing depends on total volume, and reducing scope alters the contract's financial balance, requiring repricing of the remaining tasks."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Vendor Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 658",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_106_absent_change_order",
+      "category": "Scope of Work",
+      "riskLevel": "medium",
+      "clausePattern": "Any modifications to the services shall be performed by Contractor immediately upon verbal or email request by the Client's representative.",
+      "explanation": {
+        "ar": "يلزمك this البند بتنفيذ أي تعديلات على الخدمات فور تلقي طلب شفهي أو عبر البريد الإلكتروني دون وجود عملية رسمية ومكتوبة لتعديل السعر والجدول الزمني.",
+        "en": "This clause forces you to execute service modifications immediately upon verbal or email request, without a formal written process to adjust pricing and timeline."
+      },
+      "whyRisky": {
+        "ar": "يؤدي غياب إجراءات أمر التغيير (Change Order) إلى خلافات حول طبيعة التعديلات وهل هي مدفوعة أم مجانية، مما يجعلك تقوم بأعمال إضافية دون ضمان مالي مكتوب.",
+        "en": "The absence of a formal change order process causes disputes over whether changes are paid or free, forcing you to perform additional work without written financial security."
+      },
+      "saferAlternative": {
+        "ar": "أي تغيير في الخدمات يجب أن يوثق في أمر تغيير مكتوب وموقع من الطرفين يحدد نطاق التغيير وتأثيره على الرسوم وجدول التسليم قبل بدء العمل.",
+        "en": "Any change in services must be documented in a written Change Order signed by both parties specifying the change, its impact on fees, and the delivery schedule before work begins."
+      },
+      "negotiationTips": {
+        "ar": "أكد على أن التعديلات الشفهية تؤدي لخلل في الميزانية والجدول الزمني، ولذلك فإن التوثيق المكتوب يحمي الطرفين ويضمن تسليم المشروع بنجاح.",
+        "en": "Emphasize that verbal adjustments lead to budget and schedule disruption, so written documentation protects both parties and ensures successful project delivery."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 656",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_107_rejected_deliverables_ip",
+      "category": "Scope of Work",
+      "riskLevel": "high",
+      "clausePattern": "In the event that the Client rejects any Deliverable, all intellectual property rights in such rejected Deliverables shall remain the exclusive property of the Client.",
+      "explanation": {
+        "ar": "بموجب هذا البند، تؤول ملكية حقوق الملكية الفكرية للمخرجات المرفوضة إلى العميل، مما يتيح له استخدام أفكارك وتصاميمك المرفوضة دون دفع مقابل مالي عنها.",
+        "en": "Under this clause, intellectual property rights in rejected deliverables transfer to the client, allowing them to use your rejected concepts and designs without paying for them."
+      },
+      "whyRisky": {
+        "ar": "قد يرفض العميل مخرجاً معيناً ليتجنب الدفع لك، ثم يقوم باستخدامه أو تعديله عبر مطور أو مصمم آخر، مما يضيع جهدك ويعتبر استغلالاً غير عادل لملكيتك الفكرية.",
+        "en": "The client might reject a deliverable to avoid paying you, and then use or adapt it through another contractor, resulting in lost work and unfair exploitation of your IP."
+      },
+      "saferAlternative": {
+        "ar": "إذا تم رفض أي مخرج، تظل كافة حقوق الملكية الفكرية الخاصة به ملكاً للمتعاقد، ولا يجوز للعميل استخدامها أو إعادة إنتاجها بأي شكل دون موافقة خطية مسبقة ودفع قيمتها.",
+        "en": "If any deliverable is rejected, all intellectual property rights therein shall remain with the Contractor, and the Client may not use or reproduce it without prior written consent and full payment."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن نقل ملكية الأفكار مشروط بدفع قيمتها بالكامل، والمخرجات المرفوضة لم يُدفع ثمنها وبالتالي يجب أن تظل ملكاً خالصاً لك.",
+        "en": "Explain to the client that IP transfer is conditioned on full payment, and rejected deliverables are unpaid work and must remain your sole property."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Intellectual Property Law No. 82/2002 Article 138",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_108_unlimited_revisions",
+      "category": "Scope of Work",
+      "riskLevel": "high",
+      "clausePattern": "Contractor shall make all modifications, updates, and corrections to the Deliverables requested by the Client until Client provides final written approval, at no additional cost.",
+      "explanation": {
+        "ar": "يلزمك هذا البند بإجراء تعديلات وتصحيحات غير محدودة على المخرجات بناءً على طلب العميل ودون أي تكلفة إضافية، حتى يقرر العميل الموافقة النهائية.",
+        "en": "This clause requires you to perform unlimited modifications and corrections to the deliverables requested by the client at no extra cost until final approval is granted."
+      },
+      "whyRisky": {
+        "ar": "قد يستغل العميل هذا البند لطلب تعديلات لا نهائية وتغيير رأيه باستمرار مما يستهلك وقتك وأرباحك ويجعل تسليم المشروع أمراً مستحيلاً عملياً.",
+        "en": "The client could abuse this clause by requesting endless revisions, consuming your time and eliminating your profit margin, making project completion practically impossible."
+      },
+      "saferAlternative": {
+        "ar": "تشمل الرسوم المقررة جولتين (2) من التعديلات بناءً على ملاحظات العميل المكتوبة. أي تعديلات إضافية بعد ذلك تُحتسب كعمل إضافي بسعر ساعة متفق عليه.",
+        "en": "The agreed fees include up to two (2) rounds of revisions based on Client's written feedback. Any subsequent modifications shall be billed as extra work at the agreed hourly rate."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن تحديد عدد المراجعات يساعد في تركيز الملاحظات وتسريع وتيرة العمل وتجنب التغييرات العشوائية التي تؤخر إطلاق المشروع.",
+        "en": "Explain to the client that limiting revisions helps focus feedback, accelerates progress, and avoids random changes that delay project launch."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_109_ip_work_in_progress",
+      "category": "Scope of Work",
+      "riskLevel": "high",
+      "clausePattern": "All materials, drafts, notes, and work-in-progress created by Contractor under this Agreement shall become the property of the Company immediately upon creation.",
+      "explanation": {
+        "ar": "يجعل هذا البند جميع المسودات والمواد والأعمال غير المكتملة ملكاً للشركة فور إنشائها، حتى لو لم يتم تسليمها أو دفع ثمنها بعد.",
+        "en": "This clause makes all drafts, materials, and incomplete work-in-progress the property of the company immediately upon creation, even before delivery or payment."
+      },
+      "whyRisky": {
+        "ar": "إذا تم إلغاء العقد مبكراً، يمكن للشركة الاستيلاء على أعمالك غير المكتملة ومسوداتك دون دفع مستحقاتك كاملة، مما يحرمك من حق حبس العمل لحين السداد وفق القانون المدني المصري المادة 246.",
+        "en": "If the contract is terminated early, the company can seize your incomplete work and drafts without paying you, depriving you of your right to withhold work until payment under Egyptian Civil Code Article 246."
+      },
+      "saferAlternative": {
+        "ar": "تنتقل ملكية المخرجات النهائية المكتملة فقط إلى العميل عند سداد كافة الرسوم المستحقة بالكامل. وتظل كافة المسودات وأعمال التطوير ملكاً للمتعاقد.",
+        "en": "Ownership of final completed deliverables transfers to the Client only upon full payment of all fees due. All drafts and work-in-progress remain the property of the Contractor."
+      },
+      "negotiationTips": {
+        "ar": "أصر على أن ملكية العمل لا تنتقل إلا بعد سداد القيمة المالية المقابلة له بالكامل، حيث أن هذا هو الضمان الوحيد لحصولك على مستحقاتك.",
+        "en": "Insist that ownership transfer is contingent on full payment, as this is your primary leverage to secure compensation for your work."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 246",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_110_narrow_force_majeure",
+      "category": "Force Majeure",
+      "riskLevel": "medium",
+      "clausePattern": "Force Majeure shall be strictly limited to acts of God, war, and natural disasters, and shall exclude epidemics, pandemics, government closures, or cyberattacks.",
+      "explanation": {
+        "ar": "يقصر هذا البند القوة القاهرة على الكوارث الطبيعية والحروب فقط، ويستثني صراحة الأوبئة، الإغلاقات الحكومية، أو الهجمات السيبرانية من الحماية القانونية.",
+        "en": "This clause restricts force majeure to natural disasters and war, explicitly excluding epidemics, pandemics, government shutdowns, or cyberattacks from legal protection."
+      },
+      "whyRisky": {
+        "ar": "إذا عجزت عن تنفيذ التزاماتك بسبب جائحة صحية أو إغلاق حكومي أو هجوم إلكتروني خارج عن إرادتك، ستظل مسؤولاً عن التعويض عن التأخير أو عدم التنفيذ، مما يحرمك من حماية المادة 165 من القانون المدني المصري.",
+        "en": "If you cannot perform your duties due to a pandemic, government lockdown, or cyberattack, you will still be liable for delays or non-performance, losing the protection of Egyptian Civil Code Article 165."
+      },
+      "saferAlternative": {
+        "ar": "تشمل القوة القاهرة الأوبئة، الجوائح، الإجراءات الحكومية والسيادية، تعطل شبكات الاتصال العامة، وأي أحداث أخرى خارجة عن السيطرة المعقولة للطرف المتأثر.",
+        "en": "Force Majeure shall include epidemics, pandemics, government actions or lockdowns, public network outages, and any other events beyond the affected party's reasonable control."
+      },
+      "negotiationTips": {
+        "ar": "ذكّر الطرف الآخر بأن الأزمات الصحية مثل كوفيد-19 والقرارات الحكومية المفاجئة هي أحداث حقيقية وخارجة عن الإرادة، وينبغي حماية الطرفين منها بالتساوي.",
+        "en": "Remind the other party that health crises like COVID-19 and sudden government lockdowns are real, uncontrollable events, and both parties deserve equal protection from them."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Vendor Agreement",
+          "Employment Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 165",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_111_absent_force_majeure",
+      "category": "Force Majeure",
+      "riskLevel": "high",
+      "clausePattern": "No failure or delay by either party in performing its obligations under this Agreement shall be excused for any reason whatsoever.",
+      "explanation": {
+        "ar": "لا يحتوي هذا العقد على بند للقوة القاهرة، ويقرر صراحة أنه لا يوجد أي عذر قانوني أو مبرر لتأخر أو عدم تنفيذ الالتزامات لأي سبب كان.",
+        "en": "This contract contains no force majeure clause, and explicitly states that no delay or failure in performance shall be excused for any reason whatsoever."
+      },
+      "whyRisky": {
+        "ar": "يعرضك هذا البند للمسؤولية القانونية والتعويضات حتى لو حدثت كوارث عامة أو ظروف قاهرة خارجة تماماً عن إرادتك تمنعك من العمل، مما يتجاهل القواعد العامة للقانون المدني.",
+        "en": "This exposes you to full liability and damages even if catastrophic events beyond your control make performance impossible, bypassing standard protections of civil law."
+      },
+      "saferAlternative": {
+        "ar": "لا يكون أي من الطرفين مسؤولاً عن التأخر أو الإخفاق في تنفيذ التزاماته إذا كان ذلك ناتجاً عن قوة قاهرة خارجة عن إرادته المعقولة، على أن يتم إخطار الطرف الآخر فوراً.",
+        "en": "Neither party shall be liable for any delay or failure in performance resulting from force majeure events beyond its reasonable control, provided the other party is notified promptly."
+      },
+      "negotiationTips": {
+        "ar": "أوضح أن بند القوة القاهرة هو شرط وقائي معتاد ومتوازن يحمي كلا الطرفين من الظروف الاستثنائية والطارئة التي لا يمكن لأحد توقعها أو منعها.",
+        "en": "Explain that a force majeure clause is a standard, balanced protective provision that shields both parties from unpredictable and unavoidable extraordinary circumstances."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Vendor Agreement",
+          "Subscription Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 165 and Article 373",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_112_asymmetric_force_majeure",
+      "category": "Force Majeure",
+      "riskLevel": "high",
+      "clausePattern": "Client shall not be liable for any failure to perform due to Force Majeure. Contractor's obligations, however, shall not be suspended or excused by any Force Majeure event.",
+      "explanation": {
+        "ar": "يعفي هذا البند العميل وحده من المسؤولية في حال حدوث قوة قاهرة، بينما يحرم مقدم الخدمة (المتعاقد) من نفس الحماية ويبقيه مسؤولاً عن التزاماته.",
+        "en": "This clause excuses the client only from liability during a force majeure event, while denying the contractor the same protection, keeping them fully liable."
+      },
+      "whyRisky": {
+        "ar": "ينطوي هذا البند على إجحاف شديد؛ فإذا حلت كارثة تمنعك من العمل، تظل مسؤولاً عن التعويضات والفسخ، بينما يمكن للعميل التوقف عن الدفع أو التنفيذ متذرعاً بالقوة القاهرة.",
+        "en": "This is highly unfair; if an event prevents you from working, you remain liable for damages, while the client can halt payments or suspend the contract citing force majeure."
+      },
+      "saferAlternative": {
+        "ar": "لا يكون أي من الطرفين مسؤولاً تجاه الآخر عن أي تأخير أو إخفاق في تنفيذ التزاماته بموجب هذا العقد بسبب ظروف القوة القاهرة.",
+        "en": "Neither party shall be liable to the other for any delay or failure in performing its obligations under this Agreement due to Force Majeure events."
+      },
+      "negotiationTips": {
+        "ar": "أصر على المعاملة بالمثل؛ بنود القوة القاهرة يجب أن تكون متبادلة بطبيعتها لحماية التوازن العقدي الأساسي.",
+        "en": "Insist on reciprocity; force majeure clauses must be mutual by nature to preserve the fundamental balance of the contract."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 165",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_113_termination_without_payment",
+      "category": "Force Majeure",
+      "riskLevel": "high",
+      "clausePattern": "Upon the occurrence of a Force Majeure event, Client may immediately terminate this Agreement, and Contractor shall not be entitled to any payment for services rendered prior to such termination.",
+      "explanation": {
+        "ar": "يسمح هذا البند للعميل بإنهاء العقد فوراً عند حدوث قوة قاهرة، ويحرمك من الحصول على مستحقاتك المالية عن الأعمال التي أنجزتها بالفعل قبل وقوع هذا الحدث.",
+        "en": "This clause allows the client to terminate the contract immediately during force majeure and denies you payment for work already completed before the event occurred."
+      },
+      "whyRisky": {
+        "ar": "قد تخسر أجر عمل تم تنفيذه بالفعل لأسابيع أو أشهر، مما يمثل إثراءً بلا سبب للعميل على حسابك ويسبب لك ضرراً مالياً فادحاً يخالف المادة 179 من القانون المدني المصري.",
+        "en": "You could lose compensation for weeks or months of work already performed, leading to unjust enrichment of the client and causing severe financial harm in violation of Egyptian Civil Code Article 179."
+      },
+      "saferAlternative": {
+        "ar": "في حال إنهاء العقد بسبب القوة القاهرة، يلتزم العميل بدفع رسوم الخدمات التي تم أداؤها والمصروفات المقبولة التي تكبدها المتعاقد حتى تاريخ الإنهاء.",
+        "en": "In the event of termination due to Force Majeure, Client shall pay Contractor for all services performed and non-refundable expenses incurred up to the date of termination."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن القوة القاهرة تنهي العقد للمستقبل فقط، ولا ينبغي أن تصادر حقوقاً مالية نشأت عن خدمات تم تسليمها والاستفادة منها بالفعل.",
+        "en": "Explain to the client that force majeure terminates future performance, but it should not confiscate financial rights accrued for services already delivered and utilized."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Vendor Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 165 and Article 179",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_114_government_action_exclusion",
+      "category": "Force Majeure",
+      "riskLevel": "medium",
+      "clausePattern": "Under no circumstances shall changes in laws, government regulations, import/export restrictions, or currency devaluations qualify as Force Majeure events under this Agreement.",
+      "explanation": {
+        "ar": "يستثني هذا البند التعديلات القانونية، القرارات الحكومية، قيود الاستيراد والتصدير، أو انخفاض قيمة العملة من تعريف القوة القاهرة، مما يبقيك مسؤولاً عن الالتزام رغم هذه العوائق السيادية.",
+        "en": "This clause excludes changes in laws, government regulations, trade restrictions, or currency devaluations from the definition of Force Majeure, keeping you liable despite sovereign obstacles."
+      },
+      "whyRisky": {
+        "ar": "في بيئة اقتصادية متغيرة، قد تحول القرارات الحكومية المفاجئة (مثل قيود الاستيراد أو تحرير سعر الصرف) دون قدرتك على توفير المواد أو الالتزام بالتسعير الأصلي، مما يعرضك لخسائر فادحة وعقوبات تأخير.",
+        "en": "In a volatile economic environment, sudden government decisions (like import bans or currency devaluation) can prevent you from sourcing materials or keeping original prices, exposing you to losses and delay penalties."
+      },
+      "saferAlternative": {
+        "ar": "تشمل القوة القاهرة أي قرارات سيادية أو قيود حكومية أو تعديلات تشريعية تجعل تنفيذ الالتزامات مستحيلاً أو مرهقاً بشكل غير معقول.",
+        "en": "Force Majeure shall include any sovereign decisions, government restrictions, or legislative changes that make performance impossible or commercially impracticable."
+      },
+      "negotiationTips": {
+        "ar": "أكد للطرف الآخر أن القرارات السيادية هي المثال الأبرز للظروف الخارجة عن إراده المتعاقدين، واستثناؤها يخل بالتوازن القانوني للعقد.",
+        "en": "Emphasize that sovereign decisions are primary examples of uncontrollable events, and excluding them disrupts the legal balance of the contract."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement",
+          "Freelance Contract"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147(2) and Article 165",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_115_foreign_court_jurisdiction",
+      "category": "Governing Law",
+      "riskLevel": "high",
+      "clausePattern": "This Agreement shall be governed by the laws of England and Wales, and the parties submit to the exclusive jurisdiction of the courts of London to resolve any dispute.",
+      "explanation": {
+        "ar": "يخالف هذا البند الاختصاص القضائي المحلي بفرض الخضوع لقوانين إنجلترا ومحاكم لندن حصرياً، مما يعيق حريتك في اللجوء للقضاء المصري.",
+        "en": "This clause changes governing law and court forum to England and London courts exclusively, preventing you from seeking justice in Egyptian courts."
+      },
+      "whyRisky": {
+        "ar": "إذا تخلف العميل عن السداد، ستضطر لرفع دعوى قضائية في بريطانيا، وهو أمر مكلف جداً ويتطلب محامين أجانب ورسوم باهظة قد تفوق قيمة مستحقاتك بكثير.",
+        "en": "If the client defaults, you must sue in the UK, which is prohibitively expensive, requiring foreign lawyers and massive fees that may exceed your claim value."
+      },
+      "saferAlternative": {
+        "ar": "يخضع هذا العقد لقوانين جمهورية مصر العربية، وتختص محاكم القاهرة بنظر أي نزاع ينشأ عنه.",
+        "en": "This Agreement shall be governed by the laws of the Arab Republic of Egypt, and the courts of Cairo shall have exclusive jurisdiction over any dispute."
+      },
+      "negotiationTips": {
+        "ar": "إذا كان الطرف الآخر أجنبياً ويرفض المحاكم المصرية، اقترح التحكيم كحل وسط في القاهرة تحت قواعد مركز القاهرة الإقليمي (CRCICA) باللغة العربية أو الإنجليزية.",
+        "en": "If the other party is foreign and rejects Egyptian courts, propose arbitration as a compromise in Cairo under CRCICA rules in Arabic or English."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Procedure Law Articles 28-30",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_116_client_jurisdiction_only",
+      "category": "Governing Law",
+      "riskLevel": "medium",
+      "clausePattern": "Any legal action arising out of this Agreement must be brought exclusively in the courts located in the Client's home city and jurisdiction.",
+      "explanation": {
+        "ar": "يلزمك هذا البند برفع أي دعوى قضائية في مدينة العميل ومقر إقامته حصرياً، مما يحرمك من خيار التقاضي في مدينتك.",
+        "en": "This clause forces you to bring any lawsuit exclusively in the client's home city and jurisdiction, depriving you of the option to sue locally."
+      },
+      "whyRisky": {
+        "ar": "يضعك هذا في موقف ضعيف جغرافياً ومالياً؛ حيث تضطر لتحمل تكاليف السفر وتوكيل محامين في مدينة أخرى لملاحقة العميل قضائياً حتى لو كان العقد يُنفذ في مدينتك.",
+        "en": "This places you at a geographic and financial disadvantage; you must cover travel and local counsel costs in another city to pursue the client, even if the work was performed locally."
+      },
+      "saferAlternative": {
+        "ar": "تُرفع النزاعات القضائية أمام المحاكم المختصة في موطن الطرف المدعى عليه.",
+        "en": "Any legal action shall be brought before the competent courts of the defendant's domicile."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن قاعدة 'المدعي يتبع المدعى عليه' هي القاعدة القانونية العادلة والمعيارية في القانون المصري والأنظمة العربية.",
+        "en": "Explain to the client that the rule 'the plaintiff follows the defendant' is the standard, fair legal practice under Egyptian and regional civil laws."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Procedure Law Article 49",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_117_absent_governing_law",
+      "category": "Governing Law",
+      "riskLevel": "medium",
+      "clausePattern": "The contract contains no provision specifying the governing law or the judicial forum for dispute resolution.",
+      "explanation": {
+        "ar": "يخلو العقد تماماً من تحديد القانون الواجب التطبيق أو المحكمة المختصة في حال حدوث خلاف، مما يترك الأمر للغموض والتفسيرات المتناقضة.",
+        "en": "The contract completely lacks any provision specifying the applicable law or the court for resolving disputes, leaving it open to ambiguity."
+      },
+      "whyRisky": {
+        "ar": "عند حدوث نزاع، ستدخل في صراع قانوني أولي مكلف لتحديد أي قانون وأي محكمة هي المختصة، مما يطيل أمد النزاع ويعطل تحصيل حقوقك.",
+        "en": "If a dispute arises, you will enter a costly preliminary legal battle just to determine which country's law and courts apply, delaying the resolution of your claims."
+      },
+      "saferAlternative": {
+        "ar": "يخضع هذا العقد ويفسر وفقاً لقوانين جمهورية مصر العربية وتختص محاكم القاهرة بنظر أي نزاع ينشأ عنه.",
+        "en": "This Agreement shall be governed by and construed in accordance with the laws of the Arab Republic of Egypt, and the courts of Cairo shall have exclusive jurisdiction."
+      },
+      "negotiationTips": {
+        "ar": "لا توقع عقداً دون تحديد القانون والمحاكم؛ هذا من أبجديات الأمان القانوني وصياغة العقود السليمة.",
+        "en": "Never sign a contract without specifying the governing law and jurisdiction; this is a fundamental requirement for legal clarity and risk management."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement",
+          "NDA",
+          "Vendor Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 19",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_118_conflicting_jurisdiction",
+      "category": "Governing Law",
+      "riskLevel": "medium",
+      "clausePattern": "This Agreement is governed by Egyptian law with disputes resolved by Cairo courts, provided that Client may also bring claims in the UAE courts under UAE law.",
+      "explanation": {
+        "ar": "يحدد هذا البند محاكم مصر وقانونها كأصل عام، لكنه يمنح العميل وحده الحق في رفع دعاوى ضدك أمام محاكم الإمارات وتطبيق القانون الإماراتي.",
+        "en": "This clause specifies Egypt's courts and law as the default, but grants the client the unilateral right to bring claims against you in UAE courts under UAE law."
+      },
+      "whyRisky": {
+        "ar": "يخلق هذا التضارب حالة من عدم اليقين القانوني ويمنح العميل ميزة استراتيجية بملاحقتك في الخارج وتطبيق قوانين أخرى قد تكون غير مألوفة لك وتكلفك أعباء مالية مضاعفة.",
+        "en": "This conflict creates legal uncertainty and gives the client a strategic advantage to sue you abroad under different laws, forcing you to defend yourself in an unfamiliar forum."
+      },
+      "saferAlternative": {
+        "ar": "يخضع هذا العقد لقوانين جمهورية مصر العربية وتختص محاكم القاهرة حصرياً بجميع النزاعات الناشئة عن هذا العقد لكلا الطرفين.",
+        "en": "This Agreement shall be governed by the laws of Egypt, and the courts of Cairo shall have exclusive jurisdiction over all disputes arising hereunder for both parties."
+      },
+      "negotiationTips": {
+        "ar": "أصر على توحيد القانون والمحاكم لكلا الطرفين بالتساوي لمنع تشتيت النزاعات في أكثر من بلد.",
+        "en": "Insist on unifying the governing law and jurisdiction equally for both parties to prevent fragmentation of disputes across countries."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Vendor Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Procedure Law Article 28",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_119_english_only_dispute",
+      "category": "Governing Law",
+      "riskLevel": "medium",
+      "clausePattern": "This Agreement is written in English only, which shall be the sole language for interpretation, and no Arabic translation shall be considered by courts.",
+      "explanation": {
+        "ar": "يشترط هذا البند أن تكون اللغة الإنجليزية هي اللغة الوحيدة لتفسير العقد ويمنع المحاكم من الاعتداد بأي ترجمة عربية عند حدوث نزاع.",
+        "en": "This clause mandates that English is the sole language for interpreting the contract and bars courts from considering any Arabic translation during disputes."
+      },
+      "whyRisky": {
+        "ar": "أمام القضاء المصري، يجب ترجمة كافة المستندات الأجنبية للعربية رسمياً. اشتراط استبعاد التفسير العربي قد يعيق دفاعك ويؤدي لتفسيرات قضائية غير متطابقة مع قصدك الفعلي.",
+        "en": "Before Egyptian courts, all foreign documents must be officially translated into Arabic. Barring Arabic interpretation can hinder your defense and lead to judicial interpretations that conflict with your intent."
+      },
+      "saferAlternative": {
+        "ar": "يُحرر العقد باللغتين العربية والإنجليزية. وفي حال وجود أي تعارض في التفسير، يعتد بالنسخة العربية أمام المحاكم المصرية.",
+        "en": "This Agreement is executed in both Arabic and English. In case of any conflict or interpretation issue, the Arabic version shall prevail before Egyptian courts."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للطرف الآخر أن اللغة الرسمية للمحاكم في مصر والوطن العربي هي العربية، وأن وجود نسخة عربية معتمدة يحمي العقد من التفسير الخاطئ للمترجمين القضائيين.",
+        "en": "Explain that Arabic is the official language of courts in Egypt and the MENA region, and having an approved Arabic version protects the contract from inaccurate translations by court translators."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Employment Agreement",
+          "Vendor Agreement",
+          "NDA"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 150 and Civil Procedure Law",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_120_blanket_data_sharing",
+      "category": "Privacy",
+      "riskLevel": "high",
+      "clausePattern": "Company may share any personal data, business information, or user details collected under this Agreement with its affiliates, partners, and third-party marketers without restriction.",
+      "explanation": {
+        "ar": "يسمح هذا البند للشركة بمشاركة بياناتك الشخصية والتجارية ومعلومات مستخدميك مع شركاتها التابعة وشركائها وجهات التسويق الخارجية دون قيود أو إخطار.",
+        "en": "This clause allows the company to share your personal and business data with its affiliates, partners, and third-party marketers without restriction or notification."
+      },
+      "whyRisky": {
+        "ar": "تتعرض سرية بياناتك وبيانات عملائك للخطر، ويخالف هذا الشرط صراحة قانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020 الذي يشترط موافقة كتابية صريحة ومحددة للغرض لمشاركة البيانات.",
+        "en": "This compromises the confidentiality of your data and violates Egyptian Data Protection Law No. 151/2020, which mandates explicit, purpose-specific written consent for data sharing."
+      },
+      "saferAlternative": {
+        "ar": "لا يجوز مشاركة البيانات الشخصية مع أي طرف ثالث إلا بعد الحصول على موافقة كتابية صريحة مسبقة من صاحب البيانات، ولأغراض محددة تتفق مع القانون.",
+        "en": "Personal data shall not be shared with any third party without the explicit prior written consent of the data subject, and solely for specific purposes in compliance with applicable law."
+      },
+      "negotiationTips": {
+        "ar": "أكد للشركة أن حماية بيانات عملائك هي التزام قانوني صارم بموجب القانون المصري، وأي إخلال به يعرض الطرفين لعقوبات جنائية وغرامات باهظة.",
+        "en": "Emphasize to the company that protecting customer data is a strict legal obligation under Egyptian law, and any breach exposes both parties to criminal penalties and heavy fines."
+      },
+      "context": {
+        "contractTypes": [
+          "NDA",
+          "Service Agreement",
+          "Subscription Agreement",
+          "Employment Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Data Protection Law No. 151/2020 Article 2",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_121_no_data_deletion_right",
+      "category": "Privacy",
+      "riskLevel": "high",
+      "clausePattern": "Upon termination of this Agreement, Company shall retain all user data and personal information in its systems, with no obligation to delete or return such data to the disclosing party.",
+      "explanation": {
+        "ar": "يعطي هذا البند الشركة الحق في الاحتفاظ بكافة بيانات المستخدمين والمعلومات الشخصية بعد انتهاء العقد، دون أي التزام بحذفها أو إعادتها إليك.",
+        "en": "This clause gives the company the right to retain all user and personal data after contract termination, with no obligation to delete or return it to you."
+      },
+      "whyRisky": {
+        "ar": "يخالف هذا البند 'حق المحو' (الحق في النسيان) المكفول في المادة 3 من قانون حماية البيانات المصري رقم 151 لسنة 2020، ويعرضك للمسؤولية إذا تسربت بيانات عملائك من أنظمة الشركة لاحقاً.",
+        "en": "This violates the 'right to erasure' guaranteed under Article 3 of Egyptian Data Protection Law No. 151/2020, and exposes you to liability if client data leaks from their systems later."
+      },
+      "saferAlternative": {
+        "ar": "عند انتهاء العقد، يلتزم الطرف الآخر بحذف كافة البيانات الشخصية والسرية بشكل آمن أو إعادتها للمتعاقد وتقديم شهادة كتابية تؤكد ذلك خلال 14 يوماً.",
+        "en": "Upon termination, the other party shall securely delete or return all personal and confidential data to the Contractor and provide a written certificate confirming destruction within 14 days."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن استرجاع البيانات أو تدميرها بعد انتهاء العلاقة هو متطلب أساسي للامتثال الأمني وتجنب المسؤولية المشتركة عن أي تسريب مستقبلي.",
+        "en": "Explain to the client that returning or destroying data after relationship termination is a baseline requirement for security compliance and avoiding joint liability for future leaks."
+      },
+      "context": {
+        "contractTypes": [
+          "NDA",
+          "Service Agreement",
+          "Subscription Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Data Protection Law No. 151/2020 Article 3 and Article 4",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_122_invasive_employee_monitoring",
+      "category": "Privacy",
+      "riskLevel": "high",
+      "clausePattern": "Company reserves the right to install monitoring software, including keyloggers and screen capture tools, on any device used by the Employee for work purposes, including personal devices.",
+      "explanation": {
+        "ar": "يمنح هذا الشرط الشركة الحق في تثبيت برامج مراقبة متطفلة (مثل تسجيل ضغطات المفاتيح والتقاط الشاشة) على أي جهاز تستخدمه للعمل، بما في ذلك جهازك الشخصي.",
+        "en": "This clause grants the company the right to install invasive monitoring software (such as keyloggers and screen capture tools) on any device you use for work, including personal devices."
+      },
+      "whyRisky": {
+        "ar": "ينتهك هذا خصوصيتك الشخصية بشكل صارخ وقد يؤدي لتسريب كلمات مرورك وحساباتك البنكية وبياناتك العائلية المخزنة على جهازك الشخصي، وهو ما يجرمه الدستور المصري وقانون مكافحة جرائم تقنية المعلومات رقم 175 لسنة 2018.",
+        "en": "This flagrantly violates your personal privacy and could expose passwords, bank accounts, and family data on your personal device, which is criminalized under Egyptian Cybercrime Law No. 175/2018."
+      },
+      "saferAlternative": {
+        "ar": "تقتصر مراقبة الشركة على الأجهزة المملوكة لها والشبكة الداخلية للعمل فقط، ولا يجوز تثبيت أي برمجيات مراقبة على الأجهزة الشخصية للموظف.",
+        "en": "Company's monitoring rights are strictly limited to company-owned devices and official networks. No monitoring software shall be installed on Employee's personal devices."
+      },
+      "negotiationTips": {
+        "ar": "أصر على فصل حياتك الشخصية وجهازك الخاص عن بيئة العمل، واطلب جهازاً مخصصاً من الشركة إذا كانت تتطلب مراقبة أمنية لبياناتها.",
+        "en": "Insist on separating your personal life and private device from work. Request a company-provided laptop if secure data monitoring is required."
+      },
+      "context": {
+        "contractTypes": [
+          "Employment Agreement",
+          "Freelance Contract"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Constitution Article 57 and Cybercrime Law No. 175/2018",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_123_no_breach_notification",
+      "category": "Privacy",
+      "riskLevel": "high",
+      "clausePattern": "In the event of a security breach or unauthorized access to data, Company shall have sole discretion in determining whether, when, and how to notify the other party or the affected individuals.",
+      "explanation": {
+        "ar": "يعطي هذا البند الشركة كامل التقدير المنفرد في تحديد ما إذا كانت ستخطرك بحدوث تسريب لبياناتك أو متى وكيف ستقوم بذلك.",
+        "en": "This clause gives the company sole discretion in deciding whether, when, and how to notify you or affected individuals in the event of a data breach."
+      },
+      "whyRisky": {
+        "ar": "قد تخفي الشركة حدوث اختراق لأسابيع أو أشهر، مما يمنعك من اتخاذ تدابير لحماية حساباتك وعملائك، ويخالف المادة 7 من قانون حماية البيانات المصري التي تلزم بالإخطار خلال 72 ساعة.",
+        "en": "The company could hide a breach for weeks or months, preventing you from protecting your accounts and customers. This violates Article 7 of Egyptian Data Protection Law which mandates notification within 72 hours."
+      },
+      "saferAlternative": {
+        "ar": "في حال حدوث أي اختراق أو تسريب للبيانات، يلتزم الطرف الآخر بإخطار المتعاقد كتابةً فوراً وبحد أقصى خلال 24 ساعة من اكتشاف الاختراق، مع توضيح البيانات المسربة والإجراءات المتخذة.",
+        "en": "In the event of any data breach, the other party must notify the Contractor in writing immediately and no later than 24 hours from discovery, detailing the affected data and mitigation steps."
+      },
+      "negotiationTips": {
+        "ar": "أكد للطرف الآخر أن الإخطار السريع بالخرق الأمني هو واجب قانوني إلزامي لا يجوز استبعاده تعاقدياً، وهو جوهر الثقة الأمنية بين الشركات.",
+        "en": "Point out to the other party that prompt data breach notification is a mandatory statutory duty under data protection laws that cannot be waived contractually."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement",
+          "NDA",
+          "Subscription Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Data Protection Law No. 151/2020 Article 7",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_124_ai_training_data_consent",
+      "category": "Privacy",
+      "riskLevel": "high",
+      "clausePattern": "Client and its users grant Company a perpetual royalty-free license to use all uploaded data files and personal information to train improve and develop Company's AI and machine learning models",
+      "explanation": {
+        "ar": "يمنح هذا البند الشركة ترخيصاً دائمًا ومجانياً لاستخدام كافة البيانات والملفات والمعلومات الشخصية المرفوعة لاستخدامها في تدريب وتطوير نماذج الذكاء الاصطناعي الخاصة بها.",
+        "en": "This clause grants the company a perpetual, royalty-free license to use all uploaded data, files, and personal information to train and develop its AI and machine learning models."
+      },
+      "whyRisky": {
+        "ar": "قد تستخدم بيانات عملائك أو معلوماتك الشخصية لإنشاء نماذج ذكاء اصطناعي تجارية دون موافقتك الصريحة ودون عائد مالي لك، مما قد يخرق خصوصيتك ويعتبر مشاركة غير مشروعة لبيانات حساسة بموجب القانون المصري.",
+        "en": "Your client data or personal files could be used to train commercial AI models without your explicit consent or financial return, compromising privacy and violating Egyptian data protection laws on processing purposes."
+      },
+      "saferAlternative": {
+        "ar": "لا يجوز للشركة استخدام أي بيانات أو مستندات أو معلومات شخصية مرفوعة من قبل المتعاقد لغرض تدريب نماذج الذكاء الاصطناعي دون موافقة خطية صريحة ومنفصلة لكل حالة.",
+        "en": "Company shall not use any data, documents, or personal information uploaded by the Contractor to train or optimize artificial intelligence models without explicit, separate written consent."
+      },
+      "negotiationTips": {
+        "ar": "وضح للشركة أن البيانات المرفوعة تحتوي على معلومات سرية وبيانات شخصية خاضعة لقوانين حماية البيانات الصارمة، ولا يمكن استخدامها لأغراض مغايرة لغرض العقد الأصلي.",
+        "en": "Explain to the company that uploaded data contains confidential information and personal details governed by data protection laws, and cannot be repurposed for AI model development without strict compliance."
+      },
+      "context": {
+        "contractTypes": [
+          "Subscription Agreement",
+          "Service Agreement",
+          "NDA"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA",
+          "International"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Data Protection Law No. 151/2020 Article 2 and Article 12",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_125_indefinite_data_retention",
+      "category": "Privacy",
+      "riskLevel": "medium",
+      "clausePattern": "Company shall have the right to store and retain all customer transaction logs, personal details, and usage histories indefinitely for analytical and statistical purposes.",
+      "explanation": {
+        "ar": "يعطي هذا البند الشركة الحق في تخزين والاحتفاظ بسجلات المعاملات، التفاصيل الشخصية، وتاريخ الاستخدام الخاص بك وبأفرادك إلى الأجل غير مسمى لأغراض التحليل والإحصاء.",
+        "en": "This clause gives the company the right to store and retain transaction logs, personal details, and usage history indefinitely for analytical and statistical purposes."
+      },
+      "whyRisky": {
+        "ar": "الاحتفاظ بالبيانات الشخصية بلا سقف زمني محدد يعرضك لمخاطر تسرب البيانات الدائم ويخالف المبدأ القانوني في قانون حماية البيانات المصري الذي يمنع الاحتفاظ بالبيانات بعد انتهاء الغرض من جمعها.",
+        "en": "Retaining personal data indefinitely increases your exposure to data leaks and violates the basic legal principle under Egyptian law that data must not be stored longer than necessary for the original collection purpose."
+      },
+      "saferAlternative": {
+        "ar": "تلتزم الشركة بالتخلص الآمن من جميع البيانات الشخصية وتفاصيل الاستخدام فور انتهاء الغرض منها أو خلال سنة واحدة كحد أقصى من تاريخ انتهاء العقد.",
+        "en": "Company agrees to securely dispose of all personal details and usage data once the purpose is fulfilled, or within maximum 1 year from the termination of this Agreement."
+      },
+      "negotiationTips": {
+        "ar": "أصر على تحديد فترة احتفاظ واضحة بالبيانات، واقترح إخفاء الهوية الكامل (Anonymization) إذا كانت الشركة بحاجة للبيانات لأغراض إحصائية طويلة المدى.",
+        "en": "Insist on a clear retention timeframe, and suggest anonymization of data if the company genuinely needs it for long-term statistical purposes."
+      },
+      "context": {
+        "contractTypes": [
+          "Subscription Agreement",
+          "Service Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Data Protection Law No. 151/2020 Article 3",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_126_unilateral_amendment_notice",
+      "category": "Amendment",
+      "riskLevel": "high",
+      "clausePattern": "Company reserves the right to amend this Agreement at any time by posting the amended terms on its website or sending a email notice, and continued work constitutes acceptance.",
+      "explanation": {
+        "ar": "يسمح هذا البند للشركة بتعديل شروط العقد بشكل منفرد بمجرد نشرها على الموقع الإلكتروني أو إرسال إيميل، ويعتبر استمرارك في العمل موافقة تلقائية على التعديلات.",
+        "en": "This clause allows the company to unilaterally amend the agreement by posting on its website or sending email notices, treating your continued performance as automatic acceptance."
+      },
+      "whyRisky": {
+        "ar": "يمكن للشركة تقليل أجرك أو زيادة ساعات العمل أو فرض شروط مجحفة دون موافقتك الفعلية، وهو ما يبطل التوازن العقدي ويخالف صراحة المادة 147 من القانون المدني المصري التي تمنع تعديل العقد بالإرادة المنفردة.",
+        "en": "The company could reduce your pay, increase working hours, or add unfavorable terms without your real consent, destroying the contract's balance and violating Egyptian Civil Code Article 147."
+      },
+      "saferAlternative": {
+        "ar": "لا تسري أي تعديلات على هذا العقد إلا بموجب ملحق خطي موقع من الممثلين المفوضين لكلا الطرفين.",
+        "en": "No amendment to this Agreement shall be valid or binding unless executed in a written document signed by the authorized representatives of both parties."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للطرف الآخر أن العقد شراكة متوازنة، وأن الشروط الأساسية لا يجب أن تتغير إلا بموافقة الطرفين التحريرية الصريحة لضمان الاستقرار المالي والقانوني.",
+        "en": "Explain to the other party that a contract is a balanced partnership, and core terms must only change via explicit written agreement to maintain stability."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Subscription Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_127_informal_amendment_validity",
+      "category": "Amendment",
+      "riskLevel": "medium",
+      "clausePattern": "This Agreement may be modified or amended by email exchanges, Slack messages, or verbal agreements between the designated contacts of the parties.",
+      "explanation": {
+        "ar": "يجعل هذا البند التعديلات التي تتم عبر رسائل البريد الإلكتروني العادية، أو تطبيقات المحادثة مثل سلاك، أو الاتفاقات الشفهية ملزمة كأنها جزء من العقد الأصلي.",
+        "en": "This clause makes informal amendments via regular emails, chat apps like Slack, or verbal discussions legally binding as if they were part of the signed contract."
+      },
+      "whyRisky": {
+        "ar": "يخلق هذا غموضاً شديداً حول الشروط السارية؛ فقد يرسل موظف رسالة عابرة تُفسر كالتزام إضافي أو تعديل مالي دون وعي قانوني ودون موافقة الإدارة.",
+        "en": "This creates uncertainty around current terms; an employee could send a casual message interpreted as a new obligation or fee adjustment without proper authorization."
+      },
+      "saferAlternative": {
+        "ar": "تستثنى المراسلات اليومية ورسائل البريد الإلكتروني والدردشة من وسائل تعديل العقد، ويشترط التوقيع الخطي المباشر أو الإلكتروني المعتمد على ملحق تعديل رسمي.",
+        "en": "Daily correspondence, emails, and chat messages shall not modify this Agreement. Amendments require a formal addendum signed physically or via certified e-signature."
+      },
+      "negotiationTips": {
+        "ar": "أكد على أن حصر التعديلات في ملاحق رسمية موقعة يمنع سوء الفهم ويحمي موظفي الطرفين من التورط في التزامات غير مقصودة أثناء المحادثات اليومية.",
+        "en": "Emphasize that restricting modifications to signed addenda prevents misunderstandings and protects employees from creating unintended liabilities during daily chats."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement",
+          "Freelance Contract",
+          "Consulting Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 150",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_128_absent_amendment_clause",
+      "category": "Amendment",
+      "riskLevel": "medium",
+      "clausePattern": "The agreement is silent on the process for making changes or amendments to the contract terms during its execution.",
+      "explanation": {
+        "ar": "يخلو العقد من أي نص يحدد طريقة إجراء التعديلات أو التغييرات على الشروط، مما يفتح الباب للادعاء بوجود اتفاقيات شفهية لاحقة عدلت الشروط الأصلية.",
+        "en": "The contract contains no clause specifying the process for making modifications, leaving room for claims that subsequent verbal agreements modified original terms."
+      },
+      "whyRisky": {
+        "ar": "عند الخلاف، قد يدعي الطرف الآخر شفهياً أنك وافقت على تعديل الأسعار أو النطاق، مما يضطرك للدخول في معارك إثبات صعبة وشهادات شهود أمام المحاكم المصرية طبقاً للمادة 60 من قانون الإثبات.",
+        "en": "In a dispute, the other party might claim you verbally agreed to change rates or scope, forcing you into difficult evidentiary battles and witness testimonies before Egyptian courts."
+      },
+      "saferAlternative": {
+        "ar": "لا يعتد بأي تعديل أو تغيير شفهي في شروط هذا العقد، ويجب أن يكون التعديل مكتوباً وموقعاً صراحة من ممثلي الطرفين.",
+        "en": "No oral modification or waiver of any provision of this Agreement shall be valid. All amendments must be in writing and signed by both parties."
+      },
+      "negotiationTips": {
+        "ar": "اطلب إضافة this الشرط كبند معيار لحماية سلامة العقد وتجنب أي خلافات مبنية على وعود شفهية غير موثقة.",
+        "en": "Request this standard clause to maintain contract integrity and prevent disputes based on undocumented verbal statements."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement",
+          "NDA",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Egyptian Evidence Law No. 25/1968 Article 60",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_129_mutual_written_amendment",
+      "category": "Amendment",
+      "riskLevel": "low",
+      "clausePattern": "This Agreement may only be amended, modified, or supplemented by a written instrument executed by the authorized representatives of both parties.",
+      "explanation": {
+        "ar": "يشترط هذا البند أن تتم كافة التعديلات بموجب مستند خطي يوقعه الممثلون المفوضون عن كلا الطرفين — شرط حماية متوازن يمنع التعديلات المنفردة.",
+        "en": "This clause requires all modifications to be made through a written document signed by the authorized representatives of both parties — a balanced protective clause."
+      },
+      "whyRisky": {
+        "ar": "هذا الشرط آمن ويحمي مصالحك ولا يمثل خطورة، بل يجب الترحيب به لأنه يمنع التغييرات الشفهية أو الفردية.",
+        "en": "This clause is safe and protects your interests. There is no risk; it should be welcomed as it prevents unilateral or verbal modifications."
+      },
+      "saferAlternative": {
+        "ar": "الشرط ممتاز وصحيح قانونياً ولا يحتاج إلى تعديل.",
+        "en": "The clause is excellent and legally sound. No modification is needed."
+      },
+      "negotiationTips": {
+        "ar": "اقبل هذا البند دائماً واحرص على تطبيقه بدقة عند الرغبة في تغيير أي شرط خلال فترة المشروع.",
+        "en": "Always accept this clause and adhere to it strictly whenever you need to adjust any contract terms during the project."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Employment Agreement",
+          "NDA",
+          "Vendor Agreement",
+          "Subscription Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA",
+          "International"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_130_broad_nonsolicitation_3years",
+      "category": "Non-Solicitation",
+      "riskLevel": "high",
+      "clausePattern": "Contractor shall not, during the term and for 3 years post-termination, directly or indirectly solicit, hire, or engage any employee, client, vendor, or contact of the Company for any purpose.",
+      "explanation": {
+        "ar": "يمنعك هذا البند من توظيف أو التعامل مع أي موظف أو عميل أو مورد أو جهة اتصال تابعة للشركة لمدة 3 سنوات كاملة بعد انتهاء العقد لأي سبب.",
+        "en": "This clause prohibits you from hiring, soliciting, or engaging any employee, client, vendor, or contact of the company for 3 full years after contract termination."
+      },
+      "whyRisky": {
+        "ar": "المدة طويلة جداً (3 سنوات) ونطاق 'جهات الاتصال والموردين' واسع للغاية، مما يحد من حريتك التجارية ويمنعك من العمل في قطاعك، وهو ما قد يتعارض مع المادة 686 من القانون المدني المصري إذا لم يقتصر على الحماية الضرورية.",
+        "en": "A 3-year term is excessive, and including all company contacts and vendors is overly broad, hindering your business and potentially violating Egyptian Civil Code Article 686."
+      },
+      "saferAlternative": {
+        "ar": "يلتزم المتعاقد بعدم استمالة موظفي الشركة الفعليين الذين عمل معهم مباشرة لمدة سنة واحدة (1) فقط من تاريخ انتهاء العقد، مع استثناء الإعلانات العامة للوظائف.",
+        "en": "Contractor shall not solicit company employees with whom they directly worked for 1 year post-termination. General public job advertisements are excluded."
+      },
+      "negotiationTips": {
+        "ar": "فاوض على تقليص المدة إلى 12 شهراً، واحذف كلمات مثل 'عملاء' أو 'موردين' أو 'جهات اتصال' إلا إذا كنت قد تعرفت عليهم حصرياً من خلال هذا المشروع.",
+        "en": "Negotiate to reduce the duration to 12 months, and delete words like 'clients', 'vendors', or 'contacts' unless they were introduced to you exclusively via this project."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement",
+          "Employment Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 686",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_131_nonsolicit_no_cause",
+      "category": "Non-Solicitation",
+      "riskLevel": "medium",
+      "clausePattern": "The non-solicitation covenants in this Section shall apply post-termination, regardless of the reason for termination, including termination by Contractor for Company's material breach.",
+      "explanation": {
+        "ar": "تشترط هذه المادة بقاء منع الاستمالة سارياً بعد انتهاء العقد بغض النظر عن سبب الإنهاء، حتى لو أنهيت أنت العقد بسبب إخلال الشركة الجسيم بالسداد.",
+        "en": "This clause applies the non-solicitation restrictions after contract ends regardless of the cause, even if you terminate due to the company's material breach or non-payment."
+      },
+      "whyRisky": {
+        "ar": "إذا امتنعت الشركة عن دفع مستحقاتك وأنهيت العقد، ستظل مقيداً بهذا المنع دون تعويض، وهو أمر غير عادل ويخالف مبدأ المعاملة بالمثل وحسن النية في تنفيذ العقود بموجب المادة 148.",
+        "en": "If the company defaults on payments and you terminate the contract, you remain restricted from soliciting clients/employees without compensation, violating good faith principles."
+      },
+      "saferAlternative": {
+        "ar": "لا تسري التزامات عدم الاستمالة بعد انتهاء العقد إذا تم إنهاء الاتفاقية من قبل المتعاقد بسبب إخلال الشركة الجسيم بشروطها أو عدم السداد.",
+        "en": "The non-solicitation obligations shall not apply if this Agreement is terminated by Contractor due to Company's material breach or non-payment."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للشركة أنه ليس من المنطكي إلزامك بالقيود إذا كانت هي من أخل بالاتفاق وأدى لإنهاء المشروع.",
+        "en": "Explain to the company that it is unreasonable to bind you to restrictions if the company itself breached the agreement and caused project termination."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 148 and Article 161",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_132_nonsolicit_introduced_clients",
+      "category": "Non-Solicitation",
+      "riskLevel": "high",
+      "clausePattern": "Contractor shall not solicit or conduct business with any client of the Company, including those clients initially introduced to the Company by the Contractor.",
+      "explanation": {
+        "ar": "يمنعك هذا البند من التعامل مع أي عميل للشركة، ويشمل هذا المنع حتى العملاء الذين قمت أنت بجلبهم وتعريفهم بالشركة في المقام الأول.",
+        "en": "This clause bars you from soliciting or doing business with any client of the company, including those you personally introduced to the company in the first place."
+      },
+      "whyRisky": {
+        "ar": "قد تفقد شبكة علاقاتك التجارية وعملائك الشخصيين الذين بنيت علاقتك معهم قبل الانضمام للشركة، مما يدمر عملك الخاص ويعد مصادرة غير مشروعة لأصولك المهنية.",
+        "en": "You could lose your pre-existing client network and relationships built before joining the company, harming your business and confiscating your professional assets."
+      },
+      "saferAlternative": {
+        "ar": "يُستثنى من هذا المنع أي عملاء يثبت المتعاقد وجود علاقة عمل سابقة معهم قبل تاريخ بدء هذا العقد، أو أولئك الذين قدمهم المتعاقد للشركة.",
+        "en": "Excluded from this restriction are any clients with whom the Contractor can demonstrate a prior business relationship before the date of this Agreement, or clients introduced to the Company by the Contractor."
+      },
+      "negotiationTips": {
+        "ar": "أصر على حماية قائمة عملائك السابقين، وأضف ملحقاً بالعملاء المستثنيين صراحة لتجنب أي نزاع حولهم.",
+        "en": "Insist on protecting your pre-existing client list, and attach an appendix of explicitly excluded clients to prevent future disputes."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 686",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_133_no_limits_nonsolicitation",
+      "category": "Non-Solicitation",
+      "riskLevel": "critical",
+      "clausePattern": "Contractor agrees not to solicit or hire any Company employee or client at any time, anywhere in the world, during the relationship or thereafter.",
+      "explanation": {
+        "ar": "يقيد هذا البند حريتك في توظيف عمال الشركة أو التعامل مع عملائها للأبد وفي أي مكان في العالم، دون وضع أي قيود زمنية أو جغرافية للمنع.",
+        "en": "This clause restricts you from soliciting or hiring any company employee or client forever, anywhere in the world, with no time or geographic limits."
+      },
+      "whyRisky": {
+        "ar": "هذا المنع المطلق والأبدي باطل قانوناً بموجب المادة 686 من القانون المدني المصري التي تشترط صحة بند عدم المنافسة/الاستمالة بتحديد المكان والزمان ونوع العمل، لكنه قد يعرضك للابتزاز والنزاعات القضائية المستمرة.",
+        "en": "This absolute and permanent restriction is legally void under Egyptian Civil Code Article 686, which requires time, geographic, and scope limits, but it exposes you to litigation."
+      },
+      "saferAlternative": {
+        "ar": "هذا الشرط باطل قانوناً في مصر. اطلب تعديله ليقتصر على سنة واحدة كحد أقصى من تاريخ انتهاء العقد وفي النطاق الجغرافي لنشاط الشركة الفعلي فقط.",
+        "en": "This clause is legally void in Egypt. Request modification: 'restricted for a maximum of 1 year post-termination and strictly within the geographic territory of the Company's active operations.'"
+      },
+      "negotiationTips": {
+        "ar": "أوضح للطرف الآخر أن القانون المصري لا يعتد بالشروط المؤبدة والواسعة ويصنفها كشروط باطلة لمخالفتها النظام العام وحرية العمل والتجارة.",
+        "en": "Explain that Egyptian courts declare perpetual and global restrictions void as they violate public policy and the fundamental right to work and trade."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement",
+          "Employment Agreement"
+        ],
+        "frequency": "uncommon",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 686",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_134_exclusivity_without_benefits",
+      "category": "Exclusivity",
+      "riskLevel": "high",
+      "clausePattern": "Contractor shall work exclusively for Client and shall not provide services to any other entity during the term, provided that this Agreement does not constitute an employment relationship.",
+      "explanation": {
+        "ar": "يلزمك هذا البند بالعمل لصالح هذا العميل فقط طوال مدة العقد ويمنعك من تقديم خدماتك لأي جهة أخرى، وفي نفس الوقت ينص على أن هذا العقد لا يمنحك حقوق الموظف.",
+        "en": "This clause forces you to work exclusively for the client and bars you from serving others, while stating that the contract does not grant you employment rights or benefits."
+      },
+      "whyRisky": {
+        "ar": "تحصل الشركة على مزايا التزام الموظف الكامل تجاهها دون تحمل التزامات رب العمل مثل التأمين الاجتماعي، الإجازات المدفوعة، ومكافأة نهاية الخدمة، مما يمثل استغلالاً غير عادل ويخالف أحكام قانون العمل المصري رقم 12 لسنة 2003.",
+        "en": "The company gets the benefits of your full-time dedication without fulfilling employer duties like social insurance, paid leave, and severance, violating Egyptian Labor Law."
+      },
+      "saferAlternative": {
+        "ar": "يحق للمتعاقد تقديم خدماته لأطراف أخرى شريطة ألا تتعارض مع التزاماته بموجب هذا العقد وألا تكون لصالح منافس مباشر للعميل.",
+        "en": "Contractor may provide services to other parties, provided such services do not create a conflict of interest or compete directly with Client's business."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أنك متعاقد مستقل ولست موظفاً، وبالتالي فإن تحديد وقتك بالكامل له يتطلب إما تحويل العقد لعقد عمل رسمي أو دفع علاوة مالية تعوضك عن خسارة المشاريع الأخرى.",
+        "en": "Explain that you are an independent contractor, not an employee, so restricting all your time requires either an employment contract or an exclusivity premium fee."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Service Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Labor Law No. 12/2003 Articles 1-6",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_135_industry_wide_exclusivity",
+      "category": "Exclusivity",
+      "riskLevel": "high",
+      "clausePattern": "During the term of this Agreement, Contractor shall not perform any services, directly or indirectly, for any other client operating within the financial technology or banking sectors.",
+      "explanation": {
+        "ar": "يمنعك هذا البند من تقديم أي خدمات لأي عميل آخر يعمل في قطاع التكنولوجيا المالية أو البنوك طوال فترة العقد.",
+        "en": "This clause bars you from performing services for any other client in the fintech or banking sectors during the term of the agreement."
+      },
+      "whyRisky": {
+        "ar": "قد يكون تخصصك الأساسي وخبرتك في هذا القطاع بالذات، ومنعك من قبول مشاريع أخرى فيه يضيق عليك رزقك ويحد من نمو أعمالك بشكل غير مبرر.",
+        "en": "If your core expertise lies in this specific sector, blocking you from accepting other projects within it severely limits your income and business growth."
+      },
+      "saferAlternative": {
+        "ar": "يقتصر قيد العمل على تقديم الخدمات للمنافسين المباشرين للعميل المحددين بالاسم في ملحق العقد، ولا يشمل القطاع بأكمله.",
+        "en": "Contractor shall not perform services for the direct competitors of Client listed in Exhibit B. This restriction shall not apply to the sector as a whole."
+      },
+      "negotiationTips": {
+        "ar": "فاوض على قصر القيد على 3-5 شركات منافسة حقيقية للعميل، بدلاً من إغلاق قطاع كامل قد يمثل 90% من عملائك المحتملين.",
+        "en": "Negotiate to limit the restriction to 3-5 specific direct competitors, rather than locking out an entire sector that might represent 90% of your potential client base."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Service Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Competition Law No. 3/2005",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_136_exclusivity_auto_renewal",
+      "category": "Exclusivity",
+      "riskLevel": "high",
+      "clausePattern": "The exclusivity obligations shall apply for a period of 12 months, and shall automatically renew for successive 12-month periods unless explicitly terminated by Client.",
+      "explanation": {
+        "ar": "يقضي هذا البند بسريان الحصريّة لمدة سنة، مع تجديد هذا القيد تلقائياً لمدد مماثلة ما لم يقرر العميل إنهاءه صراحة، مما يعني بقاءك مقيداً رغماً عنك.",
+        "en": "This clause applies exclusivity for 12 months and automatically renews it for successive 12-month terms unless explicitly ended by the client, locking you into the restriction."
+      },
+      "whyRisky": {
+        "ar": "قد تجد نفسك محاصراً في شرط حصري يمنعك من كسب عملاء جدد لسنوات، لمجرد نسيان إرسال إخطار عدم التجديد، مما يسبب لك أضراراً مالية وتجارية جسيمة.",
+        "en": "You could find yourself trapped in an exclusivity restriction that blocks new clients for years simply because you missed a renewal deadline, causing severe financial harm."
+      },
+      "saferAlternative": {
+        "ar": "تنتهي التزامات الحصرية بانتهاء المدة الأصلية البالغة 12 شهراً، ولا تتجدد إلا باتفاق خطي جديد ومستقل يوقعه الطرفان.",
+        "en": "Exclusivity obligations shall expire at the end of the initial 12-month period and shall only renew upon express mutual written agreement of both parties."
+      },
+      "negotiationTips": {
+        "ar": "أكد للعميل أن قيود حرية العمل هي استثناء يجب أن يكون مؤقتاً ومحدداً، ولا يمكن تركه ليتجدد تلقائياً دون إعادة تقييم جدواه المالية.",
+        "en": "Emphasize that work restrictions are exceptions that must be temporary and specific, and should not renew automatically without reassessing financial viability."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_137_vague_exclusivity_scope",
+      "category": "Exclusivity",
+      "riskLevel": "medium",
+      "clausePattern": "Contractor agrees not to work on any similar projects, applications, or business ideas for any third party during the term of this Agreement.",
+      "explanation": {
+        "ar": "يمنعك هذا البند من العمل على أي مشاريع أو تطبيقات أو أفكار تجارية 'مشابهة' لصالح أي طرف ثالث، دون تحديد تعريف واضح لمعنى التشابه.",
+        "en": "This clause prohibits you from working on any 'similar' projects, applications, or business ideas for third parties, without defining what 'similar' means."
+      },
+      "whyRisky": {
+        "ar": "الغموض في كلمة 'مشابهة' يمنح العميل فرصة لاتهامك بمخالفة العقد إذا قبلت أي عمل في نفس مجالك الفني العام (مثل تطوير واجهات المواقع)، مما يعرضك لمطالبات تعويض قضائية.",
+        "en": "The ambiguity of 'similar' allows the client to claim breach if you accept any work in your general technical field (e.g., frontend web development), exposing you to damages."
+      },
+      "saferAlternative": {
+        "ar": "ينحصر التزام عدم المنافسة في عدم تطوير تطبيقات تؤدي نفس الوظيفة التجارية المحددة للمنتج المطور للعميل لصالح منافسين مباشرين.",
+        "en": "Exclusivity is strictly limited to developing applications that serve the identical specific business function as the deliverable for named competitors."
+      },
+      "negotiationTips": {
+        "ar": "اطلب صياغة فنية ضيقة توضح ما هي الخدمات أو المخرجات الحصرية بالضبط، واقصر المنع على المنافسين الفعليين فقط.",
+        "en": "Request a narrow technical definition of the exclusive deliverables or services, and restrict the ban strictly to active competitors."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Service Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 148 and Article 686",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_138_implied_warranty_disclaimer",
+      "category": "Warranty",
+      "riskLevel": "medium",
+      "clausePattern": "Company disclaims all implied warranties of quality, fitness for a particular purpose, and non-infringement for the deliverables provided.",
+      "explanation": {
+        "ar": "تتنصل الشركة بموجب هذا البند من كافة الضمانات الضمنية المتعلقة بجودة المخرجات وصلاحيتها للغرض المطلوب وخلوها من انتهاكات حقوق الآخرين.",
+        "en": "This clause disclaims all implied warranties regarding the quality, suitability, and non-infringement of the provided deliverables."
+      },
+      "whyRisky": {
+        "ar": "قد تستلم نظاماً أو برنامجاً به أخطاء برمجية جسيمة أو لا يعمل كما هو مفترض، ولن تتمكن من إلزام مقدم الخدمة بإصلاحه أو استعادة أموالك، مما يضر بك مالياً.",
+        "en": "You might receive a system with major bugs or one that does not work as intended, and you won't be able to force the provider to repair it or get a refund."
+      },
+      "saferAlternative": {
+        "ar": "يضمن مقدم الخدمة أن المخرجات ستطابق المواصفات المتفق عليها وتعمل دون أخطاء تعوق الاستخدام الأساسي لمدة لا تقل عن 90 يوماً من الاستلام.",
+        "en": "Provider warrants that deliverables shall conform to agreed specifications and operate without material errors for at least 90 days post-acceptance."
+      },
+      "negotiationTips": {
+        "ar": "أصر على وجود فترة ضمان تشغيلية كافية (مثل 90 يوماً) لإصلاح العيوب الفنية المكتشفة بعد الاستلام الفعلي كمتطلب أساسي لأي مشروع برمجي.",
+        "en": "Insist on an operational warranty period (e.g., 90 days) to fix technical bugs discovered after actual deployment as a standard software project requirement."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement",
+          "Subscription Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 447 and Consumer Protection Law No. 181/2018 Article 21",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_139_repair_only_warranty",
+      "category": "Warranty",
+      "riskLevel": "medium",
+      "clausePattern": "The sole and exclusive remedy under this warranty shall be the repair of the defective deliverables. Under no circumstances shall Client be entitled to a refund or replacement.",
+      "explanation": {
+        "ar": "يحصر هذا البند حقك عند وجود عيب في المخرجات في الإصلاح فقط، ويحرمك من حق استرداد الرسوم أو استبدال المنتج التالف بالكامل.",
+        "en": "This clause limits your remedy for defective deliverables strictly to repair, excluding any right to a refund or complete product replacement."
+      },
+      "whyRisky": {
+        "ar": "إذا كان البرنامج أو النظام به عيب برمجى بنيوي يستحيل إصلاحه، ستظل عالقاً مع خدمة عديمة الفائدة دون إمكانية استرجاع أموالك مما يمثل خسارة مالية مؤكدة ويخالف حقوق المستهلك.",
+        "en": "If the system has a structural defect that is impossible to fix, you will be stuck with a useless deliverable without refund rights, violating consumer protection standards."
+      },
+      "saferAlternative": {
+        "ar": "إذا تعذر إصلاح العيب خلال 15 يوماً، يحق للعميل طلب استبدال المخرج أو استرداد كامل المبالغ المدفوعة مقابل هذا المخرج المعيب.",
+        "en": "If the defect cannot be repaired within 15 days, Client shall be entitled to receive a replacement deliverable or a full refund of fees paid for the defective item."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للطرف الآخر أن الإصلاح كعلاج وحيد غير مجدٍ إذا عجز المورد عن حل المشكلة بشكل متكرر، ويجب أن يملك المشتري حق الفسخ واسترداد ثمن العقد.",
+        "en": "Explain that repair as a sole remedy is useless if the vendor repeatedly fails to solve the issue, and the buyer must have the right to cancel and get a refund."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement",
+          "Subscription Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 450 and Consumer Protection Law No. 181/2018 Article 21",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_140_modification_voids_warranty",
+      "category": "Warranty",
+      "riskLevel": "medium",
+      "clausePattern": "Any warranty provided under this Agreement shall be immediately voided if the deliverables are modified, integrated, or altered by anyone other than the Contractor.",
+      "explanation": {
+        "ar": "يقضي هذا البند بإلغاء الضمان فوراً إذا قام العميل أو أي طرف ثالث بتعديل المخرجات أو محاولة ربطها بأنظمة أخرى دون تدخل المورد.",
+        "en": "This clause voids the warranty immediately if the deliverables are modified, integrated, or altered by anyone other than the contractor."
+      },
+      "whyRisky": {
+        "ar": "يمنعك هذا من إجراء أي تعديلات بسيطة أو إدماج البرنامج في بيئتك التقنية عبر مهندسي شركتك، ويجبرك على الدفع المستمر للمورد الأصلي لإجراء أي تعديل خوفاً من خسارة الضمان.",
+        "en": "This blocks you from making minor adjustments or integrating the code via your own engineers, forcing you to pay the original vendor for all changes to keep the warranty."
+      },
+      "saferAlternative": {
+        "ar": "لا يلغى الضمان إلا إذا أثبت المتعاقد أن العطل أو العيب ناتج بشكل مباشر وحصري عن التعديلات التي أجراها العميل أو الطرف الثالث.",
+        "en": "The warranty shall only be voided with respect to defects directly and exclusively caused by modifications made by Client or a third party."
+      },
+      "negotiationTips": {
+        "ar": "فاوض على ألا يُلغى الضمان بالكامل بسبب تعديلات لا صلة لها بالعيب المكتشف، وأوضح أن الإدماج التقني هو حق أساسي للعميل في مشاريعه.",
+        "en": "Negotiate that the warranty should not be fully voided for modifications unrelated to the defect. Point out that system integration is a standard client right."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 148",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_141_short_warranty_period",
+      "category": "Warranty",
+      "riskLevel": "high",
+      "clausePattern": "Contractor warrants that the custom software shall perform in accordance with specifications for a period of 30 days following the date of initial delivery.",
+      "explanation": {
+        "ar": "يحدد هذا البند مدة ضمان البرمجيات المطورة بـ 30 يوماً فقط من تاريخ التسليم، وهي فترة قصيرة جداً للمشاريع البرمجية المخصصة الكبيرة.",
+        "en": "This clause limits the warranty period for custom software to only 30 days from initial delivery, which is too short for large custom software developments."
+      },
+      "whyRisky": {
+        "ar": "تظهر العيوب والأخطاء البرمجية المعقدة عادة بعد الاستخدام المكثف للنظام من قبل عدد كبير من المستخدمين، وهو ما يستغرق أشهراً. انتهاء الضمان خلال 30 يوماً يعني تحملك تكاليف صيانة إضافية باهظة فورية.",
+        "en": "Complex software bugs typically surface after intensive use by real users over several months. A 30-day warranty expiration means you must pay extra maintenance costs immediately."
+      },
+      "saferAlternative": {
+        "ar": "يضمن مقدم الخدمة خلو البرمجيات من العيوب ومطابقتها للمواصفات لمدة لا تقل عن سنة واحدة (1) (أو 6 أشهر كحد أدنى) من تاريخ القبول الفعلي والتشغيل.",
+        "en": "Contractor warrants the software against defects and conformity issues for a period of at least 1 year (or minimum 6 months) from the date of final acceptance and deployment."
+      },
+      "negotiationTips": {
+        "ar": "أصر على فترة ضمان تتراوح بين 6 أشهر إلى سنة للمشاريع الكبيرة المخصصة، وأوضح أن 30 يوماً غير كافية تقنياً لاختبار دورة العمل الكاملة للنظام.",
+        "en": "Insist on a warranty period of 6 months to 1 year for custom systems. Highlight that 30 days is technically insufficient to test complete system workflows."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 452 and Consumer Protection Law No. 181/2018 Article 22",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_142_uncapped_warranty_costs",
+      "category": "Warranty",
+      "riskLevel": "high",
+      "clausePattern": "Contractor warrants the performance of the deliverables indefinitely and shall bear all costs of repair, modifications, and hardware replacement required to maintain the deliverables, without limit.",
+      "explanation": {
+        "ar": "يلزم هذا البند مقدم الخدمة بضمان المخرجات إلى الأبد وتحمل كافة تكاليف الإصلاح والتعديل واستبدال القطع التالفة دون حد أقصى للتكلفة.",
+        "en": "This clause forces the contractor to warrant the deliverables indefinitely and bear all costs of repair, modification, and replacement without any financial cap."
+      },
+      "whyRisky": {
+        "ar": "إذا كنت أنت مقدم الخدمة، فإن الالتزام بضمان مالي وتشغيلي غير محدود قد يؤدي لخسارتك لكافة أرباحك وتكبد مصاريف تفوق قيمة العقد بأضعاف، مما قد يعرضك للإفلاس المالي.",
+        "en": "If you are the service provider, an uncapped warranty liability could wipe out your profit margin and cost you multiples of the contract value, leading to insolvency."
+      },
+      "saferAlternative": {
+        "ar": "تقتصر التزامات الضمان على مدة 12 شهراً، ولا تتجاوز التكلفة الإجمالية لعمليات الإصلاح والدعم الفني تحت الضمان ما قيمته 50% من إجمالي قيمة العقد.",
+        "en": "Warranty obligations are limited to 12 months, and Contractor's total aggregate liability for warranty repairs and support shall not exceed 50% of the total fees paid under this Agreement."
+      },
+      "negotiationTips": {
+        "ar": "أكد للعميل أن الضمان اللانهائي وغير المحدود يخل بالتوازن التجاري للمشروع، ويجب تحديد المسؤولية المالية بحد أقصى لحماية استمرارية أعمالك.",
+        "en": "Explain to the client that an infinite and uncapped warranty disrupts the project's commercial viability, and financial liability must be capped to protect your business continuity."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement",
+          "Freelance Contract"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 217",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_143_consequential_damage_liability",
+      "category": "Liability",
+      "riskLevel": "high",
+      "clausePattern": "Either party may be liable to the other for any and all damages, including lost profits, loss of business, data corruption, or indirect and consequential damages arising under this Agreement.",
+      "explanation": {
+        "ar": "يسمح هذا البند بمطالبة أي من الطرفين بالتعويض عن كافة الأضرار بما في ذلك الأرباح الفائتة، خسارة الأعمال، تلف البيانات، والأضرار غير المباشرة والتبعية.",
+        "en": "This clause allows either party to seek compensation for all damages, including lost profits, business loss, data corruption, and indirect/consequential damages."
+      },
+      "whyRisky": {
+        "ar": "في حال ارتكاب خطأ بسيط، قد تطالبك الشركة بتعويض عن أرباحها الفائتة أو خسارة عملائها وهي مبالغ فلكية تفوق قيمة العقد بأضعاف، مما يشكل خطراً مالياً داهماً على أعمالك.",
+        "en": "In the event of a minor breach, the company could claim massive damages for lost revenue or business opportunities, exposing you to financial ruin far exceeding the contract value."
+      },
+      "saferAlternative": {
+        "ar": "لا يتحمل أي من الطرفين مسؤولية الأضرار غير المباشرة، التبعية، العارضة، أو خسارة الأرباح الفائتة التي تنشأ عن هذا العقد.",
+        "en": "Neither party shall be liable for any indirect, consequential, incidental, exemplary, or special damages, or lost profits, arising out of or in connection with this Agreement."
+      },
+      "negotiationTips": {
+        "ar": "اطلب استثناء الأضرار التبعية والأرباح الفائتة لكلا الطرفين بالتساوي كبند معياري في عقود الخدمات لحصر التعويض في الأضرار الفعلية المباشرة فقط.",
+        "en": "Request mutual exclusion of consequential damages and lost profits as a standard industry practice to limit exposure strictly to actual direct damages."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 221",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_144_liability_for_subcontractors",
+      "category": "Liability",
+      "riskLevel": "high",
+      "clausePattern": "Contractor shall assume full liability and responsibility for any actions, omissions, or breaches committed by any subcontractors or partners engaged by the Client.",
+      "explanation": {
+        "ar": "يحملك هذا البند المسؤولية القانونية الكاملة عن أي أفعال أو تقصير أو مخالفات يرتكبها مقاولو الباطن أو الشركاء الذين عينهم العميل نفسه.",
+        "en": "This clause holds you fully liable for any actions, omissions, or breaches committed by subcontractors or partners hired by the client."
+      },
+      "whyRisky": {
+        "ar": "يعد هذا الشرط غير عادل ومجحفاً؛ حيث يجعلك مسؤولاً مالياً وجنائياً عن أخطاء جهات مستقلة لا تملك أي سلطة إشرافية أو رقابية عليها، مما يخالف المبادئ العامة للمسؤولية التقصيرية في القانون المصري.",
+        "en": "This is highly unfair; it makes you financially liable for errors by independent entities over whom you have zero supervisory control, violating principles of tort liability under Egyptian law."
+      },
+      "saferAlternative": {
+        "ar": "يتحمل كل طرف المسؤولية الحصرية عن أفعال ومخالفات موظفيه ومقاولي الباطن التابعين له وحده، والذين يخضعون لإشرافه المباشر.",
+        "en": "Each party shall be solely responsible and liable for the actions, omissions, and breaches of its own employees and subcontractors under its direct control."
+      },
+      "negotiationTips": {
+        "ar": "ارفض بوضوح تحمل أي مسؤولية عن جهات لم تقم أنت باختيارها أو التعاقد معها، وأكد على أن كل طرف مسؤول عن موظفيه ومورديه.",
+        "en": "Flatly refuse liability for entities you did not select or contract with, and emphasize that each party must take responsibility for its own agents."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 163 and Article 174",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_145_mutual_indemnification",
+      "category": "Liability",
+      "riskLevel": "low",
+      "clausePattern": "Each party shall indemnify, defend, and hold harmless the other party from any claims, damages, or liabilities arising from the indemnifying party's gross negligence or willful misconduct.",
+      "explanation": {
+        "ar": "يلتزم كل طرف بتعويض وحماية الطرف الآخر من أي مطالبات أو أضرار ناتجة عن إهماله الجسيم أو سوء سلوكه المتعمد — شرط حماية متبادل ومتوازن.",
+        "en": "Each party agrees to compensate and protect the other from claims and liabilities arising from the indemnifying party's gross negligence or willful misconduct — a balanced mutual clause."
+      },
+      "whyRisky": {
+        "ar": "الشرط متوازن وصحيح قانونياً ولا يمثل خطورة، بل يجب التمسك به لأنه يضمن حماية متبادلة وتوزيعاً عادلاً للمسؤولية القانونية بين الطرفين.",
+        "en": "This clause is balanced and legally sound. There is no risk; it should be retained as it ensures mutual protection and fair distribution of legal liability."
+      },
+      "saferAlternative": {
+        "ar": "الشرط مناسب تماماً ولا يحتاج إلى تعديل.",
+        "en": "The clause is appropriate and needs no modification."
+      },
+      "negotiationTips": {
+        "ar": "اقبل هذا الشرط واعرضه كبديل إذا حاول الطرف الآخر فرض بند تعويض أحادي الجانب لصالحه فقط.",
+        "en": "Accept this clause and offer it as an alternative if the other party tries to impose a one-sided indemnification clause in their favor."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement",
+          "NDA",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA",
+          "International"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 216",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_146_tax_liability_imposition",
+      "category": "Liability",
+      "riskLevel": "high",
+      "clausePattern": "Contractor shall bear and be solely responsible for all tax liabilities, duties, and assessments levied on the Client in connection with the payments made under this Agreement.",
+      "explanation": {
+        "ar": "يحملك هذا البند المسؤولية عن كافة الالتزامات والرسوم الضريبية المفروضة على العميل فيما يتعلق بالمدفوعات الصادرة بموجب العقد.",
+        "en": "This clause holds you responsible for all tax liabilities, duties, and assessments imposed on the client related to payments under this contract."
+      },
+      "whyRisky": {
+        "ar": "قد تجد نفسك ملزماً بدفع ضرائب أرباح تجارية أو ضرائب شركات نيابة عن العميل، مما يقلل أرباحك بشكل حاد ويمثل عبئاً مالياً غير قانوني؛ فالقانون الضريبي المصري يلزم كل كيان بضرائبه الخاصة.",
+        "en": "You could find yourself forced to pay corporate or income taxes on behalf of the client, slashing your profits and creating an illegal financial burden; tax laws mandate each entity pay its own taxes."
+      },
+      "saferAlternative": {
+        "ar": "يكون كل طرف مسؤولاً عن سداد الضرائب والرسوم المفروضة عليه قانوناً من قبل السلطات الضريبية المختصة.",
+        "en": "Each party shall be solely responsible for its own taxes, duties, and levies imposed by competent tax authorities."
+      },
+      "negotiationTips": {
+        "ar": "ارفض تحمل ضرائب العميل، واقترح النص صراحة على أن قيمة العقد تشمل ضريبة القيمة المضافة (إذا كنت مسجلاً) وأن أي ضرائب أخرى تخص العميل تقع على عاتقه.",
+        "en": "Refuse to pay the client's taxes. Propose stating that the contract price includes VAT (if registered) and that all other taxes belong to the respective parties."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Vendor Agreement",
+          "Freelance Contract",
+          "Consulting Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Income Tax Law No. 91/2005 and VAT Law No. 67/2016",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_147_insurance_as_precondition",
+      "category": "Liability",
+      "riskLevel": "high",
+      "clausePattern": "The limitation of liability set forth in this Agreement shall only apply if the Contractor maintains professional indemnity insurance of at least USD 1,000,000 in full force.",
+      "explanation": {
+        "ar": "يشترط هذا البند لتطبيق سقف المسؤولية المحددة لك، أن تحتفظ بتأمين ضد الأخطاء المهنية بقيمة لا تقل عن مليون دولار، وإلا تصبح مسؤوليتك غير محدودة.",
+        "en": "This clause conditions the application of your liability cap on maintaining professional indemnity insurance of at least USD 1M. Otherwise, your liability becomes unlimited."
+      },
+      "whyRisky": {
+        "ar": "إذا ألغي التأمين أو تعذر سداد قسطه أو لم يغطِ نوع الخطأ، ستفقد حماية سقف المسؤولية بالكامل وتصبح مسؤولاً عن مبالغ ضخمة قد تؤدي لإفلاسك، فضلاً عن صعوبة وتكلفة الحصول على هذا التأمين للمستقلين في مصر.",
+        "en": "If insurance lapses or doesn't cover the specific claim, you lose your liability cap and face unlimited exposure. Additionally, obtaining USD 1M insurance is difficult and expensive for Egyptian freelancers."
+      },
+      "saferAlternative": {
+        "ar": "تطبق حدود المسؤولية المقررة في العقد بغض النظر عن وجود غطاء تأميني من عدمه. ويلتزم المتعاقد ببذل العناية المهنية المعتادة.",
+        "en": "The limitation of liability shall apply independently of any insurance coverage. Contractor agrees to perform services with professional care."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن هذا الشرط يفرغ بند تحديد المسؤولية من مضمونه العملي، وأن التأمين هو مجرد وسيلة سداد إضافية وليس مبرراً لرفع سقف المسؤولية القانونية.",
+        "en": "Remind the client that this condition undermines the purpose of a liability cap, and insurance should be a tool for payment, not a prerequisite for liability limitation."
+      },
+      "context": {
+        "contractTypes": [
+          "Service Agreement",
+          "Freelance Contract",
+          "Consulting Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Article 217",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_148_portfolio_use_prohibition",
+      "category": "IP Rights",
+      "riskLevel": "medium",
+      "clausePattern": "All deliverables created hereunder are work-for-hire. Contractor shall not display, reference, or include any deliverables in Contractor's personal portfolio or website.",
+      "explanation": {
+        "ar": "يمنعك هذا البند من عرض أو الإشارة أو إدراج أي مخرجات قمت بتطويرها ضمن معرض أعمالك الشخصي أو موقعك الإلكتروني، مصنفاً العمل كعمل مأجور بالكامل.",
+        "en": "This clause classifies all deliverables as work-for-hire and bars you from displaying or referencing them in your personal portfolio or website."
+      },
+      "whyRisky": {
+        "ar": "يصادر هذا الشرط حقك في إظهار خبرتك وإنجازاتك المهنية لعملاء مستقبلين، مما يحد من فرصك التسويقية ويؤثر سلباً على نمو عملك المستقل.",
+        "en": "This prevents you from showcasing your achievements and experience to future clients, severely limiting your marketing potential and business growth."
+      },
+      "saferAlternative": {
+        "ar": "يحق للمتعاقد عرض المخرجات وإدراج لقطات شاشة أو إشارة للمشروع في معرض أعماله الشخصي لأغراض ترويجية فقط، مع مراعاة سرية معلومات العميل.",
+        "en": "Contractor shall have the right to display screenshots and reference the project in their personal portfolio for promotional purposes only, subject to confidentiality."
+      },
+      "negotiationTips": {
+        "ar": "أكد للعميل أن عرض مهاراتك هو شريان الحياة لعملك كمستقل، واعرض استثناء أي بيانات حساسة أو نصوص برمجية داخلية وعرض المظهر العام فقط.",
+        "en": "Explain that displaying your work is vital for your freelance career. Offer to exclude sensitive business data or source code, displaying only visual outputs."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Consulting Agreement",
+          "Service Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Intellectual Property Law No. 82/2002 Article 143",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_149_license_back_to_creator",
+      "category": "IP Rights",
+      "riskLevel": "low",
+      "clausePattern": "Client owns the deliverable, provided that Contractor is granted a non-exclusive, worldwide, royalty-free license to use the underlying code and components for other projects.",
+      "explanation": {
+        "ar": "يمتلك العميل المخرجات النهائية، لكنه يمنحك ترخيصاً غير حصري وعالمياً ومجانياً لاستخدام الأكواد البرمجية والمكونات الأساسية في مشاريع أخرى — شرط ممتاز ومفيد للمطورين.",
+        "en": "Client owns deliverables, but grants you a non-exclusive, worldwide, royalty-free license to reuse the underlying code and components in other projects — an excellent clause for developers."
+      },
+      "whyRisky": {
+        "ar": "الشرط آمن ومفيد جداً؛ حيث يتيح لك إعادة استخدام المكتبات والأدوات البرمجية التي طورتها وعدم البدء من الصفر في كل مشروع.",
+        "en": "This clause is safe and highly beneficial. It allows you to reuse libraries and code blocks in future projects rather than starting from scratch every time."
+      },
+      "saferAlternative": {
+        "ar": "الشرط مثالي ولا يحتاج إلى تعديل.",
+        "en": "The clause is ideal and needs no modification."
+      },
+      "negotiationTips": {
+        "ar": "احرص على إدراج هذا الشرط في عقود البرمجة والتصميم لتتمكن من بناء أصولك البرمجية وإعادة استخدامها قانونياً.",
+        "en": "Make sure to include this clause in software and design contracts to build and legally reuse your component library."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA",
+          "International"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Intellectual Property Law No. 82/2002 Article 138",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_150_ip_assignment_partial_payment",
+      "category": "IP Rights",
+      "riskLevel": "high",
+      "clausePattern": "Intellectual property rights in the deliverables shall transfer to Client upon the payment of the initial deposit or any partial payment under this Agreement.",
+      "explanation": {
+        "ar": "ينقل هذا البند ملكية حقوق الملكية الفكرية للمخرجات إلى العميل بمجرد دفعه للدفعة المقدمة أو أي جزء بسيط من الرسوم، وقبل سداد المبلغ الإجمالي.",
+        "en": "This clause transfers IP rights in deliverables to the client upon payment of the initial deposit or any partial fee, before full payment is completed."
+      },
+      "whyRisky": {
+        "ar": "قد يحصل العميل على حقوق الملكية الفكرية كاملة للمشروع ويمتنع لاحقاً عن سداد بقية مستحقاتك، وتفقد أنت وسيلة الضغط القانونية الوحيدة (حبس الملكية) لإجباره على الدفع.",
+        "en": "The client could acquire full IP ownership and later refuse to pay the remaining balance, leaving you with no legal leverage (holding the IP) to enforce payment."
+      },
+      "saferAlternative": {
+        "ar": "تنتقل ملكية حقوق الملكية الفكرية للمخرجات صراحة إلى العميل فقط وحصرياً بعد سداد كامل قيمة العقد والرسوم المستحقة للمتعاقد.",
+        "en": "Intellectual property rights in the deliverables shall transfer to Client only and exclusively upon Contractor's receipt of full and final payment under this Agreement."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن الدفع الكامل مقابل الملكية الكاملة هو القاعدة الذهبية في العمل المستقل لحماية حقوق الطرفين ومنع الاستيلاء على الأعمال دون سداد ثمنها.",
+        "en": "Explain that full payment for full IP transfer is the gold standard in freelancing to protect both parties and prevent delivery without compensation."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 246 and IP Law No. 82/2002",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_151_ip_retention_after_breach",
+      "category": "IP Rights",
+      "riskLevel": "high",
+      "clausePattern": "If this Agreement is terminated by Contractor due to Company's breach, all intellectual property rights in the work done shall remain with the Company.",
+      "explanation": {
+        "ar": "بموجب هذا البند، تظل حقوق الملكية الفكرية للأعمال المنجزة مملوكة للشركة حتى لو فسخت أنت العقد بسبب إخلال الشركة بالتزاماتها أو عدم دفع مستحقاتك.",
+        "en": "Under this clause, IP rights in completed work remain with the company even if you terminate the contract due to the company's breach or failure to pay."
+      },
+      "whyRisky": {
+        "ar": "إذا تخلفت الشركة عن الدفع وأنهيت العقد، ستظل محتفظة بملكية عملك وتستفيد منه دون دفع ثمنه، وهو ما يمثل إجحافاً شديداً وإثراءً بلا سبب على حسابك.",
+        "en": "If the company defaults and you terminate, they keep ownership of your work and benefit from it without paying, leading to severe unfairness and unjust enrichment."
+      },
+      "saferAlternative": {
+        "ar": "إذا تم إنهاء العقد بسبب إخلال الشركة بالسداد أو أي إخلال جسيم، تعود ملكية كافة حقوق الملكية الفكرية فوراً للمتعاقد دون حاجة لإشعار.",
+        "en": "If this Agreement is terminated due to Company's non-payment or material breach, all intellectual property rights in the deliverables shall immediately revert to the Contractor."
+      },
+      "negotiationTips": {
+        "ar": "أصر على أن الإخلال بالالتزام العقدي الأساسي (الدفع) يبطل انتقال ملكية الملكية الفكرية ويعيدها لك لحماية حقوقك الفكرية والمالية.",
+        "en": "Insist that breaching the core contract duty (payment) voids the IP transfer, returning ownership to you to secure your intellectual and financial rights."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement"
+        ],
+        "frequency": "occasional",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 157 and IP Law No. 82/2002",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_152_opensource_restriction",
+      "category": "IP Rights",
+      "riskLevel": "medium",
+      "clausePattern": "Contractor warrants that no open-source software or third-party code is included in the deliverables, and Contractor shall be liable for any third-party code integration.",
+      "explanation": {
+        "ar": "يضمن المتعاقد خلو المخرجات تماماً من البرمجيات مفتوحة المصدر أو أكواد الأطراف الثالثة، ويتحمل المسؤولية كاملة عن أي دمج لهذه الأكواد.",
+        "en": "Contractor warrants that no open-source or third-party code is included in deliverables, and assumes full liability for any integration of such code."
+      },
+      "whyRisky": {
+        "ar": "في تطوير البرمجيات الحديثة، يستحيل عملياً عدم استخدام مكتبات أو أطر عمل مفتوحة المصدر (مثل React أو Node.js). هذا الضمان المطلق يجعلك في حالة إخلال مستمر بالعقد ويعرضك لتعويضات ضخمة.",
+        "en": "In modern software development, it is virtually impossible to build without using open-source libraries or frameworks (e.g., React). This absolute warranty puts you in perpetual breach."
+      },
+      "saferAlternative": {
+        "ar": "يحق للمتعاقد استخدام مكونات مفتوحة المصدر أو مكتبات طرف ثالث شريطة أن تكون مرخصة بتراخيص قياسية (مثل MIT أو Apache) ولا تفرض قيوداً تجارية على المخرجات.",
+        "en": "Contractor may utilize open-source components or third-party libraries, provided they are governed by standard permissive licenses (e.g., MIT, Apache) that do not restrict commercial use."
+      },
+      "negotiationTips": {
+        "ar": "أوضح للعميل أن البرمجة الحديثة تعتمد بالكامل على البرمجيات مفتوحة المصدر لتوفير الوقت والتكلفة، واقترح حظر رخص معينة فقط (مثل GPL) التي تفرض فتح المصدر للمنتج النهائي.",
+        "en": "Explain that modern programming relies on open-source packages to save time and budget. Suggest restricting only copyleft licenses (like GPL) that require open-sourcing the final product."
+      },
+      "context": {
+        "contractTypes": [
+          "Freelance Contract",
+          "Service Agreement",
+          "Consulting Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA",
+          "International"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Intellectual Property Law No. 82/2002",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_153_subscription_price_escalation",
+      "category": "Payment",
+      "riskLevel": "medium",
+      "clausePattern": "Upon automatic renewal of the Subscription, the applicable subscription fees shall increase by up to 20% annually without requiring prior customer consent.",
+      "explanation": {
+        "ar": "يقضي هذا البند بزيادة أسعار الاشتراك تلقائياً بنسبة تصل إلى 20% سنوياً عند التجديد التلقائي للاشتراك، ودون الحاجة للحصول على موافقتك المسبقة.",
+        "en": "This clause automatically increases your subscription fees by up to 20% annually upon auto-renewal, without requiring your prior consent."
+      },
+      "whyRisky": {
+        "ar": "قد تفاجأ بخصم مبالغ أعلى بكثير من بطاقتك الائتمانية أو حسابك البنكي دون إخطارك بوقت كافٍ لاتخاذ قرار بإلغاء الاشتراك، مما يمثل عبئاً مالياً غير متوقع ويخالف مبادئ التراضي العقدي.",
+        "en": "You could be surprised by significantly higher charges on your credit card without prior warning, trapping you into a higher rate and violating mutual consent principles."
+      },
+      "saferAlternative": {
+        "ar": "تلتزم الشركة بإخطار العميل بأي زيادة في الأسعار قبل 30 يوماً على الأقل من التجديد، ولا تتجاوز الزيادة السنوية حد 5% كحد أقصى للعملاء المستمرين.",
+        "en": "Company shall notify Customer of any fee increases at least 30 days prior to renewal. Price increases shall be capped at a maximum of 5% annually."
+      },
+      "negotiationTips": {
+        "ar": "اطلب حق إلغاء الاشتراك دون رسوم إذا تم رفع السعر، وفاوض على تثبيت السعر الحالي لمدة سنتين على الأقل كعميل دائم.",
+        "en": "Request the right to cancel the subscription without fee if prices are increased, and negotiate to lock in your current rate for at least 2 years."
+      },
+      "context": {
+        "contractTypes": [
+          "Subscription Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "very_common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA",
+          "International"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 147 and Consumer Protection Law No. 181/2018 Article 9",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_154_no_sla_credits_downtime",
+      "category": "Warranty",
+      "riskLevel": "medium",
+      "clausePattern": "No service credits or refunds shall be issued for service unavailability unless the system downtime exceeds 10% in any calendar month, and total credit is capped at 5% of monthly fees.",
+      "explanation": {
+        "ar": "يحرمك هذا البند من الحصول على أي تعويضات أو تخفيضات في الرسوم عند تعطل الخدمة إلا إذا تجاوز التعطل 10% شهرياً (حوالي 3 أيام كاملة)، ويحدد أقصى تعويض بـ 5% فقط من الرسوم.",
+        "en": "This clause denies you any service credits or refunds for service downtime unless the outage exceeds 10% in a month (about 3 full days), and caps total credits at 5% of monthly fees."
+      },
+      "whyRisky": {
+        "ar": "قد تتعرض أعمالك لخسائر فادحة وتوقف تام بسبب تعطل النظام لعدة أيام دون أن تحصل على أي تعويض ذي قيمة من المورد، مما يخل بالضمان المالي لجودة الخدمة الأساسية.",
+        "en": "Your business could suffer severe disruption and losses due to several days of system outage without receiving any meaningful compensation from the vendor."
+      },
+      "saferAlternative": {
+        "ar": "تُحتسب التعويضات إذا قل توافر الخدمة عن 99.5% شهرياً، وتزداد قيمة التخفيضات تدريجياً لتصل لخصم 100% من رسوم الشهر إذا قل التوافر عن 95%.",
+        "en": "Service credits shall apply if monthly uptime falls below 99.5%, scaling up to a 100% credit of monthly fees if uptime drops below 95%."
+      },
+      "negotiationTips": {
+        "ar": "فاوض على جدول تعويضات SLA معياري يتناسب مع الأثر المالي لتعطل الخدمة على أعمالك، وارفض السقوف المنخفضة جداً التي لا تردع المورد عن الإهمال.",
+        "en": "Negotiate a standard SLA credit table proportional to the financial impact of downtime on your operations, and reject low caps that fail to hold the vendor accountable."
+      },
+      "context": {
+        "contractTypes": [
+          "Subscription Agreement",
+          "Vendor Agreement",
+          "Service Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA",
+          "International"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 223 and Article 224",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_155_no_data_portability_on_cancel",
+      "category": "Privacy",
+      "riskLevel": "high",
+      "clausePattern": "Upon cancellation or expiration of the subscription, Company is not required to export, format, or transfer customer data, and all access to customer data shall be immediately terminated.",
+      "explanation": {
+        "ar": "ينص هذا البند على أن الشركة غير ملزمة بتصدير أو تنسيق أو نقل بياناتك عند إلغاء أو انتهاء اشتراكك، وتقوم بقطع وصولك لبياناتك فوراً.",
+        "en": "This clause states that the company has no obligation to export, format, or transfer your data upon subscription cancellation or expiration, and cuts off your data access immediately."
+      },
+      "whyRisky": {
+        "ar": "قد تفقد كافة بيانات عملائك وسجلاتك التاريخية والمالية المخزنة على منصة المورد، مما يعرض شركتك للشلل التام ويخالف حق نقل البيانات المكفول بالمادة 3 من قانون حماية البيانات المصري.",
+        "en": "You could lose all customer databases, historical records, and financial logs stored on the vendor's platform, paralyzing your operations and violating data portability rights under Egyptian law."
+      },
+      "saferAlternative": {
+        "ar": "عند إلغاء الاشتراك، تلتزم الشركة بإتاحة تنزيل أو تصدير كافة بيانات العميل بتنسيق قياسي (مثل CSV أو JSON) خلال مهلة 30 يوماً قبل حذفها نهائياً.",
+        "en": "Upon cancellation, Company shall allow Customer to download or export all customer data in a standard format (e.g., CSV, JSON) within a grace period of 30 days before deletion."
+      },
+      "negotiationTips": {
+        "ar": "تأكد من وجود بند واضح يضمن بقاء بياناتك ملكاً خالصاً لك وحقك في استرجاعها بنسق قابل للقراءة والدمج قبل إغلاق حسابك.",
+        "en": "Ensure there is a clear clause stating that your data remains your property and you have the right to retrieve it in a readable, compatible format before account closure."
+      },
+      "context": {
+        "contractTypes": [
+          "Subscription Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Data Protection Law No. 151/2020 Article 3",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_156_vendor_lockin_format",
+      "category": "IP Rights",
+      "riskLevel": "medium",
+      "clausePattern": "Customer data stored in the system is processed and outputted strictly in Company's proprietary format. Company is under no obligation to convert or translate such data to open formats.",
+      "explanation": {
+        "ar": "يشترط هذا البند أن تتم معالجة بياناتك وإخراجها بتنسيق خاص ومملوك للشركة فقط، ولا تلتزم بتحويل البيانات إلى تنسيقات قياسية مفتوحة تسهل نقلها.",
+        "en": "This clause specifies that customer data is processed and outputted only in the company's proprietary format, with no obligation to convert it to open standard formats."
+      },
+      "whyRisky": {
+        "ar": "يجبرك هذا على البقاء مع المورد (Vendor Lock-in)؛ حيث تصبح تكلفة الانتقال لمورد آخر باهظة ومستحيلة عملياً بسبب عدم القدرة على استخدام بياناتك خارج نظام المورد الحالي.",
+        "en": "This traps you into vendor lock-in; the cost of migrating to another provider becomes prohibitively high because your data cannot be utilized outside the current vendor's proprietary system."
+      },
+      "saferAlternative": {
+        "ar": "تلتزم الشركة بتوفير البيانات وتصديرها بتنسيقات شائعة ومفتوحة المصدر وقابلة للقراءة آلياً (مثل CSV, JSON, XML) دون تكاليف إضافية.",
+        "en": "Company agrees to supply and export customer data in common, machine-readable open formats (such as CSV, JSON, or XML) at no additional charge."
+      },
+      "negotiationTips": {
+        "ar": "قبل توقيع عقد الاشتراك أو التوريد، اختبر إمكانية تصدير البيانات بنفسك وتأكد من أن صيغ التصدير معيارية وتتيح لك الانتقال لجهة أخرى بحرية.",
+        "en": "Before signing a subscription or vendor agreement, test the data export features to verify that format outputs are standard and permit free migration."
+      },
+      "context": {
+        "contractTypes": [
+          "Subscription Agreement",
+          "Vendor Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA",
+          "International"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Civil Code Article 148",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
+    },
+    {
+      "id": "clause_157_minimum_purchase_commitment",
+      "category": "Payment",
+      "riskLevel": "high",
+      "clausePattern": "Vendor shall maintain a minimum monthly purchase commitment of 1,000 units. Failure to meet this quota shall result in a penalty fee equal to the shortfall value.",
+      "explanation": {
+        "ar": "يلزمك هذا البند بشراء حد أدنى يبلغ 1000 وحدة شهرياً من المورد، وفي حال عدم شراء هذه الكمية، تلتزم بدفع غرامة تعادل قيمة الوحدات الناقصة.",
+        "en": "This clause binds you to a minimum monthly purchase quota of 1,000 units. Failure to meet this quota results in a penalty equal to the value of the shortfall."
+      },
+      "whyRisky": {
+        "ar": "إذا تراجع الطلب في السوق أو واجهت شركتك صعوبات مالية، ستظل ملزماً بدفع قيمة بضائع لم تستلمها أو تحتاجها، مما قد يسبب خسائر فادحة ويعرض شركتك لخطر الإفلاس.",
+        "en": "If market demand drops or your business faces cash flow issues, you remain forced to pay for products you don't need or receive, causing severe losses and potential insolvency."
+      },
+      "saferAlternative": {
+        "ar": "في حال عدم استيفاء الحد الأدنى للمشتريات، يكون الجزاء الوحيد هو فقدان نسبة الخصم الممنوحة للكميات الكبيرة وتطبيق السعر القياسي الفردي.",
+        "en": "If Customer fails to meet the minimum purchase commitment, the sole consequence shall be the loss of the volume discount, and standard pricing shall apply to units purchased."
+      },
+      "negotiationTips": {
+        "ar": "ارفض الغرامات النقدية المفروضة على عدم الشراء، واطلب إعادة تقييم الحد الأدنى ربع سنويًا لتتناسب الكميات مع طلب السوق الفعلي وظروف عملك.",
+        "en": "Refuse direct financial penalties for purchasing shortfalls. Request quarterly reviews of the minimum volume to align commitments with actual market demand."
+      },
+      "context": {
+        "contractTypes": [
+          "Vendor Agreement",
+          "Service Agreement"
+        ],
+        "frequency": "common",
+        "applicableRegions": [
+          "Egypt",
+          "MENA"
+        ]
+      },
+      "relatedLaw": {
+        "egyptianLaw": "Egyptian Commercial Law No. 17/1999 Article 74 and Civil Code Article 224",
+        "country": "Egypt"
+      },
+      "precedents": [],
+      "version": 1,
+      "createdAt": "2026-06-03T20:35:00Z",
+      "updatedAt": "2026-06-03T20:35:00Z"
     }
   ]
 }

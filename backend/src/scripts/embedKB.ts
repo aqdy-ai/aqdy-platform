@@ -4,10 +4,16 @@ import * as path from "path";
 import dotenv from "dotenv";
 
 dotenv.config();
-// Fallback: If run from within the backend directory, look for .env in the root project directory
+// Fallbacks for loading .env based on where the script is executed:
 if (!process.env.PINECONE_API_KEY) {
-  dotenv.config({ path: path.join(process.cwd(), "../.env") });
+  // If run from workspace root:
+  dotenv.config({ path: path.join(process.cwd(), "backend/.env") });
 }
+if (!process.env.PINECONE_API_KEY) {
+  // If run from backend/src/scripts:
+  dotenv.config({ path: path.join(process.cwd(), "../../.env") });
+}
+
 
 // ─── Clause interfaces ────────────────────────────────────────────────────────
 
@@ -80,7 +86,8 @@ interface KBFileV2 {
 function normaliseRelatedLaw(raw: ClauseV2["relatedLaw"]): string {
   if (!raw) return "";
   if (typeof raw === "string") return raw;
-  return raw.egyptianLaw ?? "";
+  // FIX: fall back to country if egyptianLaw is absent (e.g. Gulf-specific clauses)
+  return raw.egyptianLaw ?? raw.country ?? "";
 }
 
 function normaliseFromV2(c: ClauseV2): NormalisedClause {
@@ -155,7 +162,7 @@ function loadKB(cwd: string): NormalisedClause[] {
       }
       console.log(
         `📂 Loaded ${kb.clauses.length} clauses from ${file}` +
-          ` (KB v${kb.version}, updated ${kb.lastUpdated})`,
+        ` (KB v${kb.version}, updated ${kb.lastUpdated})`,
       );
       return kb.clauses.map(normaliseFromV2);
     }
@@ -171,7 +178,7 @@ function loadKB(cwd: string): NormalisedClause[] {
 
   console.error(
     "❌ Legal KB file not found. Checked: " +
-      candidates.map((c) => c.file).join(", "),
+    candidates.map((c) => c.file).join(", "),
   );
   process.exit(1);
 }
@@ -202,7 +209,7 @@ async function main() {
   if (!indexExists) {
     console.log(
       `🏗️  Index "${INDEX_NAME}" does not exist. Creating serverless index` +
-        ` with model "multilingual-e5-large"…`,
+      ` with model "multilingual-e5-large"…`,
     );
     await pc.createIndexForModel({
       name: INDEX_NAME,
@@ -263,7 +270,7 @@ async function main() {
 
   console.log(
     `\n🎉 Success: Confirmed that all ${records.length} clauses have been` +
-      ` embedded and upserted into Pinecone!`,
+    ` embedded and upserted into Pinecone!`,
   );
 }
 
