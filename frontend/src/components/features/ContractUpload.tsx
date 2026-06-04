@@ -17,7 +17,7 @@ export default function ContractUpload({
   onUploadSuccess,
 }: ContractUploadProps) {
   const { t, i18n } = useTranslation()
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -110,9 +110,7 @@ export default function ContractUpload({
 
         const response = await fetch('http://localhost:3000/api/upload', {
           method: 'POST',
-          headers: {
-            'x-user-id': user?.id || 'anonymous',
-          },
+          credentials: 'include',
           body: formData,
         })
 
@@ -152,6 +150,19 @@ export default function ContractUpload({
     (selectedFile: File | undefined) => {
       if (!selectedFile) return
 
+      // Auth gate — redirect guests to login
+      if (!isAuthenticated) {
+        toast.error(
+          t('upload.error_auth_required', {
+            defaultValue: isRtl
+              ? 'يرجى تسجيل الدخول لرفع المستندات'
+              : 'Please log in to upload documents',
+          })
+        )
+        navigate('/login')
+        return
+      }
+
       // Type validation
       if (selectedFile.type !== 'application/pdf') {
         showErrorToast(
@@ -179,7 +190,7 @@ export default function ContractUpload({
       setFile(selectedFile)
       uploadFileToServer(selectedFile)
     },
-    [showErrorToast, uploadFileToServer, t, isRtl]
+    [showErrorToast, uploadFileToServer, t, isRtl, isAuthenticated, navigate]
   )
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
