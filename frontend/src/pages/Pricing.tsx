@@ -12,8 +12,10 @@ interface PlanLimits {
 export interface Plan {
   id: string
   name: string
-  price: string
+  price: number | null
   features?: string[]
+  analysisLimit?: number
+  storageLimit?: number
   limits?: PlanLimits
   ctaKey?: string // مضاف لدعم المفاتيح الديناميكية من الـ API والـ Tests
 }
@@ -232,9 +234,9 @@ export default function Pricing({
 
                   {/* الـ Pricing Section */}
                   <div className="text-card-foreground mb-6 text-center">
-                    {plan.price.toLowerCase() === 'custom' ? (
+                    {plan.price === null ? (
                       <p className="text-accent py-1 text-2xl font-bold tracking-tight">
-                        {isRtl ? 'تواصل معنا' : plan.price}
+                        {isRtl ? 'تواصل معنا' : 'Custom'}
                       </p>
                     ) : (
                       <p className="text-3xl font-extrabold tracking-tight">
@@ -251,15 +253,33 @@ export default function Pricing({
                   {/* صندوق حدود الاستخدام (Analysis & Storage Limits) */}
                   <div className="bg-muted text-muted-foreground border-border mb-6 space-y-2 rounded-xl border p-4 text-xs">
                     <p className="flex justify-between font-medium">
-                      <span>{t('pricing.analysis_limit')}:</span>
+                      <span>
+                        {t('pricing.analysis_limit') ||
+                          (isRtl ? 'حد التحليلات' : 'Analysis Limit')}
+                        :
+                      </span>
                       <span className="text-card-foreground font-bold">
-                        {plan.limits?.analysis ?? '—'}
+                        {plan.analysisLimit === -1
+                          ? isRtl
+                            ? 'غير محدود'
+                            : 'Unlimited'
+                          : (plan.analysisLimit ??
+                            plan.limits?.analysis ??
+                            '—')}
                       </span>
                     </p>
                     <p className="flex justify-between font-medium">
-                      <span>{t('pricing.storage_limit')}:</span>
+                      <span>
+                        {t('pricing.storage_limit') ||
+                          (isRtl ? 'حد التخزين' : 'Storage Limit')}
+                        :
+                      </span>
                       <span className="text-card-foreground font-bold">
-                        {plan.limits?.storage ?? '—'}
+                        {plan.storageLimit === -1
+                          ? isRtl
+                            ? 'غير محدود'
+                            : 'Unlimited'
+                          : (plan.storageLimit ?? plan.limits?.storage ?? '—')}
                       </span>
                     </p>
                   </div>
