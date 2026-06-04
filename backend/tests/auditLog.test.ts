@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import request from "supertest";
 import express from "express";
 import { AuditLog } from "../src/models/auditLog.model.js";
-import auditService, { getIP } from "../src/services/auditService.js";
+import auditService, { getIP } from "../src/services/auditLog.service.js";
 import auditLogsRouter from "../src/routes/auditLogs.route.js";
 import requestIdMiddleware from "../src/middleware/requestId.middleware.js";
 
