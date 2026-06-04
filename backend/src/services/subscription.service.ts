@@ -61,19 +61,20 @@ export class SubscriptionService {
     newPlanId: string,
   ): Promise<ISubscription> {
     const subscription = await Subscription.findOne({
-      userId,
-      status: "active",
-    });
-
+  userId: new mongoose.Types.ObjectId(userId),
+  status: "active",
+}).populate("planId");
+    
+    
     if (!subscription) {
       throw new Error("No active subscription found.");
     }
 
     const newPlan = await Plan.findById(newPlanId);
+    
     if (!newPlan) {
       throw new Error("Plan not found.");
     }
-
     const now = new Date();
     const newEndDate = new Date(now);
     newEndDate.setMonth(newEndDate.getMonth() + 1);

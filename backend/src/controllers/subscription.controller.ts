@@ -60,8 +60,7 @@ export const upgradeSubscriptionHandler = async (
 ): Promise<void> => {
   try {
     const userId = (req as any).user._id.toString();
-    const { planId } = req.body;
-
+    const { planId } = req.body; 
     if (!planId) {
       throw new AppError(400, "planId is required.");
     }

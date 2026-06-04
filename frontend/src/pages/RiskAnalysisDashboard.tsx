@@ -112,9 +112,7 @@ export default function RiskAnalysisDashboard() {
 
     const checkAnalysis = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:3000/api/analysis/${contractId}`
-        )
+        const response = await fetch(`/api/analysis/${contractId}`)
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}))
           throw new Error(errData.message || 'Failed to fetch analysis details')
@@ -237,9 +235,7 @@ export default function RiskAnalysisDashboard() {
         </div>
 
         <h2 className="mb-4 text-2xl font-black tracking-tight md:text-3xl">
-          {isRtl
-            ? 'جاري فحص وتحليل العقد ذكياً...'
-            : 'Analyzing contract with Legal AI...'}
+          {t('dashboard.status_processing')}
         </h2>
 
         <div className="bg-card/50 border-border/50 w-full max-w-md rounded-2xl border p-5 shadow-inner backdrop-blur-md">
@@ -273,7 +269,7 @@ export default function RiskAnalysisDashboard() {
           onClick={() => window.history.back()}
           className="bg-primary text-primary-foreground rounded-xl px-6 py-3 font-bold shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95"
         >
-          {isRtl ? 'العودة للخلف' : 'Go Back'}
+          {t('common.close')}
         </button>
       </div>
     )
