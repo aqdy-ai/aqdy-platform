@@ -5,8 +5,12 @@ import { env } from "../config/env.js";
 import { User, IUser } from "../models/user.model.js";
 import { subscriptionService } from "./subscription.service.js";
 import { logger } from "../utils/logger.js";
-import { RegisterInput, LoginInput, TokenBundle, JwtPayload } from "../types/auth.js";
-
+import {
+  RegisterInput,
+  LoginInput,
+  TokenBundle,
+  JwtPayload,
+} from "../types/auth.js";
 
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days

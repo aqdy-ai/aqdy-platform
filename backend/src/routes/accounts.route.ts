@@ -18,7 +18,7 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
       search,
     } = req.query;
 
-    const filter: Record<string, any> = {};
+    const filter: Record<string, unknown> = {};
 
     if (planSlug && typeof planSlug === "string") {
       filter.planSlug = planSlug;
@@ -64,9 +64,12 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
       },
       data,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in GET /api/admin/accounts:", error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 });
 
@@ -119,9 +122,12 @@ router.get("/:id", requireAdmin, async (req: Request, res: Response) => {
         recentActivity,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in GET /api/admin/accounts/:id:", error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 });
 
@@ -185,9 +191,12 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
       success: true,
       data: user,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in PATCH /api/admin/accounts/:id:", error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 });
 
@@ -222,9 +231,12 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
       success: true,
       message: `User with ID ${id} has been hard deleted successfully.`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in DELETE /api/admin/accounts/:id:", error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 });
 

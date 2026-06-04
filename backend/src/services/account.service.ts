@@ -2,7 +2,6 @@ import { AppError } from "../middlewares/errorHandler.js";
 import { User, IUser } from "../models/user.model.js";
 import { UpdateProfileInput, ProfileResponse } from "../types/account.js";
 
-
 export const getProfile = async (userId: string): Promise<ProfileResponse> => {
   const user = await User.findById(userId);
   if (!user || user.status !== "active") {
@@ -13,7 +12,7 @@ export const getProfile = async (userId: string): Promise<ProfileResponse> => {
     name: user.name,
     email: user.email,
     plan: user.plan,
-    memberSince: (user as any).createdAt,
+    memberSince: (user as unknown as { createdAt: Date }).createdAt,
     lastLogin: user.lastLogin,
   };
 };

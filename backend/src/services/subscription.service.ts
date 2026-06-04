@@ -1,9 +1,5 @@
 import mongoose from "mongoose";
-import {
-  Subscription,
-  ISubscription,
-  SubscriptionStatus,
-} from "../models/subscription.model.js";
+import { Subscription, ISubscription } from "../models/subscription.model.js";
 import { Plan, IPlan } from "../models/plan.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { logger } from "../utils/logger.js";
@@ -61,17 +57,16 @@ export class SubscriptionService {
     newPlanId: string,
   ): Promise<ISubscription> {
     const subscription = await Subscription.findOne({
-  userId: new mongoose.Types.ObjectId(userId),
-  status: "active",
-}).populate("planId");
-    
-    
+      userId: new mongoose.Types.ObjectId(userId),
+      status: "active",
+    }).populate("planId");
+
     if (!subscription) {
       throw new Error("No active subscription found.");
     }
 
     const newPlan = await Plan.findById(newPlanId);
-    
+
     if (!newPlan) {
       throw new Error("Plan not found.");
     }

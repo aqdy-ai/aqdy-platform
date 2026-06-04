@@ -82,7 +82,8 @@ const options: swaggerJsdoc.Options = {
         },
         RefreshRequest: {
           type: "object",
-          description: "No request body required. The refresh token is expected in the httpOnly cookie named 'refreshToken'.",
+          description:
+            "No request body required. The refresh token is expected in the httpOnly cookie named 'refreshToken'.",
           properties: {},
         },
         AuthResponse: {
@@ -167,14 +168,14 @@ const options: swaggerJsdoc.Options = {
               type: "object",
               required: ["subscription", "usage"],
               properties: {
-                subscription: { 
+                subscription: {
                   type: "object",
                   properties: {
                     _id: { type: "string" },
                     planId: { type: "string" },
                     status: { type: "string", example: "active" },
                   },
-                  additionalProperties: true 
+                  additionalProperties: true,
                 },
                 usage: {
                   type: "object",
@@ -584,10 +585,12 @@ const options: swaggerJsdoc.Options = {
       "/api/auth/me": {
         get: {
           tags: ["Authentication"],
-          summary: "Fetch authenticated user profile (requires accessToken cookie)",
+          summary:
+            "Fetch authenticated user profile (requires accessToken cookie)",
           responses: {
             200: {
-              description: "Authenticated user information (reads from httpOnly accessToken cookie)",
+              description:
+                "Authenticated user information (reads from httpOnly accessToken cookie)",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/UserResponse" },
@@ -609,7 +612,7 @@ const options: swaggerJsdoc.Options = {
         get: {
           tags: ["Account"],
           summary: "Fetch user profile",
-          
+
           responses: {
             200: {
               description: "Profile information",
@@ -633,7 +636,7 @@ const options: swaggerJsdoc.Options = {
         patch: {
           tags: ["Account"],
           summary: "Update user profile",
-          
+
           requestBody: {
             required: true,
             content: {
@@ -663,7 +666,7 @@ const options: swaggerJsdoc.Options = {
         delete: {
           tags: ["Account"],
           summary: "Delete user account (soft delete)",
-          
+
           responses: {
             200: {
               description: "Account deleted successfully",
@@ -711,16 +714,14 @@ const options: swaggerJsdoc.Options = {
       "/api/account/subscription/upgrade": {
         post: {
           tags: ["Account"],
-          summary:
-            "Upgrade user subscription (requires accessToken cookie)",
+          summary: "Upgrade user subscription (requires accessToken cookie)",
           security: [{ cookieAuth: [] }],
           requestBody: {
             required: true,
             content: {
               "application/json": {
                 schema: {
-                  $ref:
-                    "#/components/schemas/UpgradeSubscriptionRequest",
+                  $ref: "#/components/schemas/UpgradeSubscriptionRequest",
                 },
               },
             },
@@ -748,8 +749,7 @@ const options: swaggerJsdoc.Options = {
       "/api/account/subscription/cancel": {
         post: {
           tags: ["Account"],
-          summary:
-            "Cancel current subscription (requires accessToken cookie)",
+          summary: "Cancel current subscription (requires accessToken cookie)",
           security: [{ cookieAuth: [] }],
           responses: {
             200: {
@@ -849,7 +849,7 @@ const options: swaggerJsdoc.Options = {
           tags: ["Admin Accounts"],
           summary:
             "Get paginated, filterable, and searchable list of user accounts",
-          
+
           parameters: [
             {
               name: "page",
@@ -932,7 +932,7 @@ const options: swaggerJsdoc.Options = {
           tags: ["Admin Accounts"],
           summary:
             "Get full account detail including subscription, usage stats, and recent activity",
-          
+
           parameters: [
             {
               name: "id",
@@ -988,7 +988,7 @@ const options: swaggerJsdoc.Options = {
         patch: {
           tags: ["Admin Accounts"],
           summary: "Update user plan, status, or role",
-          
+
           parameters: [
             {
               name: "id",
@@ -1030,7 +1030,7 @@ const options: swaggerJsdoc.Options = {
         delete: {
           tags: ["Admin Accounts"],
           summary: "Hard delete user account (requires confirmation flag)",
-          
+
           parameters: [
             {
               name: "id",

@@ -100,6 +100,8 @@ describe('Pricing Page', () => {
     renderWithProviders((props) => <Pricing {...props} />)
     // التيست بيفحص كلمة Loading المرتبطة بالترجمة
     expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    // Wait for the background update to complete to avoid act() warnings in stderr
+    await waitFor(() => expect(screen.queryByText(/loading/i)).not.toBeInTheDocument())
   })
 
   test('renders plan cards after fetching', async () => {

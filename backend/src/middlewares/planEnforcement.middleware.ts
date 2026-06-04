@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { Subscription } from "../models/subscription.model.js";
-import { Plan } from "../models/plan.model.js";
+import { IPlan } from "../models/plan.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { logger } from "../utils/logger.js";
+import { AuthenticatedRequest } from "../types/auth.js";
 
 const UPGRADE_URL = "https://aqdy.ai/pricing";
 
@@ -41,7 +42,7 @@ async function getActivePlanLimits(userId: string): Promise<{
       };
     }
 
-    const plan = subscription.planId as any;
+    const plan = subscription.planId as unknown as IPlan;
 
     return {
       analysisLimit: plan.analysisLimit ?? FREE_PLAN_DEFAULTS.analysisLimit,
@@ -65,7 +66,9 @@ export async function enforceAnalysisLimit(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const userId = (req as any).user?._id?.toString();
+    const userId = (
+      req as unknown as AuthenticatedRequest
+    ).user?._id?.toString();
 
     if (!userId) {
       next();
@@ -138,7 +141,9 @@ export async function enforceStorageLimit(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const userId = (req as any).user?._id?.toString();
+    const userId = (
+      req as unknown as AuthenticatedRequest
+    ).user?._id?.toString();
 
     if (!userId) {
       next();

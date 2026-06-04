@@ -137,7 +137,9 @@ describe('SubscriptionService - upgradeSubscription', () => {
 
   test('should throw error if no active subscription', async () => {
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockResolvedValue(null);
+    (Subscription as any).findOne = jest.fn().mockReturnValue({
+      populate: jest.fn().mockResolvedValue(null),
+    });
 
     await expect(
       subscriptionService.upgradeSubscription(validUserId, validNewPlanId)
@@ -153,7 +155,9 @@ describe('SubscriptionService - upgradeSubscription', () => {
     };
 
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockResolvedValue(mockSubscription);
+    (Subscription as any).findOne = jest.fn().mockReturnValue({
+      populate: jest.fn().mockResolvedValue(mockSubscription),
+    });
     mockFindById.mockResolvedValue(null);
 
     await expect(
@@ -171,7 +175,9 @@ describe('SubscriptionService - upgradeSubscription', () => {
     };
 
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockResolvedValue(mockSubscription);
+    (Subscription as any).findOne = jest.fn().mockReturnValue({
+      populate: jest.fn().mockResolvedValue(mockSubscription),
+    });
     mockFindById.mockResolvedValue({ _id: validNewPlanId, name: 'Premium' });
 
     await subscriptionService.upgradeSubscription(validUserId, validNewPlanId);

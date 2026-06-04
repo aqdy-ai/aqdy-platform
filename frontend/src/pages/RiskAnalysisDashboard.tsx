@@ -101,10 +101,14 @@ export default function RiskAnalysisDashboard() {
       return
     }
 
+    let isActive = true
+
     // Run asynchronously to prevent cascading renders and satisfy the linter
     Promise.resolve().then(() => {
-      setIsLoading(true)
-      setError(null)
+      if (isActive) {
+        setIsLoading(true)
+        setError(null)
+      }
     })
 
     let pollCount = 0
@@ -144,7 +148,10 @@ export default function RiskAnalysisDashboard() {
     checkAnalysis()
     const pollInterval = setInterval(checkAnalysis, 2500)
 
-    return () => clearInterval(pollInterval)
+    return () => {
+      isActive = false
+      clearInterval(pollInterval)
+    }
   }, [contractId])
 
   // Map real data from backend, falling back to mock data when accessed offline/directly

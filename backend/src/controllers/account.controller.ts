@@ -46,13 +46,19 @@ const parseRequestBody = <T>(schema: z.ZodSchema<T>, body: unknown): T => {
   return result.data;
 };
 
+interface AuthRequest extends Request {
+  user: {
+    _id: { toString(): string };
+  };
+}
+
 export const getProfileHandler = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
     if (!user) {
       throw new AppError(401, "Authentication required.");
     }
@@ -72,12 +78,12 @@ export const getProfileHandler = async (
 };
 
 export const updateProfileHandler = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
     if (!user) {
       throw new AppError(401, "Authentication required.");
     }
@@ -110,12 +116,12 @@ export const updateProfileHandler = async (
 };
 
 export const deleteAccountHandler = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
     if (!user) {
       throw new AppError(401, "Authentication required.");
     }

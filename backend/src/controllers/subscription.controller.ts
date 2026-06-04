@@ -3,15 +3,22 @@ import { subscriptionService } from "../services/subscription.service.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { ApiResponse } from "../types/index.js";
 import { logger } from "../utils/logger.js";
+import { IPlan } from "../models/plan.model.js";
+
+interface AuthRequest extends Request {
+  user: {
+    _id: { toString(): string };
+  };
+}
 
 // GET /api/account/subscription
 export const getSubscriptionHandler = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const userId = (req as any).user._id.toString();
+    const userId = req.user._id.toString();
 
     const subscription = await subscriptionService.getUserSubscription(userId);
 
@@ -30,7 +37,8 @@ export const getSubscriptionHandler = async (
         subscription,
         usage: {
           analysesUsed: usageCount,
-          analysesLimit: (subscription.planId as any).analysisLimit,
+          analysesLimit: (subscription.planId as unknown as IPlan)
+            .analysisLimit,
           periodStart: subscription.startDate,
           periodEnd: subscription.endDate,
           renewalDate: subscription.renewalDate,
@@ -54,13 +62,13 @@ export const getSubscriptionHandler = async (
 
 // POST /api/account/subscription/upgrade
 export const upgradeSubscriptionHandler = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const userId = (req as any).user._id.toString();
-    const { planId } = req.body; 
+    const userId = req.user._id.toString();
+    const { planId } = req.body;
     if (!planId) {
       throw new AppError(400, "planId is required.");
     }
@@ -93,12 +101,12 @@ export const upgradeSubscriptionHandler = async (
 
 // POST /api/account/subscription/cancel
 export const cancelSubscriptionHandler = async (
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const userId = (req as any).user._id.toString();
+    const userId = req.user._id.toString();
 
     const subscription = await subscriptionService.cancelSubscription(userId);
 
