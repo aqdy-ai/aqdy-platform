@@ -17,7 +17,10 @@
     "how_it_works": "How it works?",
     "pricing": "Pricing",
     "contact": "Contact Us",
-    "language_toggle": "العربية"
+    "language_toggle": "العربية",
+    "login": "Login",
+    "logout": "Logout",
+    "settings": "Account Settings"
   },
   "hero": {
     "title": "Your Legal Future, Smarter.",
