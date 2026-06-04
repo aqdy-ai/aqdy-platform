@@ -27,6 +27,7 @@
     "@langchain/google-genai": "^2.1.30",
     "@langchain/openai": "^1.4.5",
     "@langfuse/langchain": "^5.4.0",
+    "@opentelemetry/api": "^1.9.1",
     "@pinecone-database/pinecone": "^7.2.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
