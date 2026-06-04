@@ -62,7 +62,9 @@ function safeObjectId(
 }
 
 // Common helper to save audit log without ever throwing
-export async function writeLog(data: Partial<IAuditLog>): Promise<IAuditLog | null> {
+export async function writeLog(
+  data: Partial<IAuditLog>,
+): Promise<IAuditLog | null> {
   try {
     const log = new AuditLog({
       ...data,
