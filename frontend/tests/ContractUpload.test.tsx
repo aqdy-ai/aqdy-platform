@@ -13,6 +13,13 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn(),
 }))
 
+vi.mock('../src/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 'test-user-id', name: 'Test User' },
+    isAuthenticated: true,
+  }),
+}))
+
 // Mock framer-motion to remove animation complexity in jsdom
 vi.mock('framer-motion', () => ({
   motion: {

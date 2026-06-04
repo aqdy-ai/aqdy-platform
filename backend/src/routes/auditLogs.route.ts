@@ -7,7 +7,7 @@ import {
   AuditOutcome,
   OUTCOMES,
 } from "../models/auditLog.model.js";
-import { logAdmin } from "../services/auditService.js";
+import { logAdmin } from "../services/auditLog.service.js";
 import { requireAdmin } from "../middlewares/auth.middleware.js";
 
 const router = Router();
