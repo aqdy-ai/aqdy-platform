@@ -3,7 +3,7 @@ import {
   IRiskAnalysis,
   RiskAnalysisZodSchema,
 } from "../models/riskAnalysis.model.js";
-import { AuditLog } from "../models/auditLog.model.js";
+import { auditLogService } from "./auditLog.service.js";
 import { orchestratorService } from "../pipeline/orchestrator.service.js";
 import { logger } from "../utils/logger.js";
 import {
@@ -72,6 +72,12 @@ export class AnalysisService {
     userId: string,
     text: string,
     language: "ar" | "en",
+    meta?: {
+      userEmail?: string | null;
+      ipAddress?: string | null;
+      userAgent?: string | null;
+      requestId?: string | null;
+    },
   ): Promise<void> {
     try {
       await this.executionQueue.enqueue({
@@ -79,6 +85,7 @@ export class AnalysisService {
         userId,
         text,
         language,
+        ...meta,
       });
     } catch (error) {
       logger.error(
@@ -110,17 +117,22 @@ export class AnalysisService {
       analysisDuration: duration,
     });
 
-    await new AuditLog({
+    await auditLogService.logEvent({
       contractId: job.contractId,
       userId: job.userId,
       action: "ANALYSIS_COMPLETED",
+      outcome: "success",
+      userEmail: job.userEmail,
+      ipAddress: job.ipAddress,
+      userAgent: job.userAgent,
+      requestId: job.requestId,
       metadata: {
         totalClauses: result.executiveSummary.totalClauses,
         durationMs: duration,
         modelUsed: result.extractionMeta.modelUsed,
         usedFallback: result.extractionMeta.usedFallback,
       },
-    }).save();
+    });
 
     logger.info(
       `✅ Background analysis complete for contract: ${job.contractId}`,
@@ -136,14 +148,19 @@ export class AnalysisService {
       error,
     );
 
-    await new AuditLog({
+    await auditLogService.logEvent({
       contractId: job.contractId,
       userId: job.userId,
       action: "ANALYSIS_FAILED",
+      outcome: "failure",
+      userEmail: job.userEmail,
+      ipAddress: job.ipAddress,
+      userAgent: job.userAgent,
+      requestId: job.requestId,
       metadata: {
         error: error.message,
       },
-    }).save();
+    });
   }
 }
 

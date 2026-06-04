@@ -6,6 +6,10 @@ export interface AgentJobPayload {
   userId: string;
   text: string;
   language: "ar" | "en";
+  userEmail?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  requestId?: string | null;
 }
 
 interface AgentJob<T> {

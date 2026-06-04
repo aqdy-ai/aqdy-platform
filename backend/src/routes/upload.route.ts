@@ -13,6 +13,8 @@ import {
 } from "../middlewares/security.middleware.js";
 import { redactPII } from "../services/piiFiltering.js";
 import { enforceStorageLimit } from "../middlewares/planEnforcement.middleware.js";
+import mongoose from "mongoose";
+import { User } from "../models/user.model.js";
 
 const uploadRouter = Router();
 uploadRouter.use(anonymousIpRateLimit());
@@ -85,11 +87,40 @@ uploadRouter.post(
 
       const contractId = String(contract._id);
 
+      let userEmail: string | null = null;
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        const user = await User.findById(userId);
+        if (user) {
+          userEmail = user.email;
+        }
+      }
+
+      const xForwardedFor = req.headers["x-forwarded-for"];
+      const ipAddress =
+        typeof xForwardedFor === "string"
+          ? xForwardedFor.split(",")[0].trim()
+          : Array.isArray(xForwardedFor)
+            ? xForwardedFor[0]
+            : req.socket?.remoteAddress || null;
+      const userAgent = req.headers["user-agent"] || null;
+      const requestId =
+        (req as any).requestId ||
+        (req.headers["x-request-id"] as string) ||
+        null;
+
+      const auditMeta = {
+        userEmail,
+        ipAddress,
+        userAgent,
+        requestId,
+      };
+
       // ── Step 3: Audit — CONTRACT_UPLOADED ────────────────────────────────
       await auditLogService.logEvent({
         contractId,
         userId,
         action: "CONTRACT_UPLOADED",
+        ...auditMeta,
         metadata: {
           filename: parsed.filename,
           pages: parsed.pages,
@@ -102,6 +133,7 @@ uploadRouter.post(
         contractId,
         userId,
         action: "ANALYSIS_STARTED",
+        ...auditMeta,
         metadata: {
           filename: parsed.filename,
           language: parsed.language,
@@ -114,7 +146,13 @@ uploadRouter.post(
       //   - Persisting results to RiskAnalysis collection
       //   - Writing ANALYSIS_COMPLETED / ANALYSIS_FAILED audit entries
       analysisService
-        .triggerAnalysis(contractId, userId, parsed.text, parsed.language)
+        .triggerAnalysis(
+          contractId,
+          userId,
+          parsed.text,
+          parsed.language,
+          auditMeta,
+        )
         .catch((err) => {
           logger.error(
             `❌ Background analysis failed for contract ${contractId}:`,

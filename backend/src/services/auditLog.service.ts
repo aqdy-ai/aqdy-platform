@@ -1,4 +1,9 @@
-import { AuditLog, IAuditLog, AuditAction } from "../models/auditLog.model.js";
+import {
+  AuditLog,
+  IAuditLog,
+  AuditAction,
+  AuditOutcome,
+} from "../models/auditLog.model.js";
 import { logger } from "../utils/logger.js";
 import mongoose from "mongoose";
 
@@ -8,6 +13,13 @@ export class AuditLogService {
     contractId: string;
     userId: string;
     action: AuditAction;
+    outcome?: AuditOutcome;
+    userEmail?: string | null;
+    ipAddress?: string | null;
+    userAgent?: string | null;
+    requestId?: string | null;
+    errorMessage?: string | null;
+    errorCode?: string | null;
     langfuseTraceId?: string;
     metadata?: Record<string, unknown>;
   }): Promise<IAuditLog> {
@@ -15,8 +27,14 @@ export class AuditLogService {
 
     const log = new AuditLog({
       action: data.action,
-      outcome: "success",
+      outcome: data.outcome || "success",
       userId: isUserIdValid ? new mongoose.Types.ObjectId(data.userId) : null,
+      userEmail: data.userEmail || null,
+      ipAddress: data.ipAddress || null,
+      userAgent: data.userAgent || null,
+      requestId: data.requestId || null,
+      errorMessage: data.errorMessage || null,
+      errorCode: data.errorCode || null,
       langfuseTraceId: data.langfuseTraceId,
       metadata: {
         ...data.metadata,
