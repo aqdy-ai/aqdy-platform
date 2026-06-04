@@ -31,6 +31,9 @@ jest.unstable_mockModule("../../src/services/contract.service.js", () => ({
 
 jest.unstable_mockModule("../../src/services/auditLog.service.js", () => ({
   auditLogService: { logEvent: mockLogEvent },
+  logAdmin: {
+    viewLogs: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 
 jest.unstable_mockModule("../../src/services/analysis.service.js", () => ({
