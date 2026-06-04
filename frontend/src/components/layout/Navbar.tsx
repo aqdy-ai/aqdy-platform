@@ -16,7 +16,10 @@ const Navbar = () => {
         {/* قسم اللوجو والهوية البراندية */}
         <motion.div
           whileHover={{ scale: 1.02 }}
-          className="group flex cursor-pointer items-center gap-3"
+          className="group focus-visible:ring-primary flex cursor-pointer items-center gap-3 focus-visible:ring-2"
+          role="link"
+          tabIndex={0}
+          aria-label={t('nav.home')}
         >
           <div className="relative flex items-center">
             <div className="bg-primary/20 absolute -inset-1 rounded-full opacity-0 blur transition-opacity group-hover:opacity-100" />
@@ -42,19 +45,32 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           {/* روابط التنقل الأساسية */}
           <div className="text-muted-foreground hidden items-center gap-8 text-sm font-bold md:flex">
-            <a href="/" className="hover:text-primary transition-colors">
+            <a
+              href="/"
+              className="hover:text-primary focus-visible:ring-primary transition-colors focus-visible:ring-2"
+              aria-label={t('nav.home')}
+            >
               {t('nav.home')}
             </a>
 
             <a
-              href="#"
-              className="hover:text-primary flex items-center gap-1 transition-colors"
+              href="/how-it-works"
+              className="hover:text-primary focus-visible:ring-primary flex items-center gap-1 transition-colors focus-visible:ring-2"
+              aria-label={t('nav.how_it_works')}
             >
               {t('nav.how_it_works')}
-              <ExternalLink size={12} className="opacity-50" />
+              <ExternalLink
+                size={12}
+                className="opacity-50"
+                aria-hidden="true"
+              />
             </a>
 
-            <a href="/pricing" className="hover:text-primary transition-colors">
+            <a
+              href="/pricing"
+              className="hover:text-primary focus-visible:ring-primary transition-colors focus-visible:ring-2"
+              aria-label={t('nav.pricing')}
+            >
               {t('nav.pricing')}
             </a>
           </div>
@@ -67,12 +83,13 @@ const Navbar = () => {
 
             <button
               onClick={toggleTheme}
-              className="bg-card/30 border-border/50 hover:bg-muted text-foreground/80 hover:text-primary rounded-xl border p-3 transition-all active:scale-90"
+              aria-label={t('common.toggle_theme')}
+              className="bg-card/30 border-border/50 hover:bg-muted text-foreground/80 hover:text-primary focus-visible:ring-primary rounded-xl border p-3 transition-all focus-visible:ring-2 active:scale-90"
             >
               {theme === 'light' ? (
-                <Moon size={18} strokeWidth={2.5} />
+                <Moon size={18} strokeWidth={2.5} aria-hidden="true" />
               ) : (
-                <Sun size={18} strokeWidth={2.5} />
+                <Sun size={18} strokeWidth={2.5} aria-hidden="true" />
               )}
             </button>
 

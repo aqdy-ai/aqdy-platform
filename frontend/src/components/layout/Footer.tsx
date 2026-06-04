@@ -21,11 +21,11 @@ const Footer = () => {
         </div>
 
         <div className="text-muted-foreground flex gap-6 text-sm font-medium">
-          <a href="#" className="hover:text-primary transition-colors">
+          <a href="/privacy" className="hover:text-primary transition-colors">
             {isRtl ? 'سياسة الخصوصية' : 'Privacy Policy'}
           </a>
 
-          <a href="#" className="hover:text-primary transition-colors">
+          <a href="/terms" className="hover:text-primary transition-colors">
             {isRtl ? 'شروط الخدمة' : 'Terms of Service'}
           </a>
         </div>

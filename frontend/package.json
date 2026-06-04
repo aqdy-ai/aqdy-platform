@@ -16,7 +16,9 @@
     "start": "vite",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "lint:a11y": "eslint 'src/**/*.{tsx,ts,jsx,js}' && stylelint 'src/**/*.css'",
+    "fix:a11y": "eslint 'src/**/*.{tsx,ts,jsx,js}' --fix && stylelint 'src/**/*.css' --fix"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
@@ -48,6 +50,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -58,6 +61,7 @@
     "@vitest/coverage-v8": "^4.1.6",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -67,10 +71,12 @@
     "msw": "^2.7.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "stylelint": "^17.12.0",
+    "stylelint-config-standard": "^40.0.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.10",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.6",
+    "vitest-axe": "^0.1.0"
   }
 }
