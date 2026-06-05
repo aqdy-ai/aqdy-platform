@@ -11,6 +11,7 @@ export const PlanZodSchema = z.object({
       /^[a-z0-9-]+$/,
       "Slug must be URL-safe (lowercase, numbers, and hyphens)",
     ),
+  stripePriceId: z.string().optional(),
   price: z.number().nonnegative().nullable().optional(),
   billingCycle: z.enum(["monthly", "annual"]),
   features: z.array(z.string()),
@@ -28,6 +29,7 @@ export interface IPlan extends Document {
   analysisLimit: number;
   storageLimit: number;
   isActive: boolean;
+  stripePriceId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,6 +55,11 @@ const PlanSchema = new Schema<IPlan>(
     analysisLimit: { type: Number, required: true }, // -1 for unlimited
     storageLimit: { type: Number, required: true }, // -1 for unlimited
     isActive: { type: Boolean, default: true, index: true },
+    stripePriceId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
   },
   {
     timestamps: true,

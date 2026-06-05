@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts --exec 'tsx --env-file .env src/index.ts'",
+    "dev": "nodemon --watch src --ext ts --exec tsx --env-file .env src/index.ts",
     "embed:kb": "tsx --env-file .env src/scripts/embedKB.ts",
     "seed:plans": "tsx --env-file .env src/scripts/seedPlans.ts",
     "build": "rimraf dist && tsc",
@@ -16,7 +16,8 @@
     "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:performance": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --testPathPattern=tests/performance",
     "coverage:check": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --coverageThreshold='{\"global\":{\"lines\":60}}'",
-    "prepare": "cd .. && husky install backend/.husky"
+    "prepare": "cd .. && husky install backend/.husky",
+    "verify:stripe": "tsx --env-file .env src/scripts/verifyStripe.ts"
   },
   "keywords": [],
   "author": "",
@@ -44,6 +45,7 @@
     "multer": "^2.1.1",
     "pdf-parse": "1.1.1",
     "pdfjs-dist": "^5.4.296",
+    "stripe": "^22.2.0",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.1",

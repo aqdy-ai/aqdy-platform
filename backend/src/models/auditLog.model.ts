@@ -16,6 +16,7 @@ export const ACTION_TYPES = [
   "KB_SEARCH",
   "ADMIN_VIEW_LOGS",
   "ADMIN_VIEW_USER",
+  "STRIPE_WEBHOOK",
   // Legacy actions for backward compatibility
   "CONTRACT_UPLOADED",
   "ANALYSIS_STARTED",
@@ -113,5 +114,11 @@ AuditLogSchema.index({ action: 1, timestamp: -1 });
 
 // TTL index on timestamp expireAfterSeconds: 63072000 (2 years)
 AuditLogSchema.index({ timestamp: -1 }, { expireAfterSeconds: 63072000 });
+
+// 🛡️ Unique index on Stripe Event ID for webhook idempotency
+AuditLogSchema.index(
+  { "metadata.stripeEventId": 1 },
+  { unique: true, sparse: true },
+);
 
 export const AuditLog = mongoose.model<IAuditLog>("AuditLog", AuditLogSchema);

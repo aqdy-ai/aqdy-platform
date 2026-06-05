@@ -22,6 +22,7 @@ export const UserZodSchema = z.object({
       /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       "Password must include uppercase, lowercase, number, and special character",
     ),
+  stripeCustomerId: z.string().optional(),
 });
 
 export type UserRegisterInput = z.infer<typeof UserZodSchema>;
@@ -34,6 +35,7 @@ export interface IUser extends Document {
   role: UserRole;
   plan: string;
   planSlug: string;
+  stripeCustomerId?: string;
   status: UserStatus;
   lastLogin?: Date;
   refreshToken?: string;
@@ -59,6 +61,10 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: ["free", "premium", "enterprise"],
       default: "free",
+      index: true,
+    },
+    stripeCustomerId: {
+      type: String,
       index: true,
     },
     status: {

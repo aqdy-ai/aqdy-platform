@@ -26,6 +26,7 @@ import requestIdMiddleware from "./middleware/requestId.middleware.js";
 import auditLogsRouter from "./routes/auditLogs.route.js";
 import accountsRouter from "./routes/accounts.route.js";
 import plansRouter from "./routes/plans.route.js";
+import paymentWebhookRouter from "./routes/payment.route.js";
 
 // Initialize Langfuse observability
 initializeLangfuse();
@@ -45,6 +46,9 @@ app.use(
   }),
 );
 app.use(cookieParser());
+
+app.use("/api/payments", paymentWebhookRouter);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(responseTimeMiddleware());

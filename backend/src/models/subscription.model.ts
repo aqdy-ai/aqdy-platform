@@ -17,6 +17,8 @@ export interface ISubscription extends Document {
   userId: mongoose.Types.ObjectId;
   planId: mongoose.Types.ObjectId;
   status: SubscriptionStatus;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
   startDate: Date;
   endDate: Date;
   renewalDate: Date;
@@ -42,6 +44,16 @@ const SubscriptionSchema = new Schema<ISubscription>(
       type: String,
       enum: ["active", "cancelled", "expired", "past_due"],
       default: "active",
+      index: true,
+    },
+    stripeCustomerId: {
+      type: String,
+      index: true,
+    },
+    stripeSubscriptionId: {
+      type: String,
+      unique: true,
+      sparse: true,
       index: true,
     },
     startDate: { type: Date, required: true, default: Date.now },
