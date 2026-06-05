@@ -40,7 +40,6 @@ const PaymentSchema: Schema = new Schema(
 
 // Indexes
 PaymentSchema.index({ userId: 1, createdAt: -1 });
-PaymentSchema.index({ providerTxId: 1 });
 
 const Payment = mongoose.model<IPayment>("Payment", PaymentSchema);
 
