@@ -7,6 +7,7 @@ import {
   updateProfile,
   deleteAccount,
 } from "../services/account.service.js";
+import { creditsService } from "../services/credits.service.js";
 
 const updateProfileSchema = z
   .object({
@@ -131,6 +132,38 @@ export const deleteAccountHandler = async (
     const response: ApiResponse<null> = {
       success: true,
       message: "Account deleted successfully.",
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCreditsHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AppError(401, "Authentication required.");
+    }
+
+    const balance = await creditsService.getBalance(String(user._id));
+    const ledgerEntries = await creditsService.getLedgerEntries(
+      String(user._id),
+      20,
+    );
+
+    const response: ApiResponse<{ balance: number; ledger: typeof ledgerEntries }> = {
+      success: true,
+      data: {
+        balance,
+        ledger: ledgerEntries,
+      },
+      message: "Credits retrieved successfully.",
     };
 
     res.status(200).json(response);
