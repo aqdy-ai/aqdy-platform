@@ -16,11 +16,32 @@ jest.unstable_mockModule("../../src/services/contract.service.js", () => ({
 const mockLogEvent = jest.fn() as jest.Mock<any>;
 jest.unstable_mockModule("../../src/services/auditLog.service.js", () => ({
   auditLogService: { logEvent: mockLogEvent },
+  logAdmin: {
+    viewLogs: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 
 const mockTriggerAnalysis = jest.fn() as jest.Mock<any>;
 jest.unstable_mockModule("../../src/services/analysis.service.js", () => ({
   analysisService: { triggerAnalysis: mockTriggerAnalysis },
+}));
+
+jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
+  authenticateJwt: (req: any, res: any, next: any) => {
+    req.user = {
+      _id: "6a21a76caad3374228b4d6b0",
+      email: "user@example.com",
+      status: "active",
+    };
+    next();
+  },
+  requireAuth: (req: any, res: any, next: any) => {
+    next();
+  },
+  requireAdmin: (req: any, res: any, next: any) => {
+    next();
+  },
+  verifyJWT: () => ({ sub: "6a21a76caad3374228b4d6b0" }),
 }));
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────

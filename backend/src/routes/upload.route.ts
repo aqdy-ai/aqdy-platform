@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { upload, handleUploadError } from "../middlewares/upload.middleware.js";
+import { anonymousIpRateLimit } from "../middlewares/rateLimit.js";
 import { pdfService } from "../services/pdf.service.js";
 import { docxService } from "../services/docx.service.js";
 import { contractService } from "../services/contract.service.js";
@@ -10,8 +11,17 @@ import {
   detectPromptInjection,
   sanitizeText,
 } from "../middlewares/security.middleware.js";
+import { redactPII } from "../services/piiFiltering.js";
+import { enforceStorageLimit } from "../middlewares/planEnforcement.middleware.js";
+import {
+  authenticateJwt,
+  requireAuth,
+} from "../middlewares/auth.middleware.js";
+import { AuthenticatedRequest } from "../types/auth.js";
 
 const uploadRouter = Router();
+uploadRouter.use(anonymousIpRateLimit());
+uploadRouter.use(enforceStorageLimit);
 
 /**
  * POST /api/upload/
@@ -23,25 +33,28 @@ const uploadRouter = Router();
  *   4. Fire-and-forget: trigger the LLM extraction pipeline in the background
  *   5. Respond 202 immediately so the client can poll GET /api/analysis/:id
  *
- * Headers:
- *   x-user-id  — the authenticated user's ID (defaults to "anonymous")
+ * Requires: Authenticated user (JWT via cookie or Authorization header)
  *
  * Form fields:
  *   contract   — the PDF or DOCX file
  */
 uploadRouter.post(
   "/",
+  authenticateJwt,
+  requireAuth,
   upload.single("contract"),
   handleUploadError,
   async (req: Request, res: Response) => {
     try {
-      const file = req.file;
+      const authReq = req as AuthenticatedRequest;
+      const file = authReq.file;
 
       if (!file) {
         return res.status(400).json({ error: "No file uploaded." });
       }
 
-      const userId = String(req.headers["x-user-id"] ?? "anonymous");
+      const userId = String(authReq.user!._id);
+      const userEmail = authReq.user!.email || null;
 
       // ── Step 1: Parse the file ───────────────────────────────────────────
       let parsed;
@@ -66,6 +79,9 @@ uploadRouter.post(
       // Sanitize standard XSS / HTML tags
       parsed.text = sanitizeText(parsed.text);
 
+      // ── PII Filtering ────────────────────────────────────────────────────
+      parsed.text = redactPII(parsed.text);
+
       // ── Step 2: Persist contract to DB ───────────────────────────────────
       const contract = await contractService.saveContract({
         filename: parsed.filename,
@@ -77,11 +93,32 @@ uploadRouter.post(
 
       const contractId = String(contract._id);
 
+      const xForwardedFor = authReq.headers["x-forwarded-for"];
+      const ipAddress =
+        typeof xForwardedFor === "string"
+          ? xForwardedFor.split(",")[0].trim()
+          : Array.isArray(xForwardedFor)
+            ? xForwardedFor[0]
+            : authReq.socket?.remoteAddress || null;
+      const userAgent = authReq.headers["user-agent"] || null;
+      const requestId =
+        authReq.requestId ||
+        (authReq.headers["x-request-id"] as string) ||
+        null;
+
+      const auditMeta = {
+        userEmail,
+        ipAddress,
+        userAgent,
+        requestId,
+      };
+
       // ── Step 3: Audit — CONTRACT_UPLOADED ────────────────────────────────
       await auditLogService.logEvent({
         contractId,
         userId,
         action: "CONTRACT_UPLOADED",
+        ...auditMeta,
         metadata: {
           filename: parsed.filename,
           pages: parsed.pages,
@@ -94,6 +131,7 @@ uploadRouter.post(
         contractId,
         userId,
         action: "ANALYSIS_STARTED",
+        ...auditMeta,
         metadata: {
           filename: parsed.filename,
           language: parsed.language,
@@ -106,7 +144,13 @@ uploadRouter.post(
       //   - Persisting results to RiskAnalysis collection
       //   - Writing ANALYSIS_COMPLETED / ANALYSIS_FAILED audit entries
       analysisService
-        .triggerAnalysis(contractId, userId, parsed.text, parsed.language)
+        .triggerAnalysis(
+          contractId,
+          userId,
+          parsed.text,
+          parsed.language,
+          auditMeta,
+        )
         .catch((err) => {
           logger.error(
             `❌ Background analysis failed for contract ${contractId}:`,

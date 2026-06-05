@@ -3,6 +3,7 @@ import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 // ── Mock Setup ───────────────────────────────────
 
 const mockInvoke = jest.fn() as jest.Mock;
+const mockSearchRecords = jest.fn() as jest.Mock;
 
 jest.unstable_mockModule("@langchain/google-genai", () => {
   return {
@@ -12,10 +13,22 @@ jest.unstable_mockModule("@langchain/google-genai", () => {
   };
 });
 
+jest.unstable_mockModule("@pinecone-database/pinecone", () => {
+  return {
+    Pinecone: jest.fn().mockImplementation(() => ({
+      index: jest.fn().mockImplementation(() => ({
+        searchRecords: mockSearchRecords,
+      })),
+    })),
+  };
+});
+
 // Import AFTER mocking
 const { RiskClassifierAgent } = await import(
   "../../src/agents/riskClassifier.agent.js"
 );
+
+jest.setTimeout(30000);
 
 // ── Simulated LLM Responses ─────────────────────
 // These simulate what the LLM would return for various clauses.
@@ -171,6 +184,7 @@ describe("RiskClassifierAgent — Integration Tests for Accuracy", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSearchRecords.mockResolvedValue({ result: { hits: [] } });
     agent = new RiskClassifierAgent();
   });
 

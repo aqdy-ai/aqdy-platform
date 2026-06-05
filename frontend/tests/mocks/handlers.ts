@@ -23,4 +23,23 @@ export const handlers = [
       },
     })
   }),
+
+  // Mock for the Subscription status endpoint
+  http.get('/api/account/subscription', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        subscription: {
+          planId: {
+            name: 'الباقة المتقدمة',
+          },
+        },
+        usage: {
+          analysesUsed: 5,
+          analysesLimit: 10,
+          renewalDate: '2026-12-31T23:59:59.000Z',
+        },
+      },
+    })
+  }),
 ]

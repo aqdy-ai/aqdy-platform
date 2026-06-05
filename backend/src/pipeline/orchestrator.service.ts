@@ -15,11 +15,14 @@
 import { extractorAgent } from "../agents/extractor.agent.js";
 import { riskClassifierAgent } from "../agents/riskClassifier.agent.js";
 import { redlineAgent } from "../agents/redline.agent.js";
+import { sanitizationService } from "../services/sanitization.service.js";
 import type { ExtractedClause } from "../agents/extractor.agent.js";
 import { logger } from "../utils/logger.js";
 import { createLangfuseHandler } from "../config/langfuse.config.js";
 import { getStableHash } from "../utils/text.utils.js";
 import type { IClauseAnalysis } from "../models/riskAnalysis.model.js";
+import { metrics } from "../utils/metrics.js";
+import { metricsService } from "../services/metrics.service.js";
 
 // ── Types ─────────────────────────────────────────
 
@@ -95,13 +98,29 @@ export class OrchestratorService {
       tracingEnabled: !!langfuseHandler,
     });
 
+    // ── Step 0: Sanitization Layer ────────────────
+    const sanitizationResult = sanitizationService.sanitize(text);
+    const sanitizedText = sanitizationResult.text;
+
+    if (!sanitizationResult.isSafe) {
+      logger.warn(
+        `Orchestrator: Prompt Injection detected and sanitized for contract ${contractId}`,
+        {
+          detections: sanitizationResult.detections,
+        },
+      );
+    }
+
     // ── Step 1: Extraction ────────────────────────
 
     logger.info("Orchestrator: Step 1 — Extraction");
-    const extractionCacheKey = getStableHash(`${text.trim()}|${language}`);
+    const extractionCacheKey = getStableHash(
+      `${sanitizedText.trim()}|${language}`,
+    );
     const cachedExtraction = this.extractionCache.get(extractionCacheKey);
     const extractionResult =
-      cachedExtraction ?? (await extractorAgent.extract(text, language));
+      cachedExtraction ??
+      (await extractorAgent.extract(sanitizedText, language));
 
     if (!cachedExtraction) {
       this.extractionCache.set(extractionCacheKey, extractionResult);
@@ -222,6 +241,49 @@ export class OrchestratorService {
       overallRisk,
       durationMs,
     });
+
+    logger.info("Orchestrator: pipeline complete", {
+      contractId,
+      totalClauses,
+      riskyClausesCount,
+      overallRisk,
+      durationMs,
+    });
+
+    // Track metrics
+    metrics.increment("analyses.total");
+    metrics.increment(`analyses.risk.${overallRisk}`);
+    metrics.observe("analyses.latencyMs", durationMs);
+    metrics.observe("analyses.clauseCount", totalClauses);
+
+    const tokenEstimate = {
+      inputTokens: Math.ceil(text.length / 4),
+      outputTokens: Math.ceil(text.length / 8),
+      totalTokens: Math.ceil(text.length / 4) + Math.ceil(text.length / 8),
+    };
+
+    metrics.observe("analyses.tokens.total", tokenEstimate.totalTokens);
+
+    const cost = metricsService.calculateCost(
+      "gemini-3.5-flash",
+      tokenEstimate,
+    );
+    metrics.observe("analyses.costUSD", cost);
+
+    metricsService.trackAnalysis({
+      contractId,
+      userId,
+      totalTokens: tokenEstimate,
+      totalCostUSD: cost,
+      totalLatencyMs: durationMs,
+      agentCalls: [],
+      clauseCount: totalClauses,
+      success: true,
+    });
+
+    if (durationMs > 5000) {
+      metrics.increment("alerts.highLatency");
+    }
 
     // Flush Langfuse traces
     if (langfuseHandler) {
