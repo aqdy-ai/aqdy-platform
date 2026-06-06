@@ -796,7 +796,8 @@ const options: swaggerJsdoc.Options = {
       "/api/contracts/{contractId}/clauses/{clauseIndexStr}/chat": {
         post: {
           tags: ["Contracts"],
-          summary: "Have a focused AI conversation about a specific contract clause",
+          summary:
+            "Have a focused AI conversation about a specific contract clause",
           parameters: [
             {
               name: "contractId",
@@ -843,19 +844,24 @@ const options: swaggerJsdoc.Options = {
           },
           responses: {
             200: {
-              description: "Streamed Server-Sent Events (SSE) response containing the AI answer chunks",
+              description:
+                "Streamed Server-Sent Events (SSE) response containing the AI answer chunks",
               content: {
                 "text/event-stream": {
                   schema: {
                     type: "string",
-                    example: "data: {\"text\":\"According\"}\n\ndata: {\"text\":\" to\"}\n\ndata: [DONE]\n\n",
+                    example:
+                      'data: {"text":"According"}\n\ndata: {"text":" to"}\n\ndata: [DONE]\n\n',
                   },
                 },
               },
             },
             400: { description: "Invalid input or index format" },
             402: { description: "Insufficient credits available" },
-            429: { description: "Rate limit exceeded (Max 20 messages per clause per 24 hours)" },
+            429: {
+              description:
+                "Rate limit exceeded (Max 20 messages per clause per 24 hours)",
+            },
             404: { description: "Contract analysis or clause index not found" },
           },
         },

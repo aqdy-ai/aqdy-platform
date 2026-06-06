@@ -22,7 +22,7 @@ router.post(
   authenticateJwt,
   requireAuth,
   verifyContractOwnership,
-  clauseChatController
+  clauseChatController,
 );
 
 export default router;

@@ -20,7 +20,9 @@ export const errorHandler = (
   _next: NextFunction,
 ): void => {
   const errWithStatus = err as { statusCode?: number };
-  const isAppError = err instanceof AppError || (err && typeof errWithStatus.statusCode === "number");
+  const isAppError =
+    err instanceof AppError ||
+    (err && typeof errWithStatus.statusCode === "number");
   if (isAppError && errWithStatus.statusCode !== undefined) {
     const response: ApiResponse<null> = {
       success: false,

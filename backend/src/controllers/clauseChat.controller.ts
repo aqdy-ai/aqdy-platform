@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HumanMessage, SystemMessage, AIMessage, BaseMessage } from "@langchain/core/messages";
+import {
+  HumanMessage,
+  SystemMessage,
+  AIMessage,
+  BaseMessage,
+} from "@langchain/core/messages";
 import { env } from "../config/env.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { creditsService } from "../services/credits.service.js";
@@ -17,13 +22,16 @@ export const ClauseChatBodySchema = z.object({
       z.object({
         role: z.enum(["user", "assistant"]),
         content: z.string(),
-      })
+      }),
     )
     .default([]),
 });
 
 // Rate limiting in-memory store
-export const clauseChatLimits = new Map<string, { count: number; resetAt: number }>();
+export const clauseChatLimits = new Map<
+  string,
+  { count: number; resetAt: number }
+>();
 
 export const resetClauseChatLimits = (): void => {
   clauseChatLimits.clear();
@@ -32,7 +40,7 @@ export const resetClauseChatLimits = (): void => {
 export const clauseChatController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const authReq = req as AuthenticatedRequest;
@@ -53,7 +61,9 @@ export const clauseChatController = async (
     const bodyResult = ClauseChatBodySchema.safeParse(req.body);
     if (!bodyResult.success) {
       const firstIssue = bodyResult.error.issues[0];
-      const errorMessage = firstIssue ? firstIssue.message : "Invalid request body";
+      const errorMessage = firstIssue
+        ? firstIssue.message
+        : "Invalid request body";
       return next(new AppError(400, errorMessage));
     }
     const { message, history } = bodyResult.data;
@@ -65,7 +75,9 @@ export const clauseChatController = async (
     }
 
     if (clauseIndex >= analysis.clauseAnalysis.length) {
-      return next(new AppError(404, `Clause index ${clauseIndex} is out of bounds.`));
+      return next(
+        new AppError(404, `Clause index ${clauseIndex} is out of bounds.`),
+      );
     }
 
     const clause = analysis.clauseAnalysis[clauseIndex];
@@ -78,11 +90,15 @@ export const clauseChatController = async (
 
     if (existingLimit && existingLimit.resetAt > now) {
       if (existingLimit.count >= limitLimit) {
-        const retryAfterSeconds = Math.max(1, Math.ceil((existingLimit.resetAt - now) / 1000));
+        const retryAfterSeconds = Math.max(
+          1,
+          Math.ceil((existingLimit.resetAt - now) / 1000),
+        );
         res.setHeader("Retry-After", String(retryAfterSeconds));
         res.status(429).json({
           success: false,
-          error: "Rate limit exceeded. Max 20 messages per clause per 24 hours.",
+          error:
+            "Rate limit exceeded. Max 20 messages per clause per 24 hours.",
           retryAfter: retryAfterSeconds,
         });
         return;
@@ -180,7 +196,9 @@ INSTRUCTIONS:
       res.end();
     } catch (streamError) {
       logger.error("Error during clause chat streaming:", streamError);
-      res.write(`data: ${JSON.stringify({ error: "An error occurred during response streaming." })}\n\n`);
+      res.write(
+        `data: ${JSON.stringify({ error: "An error occurred during response streaming." })}\n\n`,
+      );
       res.end();
     }
   } catch (error) {
