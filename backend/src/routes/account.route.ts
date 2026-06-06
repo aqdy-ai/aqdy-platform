@@ -3,6 +3,7 @@ import {
   getProfileHandler,
   updateProfileHandler,
   deleteAccountHandler,
+  getCreditsHandler,
 } from "../controllers/account.controller.js";
 import {
   getSubscriptionHandler,
@@ -23,6 +24,7 @@ router.use(authenticateJwt, requireAuth);
 router.get("/profile", getProfileHandler);
 router.patch("/profile", updateProfileHandler);
 router.delete("/", deleteAccountHandler);
+router.get("/credits", getCreditsHandler);
 
 // Subscription routes
 router.get("/subscription", getSubscriptionHandler);
