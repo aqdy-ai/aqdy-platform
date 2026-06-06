@@ -1,3 +1,4 @@
+// jest.config.ts
 import type { JestConfigWithTsJest } from "ts-jest";
 
 const jestConfig: JestConfigWithTsJest = {

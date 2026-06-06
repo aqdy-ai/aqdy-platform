@@ -15,6 +15,7 @@ const plansData = [
     features: ["5 analyses/month", "10 contracts max", "No export"],
     analysisLimit: 5,
     storageLimit: 10,
+    creditAllowance: 500,
     isActive: true,
   },
   {
@@ -30,6 +31,7 @@ const plansData = [
     ],
     analysisLimit: 100,
     storageLimit: -1, // -1 means unlimited
+    creditAllowance: 5000,
     isActive: true,
   },
   {
@@ -45,6 +47,7 @@ const plansData = [
     ],
     analysisLimit: -1, // -1 means unlimited
     storageLimit: -1, // -1 means unlimited
+    creditAllowance: 50000,
     isActive: true,
   },
 ];

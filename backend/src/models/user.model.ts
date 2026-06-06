@@ -34,6 +34,7 @@ export interface IUser extends Document {
   role: UserRole;
   plan: string;
   planSlug: string;
+  creditBalance: number;
   status: UserStatus;
   lastLogin?: Date;
   refreshToken?: string;
@@ -61,6 +62,7 @@ const UserSchema = new Schema<IUser>(
       default: "free",
       index: true,
     },
+    creditBalance: { type: Number, default: 0, min: 0 },
     status: {
       type: String,
       enum: ["active", "suspended", "deleted"],
