@@ -144,15 +144,31 @@ describe('GET /api/contracts/:id', () => {
 // ── Analysis Endpoint ─────────────────────────────────────────────────────
 
 describe('POST /api/analysis/analyze', () => {
+  let authToken: string;
+  let authenticatedUserId: string;
+
+  beforeEach(async () => {
+    // Register + login عشان نجيب token
+    const registerRes = await request(app)
+      .post('/api/auth/register')
+      .send({
+        name: 'Test User',
+        email: `test_${Date.now()}@test.com`,
+        password: 'Test@1234',
+      });
+    authToken = registerRes.body.data.token;
+    authenticatedUserId = registerRes.body.data.user.id;
+  });
+
   test('should start analysis for valid contract', async () => {
-    // Upload first
+    // Upload first بالـ authenticated user
     const uploadRes = await request(app)
       .post('/api/contracts/upload')
       .send({
         filename: 'test.pdf',
         language: 'en',
         text: 'This contract includes unlimited liability clause.',
-        userId: 'user_123',
+        userId: authenticatedUserId,
         fileSize: 1024,
       });
 
@@ -160,8 +176,8 @@ describe('POST /api/analysis/analyze', () => {
 
     const res = await request(app)
       .post('/api/analysis/analyze')
-      .set('x-user-tier', 'premium')
-      .send({ contractId, userId: 'user_123' });
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ contractId, userId: authenticatedUserId });
 
     expect(res.status).toBe(202);
     expect(res.body.success).toBe(true);
@@ -173,8 +189,8 @@ describe('POST /api/analysis/analyze', () => {
 
     const res = await request(app)
       .post('/api/analysis/analyze')
-      .set('x-user-tier', 'premium')
-      .send({ contractId: fakeId, userId: 'user_123' });
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ contractId: fakeId, userId: authenticatedUserId });
 
     expect(res.status).toBe(404);
   });
@@ -182,8 +198,8 @@ describe('POST /api/analysis/analyze', () => {
   test('should reject analysis with missing contractId', async () => {
     const res = await request(app)
       .post('/api/analysis/analyze')
-      .set('x-user-tier', 'premium')
-      .send({ userId: 'user_123' });
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ userId: authenticatedUserId });
 
     expect(res.status).toBe(400);
   });
