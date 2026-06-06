@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "migrate:userId": "cross-env tsx src/scripts/migrateContractUserId.ts",
     "dev": "nodemon --watch src --ext ts --exec 'tsx --env-file .env src/index.ts'",
     "embed:kb": "tsx --env-file .env src/scripts/embedKB.ts",
     "seed:plans": "tsx --env-file .env src/scripts/seedPlans.ts",
