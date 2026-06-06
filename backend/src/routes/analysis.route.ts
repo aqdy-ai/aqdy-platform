@@ -7,11 +7,11 @@ import {
 import { userAnalysisRateLimit } from "../middlewares/rateLimit.js";
 import { validate } from "../middlewares/validate.js";
 import { enforceAnalysisLimit } from "../middlewares/planEnforcement.middleware.js";
-import { verifyContractOwnership } from '../middlewares/contractOwnership.middleware.js';
+import { verifyContractOwnership } from "../middlewares/contractOwnership.middleware.js";
 import {
   authenticateJwt,
   requireAuth,
-} from '../middlewares/auth.middleware.js';
+} from "../middlewares/auth.middleware.js";
 
 /**
  * Validation schema for the analyze request.
