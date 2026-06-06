@@ -16,6 +16,7 @@ export interface IContract extends Document {
   text: string;
   userId: string;
   fileSize: number;
+  deletedAt: Date | null;
 }
 
 const ContractSchema = new Schema<IContract>(
@@ -26,11 +27,13 @@ const ContractSchema = new Schema<IContract>(
     text: { type: String, required: true },
     userId: { type: String, required: true, index: true },
     fileSize: { type: Number, required: true },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );
 
 ContractSchema.index({ userId: 1, uploadedAt: -1 });
+ContractSchema.index({ userId: 1, deletedAt: 1 });
 ContractSchema.index({ language: 1 });
 
 export const Contract = mongoose.model<IContract>("Contract", ContractSchema);

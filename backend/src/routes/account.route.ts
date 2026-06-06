@@ -11,9 +11,15 @@ import {
   cancelSubscriptionHandler,
 } from "../controllers/subscription.controller.js";
 import {
+  getContractListHandler,
+  getContractDetailHandler,
+  deleteContractHandler,
+} from "../controllers/contractHistory.controller.js";
+import {
   authenticateJwt,
   requireAuth,
 } from "../middlewares/auth.middleware.js";
+import { verifyContractOwnership } from "../middlewares/contractOwnership.middleware.js";
 
 const router = Router();
 
@@ -30,5 +36,18 @@ router.get("/credits", getCreditsHandler);
 router.get("/subscription", getSubscriptionHandler);
 router.post("/subscription/upgrade", upgradeSubscriptionHandler);
 router.post("/subscription/cancel", cancelSubscriptionHandler);
+
+// Contract history routes
+router.get("/contracts", getContractListHandler);
+router.get(
+  "/contracts/:contractId",
+  verifyContractOwnership,
+  getContractDetailHandler,
+);
+router.delete(
+  "/contracts/:contractId",
+  verifyContractOwnership,
+  deleteContractHandler,
+);
 
 export default router;
