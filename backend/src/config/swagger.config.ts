@@ -331,8 +331,17 @@ const options: swaggerJsdoc.Options = {
             language: { type: "string", enum: ["ar", "en"] },
             fileSize: { type: "number", example: 2048 },
             status: { type: "string", enum: ["analyzed", "pending", "failed"] },
-            riskLevel: { type: "string", nullable: true, enum: ["low", "medium", "high", "critical"], example: "high" },
-            analysisId: { type: "string", nullable: true, example: "64abc789ghi012" },
+            riskLevel: {
+              type: "string",
+              nullable: true,
+              enum: ["low", "medium", "high", "critical"],
+              example: "high",
+            },
+            analysisId: {
+              type: "string",
+              nullable: true,
+              example: "64abc789ghi012",
+            },
           },
         },
         ContractListResponse: {
@@ -352,7 +361,10 @@ const options: swaggerJsdoc.Options = {
                 limit: { type: "number", example: 10 },
               },
             },
-            message: { type: "string", example: "Contract list retrieved successfully" },
+            message: {
+              type: "string",
+              example: "Contract list retrieved successfully",
+            },
           },
         },
       },
@@ -1204,7 +1216,10 @@ const options: swaggerJsdoc.Options = {
             {
               name: "status",
               in: "query",
-              schema: { type: "string", enum: ["analyzed", "pending", "failed"] },
+              schema: {
+                type: "string",
+                enum: ["analyzed", "pending", "failed"],
+              },
               description: "Filter by analysis status",
             },
             {
@@ -1216,13 +1231,21 @@ const options: swaggerJsdoc.Options = {
             {
               name: "sortBy",
               in: "query",
-              schema: { type: "string", enum: ["uploadedAt", "analyzedAt", "riskLevel"], default: "uploadedAt" },
+              schema: {
+                type: "string",
+                enum: ["uploadedAt", "analyzedAt", "riskLevel"],
+                default: "uploadedAt",
+              },
               description: "Sort field",
             },
             {
               name: "sortOrder",
               in: "query",
-              schema: { type: "string", enum: ["asc", "desc"], default: "desc" },
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+                default: "desc",
+              },
               description: "Sort order",
             },
           ],
@@ -1264,7 +1287,9 @@ const options: swaggerJsdoc.Options = {
               },
             },
             401: { description: "Authentication required" },
-            403: { description: "Access denied - you do not own this contract" },
+            403: {
+              description: "Access denied - you do not own this contract",
+            },
             404: { description: "Contract not found" },
             500: { description: "Server error" },
           },
@@ -1292,7 +1317,9 @@ const options: swaggerJsdoc.Options = {
               },
             },
             401: { description: "Authentication required" },
-            403: { description: "Access denied - you do not own this contract" },
+            403: {
+              description: "Access denied - you do not own this contract",
+            },
             404: { description: "Contract not found or already deleted" },
             500: { description: "Server error" },
           },

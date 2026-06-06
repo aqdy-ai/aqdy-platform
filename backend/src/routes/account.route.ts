@@ -39,7 +39,15 @@ router.post("/subscription/cancel", cancelSubscriptionHandler);
 
 // Contract history routes
 router.get("/contracts", getContractListHandler);
-router.get("/contracts/:contractId", verifyContractOwnership, getContractDetailHandler);
-router.delete("/contracts/:contractId", verifyContractOwnership, deleteContractHandler);
+router.get(
+  "/contracts/:contractId",
+  verifyContractOwnership,
+  getContractDetailHandler,
+);
+router.delete(
+  "/contracts/:contractId",
+  verifyContractOwnership,
+  deleteContractHandler,
+);
 
 export default router;
