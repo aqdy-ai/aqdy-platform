@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import {
@@ -6,21 +6,26 @@ import {
   ShieldCheck,
   FileText,
   AlertTriangle,
-  CheckCircle2,
   TrendingUp,
-  HelpCircle,
   ArrowLeft,
   ArrowRight,
+  ChevronDown,
+  ChevronRight,
+  ChevronLeft,
 } from 'lucide-react'
 import ClauseCard, { ClauseItem } from '../components/features/ClauseCard'
 import { IClauseAnalysis, IRiskAnalysis } from '../types/analysis'
 
-// بيانات تجريبية تحاكي تحليل الذكاء الاصطناعي للعقد (fallback)
-const MOCK_RISK_DATA = {
-  contractName: 'عقد توريد برمجيات وتشغيل صيانة.pdf',
-  overallScore: 68, // من 100
-  summary:
-    'يحتوي العقد على التزامات مالية واضحة، ولكن هناك ثغرات حرجية في بنود التعويضات وحدود المسؤولية القانونية عند انقطاع الخدمة.',
+// Bilingual Mock Risk Data Generator
+const getMockData = (isRtl: boolean) => ({
+  contractName: isRtl
+    ? 'عقد توريد برمجيات وتشغيل صيانة.pdf'
+    : 'Software Supply & Maintenance Contract.pdf',
+  overallScore: 68,
+  overallRisk: 'high',
+  summary: isRtl
+    ? 'يحتوي العقد على التزامات مالية واضحة، ولكن هناك ثغرات حرجية في بنود التعويضات وحدود المسؤولية القانونية عند انقطاع الخدمة.'
+    : 'The contract contains clear financial obligations, but has critical loopholes in indemnification and liability caps.',
   stats: {
     high: 3,
     medium: 5,
@@ -29,46 +34,81 @@ const MOCK_RISK_DATA = {
   items: [
     {
       id: 'r1',
-      severity: 'high',
-      title: 'شرط جزائي مفتوح وبدون حد أقصى',
-      clause:
-        'البند 4.2: يلتزم الطرف الثاني بدفع تعويض مالي عن كل يوم تأخير في التسليم دون تحديد سقف أعلى للعقوبة.',
-      recommendation:
-        'يجب تعديل البند لصياغة حد أقصى للغرامة لا يتجاوز 10% من القيمة الإجمالية للعقد.',
+      severity: 'high' as const,
+      title: isRtl
+        ? 'شرط جزائي مفتوح وبدون حد أقصى'
+        : 'Unlimited Penalty Clause',
+      clause: isRtl
+        ? 'البند 4.2: يلتزم الطرف الثاني بدفع تعويض مالي عن كل يوم تأخير في التسليم دون تحديد سقف أعلى للعقوبة.'
+        : 'Clause 4.2: The second party is liable to pay daily delay penalties without any upper cap.',
+      explanation: isRtl
+        ? 'هذا البند يفرض التزامات مالية غير محدودة قد تؤدي لتعثر الطرف الثاني ماليًا.'
+        : 'Unlimited liability daily penalty poses severe financial risk with no maximum ceiling.',
+      redlineSuggestion: isRtl
+        ? 'يجب تعديل البند لصياغة حد أقصى للغرامة لا يتجاوز 10% من القيمة الإجمالية للعقد.'
+        : 'The maximum total delay penalty shall not exceed 10% of the total contract value.',
+      confidence: 0.95,
+      sourceFromKB: 'kb_penalty_cap_01',
     },
     {
       id: 'r2',
-      severity: 'high',
-      title: 'غموض في آلية إنهاء التعاقد المبكر',
-      clause:
-        'البند 9.1: يحق للطرف الأول إنهاء العقد في أي وقت دون إشعار مسبق ودون إبداء أسباب.',
-      recommendation:
-        'إضافة شرط يوجب الإخطار الكتابي قبل الإنهاء بـ 30 يوماً على الأقل لضمان استقرار التشغيل.',
+      severity: 'high' as const,
+      title: isRtl
+        ? 'غموض في آلية إنهاء التعاقد المبكر'
+        : 'Vague Early Termination Clause',
+      clause: isRtl
+        ? 'البند 9.1: يحق للطرف الأول إنهاء العقد في أي وقت دون إشعار مسبق ودون إبداء أسباب.'
+        : 'Clause 9.1: First party may terminate the contract at any time without notice or reason.',
+      explanation: isRtl
+        ? 'الإنهاء الفوري بدون سبب يضر بالاستقرار التشغيلي والتخطيط المالي للطرف الثاني.'
+        : 'Immediate termination without cause harms operational stability and resource allocation.',
+      redlineSuggestion: isRtl
+        ? 'إضافة شرط يوجب الإخطار الكتابي قبل الإنهاء بـ 30 يوماً على الأقل لضمان استقرار التشغيل.'
+        : 'Either party may terminate this agreement with 30 days prior written notice.',
+      confidence: 0.88,
+      sourceFromKB: 'kb_termination_notice',
     },
     {
       id: 'r3',
-      severity: 'medium',
-      title: 'قانون فض النزاعات خارج الاختصاص المحلي',
-      clause:
-        'البند 12.5: تخضع هذه الاتفاقية وتُفسر وفقاً لقوانين مركز دبي المالي العالمي.',
-      recommendation:
-        'يُفضل تعديل الاختصاص ليكون المحاكم المحلية لتقليل تكاليف التقاضي في حال النزاع.',
+      severity: 'medium' as const,
+      title: isRtl
+        ? 'قانون فض النزاعات خارج الاختصاص المحلي'
+        : 'Non-Local Governing Law',
+      clause: isRtl
+        ? 'البند 12.5: تخضع هذه الاتفاقية وتُفسر وفقاً قوانين مركز دبي المالي العالمي.'
+        : 'Clause 12.5: This agreement is governed by the laws of Dubai International Financial Centre.',
+      explanation: isRtl
+        ? 'الاختصاص القضائي الخارجي يزيد من تكاليف التقاضي وصعوبة تسوية النزاعات.'
+        : 'Foreign governing law increases litigation costs and procedural complexity.',
+      redlineSuggestion: isRtl
+        ? 'يُفضل تعديل الاختصاص ليكون المحاكم المحلية لتقليل تكاليف التقاضي في حال النزاع.'
+        : 'This agreement shall be governed by and construed in accordance with the local laws.',
+      confidence: 0.76,
+      sourceFromKB: 'kb_governing_law_03',
     },
     {
       id: 'r4',
-      severity: 'low',
-      title: 'عدم تحديد وثائق التأمين المطلوبة',
-      clause:
-        'البند 7.3: يلتزم المورد بتوفير وثيقة تأمين ضد الأخطار المهنية طوال فترة العقد.',
-      recommendation:
-        'تحديد القيمة الأدنى للتأمين لتفادي الخلافات التنفيذية لاحقاً.',
+      severity: 'low' as const,
+      title: isRtl
+        ? 'عدم تحديد وثائق التأمين المطلوبة'
+        : 'Unspecified Insurance Details',
+      clause: isRtl
+        ? 'البند 7.3: يلتزم المورد بتوفير وثيقة تأمين ضد الأخطار المهنية طوال فترة العقد.'
+        : 'Clause 7.3: Supplier must maintain professional liability insurance.',
+      explanation: isRtl
+        ? 'عدم تحديد قيمة وثيقة التأمين قد يؤدي لخلافات حول ملاءة التغطية التأمينية.'
+        : 'Failing to specify minimum insurance coverage limits can lead to disputes.',
+      redlineSuggestion: isRtl
+        ? 'تحديد القيمة الأدنى للتأمين لتفادي الخلافات التنفيذية لاحقاً.'
+        : 'Supplier shall maintain insurance coverage of at least $100,000 per occurrence.',
+      confidence: 0.62,
+      sourceFromKB: 'kb_insurance_min',
     },
   ],
-}
+})
 
 export default function RiskAnalysisDashboard() {
-  const { t } = useTranslation()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
   const [searchParams] = useSearchParams()
   const contractId = searchParams.get('id')
@@ -76,6 +116,12 @@ export default function RiskAnalysisDashboard() {
   const [activeFilter, setActiveFilter] = useState<
     'all' | 'high' | 'medium' | 'low'
   >('all')
+  const [expandedClauseId, setExpandedClauseId] = useState<string | null>(null)
+  const [highlightedRisk, setHighlightedRisk] = useState<
+    'high' | 'medium' | 'low' | null
+  >(null)
+
+  const tableRef = useRef<HTMLDivElement>(null)
 
   // Real data state from the backend
   const [analysis, setAnalysis] = useState<IRiskAnalysis | null>(null)
@@ -103,7 +149,6 @@ export default function RiskAnalysisDashboard() {
 
     let isActive = true
 
-    // Run asynchronously to prevent cascading renders and satisfy the linter
     Promise.resolve().then(() => {
       if (isActive) {
         setIsLoading(true)
@@ -112,7 +157,7 @@ export default function RiskAnalysisDashboard() {
     })
 
     let pollCount = 0
-    const maxPolls = 60 // 2.5 minutes maximum polling duration
+    const maxPolls = 60
 
     const checkAnalysis = async () => {
       try {
@@ -154,7 +199,8 @@ export default function RiskAnalysisDashboard() {
     }
   }, [contractId])
 
-  // Map real data from backend, falling back to mock data when accessed offline/directly
+  const MOCK_RISK_DATA = getMockData(isRtl)
+
   const dataToRender = analysis
     ? {
         contractName: analysis.filename || t('dashboard.default_filename'),
@@ -210,17 +256,116 @@ export default function RiskAnalysisDashboard() {
                   item.clauseType || t('auth.errors.default_clause_title'),
               }),
               clause: item.clauseText,
-              recommendation: `${item.redlineSuggestion || t('auth.errors.recommend_negotiate')}\n\n${t('auth.errors.explanation_prefix')}${isRtl ? item.explanation?.ar : item.explanation?.en}`,
+              explanation: isRtl
+                ? item.explanation?.ar || ''
+                : item.explanation?.en || '',
+              redlineSuggestion: item.redlineSuggestion,
+              confidence: item.confidence,
+              sourceFromKB: item.sourceFromKB,
             }
           }
         ),
       }
     : MOCK_RISK_DATA
 
+  // Calculate estimated negotiation priority label based on counts
+  const negotiationPriority =
+    dataToRender.stats.high > 0
+      ? 'high'
+      : dataToRender.stats.medium > 0
+        ? 'medium'
+        : 'low'
+
+  const getNegotiationPriorityText = (priority: 'high' | 'medium' | 'low') => {
+    switch (priority) {
+      case 'high':
+        return isRtl ? 'أولوية تفاوضية: عالية' : 'Negotiation Priority: High'
+      case 'medium':
+        return isRtl ? 'أولوية تفاوضية: متوسطة' : 'Negotiation Priority: Medium'
+      case 'low':
+      default:
+        return isRtl ? 'أولوية تفاوضية: منخفضة' : 'Negotiation Priority: Low'
+    }
+  }
+
+  const getOverallRiskText = (risk: string) => {
+    if (risk === 'high' || risk === 'critical') {
+      return isRtl ? 'مخاطر عالية' : 'High Risk'
+    } else if (risk === 'medium') {
+      return isRtl ? 'مخاطر متوسطة' : 'Medium Risk'
+    } else {
+      return isRtl ? 'مخاطر منخفضة' : 'Low Risk'
+    }
+  }
+
+  const getOverallRiskBadgeClass = (risk: string) => {
+    if (risk === 'high' || risk === 'critical') {
+      return 'bg-red-500/10 text-red-500 border border-red-500/20'
+    } else if (risk === 'medium') {
+      return 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+    } else {
+      return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+    }
+  }
+
+  const getSeverityBadgeClass = (sev: 'high' | 'medium' | 'low') => {
+    switch (sev) {
+      case 'high':
+        return 'bg-red-500/10 text-red-500 border border-red-500/20'
+      case 'medium':
+        return 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+      case 'low':
+      default:
+        return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+    }
+  }
+
+  const getSeverityLabel = (sev: 'high' | 'medium' | 'low') => {
+    switch (sev) {
+      case 'high':
+        return isRtl ? 'عالية' : 'High'
+      case 'medium':
+        return isRtl ? 'متوسطة' : 'Medium'
+      case 'low':
+      default:
+        return isRtl ? 'منخفضة' : 'Low'
+    }
+  }
+
+  const getOneLineSummary = (explanation: string) => {
+    if (!explanation) return ''
+    const sentenceEnd = explanation.indexOf('.')
+    const sentenceEndAr = explanation.indexOf('؟')
+    const endIdx = sentenceEnd !== -1 ? sentenceEnd : sentenceEndAr
+    if (endIdx !== -1) {
+      return explanation.substring(0, endIdx + 1).trim()
+    }
+    return explanation.length > 70
+      ? explanation.substring(0, 70) + '...'
+      : explanation
+  }
+
   const filteredItems = dataToRender.items.filter((item) => {
     if (activeFilter === 'all') return true
     return item.severity === activeFilter
   })
+
+  const handleJumpToRisk = (sev: 'high' | 'medium' | 'low') => {
+    setActiveFilter(sev)
+    setHighlightedRisk(sev)
+    setTimeout(() => {
+      if (tableRef.current) {
+        tableRef.current.scrollIntoView({ behavior: 'smooth' })
+      }
+    }, 100)
+    setTimeout(() => {
+      setHighlightedRisk(null)
+    }, 2000)
+  }
+
+  const toggleRow = (id: string) => {
+    setExpandedClauseId((prev) => (prev === id ? null : id))
+  }
 
   if (isLoading) {
     return (
@@ -269,18 +414,20 @@ export default function RiskAnalysisDashboard() {
         <h2 className="mb-3 text-2xl font-black text-red-600 dark:text-red-400">
           {isRtl ? 'حدث خطأ أثناء التحليل' : 'Analysis Failed'}
         </h2>
-        <p className="text-muted-foreground mb-8 max-w-md text-sm leading-relaxed font-medium font-semibold">
+        <p className="text-muted-foreground mb-8 max-w-md text-sm leading-relaxed font-semibold">
           {error}
         </p>
         <button
           onClick={() => window.history.back()}
-          className="bg-primary text-primary-foreground rounded-xl px-6 py-3 font-bold shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95"
+          className="bg-primary text-primary-foreground cursor-pointer rounded-xl px-6 py-3 font-bold shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95"
         >
           {t('common.close')}
         </button>
       </div>
     )
   }
+
+  const overallRiskLevel = dataToRender.stats.high > 0 ? 'high' : 'medium'
 
   return (
     <div className="animate-in fade-in space-y-8 py-10 duration-500">
@@ -303,7 +450,7 @@ export default function RiskAnalysisDashboard() {
 
         <button
           onClick={() => window.history.back()}
-          className="bg-card hover:bg-muted border-border/60 text-muted-foreground hover:text-foreground flex items-center gap-2 self-start rounded-xl border px-4 py-2.5 text-sm font-bold transition-all active:scale-95"
+          className="bg-card hover:bg-muted border-border/60 text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-2 self-start rounded-xl border px-4 py-2.5 text-sm font-bold transition-all active:scale-95"
         >
           {isRtl ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
           {isRtl ? 'العودة للملفات' : 'Back to Files'}
@@ -312,77 +459,104 @@ export default function RiskAnalysisDashboard() {
 
       <hr className="border-border/40" />
 
-      {/* Overview Grid */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Score Card */}
-        <div className="bg-card border-border/60 relative flex flex-col items-center justify-center overflow-hidden rounded-3xl border p-6 text-center shadow-sm">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent" />
-          <h3 className="text-muted-foreground mb-4 flex items-center gap-1 text-sm font-bold">
-            {isRtl ? 'مؤشر سلامة العقد الإجمالي' : 'Overall Contract Health'}
-            <HelpCircle size={14} className="opacity-40" />
-          </h3>
-
-          <div className="relative flex items-center justify-center">
-            <svg className="h-36 w-36 -rotate-90 transform">
-              <circle
-                cx="72"
-                cy="72"
-                r="64"
-                className="stroke-muted/30"
-                strokeWidth="10"
-                fill="transparent"
-              />
-              <circle
-                cx="72"
-                cy="72"
-                r="64"
-                className="stroke-green-500 transition-all duration-1000 ease-in-out"
-                strokeWidth="10"
-                fill="transparent"
-                strokeDasharray={402}
-                strokeDashoffset={402 - (402 * dataToRender.overallScore) / 100}
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute flex flex-col items-center">
-              <span className="text-4xl font-black tracking-tight text-green-500">
-                {dataToRender.overallScore}%
-              </span>
-              <span className="text-muted-foreground mt-0.5 text-[10px] font-bold tracking-wider uppercase">
-                {isRtl ? 'آمن ومستقر' : 'Safe & Stable'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* AI Summary Card */}
-        <div className="bg-card border-border/60 relative flex flex-col justify-between overflow-hidden rounded-3xl border p-6 shadow-sm md:col-span-2">
-          <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent to-transparent" />
-          <div>
-            <div className="mb-3 flex items-center justify-between">
-              <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold">
-                <TrendingUp size={12} />
+      {/* Executive Summary Card */}
+      <div className="bg-card border-border/60 relative overflow-hidden rounded-3xl border p-6 shadow-md md:p-8">
+        <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent to-transparent" />
+        <div className="relative space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-black tracking-wider uppercase">
+                <TrendingUp size={14} />
                 {isRtl ? 'ملخص ذكاء اصطناعي تنفيذي' : 'AI Executive Summary'}
               </span>
+              <span
+                className={`rounded-full px-3 py-1.5 text-xs font-extrabold tracking-wide uppercase ${getOverallRiskBadgeClass(overallRiskLevel)}`}
+              >
+                {getOverallRiskText(overallRiskLevel)}
+              </span>
             </div>
-            <p className="text-foreground mt-2 text-start text-base leading-relaxed font-medium">
+            <span
+              className={`rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-black text-amber-600 dark:text-amber-400`}
+            >
+              {getNegotiationPriorityText(negotiationPriority)}
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-foreground text-lg font-bold">
+              {isRtl
+                ? 'النتائج والملخص العام للتحليل'
+                : 'Key Analysis Findings'}
+            </h3>
+            <p className="text-muted-foreground text-base leading-relaxed font-medium">
               {dataToRender.summary}
             </p>
           </div>
-          <div className="border-border/40 text-muted-foreground mt-4 flex items-center gap-2 border-t pt-4 text-xs font-semibold">
-            <CheckCircle2 size={14} className="text-green-500" />
-            {isRtl
-              ? 'تم فحص جميع البنود القانونية وتصنيفها ذكياً.'
-              : 'All clauses scanned and categorized intelligently.'}
+
+          {/* Breakdown bar */}
+          <div className="space-y-2">
+            <span className="text-muted-foreground block text-xs font-bold">
+              {isRtl
+                ? 'توزيع المخاطر والروابط السريعة:'
+                : 'Risk Distribution & Quick Jumps:'}
+            </span>
+            <div className="bg-muted flex h-3 w-full overflow-hidden rounded-full">
+              <div
+                style={{
+                  width: `${(dataToRender.stats.high / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                }}
+                className="bg-red-500 transition-all duration-500"
+              />
+              <div
+                style={{
+                  width: `${(dataToRender.stats.medium / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                }}
+                className="bg-amber-500 transition-all duration-500"
+              />
+              <div
+                style={{
+                  width: `${(dataToRender.stats.low / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                }}
+                className="bg-blue-500 transition-all duration-500"
+              />
+            </div>
+
+            {/* Jump links */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-xs font-extrabold">
+              <button
+                onClick={() => handleJumpToRisk('high')}
+                className="flex cursor-pointer items-center gap-1 text-red-500 hover:underline"
+              >
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />
+                {dataToRender.stats.high} {isRtl ? 'عالية' : 'High'}
+              </button>
+              <button
+                onClick={() => handleJumpToRisk('medium')}
+                className="flex cursor-pointer items-center gap-1 text-amber-500 hover:underline"
+              >
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500" />
+                {dataToRender.stats.medium} {isRtl ? 'متوسطة' : 'Medium'}
+              </button>
+              <button
+                onClick={() => handleJumpToRisk('low')}
+                className="flex cursor-pointer items-center gap-1 text-blue-500 hover:underline"
+              >
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
+                {dataToRender.stats.low} {isRtl ? 'منخفضة' : 'Low'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Risk Filter Tabs */}
-      <div className="border-border/40 flex flex-wrap items-center gap-2 border-b pb-2">
+      {/* Filter Tabs */}
+      <div
+        ref={tableRef}
+        className="border-border/40 flex flex-wrap items-center gap-2 border-b pb-2"
+      >
         <button
           onClick={() => setActiveFilter('all')}
-          className={`rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+          className={`cursor-pointer rounded-xl px-4 py-2 text-sm font-bold transition-all ${
             activeFilter === 'all'
               ? 'bg-foreground text-background shadow-md'
               : 'text-muted-foreground hover:bg-muted'
@@ -392,7 +566,7 @@ export default function RiskAnalysisDashboard() {
         </button>
         <button
           onClick={() => setActiveFilter('high')}
-          className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
             activeFilter === 'high'
               ? 'bg-red-500 text-white shadow-md'
               : 'text-red-500 hover:bg-red-500/5'
@@ -403,7 +577,7 @@ export default function RiskAnalysisDashboard() {
         </button>
         <button
           onClick={() => setActiveFilter('medium')}
-          className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
             activeFilter === 'medium'
               ? 'bg-amber-500 text-white shadow-md'
               : 'text-amber-500 hover:bg-amber-500/5'
@@ -414,7 +588,7 @@ export default function RiskAnalysisDashboard() {
         </button>
         <button
           onClick={() => setActiveFilter('low')}
-          className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
             activeFilter === 'low'
               ? 'bg-blue-500 text-white shadow-md'
               : 'text-blue-500 hover:bg-blue-500/5'
@@ -425,19 +599,119 @@ export default function RiskAnalysisDashboard() {
         </button>
       </div>
 
-      {/* Flaws / Clauses List */}
-      <div className="space-y-4">
-        {filteredItems.length === 0 ? (
-          <div className="text-muted-foreground py-12 text-center text-sm font-medium">
-            {isRtl
-              ? 'لا توجد بنود تحت هذا التصنيف حالياً.'
-              : 'No items found under this classification.'}
-          </div>
-        ) : (
-          filteredItems.map((item) => (
-            <ClauseCard key={item.id} item={item as ClauseItem} />
-          ))
-        )}
+      {/* Clause Table */}
+      <div className="bg-card border-border/60 overflow-hidden rounded-2xl border shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-start text-sm">
+            <thead>
+              <tr className="border-border/60 bg-muted/40 text-muted-foreground border-b font-bold">
+                <th className="px-6 py-4 text-start font-black">
+                  {isRtl ? 'البند' : 'Clause Title'}
+                </th>
+                <th className="w-32 px-6 py-4 text-start font-black">
+                  {isRtl ? 'درجة الخطورة' : 'Risk Level'}
+                </th>
+                <th className="hidden px-6 py-4 text-start font-black md:table-cell">
+                  {isRtl ? 'ملخص موجز' : 'Summary'}
+                </th>
+                <th className="w-28 px-6 py-4 text-end font-black">
+                  {isRtl ? 'التفاصيل' : 'Details'}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-border/40 divide-y">
+              {filteredItems.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="text-muted-foreground py-12 text-center text-sm font-semibold"
+                  >
+                    {isRtl
+                      ? 'لا توجد بنود تحت هذا التصنيف حالياً.'
+                      : 'No items found under this classification.'}
+                  </td>
+                </tr>
+              ) : (
+                filteredItems.map((item) => {
+                  const isExpanded = expandedClauseId === item.id
+                  const isHighlighted = highlightedRisk === item.severity
+                  return (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-muted/10 transition-colors"
+                    >
+                      <td colSpan={4} className="p-0">
+                        {/* Interactive Main Row Row */}
+                        <div
+                          onClick={() => toggleRow(item.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              toggleRow(item.id)
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
+                          aria-expanded={isExpanded}
+                          aria-controls={`clause-details-${item.id}`}
+                          className={`focus:bg-muted/20 flex w-full cursor-pointer items-center justify-between px-6 py-4 outline-none ${
+                            isHighlighted
+                              ? 'bg-primary/5 border-primary animate-pulse border-l-4 transition-all duration-300'
+                              : ''
+                          }`}
+                        >
+                          <div className="flex min-w-0 flex-1 flex-col justify-between gap-4 pr-4 text-start md:flex-row md:items-center">
+                            <span className="text-foreground max-w-xs truncate pr-2 text-base font-bold md:max-w-sm">
+                              {item.title}
+                            </span>
+                            <span
+                              className={`w-24 shrink-0 rounded-full px-2.5 py-1 text-center text-[10px] font-extrabold tracking-wider uppercase ${getSeverityBadgeClass(item.severity)}`}
+                            >
+                              {getSeverityLabel(item.severity)}
+                            </span>
+                          </div>
+
+                          <span className="text-muted-foreground hidden max-w-md flex-1 truncate pr-8 text-start text-xs font-semibold md:block">
+                            {getOneLineSummary(item.explanation)}
+                          </span>
+
+                          <span className="text-primary hover:text-primary/80 flex shrink-0 items-center gap-1 pl-4 text-xs font-bold">
+                            <span>
+                              {isExpanded
+                                ? isRtl
+                                  ? 'إخفاء'
+                                  : 'Collapse'
+                                : isRtl
+                                  ? 'عرض'
+                                  : 'Expand'}
+                            </span>
+                            {isExpanded ? (
+                              <ChevronDown size={16} />
+                            ) : isRtl ? (
+                              <ChevronLeft size={16} />
+                            ) : (
+                              <ChevronRight size={16} />
+                            )}
+                          </span>
+                        </div>
+
+                        {/* Expanded Panel */}
+                        {isExpanded && (
+                          <div
+                            id={`clause-details-${item.id}`}
+                            className="border-border/40 bg-muted/20 border-t"
+                          >
+                            <ClauseCard item={item as ClauseItem} />
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
