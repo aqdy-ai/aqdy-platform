@@ -5,22 +5,19 @@ import {
   expect,
   beforeEach,
 } from "@jest/globals";
+import { Readable } from "stream";
 
 /**
  * Upload Pipeline Integration Test
  *
  * Validates the complete pipeline:
- *   File parsed → contract saved to DB → ExtractorAgent called (LLM) → clauses persisted
- *
- * Strategy:
- *  - pdfService.parsePdf / docxService.parseDocx are SPIED on at the method level
- *    (avoids the CJS `createRequire` issue with pdf-parse under ESM mocks).
- *  - LLM (@langchain/google-genai) and MongoDB models are mocked via unstable_mockModule.
+ * File parsed → contract saved to DB → ExtractorAgent called (LLM) → clauses persisted
  */
 
 // ── 1. Mock LLM ───────────────────────────────────────────────────────────────
 
-const mockInvoke = jest.fn() as jest.Mock;
+// استخدام unknown بدل any لتجنب ESLint وضبط الـ Generics لـ jest.Mock
+const mockInvoke = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 
 jest.unstable_mockModule("@langchain/google-genai", () => ({
   ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => ({
@@ -30,9 +27,9 @@ jest.unstable_mockModule("@langchain/google-genai", () => ({
 
 // ── 2. Mock MongoDB models ─────────────────────────────────────────────────────
 
-const mockContractSave = jest.fn().mockResolvedValue(true);
-const mockAnalysisSave = jest.fn().mockResolvedValue(true);
-const mockAuditSave = jest.fn().mockResolvedValue(true);
+const mockContractSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
+const mockAnalysisSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
+const mockAuditSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
 
 const MOCK_CONTRACT_ID = "507f1f77bcf86cd799439011";
 
@@ -47,12 +44,21 @@ jest.unstable_mockModule("../../src/models/contract.model.js", () => ({
   },
 }));
 
+// تعريف Structure الـ Mock بدون استخدام any
+const mockSort = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockResolvedValue(null);
+const mockFindOne = jest.fn().mockReturnValue({
+  sort: mockSort,
+});
+
 const RiskAnalysisMock = jest.fn().mockImplementation(() => ({
   save: mockAnalysisSave,
   _id: "analysis_001",
 }));
-(RiskAnalysisMock as any).findOne = jest.fn().mockReturnValue({
-  sort: jest.fn().mockResolvedValue(null),
+
+// ربط الـ Method بالـ Mock بشكل Type-safe
+Object.defineProperty(RiskAnalysisMock, "findOne", {
+  value: mockFindOne,
+  writable: true,
 });
 
 jest.unstable_mockModule("../../src/models/riskAnalysis.model.js", () => ({
@@ -67,7 +73,7 @@ jest.unstable_mockModule("../../src/models/auditLog.model.js", () => ({
 }));
 
 // Mock riskClassifierAgent
-const mockClassify = jest.fn() as jest.Mock<any>;
+const mockClassify = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 jest.unstable_mockModule("../../src/agents/riskClassifier.agent.js", () => ({
   riskClassifierAgent: { classify: mockClassify },
 }));
@@ -142,7 +148,7 @@ function makePdfFile(
     mimetype: "application/pdf",
     size: 102400,
     buffer: Buffer.from("PDF binary content"),
-    stream: null as any,
+    stream: new Readable(), // حل مشكلة الـ parameter of type never عن طريق تمرير Stream حقيقي فاضي بدل null
     destination: "",
     filename: "",
     path: "",
@@ -161,7 +167,7 @@ function makeDocxFile(
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     size: 51200,
     buffer: Buffer.from("DOCX binary content"),
-    stream: null as any,
+    stream: new Readable(), // حل مشكلة الـ parameter of type never
     destination: "",
     filename: "",
     path: "",
@@ -174,9 +180,14 @@ function makeDocxFile(
 describe("Upload → Extract → Store Pipeline", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Clear the orchestrator's extraction cache so each test drives a fresh LLM call
-    (orchestratorService as any).extractionCache.clear();
-    (analysisService as any).executionQueue.retryDelayMs = 1;
+    
+    // عمل Type Casting آمن للـ Caches والـ Queues لتجنب الـ Explicit any للـ Linter
+    const orchestrator = orchestratorService as unknown as { extractionCache: Map<string, unknown> };
+    orchestrator.extractionCache.clear();
+    
+    const analysis = analysisService as unknown as { executionQueue: { retryDelayMs: number } };
+    analysis.executionQueue.retryDelayMs = 1;
+
     mockClassify.mockResolvedValue({
       riskLevel: "low",
       confidence: 0.95,
@@ -271,8 +282,7 @@ describe("Upload → Extract → Store Pipeline", () => {
       );
 
       expect(mockInvoke).toHaveBeenCalledTimes(1);
-      const calledMessages = mockInvoke.mock.calls[0][0] as any[];
-      // The last message should be the HumanMessage containing the contract text
+      const calledMessages = mockInvoke.mock.calls[0][0] as unknown[];
       const lastMsg = calledMessages[calledMessages.length - 1];
       expect(JSON.stringify(lastMsg)).toContain("employment contract");
     });
@@ -328,7 +338,6 @@ describe("Upload → Extract → Store Pipeline", () => {
 
   describe("Full pipeline — spying on parsePdf / parseDocx", () => {
     test("PDF pipeline: parse → save contract → extract → persist analysis", async () => {
-      // Spy on pdfService.parsePdf instead of mocking the CJS pdf-parse library
       const parseSpy = jest
         .spyOn(pdfService, "parsePdf")
         .mockResolvedValue({
@@ -341,13 +350,11 @@ describe("Upload → Extract → Store Pipeline", () => {
 
       mockInvoke.mockResolvedValue({ content: ENGLISH_CLAUSES_LLM_RESPONSE });
 
-      // === Step 1: Parse ===
       const file = makePdfFile();
       const parsed = await pdfService.parsePdf(file);
       expect(parsed.text).toBe(ENGLISH_CONTRACT_TEXT);
       expect(parsed.language).toBe("en");
 
-      // === Step 2: Save contract ===
       const contract = await contractService.saveContract({
         filename: parsed.filename,
         language: parsed.language,
@@ -357,7 +364,6 @@ describe("Upload → Extract → Store Pipeline", () => {
       });
       expect(mockContractSave).toHaveBeenCalledTimes(1);
 
-      // === Step 3 & 4: Trigger extraction → persist analysis ===
       await analysisService.triggerAnalysis(
         String(contract._id),
         "user_test",
@@ -470,7 +476,6 @@ describe("Upload → Extract → Store Pipeline", () => {
     }, 20000);
 
     test("LLM failure — contract save is independent and unaffected", async () => {
-      // Contract save should work fine even when LLM fails
       const contract = await contractService.saveContract({
         filename: "contract.pdf",
         language: "en",
