@@ -275,6 +275,31 @@ const options: swaggerJsdoc.Options = {
             message: { type: "string", example: "Error message" },
           },
         },
+        CheckoutSessionRequest: {
+          type: "object",
+          required: ["planSlug"],
+          properties: {
+            planSlug: {
+              type: "string",
+              enum: ["free", "premium", "enterprise"],
+              example: "premium",
+            },
+          },
+        },
+        CheckoutSessionResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            url: { type: "string", example: "https://checkout.stripe.com/..." },
+          },
+        },
+        ConfirmSessionResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            status: { type: "string", example: "succeeded" },
+          },
+        },
         Plan: {
           type: "object",
           properties: {
@@ -393,6 +418,101 @@ const options: swaggerJsdoc.Options = {
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/payments/checkout": {
+        post: {
+          tags: ["Payments"],
+          summary: "Create a Stripe Checkout session",
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/CheckoutSessionRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Session created",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/CheckoutSessionResponse",
+                  },
+                },
+              },
+            },
+            400: { description: "Invalid plan or user state" },
+            401: { description: "Unauthorized" },
+            404: { description: "User or Plan not found" },
+          },
+        },
+      },
+      "/api/payments/success": {
+        get: {
+          tags: ["Payments"],
+          summary: "Stripe success callback",
+          parameters: [
+            {
+              name: "session_id",
+              in: "query",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: {
+              description: "Session confirmed",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ConfirmSessionResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/payments/cancel": {
+        get: {
+          tags: ["Payments"],
+          summary: "Stripe cancel callback",
+          responses: {
+            200: {
+              description: "Payment cancelled message",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/payments/webhook": {
+        post: {
+          tags: ["Payments"],
+          summary: "Stripe Webhook handler",
+          description:
+            "Receives asynchronous events from Stripe (raw body required)",
+          responses: {
+            200: {
+              description: "Webhook received",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      received: { type: "boolean", example: true },
+                    },
+                  },
                 },
               },
             },

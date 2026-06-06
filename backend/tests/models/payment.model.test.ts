@@ -20,7 +20,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.disconnect();
-  await mongoServer.stop();
+
+  if (typeof mongoServer !== "undefined") await mongoServer.stop();
 });
 
 afterEach(async () => {

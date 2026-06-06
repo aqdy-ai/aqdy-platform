@@ -17,6 +17,7 @@ export const ACTION_TYPES = [
   "ADMIN_VIEW_LOGS",
   "ADMIN_VIEW_USER",
   // Legacy actions for backward compatibility
+  "STRIPE_WEBHOOK",
   "CONTRACT_UPLOADED",
   "ANALYSIS_STARTED",
   "ANALYSIS_COMPLETED",
