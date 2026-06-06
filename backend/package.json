@@ -17,7 +17,8 @@
     "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:performance": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --testPathPattern=tests/performance",
     "coverage:check": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --coverageThreshold='{\"global\":{\"lines\":60}}'",
-    "prepare": "cd .. && husky install backend/.husky"
+    "prepare": "cd .. && husky install backend/.husky",
+    "verify:stripe": "tsx --env-file .env src/scripts/verifyStripe.ts"
   },
   "keywords": [],
   "author": "",
@@ -45,6 +46,7 @@
     "multer": "^2.1.1",
     "pdf-parse": "1.1.1",
     "pdfjs-dist": "^5.4.296",
+    "stripe": "^22.2.0",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.1",

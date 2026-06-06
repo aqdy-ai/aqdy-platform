@@ -99,7 +99,6 @@ export class CreditsService {
   }
 
   async topupForPlanAllowance(userId: string): Promise<ICreditLedger | null> {
-    const userObjectId = new mongoose.Types.ObjectId(userId);
     const subscription = await subscriptionService.getUserSubscription(userId);
 
     if (

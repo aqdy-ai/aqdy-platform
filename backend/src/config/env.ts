@@ -18,6 +18,13 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
   CREDIT_BASE_COST: z.coerce.number().nonnegative().default(0),
   CREDIT_TOKEN_RATE: z.coerce.number().nonnegative().default(0.001),
+  STRIPE_SECRET_KEY: z.string().min(1, "STRIPE_SECRET_KEY is required"),
+  STRIPE_PUBLISHABLE_KEY: z
+    .string()
+    .min(1, "STRIPE_PUBLISHABLE_KEY is required"),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1, "STRIPE_WEBHOOK_SECRET is required"),
+
+  FRONTEND_URL: z.string().url().default("http://localhost:5173"),
 });
 
 const parsed = envSchema.safeParse(process.env);
