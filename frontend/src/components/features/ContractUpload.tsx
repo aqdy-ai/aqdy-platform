@@ -17,7 +17,7 @@ export default function ContractUpload({
   onUploadSuccess,
 }: ContractUploadProps) {
   const { t, i18n } = useTranslation()
-  const { user, isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)

@@ -8,8 +8,6 @@ import {
   AlertTriangle,
   Copy,
   Check,
-  FileText,
-  TrendingUp,
   BrainCircuit,
   Search,
 } from 'lucide-react'
@@ -53,7 +51,8 @@ export default function ClauseCard({ item }: ClauseCardProps) {
     }
   }
 
-  const confidenceMeta = item.confidence !== undefined ? getConfidenceMeta(item.confidence) : null
+  const confidenceMeta =
+    item.confidence !== undefined ? getConfidenceMeta(item.confidence) : null
 
   return (
     <motion.div
@@ -61,12 +60,12 @@ export default function ClauseCard({ item }: ClauseCardProps) {
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.2 }}
-      className="w-full space-y-4 px-4 pb-6 pt-2 text-start select-text"
+      className="w-full space-y-4 px-4 pt-2 pb-6 text-start select-text"
     >
       <div className="grid gap-4 md:grid-cols-2">
         {/* Original Clause Text */}
-        <div className="bg-red-500/5 dark:bg-red-500/10 border border-red-500/15 rounded-xl p-4 space-y-2">
-          <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-wider">
+        <div className="space-y-2 rounded-xl border border-red-500/15 bg-red-500/5 p-4 dark:bg-red-500/10">
+          <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-red-600 uppercase dark:text-red-400">
             <ShieldAlert size={14} />
             <span>{t('dashboard.original_risky')}</span>
           </div>
@@ -77,9 +76,9 @@ export default function ClauseCard({ item }: ClauseCardProps) {
 
         {/* Suggested Redline */}
         {item.redlineSuggestion && (
-          <div className="bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15 rounded-xl p-4 space-y-2 relative group">
+          <div className="group relative space-y-2 rounded-xl border border-emerald-500/15 bg-emerald-500/5 p-4 dark:bg-emerald-500/10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
                 <ShieldCheck size={14} />
                 <span>{t('dashboard.suggested_safer_label')}</span>
               </div>
@@ -95,7 +94,7 @@ export default function ClauseCard({ item }: ClauseCardProps) {
                 )}
               </button>
             </div>
-            <p className="text-foreground text-sm leading-relaxed font-medium pr-8">
+            <p className="text-foreground pr-8 text-sm leading-relaxed font-medium">
               {item.redlineSuggestion}
             </p>
           </div>
@@ -103,8 +102,8 @@ export default function ClauseCard({ item }: ClauseCardProps) {
       </div>
 
       {/* Explanation Box */}
-      <div className="bg-muted/40 border border-border/60 rounded-xl p-4 space-y-2">
-        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
+      <div className="bg-muted/40 border-border/60 space-y-2 rounded-xl border p-4">
+        <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400">
           <AlertTriangle size={14} />
           <span>{t('dashboard.explanation')}</span>
         </div>
@@ -117,10 +116,10 @@ export default function ClauseCard({ item }: ClauseCardProps) {
       <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
         {/* KB Reference */}
         {item.sourceFromKB && (
-          <div className="bg-card border border-border/60 rounded-lg px-3 py-2 flex items-center gap-1.5 text-muted-foreground">
+          <div className="bg-card border-border/60 text-muted-foreground flex items-center gap-1.5 rounded-lg border px-3 py-2">
             <Search size={14} className="text-primary" />
             <span className="font-bold">{t('dashboard.kb_source')}:</span>
-            <code className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-mono font-bold text-foreground">
+            <code className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-[10px] font-bold">
               {item.sourceFromKB}
             </code>
           </div>
@@ -128,12 +127,14 @@ export default function ClauseCard({ item }: ClauseCardProps) {
 
         {/* Confidence Score */}
         {item.confidence !== undefined && (
-          <div className="bg-card border border-border/60 rounded-lg px-3 py-2 flex items-center gap-1.5 text-muted-foreground">
+          <div className="bg-card border-border/60 text-muted-foreground flex items-center gap-1.5 rounded-lg border px-3 py-2">
             <BrainCircuit size={14} className="text-primary" />
             <span className="font-bold">{t('dashboard.confidence')}:</span>
             <div className="flex items-center gap-1">
-              <span className={`h-2 w-2 rounded-full ${confidenceMeta?.color || 'bg-gray-400'}`} />
-              <span className="font-extrabold text-foreground">
+              <span
+                className={`h-2 w-2 rounded-full ${confidenceMeta?.color || 'bg-gray-400'}`}
+              />
+              <span className="text-foreground font-extrabold">
                 {(item.confidence * 100).toFixed(0)}%
               </span>
             </div>

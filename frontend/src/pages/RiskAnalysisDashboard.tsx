@@ -6,22 +6,21 @@ import {
   ShieldCheck,
   FileText,
   AlertTriangle,
-  CheckCircle2,
   TrendingUp,
-  HelpCircle,
   ArrowLeft,
   ArrowRight,
   ChevronDown,
   ChevronRight,
   ChevronLeft,
-  Search,
 } from 'lucide-react'
 import ClauseCard, { ClauseItem } from '../components/features/ClauseCard'
 import { IClauseAnalysis, IRiskAnalysis } from '../types/analysis'
 
 // Bilingual Mock Risk Data Generator
 const getMockData = (isRtl: boolean) => ({
-  contractName: isRtl ? 'عقد توريد برمجيات وتشغيل صيانة.pdf' : 'Software Supply & Maintenance Contract.pdf',
+  contractName: isRtl
+    ? 'عقد توريد برمجيات وتشغيل صيانة.pdf'
+    : 'Software Supply & Maintenance Contract.pdf',
   overallScore: 68,
   overallRisk: 'high',
   summary: isRtl
@@ -36,7 +35,9 @@ const getMockData = (isRtl: boolean) => ({
     {
       id: 'r1',
       severity: 'high' as const,
-      title: isRtl ? 'شرط جزائي مفتوح وبدون حد أقصى' : 'Unlimited Penalty Clause',
+      title: isRtl
+        ? 'شرط جزائي مفتوح وبدون حد أقصى'
+        : 'Unlimited Penalty Clause',
       clause: isRtl
         ? 'البند 4.2: يلتزم الطرف الثاني بدفع تعويض مالي عن كل يوم تأخير في التسليم دون تحديد سقف أعلى للعقوبة.'
         : 'Clause 4.2: The second party is liable to pay daily delay penalties without any upper cap.',
@@ -52,7 +53,9 @@ const getMockData = (isRtl: boolean) => ({
     {
       id: 'r2',
       severity: 'high' as const,
-      title: isRtl ? 'غموض في آلية إنهاء التعاقد المبكر' : 'Vague Early Termination Clause',
+      title: isRtl
+        ? 'غموض في آلية إنهاء التعاقد المبكر'
+        : 'Vague Early Termination Clause',
       clause: isRtl
         ? 'البند 9.1: يحق للطرف الأول إنهاء العقد في أي وقت دون إشعار مسبق ودون إبداء أسباب.'
         : 'Clause 9.1: First party may terminate the contract at any time without notice or reason.',
@@ -68,7 +71,9 @@ const getMockData = (isRtl: boolean) => ({
     {
       id: 'r3',
       severity: 'medium' as const,
-      title: isRtl ? 'قانون فض النزاعات خارج الاختصاص المحلي' : 'Non-Local Governing Law',
+      title: isRtl
+        ? 'قانون فض النزاعات خارج الاختصاص المحلي'
+        : 'Non-Local Governing Law',
       clause: isRtl
         ? 'البند 12.5: تخضع هذه الاتفاقية وتُفسر وفقاً قوانين مركز دبي المالي العالمي.'
         : 'Clause 12.5: This agreement is governed by the laws of Dubai International Financial Centre.',
@@ -84,7 +89,9 @@ const getMockData = (isRtl: boolean) => ({
     {
       id: 'r4',
       severity: 'low' as const,
-      title: isRtl ? 'عدم تحديد وثائق التأمين المطلوبة' : 'Unspecified Insurance Details',
+      title: isRtl
+        ? 'عدم تحديد وثائق التأمين المطلوبة'
+        : 'Unspecified Insurance Details',
       clause: isRtl
         ? 'البند 7.3: يلتزم المورد بتوفير وثيقة تأمين ضد الأخطار المهنية طوال فترة العقد.'
         : 'Clause 7.3: Supplier must maintain professional liability insurance.',
@@ -106,9 +113,13 @@ export default function RiskAnalysisDashboard() {
   const [searchParams] = useSearchParams()
   const contractId = searchParams.get('id')
 
-  const [activeFilter, setActiveFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
+  const [activeFilter, setActiveFilter] = useState<
+    'all' | 'high' | 'medium' | 'low'
+  >('all')
   const [expandedClauseId, setExpandedClauseId] = useState<string | null>(null)
-  const [highlightedRisk, setHighlightedRisk] = useState<'high' | 'medium' | 'low' | null>(null)
+  const [highlightedRisk, setHighlightedRisk] = useState<
+    'high' | 'medium' | 'low' | null
+  >(null)
 
   const tableRef = useRef<HTMLDivElement>(null)
 
@@ -245,7 +256,9 @@ export default function RiskAnalysisDashboard() {
                   item.clauseType || t('auth.errors.default_clause_title'),
               }),
               clause: item.clauseText,
-              explanation: isRtl ? item.explanation?.ar || '' : item.explanation?.en || '',
+              explanation: isRtl
+                ? item.explanation?.ar || ''
+                : item.explanation?.en || '',
               redlineSuggestion: item.redlineSuggestion,
               confidence: item.confidence,
               sourceFromKB: item.sourceFromKB,
@@ -327,7 +340,9 @@ export default function RiskAnalysisDashboard() {
     if (endIdx !== -1) {
       return explanation.substring(0, endIdx + 1).trim()
     }
-    return explanation.length > 70 ? explanation.substring(0, 70) + '...' : explanation
+    return explanation.length > 70
+      ? explanation.substring(0, 70) + '...'
+      : explanation
   }
 
   const filteredItems = dataToRender.items.filter((item) => {
@@ -404,7 +419,7 @@ export default function RiskAnalysisDashboard() {
         </p>
         <button
           onClick={() => window.history.back()}
-          className="bg-primary text-primary-foreground rounded-xl px-6 py-3 font-bold shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95 cursor-pointer"
+          className="bg-primary text-primary-foreground cursor-pointer rounded-xl px-6 py-3 font-bold shadow-lg transition-all hover:scale-105 hover:shadow-xl active:scale-95"
         >
           {t('common.close')}
         </button>
@@ -435,7 +450,7 @@ export default function RiskAnalysisDashboard() {
 
         <button
           onClick={() => window.history.back()}
-          className="bg-card hover:bg-muted border-border/60 text-muted-foreground hover:text-foreground flex items-center gap-2 self-start rounded-xl border px-4 py-2.5 text-sm font-bold transition-all active:scale-95 cursor-pointer"
+          className="bg-card hover:bg-muted border-border/60 text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-2 self-start rounded-xl border px-4 py-2.5 text-sm font-bold transition-all active:scale-95"
         >
           {isRtl ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
           {isRtl ? 'العودة للملفات' : 'Back to Files'}
@@ -445,27 +460,33 @@ export default function RiskAnalysisDashboard() {
       <hr className="border-border/40" />
 
       {/* Executive Summary Card */}
-      <div className="bg-card border-border/60 relative overflow-hidden rounded-3xl border p-6 md:p-8 shadow-md">
+      <div className="bg-card border-border/60 relative overflow-hidden rounded-3xl border p-6 shadow-md md:p-8">
         <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent to-transparent" />
         <div className="relative space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-black uppercase tracking-wider">
+              <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-black tracking-wider uppercase">
                 <TrendingUp size={14} />
                 {isRtl ? 'ملخص ذكاء اصطناعي تنفيذي' : 'AI Executive Summary'}
               </span>
-              <span className={`rounded-full px-3 py-1.5 text-xs font-extrabold uppercase tracking-wide ${getOverallRiskBadgeClass(overallRiskLevel)}`}>
+              <span
+                className={`rounded-full px-3 py-1.5 text-xs font-extrabold tracking-wide uppercase ${getOverallRiskBadgeClass(overallRiskLevel)}`}
+              >
                 {getOverallRiskText(overallRiskLevel)}
               </span>
             </div>
-            <span className={`text-xs font-black px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20`}>
+            <span
+              className={`rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-black text-amber-600 dark:text-amber-400`}
+            >
               {getNegotiationPriorityText(negotiationPriority)}
             </span>
           </div>
 
           <div className="space-y-3">
             <h3 className="text-foreground text-lg font-bold">
-              {isRtl ? 'النتائج والملخص العام للتحليل' : 'Key Analysis Findings'}
+              {isRtl
+                ? 'النتائج والملخص العام للتحليل'
+                : 'Key Analysis Findings'}
             </h3>
             <p className="text-muted-foreground text-base leading-relaxed font-medium">
               {dataToRender.summary}
@@ -474,20 +495,28 @@ export default function RiskAnalysisDashboard() {
 
           {/* Breakdown bar */}
           <div className="space-y-2">
-            <span className="text-muted-foreground text-xs font-bold block">
-              {isRtl ? 'توزيع المخاطر والروابط السريعة:' : 'Risk Distribution & Quick Jumps:'}
+            <span className="text-muted-foreground block text-xs font-bold">
+              {isRtl
+                ? 'توزيع المخاطر والروابط السريعة:'
+                : 'Risk Distribution & Quick Jumps:'}
             </span>
-            <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
+            <div className="bg-muted flex h-3 w-full overflow-hidden rounded-full">
               <div
-                style={{ width: `${(dataToRender.stats.high / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%` }}
+                style={{
+                  width: `${(dataToRender.stats.high / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                }}
                 className="bg-red-500 transition-all duration-500"
               />
               <div
-                style={{ width: `${(dataToRender.stats.medium / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%` }}
+                style={{
+                  width: `${(dataToRender.stats.medium / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                }}
                 className="bg-amber-500 transition-all duration-500"
               />
               <div
-                style={{ width: `${(dataToRender.stats.low / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%` }}
+                style={{
+                  width: `${(dataToRender.stats.low / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                }}
                 className="bg-blue-500 transition-all duration-500"
               />
             </div>
@@ -496,21 +525,21 @@ export default function RiskAnalysisDashboard() {
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-xs font-extrabold">
               <button
                 onClick={() => handleJumpToRisk('high')}
-                className="text-red-500 hover:underline flex items-center gap-1 cursor-pointer"
+                className="flex cursor-pointer items-center gap-1 text-red-500 hover:underline"
               >
                 <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />
                 {dataToRender.stats.high} {isRtl ? 'عالية' : 'High'}
               </button>
               <button
                 onClick={() => handleJumpToRisk('medium')}
-                className="text-amber-500 hover:underline flex items-center gap-1 cursor-pointer"
+                className="flex cursor-pointer items-center gap-1 text-amber-500 hover:underline"
               >
                 <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500" />
                 {dataToRender.stats.medium} {isRtl ? 'متوسطة' : 'Medium'}
               </button>
               <button
                 onClick={() => handleJumpToRisk('low')}
-                className="text-blue-500 hover:underline flex items-center gap-1 cursor-pointer"
+                className="flex cursor-pointer items-center gap-1 text-blue-500 hover:underline"
               >
                 <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
                 {dataToRender.stats.low} {isRtl ? 'منخفضة' : 'Low'}
@@ -521,10 +550,13 @@ export default function RiskAnalysisDashboard() {
       </div>
 
       {/* Filter Tabs */}
-      <div ref={tableRef} className="border-border/40 flex flex-wrap items-center gap-2 border-b pb-2">
+      <div
+        ref={tableRef}
+        className="border-border/40 flex flex-wrap items-center gap-2 border-b pb-2"
+      >
         <button
           onClick={() => setActiveFilter('all')}
-          className={`rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer ${
+          className={`cursor-pointer rounded-xl px-4 py-2 text-sm font-bold transition-all ${
             activeFilter === 'all'
               ? 'bg-foreground text-background shadow-md'
               : 'text-muted-foreground hover:bg-muted'
@@ -534,7 +566,7 @@ export default function RiskAnalysisDashboard() {
         </button>
         <button
           onClick={() => setActiveFilter('high')}
-          className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
             activeFilter === 'high'
               ? 'bg-red-500 text-white shadow-md'
               : 'text-red-500 hover:bg-red-500/5'
@@ -545,7 +577,7 @@ export default function RiskAnalysisDashboard() {
         </button>
         <button
           onClick={() => setActiveFilter('medium')}
-          className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
             activeFilter === 'medium'
               ? 'bg-amber-500 text-white shadow-md'
               : 'text-amber-500 hover:bg-amber-500/5'
@@ -556,7 +588,7 @@ export default function RiskAnalysisDashboard() {
         </button>
         <button
           onClick={() => setActiveFilter('low')}
-          className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all cursor-pointer ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
             activeFilter === 'low'
               ? 'bg-blue-500 text-white shadow-md'
               : 'text-blue-500 hover:bg-blue-500/5'
@@ -568,22 +600,35 @@ export default function RiskAnalysisDashboard() {
       </div>
 
       {/* Clause Table */}
-      <div className="bg-card border border-border/60 overflow-hidden rounded-2xl shadow-sm">
+      <div className="bg-card border-border/60 overflow-hidden rounded-2xl border shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-start text-sm">
             <thead>
-              <tr className="border-b border-border/60 bg-muted/40 text-muted-foreground font-bold">
-                <th className="px-6 py-4 text-start font-black">{isRtl ? 'البند' : 'Clause Title'}</th>
-                <th className="px-6 py-4 text-start font-black w-32">{isRtl ? 'درجة الخطورة' : 'Risk Level'}</th>
-                <th className="px-6 py-4 text-start font-black hidden md:table-cell">{isRtl ? 'ملخص موجز' : 'Summary'}</th>
-                <th className="px-6 py-4 text-end font-black w-28">{isRtl ? 'التفاصيل' : 'Details'}</th>
+              <tr className="border-border/60 bg-muted/40 text-muted-foreground border-b font-bold">
+                <th className="px-6 py-4 text-start font-black">
+                  {isRtl ? 'البند' : 'Clause Title'}
+                </th>
+                <th className="w-32 px-6 py-4 text-start font-black">
+                  {isRtl ? 'درجة الخطورة' : 'Risk Level'}
+                </th>
+                <th className="hidden px-6 py-4 text-start font-black md:table-cell">
+                  {isRtl ? 'ملخص موجز' : 'Summary'}
+                </th>
+                <th className="w-28 px-6 py-4 text-end font-black">
+                  {isRtl ? 'التفاصيل' : 'Details'}
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/40">
+            <tbody className="divide-border/40 divide-y">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-muted-foreground py-12 text-center text-sm font-semibold">
-                    {isRtl ? 'لا توجد بنود تحت هذا التصنيف حالياً.' : 'No items found under this classification.'}
+                  <td
+                    colSpan={4}
+                    className="text-muted-foreground py-12 text-center text-sm font-semibold"
+                  >
+                    {isRtl
+                      ? 'لا توجد بنود تحت هذا التصنيف حالياً.'
+                      : 'No items found under this classification.'}
                   </td>
                 </tr>
               ) : (
@@ -591,7 +636,10 @@ export default function RiskAnalysisDashboard() {
                   const isExpanded = expandedClauseId === item.id
                   const isHighlighted = highlightedRisk === item.severity
                   return (
-                    <tr key={item.id} className="hover:bg-muted/10 transition-colors">
+                    <tr
+                      key={item.id}
+                      className="hover:bg-muted/10 transition-colors"
+                    >
                       <td colSpan={4} className="p-0">
                         {/* Interactive Main Row Row */}
                         <div
@@ -606,26 +654,36 @@ export default function RiskAnalysisDashboard() {
                           tabIndex={0}
                           aria-expanded={isExpanded}
                           aria-controls={`clause-details-${item.id}`}
-                          className={`w-full flex items-center justify-between px-6 py-4 cursor-pointer outline-none focus:bg-muted/20 ${
-                            isHighlighted ? 'bg-primary/5 border-l-4 border-primary animate-pulse transition-all duration-300' : ''
+                          className={`focus:bg-muted/20 flex w-full cursor-pointer items-center justify-between px-6 py-4 outline-none ${
+                            isHighlighted
+                              ? 'bg-primary/5 border-primary animate-pulse border-l-4 transition-all duration-300'
+                              : ''
                           }`}
                         >
-                          <div className="flex-1 min-w-0 pr-4 flex flex-col md:flex-row md:items-center justify-between gap-4 text-start">
-                            <span className="font-bold text-foreground text-base truncate pr-2 max-w-xs md:max-w-sm">
+                          <div className="flex min-w-0 flex-1 flex-col justify-between gap-4 pr-4 text-start md:flex-row md:items-center">
+                            <span className="text-foreground max-w-xs truncate pr-2 text-base font-bold md:max-w-sm">
                               {item.title}
                             </span>
-                            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-wider uppercase text-center w-24 ${getSeverityBadgeClass(item.severity)}`}>
+                            <span
+                              className={`w-24 shrink-0 rounded-full px-2.5 py-1 text-center text-[10px] font-extrabold tracking-wider uppercase ${getSeverityBadgeClass(item.severity)}`}
+                            >
                               {getSeverityLabel(item.severity)}
                             </span>
                           </div>
 
-                          <span className="text-muted-foreground text-xs font-semibold flex-1 truncate pr-8 hidden md:block text-start max-w-md">
+                          <span className="text-muted-foreground hidden max-w-md flex-1 truncate pr-8 text-start text-xs font-semibold md:block">
                             {getOneLineSummary(item.explanation)}
                           </span>
 
-                          <span className="text-primary hover:text-primary/80 shrink-0 font-bold text-xs flex items-center gap-1 pl-4">
+                          <span className="text-primary hover:text-primary/80 flex shrink-0 items-center gap-1 pl-4 text-xs font-bold">
                             <span>
-                              {isExpanded ? (isRtl ? 'إخفاء' : 'Collapse') : (isRtl ? 'عرض' : 'Expand')}
+                              {isExpanded
+                                ? isRtl
+                                  ? 'إخفاء'
+                                  : 'Collapse'
+                                : isRtl
+                                  ? 'عرض'
+                                  : 'Expand'}
                             </span>
                             {isExpanded ? (
                               <ChevronDown size={16} />
@@ -639,7 +697,10 @@ export default function RiskAnalysisDashboard() {
 
                         {/* Expanded Panel */}
                         {isExpanded && (
-                          <div id={`clause-details-${item.id}`} className="border-t border-border/40 bg-muted/20">
+                          <div
+                            id={`clause-details-${item.id}`}
+                            className="border-border/40 bg-muted/20 border-t"
+                          >
                             <ClauseCard item={item as ClauseItem} />
                           </div>
                         )}
