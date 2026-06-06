@@ -16,6 +16,10 @@ import {
   deleteContractHandler,
 } from "../controllers/contractHistory.controller.js";
 import {
+  getAnalysisVersionsHandler,
+  getAnalysisVersionDetailHandler,
+} from "../controllers/analysisVersion.controller.js";
+import {
   authenticateJwt,
   requireAuth,
 } from "../middlewares/auth.middleware.js";
@@ -48,6 +52,16 @@ router.delete(
   "/contracts/:contractId",
   verifyContractOwnership,
   deleteContractHandler,
+);
+
+// Analysis version routes
+router.get(
+  "/contracts/:contractId/analyses",
+  getAnalysisVersionsHandler,
+);
+router.get(
+  "/contracts/:contractId/analyses/:analysisId",
+  getAnalysisVersionDetailHandler,
 );
 
 export default router;

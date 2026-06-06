@@ -21,9 +21,24 @@ export interface IClauseAnalysis {
   redlineDurationMs?: number;
 }
 
+export interface IClauseDiff {
+  clauseType: string;
+  clauseText: string;
+  previousRiskLevel: string;
+  currentRiskLevel: string;
+  direction: "escalated" | "de-escalated";
+}
+
+export interface IDiffSummary {
+  comparedToVersion: number;
+  changedClauses: IClauseDiff[];
+  totalChanged: number;
+}
+
 export interface IRiskAnalysis extends Document {
   contractId: mongoose.Types.ObjectId;
   userId: string;
+  version: number;
   executiveSummary: {
     overallRisk: "low" | "medium" | "high" | "critical";
     totalClauses: number;
@@ -31,9 +46,34 @@ export interface IRiskAnalysis extends Document {
     summary: { ar: string; en: string };
   };
   clauseAnalysis: IClauseAnalysis[];
+  diffSummary: IDiffSummary | null;
   analysisDuration: number;
   createdAt: Date;
 }
+
+const ClauseDiffSchema = new Schema<IClauseDiff>(
+  {
+    clauseType: { type: String, required: true },
+    clauseText: { type: String, required: true },
+    previousRiskLevel: { type: String, required: true },
+    currentRiskLevel: { type: String, required: true },
+    direction: {
+      type: String,
+      enum: ["escalated", "de-escalated"],
+      required: true,
+    },
+  },
+  { _id: false },
+);
+
+const DiffSummarySchema = new Schema<IDiffSummary>(
+  {
+    comparedToVersion: { type: Number, required: true },
+    changedClauses: [ClauseDiffSchema],
+    totalChanged: { type: Number, required: true },
+  },
+  { _id: false },
+);
 
 const ClauseAnalysisSchema = new Schema<IClauseAnalysis>({
   clauseText: { type: String, required: true },
@@ -65,6 +105,7 @@ const RiskAnalysisSchema = new Schema<IRiskAnalysis>(
       index: true,
     },
     userId: { type: String, required: true, index: true },
+    version: { type: Number, required: true, min: 1, default: 1 },
     executiveSummary: {
       overallRisk: {
         type: String,
@@ -79,11 +120,13 @@ const RiskAnalysisSchema = new Schema<IRiskAnalysis>(
       },
     },
     clauseAnalysis: [ClauseAnalysisSchema],
+    diffSummary: { type: DiffSummarySchema, default: null },
     analysisDuration: { type: Number, required: true },
   },
   { timestamps: true },
 );
 
+RiskAnalysisSchema.index({ contractId: 1, version: -1 }, { unique: true });
 RiskAnalysisSchema.index({ contractId: 1, createdAt: -1 });
 RiskAnalysisSchema.index({ userId: 1, createdAt: -1 });
 
