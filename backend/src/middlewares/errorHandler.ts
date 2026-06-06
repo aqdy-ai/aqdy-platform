@@ -19,15 +19,18 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction,
 ): void => {
-  if (err instanceof AppError) {
+  const errWithStatus = err as { statusCode?: number };
+  const isAppError = err instanceof AppError || (err && typeof errWithStatus.statusCode === "number");
+  if (isAppError && errWithStatus.statusCode !== undefined) {
     const response: ApiResponse<null> = {
       success: false,
       error: err.message,
     };
-    res.status(err.statusCode).json(response);
+    res.status(errWithStatus.statusCode).json(response);
     return;
   }
 
+  console.error("DEBUG: Unhandled error in errorHandler:", err);
   logger.error("Unhandled error", { error: err.message, stack: err.stack });
 
   const response: ApiResponse<null> = {
