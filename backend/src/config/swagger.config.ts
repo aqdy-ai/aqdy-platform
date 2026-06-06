@@ -347,6 +347,51 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        ContractListItem: {
+          type: "object",
+          properties: {
+            contractId: { type: "string", example: "64abc123def456" },
+            filename: { type: "string", example: "employment-contract.pdf" },
+            uploadDate: { type: "string", format: "date-time" },
+            language: { type: "string", enum: ["ar", "en"] },
+            fileSize: { type: "number", example: 2048 },
+            status: { type: "string", enum: ["analyzed", "pending", "failed"] },
+            riskLevel: {
+              type: "string",
+              nullable: true,
+              enum: ["low", "medium", "high", "critical"],
+              example: "high",
+            },
+            analysisId: {
+              type: "string",
+              nullable: true,
+              example: "64abc789ghi012",
+            },
+          },
+        },
+        ContractListResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            data: {
+              type: "object",
+              properties: {
+                contracts: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/ContractListItem" },
+                },
+                total: { type: "number", example: 25 },
+                page: { type: "number", example: 1 },
+                totalPages: { type: "number", example: 3 },
+                limit: { type: "number", example: 10 },
+              },
+            },
+            message: {
+              type: "string",
+              example: "Contract list retrieved successfully",
+            },
+          },
+        },
       },
     },
     paths: {
@@ -913,6 +958,79 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      "/api/contracts/{contractId}/clauses/{clauseIndexStr}/chat": {
+        post: {
+          tags: ["Contracts"],
+          summary:
+            "Have a focused AI conversation about a specific contract clause",
+          parameters: [
+            {
+              name: "contractId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "The 24-character contract ID",
+            },
+            {
+              name: "clauseIndexStr",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "The 0-based index of the clause in the analysis",
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["message"],
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "What does this indemnity clause cover?",
+                    },
+                    history: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          role: { type: "string", enum: ["user", "assistant"] },
+                          content: { type: "string" },
+                        },
+                      },
+                      example: [],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description:
+                "Streamed Server-Sent Events (SSE) response containing the AI answer chunks",
+              content: {
+                "text/event-stream": {
+                  schema: {
+                    type: "string",
+                    example:
+                      'data: {"text":"According"}\n\ndata: {"text":" to"}\n\ndata: [DONE]\n\n',
+                  },
+                },
+              },
+            },
+            400: { description: "Invalid input or index format" },
+            402: { description: "Insufficient credits available" },
+            429: {
+              description:
+                "Rate limit exceeded (Max 20 messages per clause per 24 hours)",
+            },
+            404: { description: "Contract analysis or clause index not found" },
+          },
+        },
+      },
       "/api/analysis/analyze": {
         post: {
           tags: ["Analysis"],
@@ -1182,6 +1300,148 @@ const options: swaggerJsdoc.Options = {
             401: { description: "Unauthorized" },
             403: { description: "Forbidden" },
             404: { description: "User not found" },
+          },
+        },
+      },
+      "/api/account/contracts": {
+        get: {
+          tags: ["Contract History"],
+          summary: "Get paginated list of user contracts",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "page",
+              in: "query",
+              schema: { type: "integer", default: 1 },
+              description: "Page number",
+            },
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer", default: 10, maximum: 50 },
+              description: "Items per page (max 50)",
+            },
+            {
+              name: "uploadedAfter",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Filter contracts uploaded after this date",
+            },
+            {
+              name: "uploadedBefore",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Filter contracts uploaded before this date",
+            },
+            {
+              name: "status",
+              in: "query",
+              schema: {
+                type: "string",
+                enum: ["analyzed", "pending", "failed"],
+              },
+              description: "Filter by analysis status",
+            },
+            {
+              name: "filename",
+              in: "query",
+              schema: { type: "string" },
+              description: "Partial filename search (case-insensitive)",
+            },
+            {
+              name: "sortBy",
+              in: "query",
+              schema: {
+                type: "string",
+                enum: ["uploadedAt", "analyzedAt", "riskLevel"],
+                default: "uploadedAt",
+              },
+              description: "Sort field",
+            },
+            {
+              name: "sortOrder",
+              in: "query",
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+                default: "desc",
+              },
+              description: "Sort order",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Contract list retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ContractListResponse" },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/account/contracts/{contractId}": {
+        get: {
+          tags: ["Contract History"],
+          summary: "Get full contract detail with latest analysis",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "contractId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Contract ID",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Contract detail retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            403: {
+              description: "Access denied - you do not own this contract",
+            },
+            404: { description: "Contract not found" },
+            500: { description: "Server error" },
+          },
+        },
+        delete: {
+          tags: ["Contract History"],
+          summary: "Soft delete a contract (hides from list, keeps in DB)",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "contractId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Contract ID",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Contract deleted successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            403: {
+              description: "Access denied - you do not own this contract",
+            },
+            404: { description: "Contract not found or already deleted" },
+            500: { description: "Server error" },
           },
         },
       },
