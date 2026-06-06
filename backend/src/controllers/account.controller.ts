@@ -157,7 +157,10 @@ export const getCreditsHandler = async (
       20,
     );
 
-    const response: ApiResponse<{ balance: number; ledger: typeof ledgerEntries }> = {
+    const response: ApiResponse<{
+      balance: number;
+      ledger: typeof ledgerEntries;
+    }> = {
       success: true,
       data: {
         balance,

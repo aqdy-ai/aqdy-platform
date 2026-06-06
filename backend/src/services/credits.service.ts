@@ -2,7 +2,11 @@ import mongoose from "mongoose";
 import { env } from "../config/env.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { subscriptionService } from "./subscription.service.js";
-import { CreditLedger, ICreditLedger, CreditLedgerReason } from "../models/creditLedger.model.js";
+import {
+  CreditLedger,
+  ICreditLedger,
+  CreditLedgerReason,
+} from "../models/creditLedger.model.js";
 import { User } from "../models/user.model.js";
 
 export class InsufficientCreditsError extends AppError {
@@ -98,7 +102,11 @@ export class CreditsService {
     const userObjectId = new mongoose.Types.ObjectId(userId);
     const subscription = await subscriptionService.getUserSubscription(userId);
 
-    if (!subscription || !subscription.planId || typeof subscription.planId === "string") {
+    if (
+      !subscription ||
+      !subscription.planId ||
+      typeof subscription.planId === "string"
+    ) {
       return null;
     }
 
@@ -152,7 +160,9 @@ export class CreditsService {
     try {
       await ledgerEntry.save();
     } catch (error) {
-      await User.findByIdAndUpdate(userObjectId, { $inc: { creditBalance: cost } });
+      await User.findByIdAndUpdate(userObjectId, {
+        $inc: { creditBalance: cost },
+      });
       throw error;
     }
 
@@ -161,7 +171,11 @@ export class CreditsService {
 
   private async getCurrentPlanAllowance(userId: string): Promise<number> {
     const subscription = await subscriptionService.getUserSubscription(userId);
-    if (!subscription || !subscription.planId || typeof subscription.planId === "string") {
+    if (
+      !subscription ||
+      !subscription.planId ||
+      typeof subscription.planId === "string"
+    ) {
       return 0;
     }
 

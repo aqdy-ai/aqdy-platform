@@ -30,7 +30,9 @@ const backfillPlanCreditAllowances = async () => {
         const allowance = planAllowances[plan.slug] ?? 0;
         plan.creditAllowance = allowance;
         await plan.save();
-        logger.info(`Updated ${plan.slug} plan creditAllowance to ${allowance}.`);
+        logger.info(
+          `Updated ${plan.slug} plan creditAllowance to ${allowance}.`,
+        );
       }
     }
 
