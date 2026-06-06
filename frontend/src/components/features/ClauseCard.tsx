@@ -8,18 +8,23 @@ import {
   AlertTriangle,
   Copy,
   Check,
-  ChevronDown,
-  ChevronUp,
+  FileText,
+  TrendingUp,
+  BrainCircuit,
+  Search,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { getConfidenceMeta } from '../../lib/utils'
 
-// تعريف الـ Props الخاصة بالمكون بشكل صارم مع TypeScript
 export interface ClauseItem {
   id: string
   severity: 'high' | 'medium' | 'low'
   title: string
   clause: string
-  recommendation: string
+  explanation: string
+  redlineSuggestion?: string
+  confidence?: number
+  sourceFromKB?: string
 }
 
 interface ClauseCardProps {
@@ -27,46 +32,14 @@ interface ClauseCardProps {
 }
 
 export default function ClauseCard({ item }: ClauseCardProps) {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
-  const [isExpanded, setIsExpanded] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
 
-  // إرجاع الأيقونة المناسبة بناءً على درجة الخطورة
-  const getSeverityData = (severity: 'high' | 'medium' | 'low') => {
-    switch (severity) {
-      case 'high':
-        return {
-          icon: <ShieldAlert size={22} />,
-          badgeClass: 'bg-red-500/10 text-red-500',
-          label: isRtl ? 'حرجة جداً' : 'Critical',
-        }
-      case 'medium':
-        return {
-          icon: <AlertTriangle size={22} />,
-          badgeClass: 'bg-amber-500/10 text-amber-500',
-          label: isRtl ? 'تنبيه متوسط' : 'Warning',
-        }
-      case 'low':
-      default:
-        return {
-          icon: <ShieldCheck size={22} />,
-          badgeClass: 'bg-blue-500/10 text-blue-500',
-          label: isRtl ? 'إرشاد بسيط' : 'Notice',
-        }
-    }
-  }
-
-  const { icon, badgeClass, label } = getSeverityData(item.severity)
-
-  // دالة نسخ التوصية المقترحة إلى الحافظة (Clipboard)
-  const handleCopy = async (e: React.MouseEvent) => {
-    e.stopPropagation() // منع انتشار الحدث لكي لا يغلق أو يفتح الكارت
+  const handleCopy = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(item.recommendation)
+      await navigator.clipboard.writeText(text)
       setIsCopied(true)
-
-      // إظهار توست نجاح سريع ومخصص متناسق مع الجنب
       toast.success(
         isRtl ? 'تم نسخ التوصية بنجاح!' : 'Recommendation copied!',
         {
@@ -74,105 +47,98 @@ export default function ClauseCard({ item }: ClauseCardProps) {
           duration: 2000,
         }
       )
-
       setTimeout(() => setIsCopied(false), 2000)
     } catch (err) {
       console.error('Failed to copy text: ', err)
     }
   }
 
+  const confidenceMeta = item.confidence !== undefined ? getConfidenceMeta(item.confidence) : null
+
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      transition={{ duration: 0.3 }}
-      className="bg-card border-border/60 hover:border-border/100 group relative flex flex-col items-start gap-4 overflow-hidden rounded-2xl border p-5 text-start shadow-sm transition-all md:flex-row"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.2 }}
+      className="w-full space-y-4 px-4 pb-6 pt-2 text-start select-text"
     >
-      {/* الأيقونة الجانبية الملونة حسب درجة الخطورة */}
-      <div
-        className={`mt-0.5 shrink-0 rounded-xl p-3 transition-transform duration-300 group-hover:scale-105 ${badgeClass}`}
-      >
-        {icon}
-      </div>
-
-      {/* صندوق المحتوى الرئيسي */}
-      <div className="w-full flex-1 space-y-3">
-        {/* العناوين والبادج العلوي */}
-        <div className="flex w-full flex-wrap items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h4 className="text-foreground text-base leading-snug font-black tracking-tight">
-              {item.title}
-            </h4>
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Original Clause Text */}
+        <div className="bg-red-500/5 dark:bg-red-500/10 border border-red-500/15 rounded-xl p-4 space-y-2">
+          <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-wider">
+            <ShieldAlert size={14} />
+            <span>{t('dashboard.original_risky')}</span>
           </div>
-          <span
-            className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-widest uppercase ${badgeClass}`}
-          >
-            {label}
-          </span>
+          <p className="text-foreground text-sm leading-relaxed font-medium">
+            {item.clause}
+          </p>
         </div>
 
-        {/* النص الأصلي للبند من العقد مع خاصية التوسيع الذكي */}
-        <div
-          onClick={() => setIsExpanded(!isExpanded)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              setIsExpanded(!isExpanded)
-            }
-          }}
-          role="button"
-          tabIndex={0}
-          className="bg-muted/40 border-muted-foreground/20 hover:bg-muted/60 text-muted-foreground relative cursor-pointer rounded-r-lg border-l-2 px-3 py-2.5 text-sm leading-relaxed font-medium italic transition-colors"
-        >
-          <p className={isExpanded ? '' : 'line-clamp-2'}>{item.clause}</p>
-
-          {/* زر السهم الصغير للتوسيع والتضييق */}
-          <div className="text-primary/70 group/btn non-selectable mt-1 flex items-center justify-end gap-0.5 text-[11px] font-bold">
-            <span>
-              {isExpanded
-                ? isRtl
-                  ? 'عرض أقل'
-                  : 'Show less'
-                : isRtl
-                  ? 'قراءة البند كاملاً'
-                  : 'Read full clause'}
-            </span>
-            {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </div>
-        </div>
-
-        {/* توصية الذكاء الاصطناعي مع زر النسخ المباشر */}
-        <div className="group/rec relative flex items-start gap-3 rounded-xl border border-green-500/15 bg-green-500/5 px-4 py-3.5 text-sm font-semibold text-green-900 dark:text-green-200">
-          <AlertTriangle
-            size={16}
-            className="mt-0.5 shrink-0 text-green-600 dark:text-green-400"
-          />
-          <div className="flex-1 pr-6">
-            <span className="mb-0.5 block font-bold text-green-700 dark:text-green-400">
-              {isRtl
-                ? 'توصية صياغة البديل الآمن:'
-                : 'AI Safe Alternative Recommendation:'}
-            </span>
-            <p className="text-xs leading-relaxed font-bold opacity-95 md:text-sm">
-              {item.recommendation}
+        {/* Suggested Redline */}
+        {item.redlineSuggestion && (
+          <div className="bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15 rounded-xl p-4 space-y-2 relative group">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                <ShieldCheck size={14} />
+                <span>{t('dashboard.suggested_safer_label')}</span>
+              </div>
+              <button
+                onClick={() => handleCopy(item.redlineSuggestion || '')}
+                className="bg-card border-border hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer rounded-lg border p-1.5 shadow-sm transition-all"
+                title={isRtl ? 'نسخ التوصية' : 'Copy Recommendation'}
+              >
+                {isCopied ? (
+                  <Check size={14} className="text-emerald-600" />
+                ) : (
+                  <Copy size={14} />
+                )}
+              </button>
+            </div>
+            <p className="text-foreground text-sm leading-relaxed font-medium pr-8">
+              {item.redlineSuggestion}
             </p>
           </div>
+        )}
+      </div>
 
-          {/* زر نسخ التوصية الذكي */}
-          <button
-            onClick={handleCopy}
-            title={isRtl ? 'نسخ التوصية' : 'Copy Recommendation'}
-            className="bg-background border-border/60 text-muted-foreground absolute top-3.5 left-3.5 cursor-pointer rounded-xl border p-2 shadow-sm transition-all hover:border-green-500/30 hover:bg-green-500/10 hover:text-green-600 active:scale-90 md:opacity-0 md:group-hover/rec:opacity-100 dark:hover:text-green-400"
-          >
-            {isCopied ? (
-              <Check size={14} className="text-green-600" />
-            ) : (
-              <Copy size={14} />
-            )}
-          </button>
+      {/* Explanation Box */}
+      <div className="bg-muted/40 border border-border/60 rounded-xl p-4 space-y-2">
+        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
+          <AlertTriangle size={14} />
+          <span>{t('dashboard.explanation')}</span>
         </div>
+        <p className="text-muted-foreground text-sm leading-relaxed font-medium">
+          {item.explanation}
+        </p>
+      </div>
+
+      {/* Metadata (KB Source & Confidence) */}
+      <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
+        {/* KB Reference */}
+        {item.sourceFromKB && (
+          <div className="bg-card border border-border/60 rounded-lg px-3 py-2 flex items-center gap-1.5 text-muted-foreground">
+            <Search size={14} className="text-primary" />
+            <span className="font-bold">{t('dashboard.kb_source')}:</span>
+            <code className="bg-muted px-1.5 py-0.5 rounded text-[10px] font-mono font-bold text-foreground">
+              {item.sourceFromKB}
+            </code>
+          </div>
+        )}
+
+        {/* Confidence Score */}
+        {item.confidence !== undefined && (
+          <div className="bg-card border border-border/60 rounded-lg px-3 py-2 flex items-center gap-1.5 text-muted-foreground">
+            <BrainCircuit size={14} className="text-primary" />
+            <span className="font-bold">{t('dashboard.confidence')}:</span>
+            <div className="flex items-center gap-1">
+              <span className={`h-2 w-2 rounded-full ${confidenceMeta?.color || 'bg-gray-400'}`} />
+              <span className="font-extrabold text-foreground">
+                {(item.confidence * 100).toFixed(0)}%
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   )

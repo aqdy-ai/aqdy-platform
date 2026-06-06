@@ -1,9 +1,8 @@
 /* tests/ClauseCard.test.tsx */
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import ClauseCard from '../src/components/features/ClauseCard'
 
-// عمل Mock للترجمة - ClauseCard uses i18n.language directly, not t()
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -11,8 +10,6 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-// The real ClauseCard renders item.recommendation inline, no redline toggle
-// ClauseCard interface: { id, severity, title, clause, recommendation }
 describe('ClauseCard Component', () => {
   const mockClause = {
     id: 'clause_001',
@@ -20,40 +17,34 @@ describe('ClauseCard Component', () => {
     title: 'The Service Provider shall be liable for all damages.',
     clause:
       'The Service Provider shall be liable for all damages, losses, and injuries of any kind.',
-    recommendation:
-      'Liability shall be capped at contract value.',
+    explanation: 'Unlimited liability is high risk and requires a cap.',
+    redlineSuggestion: 'Liability shall be capped at contract value.',
+    confidence: 0.95,
+    sourceFromKB: 'kb_liability_limit',
   }
 
-  it('renders static content properly', () => {
+  it('renders detailed content properly', () => {
     render(<ClauseCard item={mockClause} />)
 
-    // title is rendered inside h4
+    // displays original clause text
     expect(
-      screen.getByText(/The Service Provider shall be liable for all damages\./)
+      screen.getByText(/The Service Provider shall be liable for all damages, losses/i)
     ).toBeInTheDocument()
 
-    // recommendation is rendered inside the green box
+    // displays AI explanation
+    expect(
+      screen.getByText(/Unlimited liability is high risk and requires a cap/i)
+    ).toBeInTheDocument()
+
+    // displays suggested redline
     expect(
       screen.getByText(/Liability shall be capped at contract value\./)
     ).toBeInTheDocument()
 
-    // The copy button is rendered (not expanded text toggle)
-    expect(
-      screen.getByTitle(/Copy Recommendation/i)
-    ).toBeInTheDocument()
-  })
+    // displays KB source citation reference
+    expect(screen.getByText('kb_liability_limit')).toBeInTheDocument()
 
-  it('toggles the clause text expansion when clicking the clause area', () => {
-    render(<ClauseCard item={mockClause} />)
-
-    // Initially shows "Read full clause" toggle hint
-    expect(screen.getByText(/Read full clause/i)).toBeInTheDocument()
-
-    // Click the clause area to expand
-    const clauseArea = screen.getByText(/The Service Provider shall be liable for all damages, losses/i).closest('div')!
-    fireEvent.click(clauseArea)
-
-    // After expanding, shows "Show less"
-    expect(screen.getByText(/Show less/i)).toBeInTheDocument()
+    // displays confidence score
+    expect(screen.getByText('95%')).toBeInTheDocument()
   })
 })

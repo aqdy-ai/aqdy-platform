@@ -5,6 +5,8 @@ export interface IClauseAnalysis {
   riskLevel: 'low' | 'medium' | 'high' | 'critical' | 'unknown'
   explanation: { ar: string; en: string }
   redlineSuggestion?: string
+  confidence?: number
+  sourceFromKB?: string
 }
 
 export interface IRiskAnalysis {
