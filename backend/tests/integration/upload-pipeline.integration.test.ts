@@ -47,11 +47,16 @@ jest.unstable_mockModule("../../src/models/contract.model.js", () => ({
   },
 }));
 
+const RiskAnalysisMock = jest.fn().mockImplementation(() => ({
+  save: mockAnalysisSave,
+  _id: "analysis_001",
+}));
+(RiskAnalysisMock as any).findOne = jest.fn().mockReturnValue({
+  sort: jest.fn().mockResolvedValue(null),
+});
+
 jest.unstable_mockModule("../../src/models/riskAnalysis.model.js", () => ({
-  RiskAnalysis: jest.fn().mockImplementation(() => ({
-    save: mockAnalysisSave,
-    _id: "analysis_001",
-  })),
+  RiskAnalysis: RiskAnalysisMock,
   RiskAnalysisZodSchema: {
     parse: jest.fn().mockReturnValue(true),
   },
