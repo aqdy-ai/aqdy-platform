@@ -54,16 +54,6 @@ export class PaymentService {
     }
 
     logger.info(`🔔 Received Stripe webhook event: ${event.type}`);
-
-    // 🛡️ Log the processed event for idempotency
-    await AuditLog.create({
-      action: "STRIPE_WEBHOOK",
-      outcome: "success",
-      metadata: {
-        stripeEventId: event.id,
-        eventType: event.type,
-      },
-    });
   }
 }
 

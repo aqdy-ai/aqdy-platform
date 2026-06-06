@@ -8,20 +8,16 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
-
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
-
   GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required"),
-
   PINECONE_API_KEY: z.string().min(1, "PINECONE_API_KEY is required"),
   PINECONE_INDEX: z.string().min(1, "PINECONE_INDEX is required"),
-
   LANGFUSE_SECRET_KEY: z.string().min(1, "LANGFUSE_SECRET_KEY is required"),
   LANGFUSE_PUBLIC_KEY: z.string().min(1, "LANGFUSE_PUBLIC_KEY is required"),
   LANGFUSE_URL: z.string().default("https://cloud.langfuse.com"),
-
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
-
+  CREDIT_BASE_COST: z.coerce.number().nonnegative().default(0),
+  CREDIT_TOKEN_RATE: z.coerce.number().nonnegative().default(0.001),
   STRIPE_SECRET_KEY: z.string().min(1, "STRIPE_SECRET_KEY is required"),
   STRIPE_PUBLISHABLE_KEY: z
     .string()
