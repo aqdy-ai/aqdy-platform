@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 import request from 'supertest';
-import { describe, it, expect, beforeAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, beforeEach } from '@jest/globals';
 import app from '../../src/index.js';
 import { contractService } from '../../src/services/contract.service.js';
 import { Contract } from '../../src/models/contract.model.js';
 import { RiskAnalysis } from '../../src/models/riskAnalysis.model.js';
+import { resetRateLimitStores } from '../../src/middlewares/rateLimit.js';
 
 let testContractId: string;
 let emptyContractId: string;
@@ -103,6 +104,10 @@ beforeAll(async () => {
 });
 
 describe('Analysis API Integration', () => {
+  beforeEach(() => {
+    resetRateLimitStores();
+  });
+
   it('should accept a contract for analysis and return 202', async () => {
     const response = await analysisRequest({
       contractId: testContractId,
