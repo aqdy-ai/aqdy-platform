@@ -55,10 +55,7 @@ router.delete(
 );
 
 // Analysis version routes
-router.get(
-  "/contracts/:contractId/analyses",
-  getAnalysisVersionsHandler,
-);
+router.get("/contracts/:contractId/analyses", getAnalysisVersionsHandler);
 router.get(
   "/contracts/:contractId/analyses/:analysisId",
   getAnalysisVersionDetailHandler,
