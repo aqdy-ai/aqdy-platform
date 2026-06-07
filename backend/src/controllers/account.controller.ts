@@ -164,7 +164,9 @@ export const getCreditsHandler = async (
       subscription.planId &&
       typeof subscription.planId !== "string"
     ) {
-      const plan = subscription.planId as unknown as { creditAllowance?: number };
+      const plan = subscription.planId as unknown as {
+        creditAllowance?: number;
+      };
       planAllowance = plan.creditAllowance ?? 0;
     }
 
