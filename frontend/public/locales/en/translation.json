@@ -258,5 +258,21 @@
     "reason_chat_deduction": "Clause chat",
     "reason_manual_adjustment": "Manual adjustment",
     "reason_refund": "Refund"
+  },
+  "chat": {
+    "chat_about_clause": "Chat about this clause",
+    "hide_chat": "Hide chat",
+    "credits_cost": "~5 credits",
+    "insufficient_credits": "Insufficient credits.",
+    "upgrade_cta": "Upgrade Plan",
+    "rate_limit_reached": "Rate limit reached (20 messages).",
+    "placeholder": "Ask a question about this clause...",
+    "send": "Send",
+    "suggested_questions": {
+      "q1": "What does this mean for me?",
+      "q2": "Is this standard in MENA contracts?",
+      "q3": "How should I negotiate this?",
+      "q4": "What is the worst-case risk here?"
+    }
   }
 }
