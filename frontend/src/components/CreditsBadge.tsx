@@ -1,4 +1,3 @@
-
 // Compact variant   → embedded in <Navbar />
 // Expanded variant  → embedded in <AccountSettings /> aside column
 //
@@ -79,12 +78,12 @@ function ReasonIcon({ reason }: { reason: CreditLedgerEntry['reason'] }) {
   switch (reason) {
     case 'analysis_deduction':
     case 'chat_deduction':
-      return <TrendingDown size={12} className="shrink-0 text-destructive" />
+      return <TrendingDown size={12} className="text-destructive shrink-0" />
     case 'plan_topup':
     case 'refund':
       return <RefreshCw size={12} className="shrink-0 text-emerald-500" />
     default:
-      return <Zap size={12} className="shrink-0 text-muted-foreground" />
+      return <Zap size={12} className="text-muted-foreground shrink-0" />
   }
 }
 
@@ -120,7 +119,9 @@ function ExpandedSkeleton() {
 // Main component
 // ─────────────────────────────────────────────────────────
 
-export default function CreditsBadge({ variant = 'compact' }: CreditsBadgeProps) {
+export default function CreditsBadge({
+  variant = 'compact',
+}: CreditsBadgeProps) {
   const { t, i18n } = useTranslation()
   const location = useLocation()
   const isRtl = i18n.language === 'ar'
@@ -333,7 +334,7 @@ export default function CreditsBadge({ variant = 'compact' }: CreditsBadgeProps)
         </div>
 
         {planAllowance > 0 && (
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex items-center justify-between text-xs">
             <span>{t('credits.planAllowanceLabel')}</span>
             <span className="font-semibold">
               {planAllowance.toLocaleString(isRtl ? 'ar-EG' : 'en-US')}
@@ -401,10 +402,13 @@ export default function CreditsBadge({ variant = 'compact' }: CreditsBadgeProps)
       {/* Mini ledger – last 5 deductions */}
       {miniLedger.length > 0 && (
         <div className="border-border/40 border-t pt-4">
-          <p className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+          <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
             {t('credits.recentDeductionsTitle')}
           </p>
-          <ul className="space-y-2" aria-label={t('credits.recentDeductionsTitle')}>
+          <ul
+            className="space-y-2"
+            aria-label={t('credits.recentDeductionsTitle')}
+          >
             {miniLedger.map((entry) => (
               <li
                 key={entry._id}

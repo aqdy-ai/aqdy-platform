@@ -89,7 +89,8 @@ export const accountApi = {
     }
   },
   async getCredits(): Promise<CreditsData> {
-    const response = await accountClient.get<ApiResponse<CreditsData>>('/credits')
+    const response =
+      await accountClient.get<ApiResponse<CreditsData>>('/credits')
     return response.data.data
   },
 }
