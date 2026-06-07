@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { accountApi } from '../services/accountApi'
 import type { UpdateProfilePayload } from '../types/account'
+import CreditsBadge from '../components/CreditsBadge'
 
 export interface AccountSettingsForm {
   name: string
@@ -393,6 +394,9 @@ export default function AccountSettings() {
                   </button>
                 )}
               </div>
+
+              {/* Credits Balance Widget */}
+              <CreditsBadge variant="expanded" />
 
               <div className="border-border/70 bg-card rounded-3xl border p-6 shadow-xl">
                 <div className="mb-4 flex items-center justify-between gap-4">

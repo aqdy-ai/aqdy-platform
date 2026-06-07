@@ -8,6 +8,7 @@ import {
   deleteAccount,
 } from "../services/account.service.js";
 import { creditsService } from "../services/credits.service.js";
+import { subscriptionService } from "../services/subscription.service.js";
 
 const updateProfileSchema = z
   .object({
@@ -151,19 +152,33 @@ export const getCreditsHandler = async (
       throw new AppError(401, "Authentication required.");
     }
 
-    const balance = await creditsService.getBalance(String(user._id));
-    const ledgerEntries = await creditsService.getLedgerEntries(
-      String(user._id),
-      20,
-    );
+    const userId = String(user._id);
+    const balance = await creditsService.getBalance(userId);
+    const ledgerEntries = await creditsService.getLedgerEntries(userId, 20);
+
+    // Resolve plan allowance so the frontend can render a meaningful progress bar
+    let planAllowance = 0;
+    const subscription = await subscriptionService.getUserSubscription(userId);
+    if (
+      subscription &&
+      subscription.planId &&
+      typeof subscription.planId !== "string"
+    ) {
+      const plan = subscription.planId as unknown as {
+        creditAllowance?: number;
+      };
+      planAllowance = plan.creditAllowance ?? 0;
+    }
 
     const response: ApiResponse<{
       balance: number;
+      planAllowance: number;
       ledger: typeof ledgerEntries;
     }> = {
       success: true,
       data: {
         balance,
+        planAllowance,
         ledger: ledgerEntries,
       },
       message: "Credits retrieved successfully.",

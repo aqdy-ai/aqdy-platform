@@ -1,6 +1,7 @@
 import axios from 'axios'
 import type {
   AccountProfile,
+  CreditsData,
   SubscriptionInfo,
   SubscriptionResponseData,
   UpdateProfilePayload,
@@ -86,5 +87,10 @@ export const accountApi = {
       analysesAllowed: response.data.data.usage.analysesLimit,
       renewalDate: response.data.data.usage.renewalDate,
     }
+  },
+  async getCredits(): Promise<CreditsData> {
+    const response =
+      await accountClient.get<ApiResponse<CreditsData>>('/credits')
+    return response.data.data
   },
 }
