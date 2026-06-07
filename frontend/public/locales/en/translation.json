@@ -274,5 +274,35 @@
       "q3": "How should I negotiate this?",
       "q4": "What is the worst-case risk here?"
     }
+  },
+  "upgrade": {
+    "title": "Upgrade Your Contract Management Today",
+    "subtitle": "Choose the perfect plan for your business and unlock advanced AI analytics.",
+    "tooltip_text": "Credits are consumed based on document volume; each analyzed page uses exactly 1 credit from your balance."
+  },
+  "plans": {
+    "free": {
+      "name": "Free Plan",
+      "f1": "Basic document analysis",
+      "f2": "Single language support"
+    },
+    "pro": {
+      "name": "Pro Developer",
+      "f1": "Advanced AI analysis",
+      "f2": "Full multilingual support",
+      "f3": "Version comparison reports (Diff)"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "f1": "Custom team permissions",
+      "f2": "24/7 dedicated support"
+    },
+    "credits_per_month": "credits / month",
+    "upgrade_pro": "Upgrade to Pro",
+    "current": "Your Current Plan",
+    "popular": "Most Popular",
+    "custom_price": "Custom",
+    "month": "mo",
+    "contact_us": "Contact Us"
   }
 }

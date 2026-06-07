@@ -32,5 +32,5 @@
     "tests/Register.test.tsx",
     "tests/e2e/useAuth.test.ts",
     "tests/Login.test.tsx"
-  ]
+, "tests/UpgradeModal.test.tsx"  ]
 }
