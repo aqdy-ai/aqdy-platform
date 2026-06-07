@@ -10,8 +10,10 @@ import {
   Check,
   BrainCircuit,
   Search,
+  MessageSquare,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import ClauseChat from './ClauseChat'
 import { getConfidenceMeta } from '../../lib/utils'
 
 export interface ClauseItem {
@@ -23,16 +25,24 @@ export interface ClauseItem {
   redlineSuggestion?: string
   confidence?: number
   sourceFromKB?: string
+  clauseIndex?: number
 }
 
 interface ClauseCardProps {
   item: ClauseItem
+  contractId?: string
+  clauseIndex?: number
 }
 
-export default function ClauseCard({ item }: ClauseCardProps) {
+export default function ClauseCard({
+  item,
+  contractId,
+  clauseIndex,
+}: ClauseCardProps) {
   const { t, i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
   const [isCopied, setIsCopied] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   const handleCopy = async (text: string) => {
     try {
@@ -141,6 +151,31 @@ export default function ClauseCard({ item }: ClauseCardProps) {
           </div>
         )}
       </div>
+
+      {/* Action Row - Chat toggle button */}
+      <div className="border-border/20 mt-4 flex justify-end border-t pt-2">
+        <button
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className="bg-primary hover:bg-primary/95 text-primary-foreground flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold shadow-sm transition-all active:scale-95"
+        >
+          <MessageSquare size={14} />
+          <span>
+            {isChatOpen ? t('chat.hide_chat') : t('chat.chat_about_clause')}
+          </span>
+        </button>
+      </div>
+
+      {/* Inline Chat Component */}
+      {isChatOpen && (
+        <div className="border-border/40 mt-4 border-t pt-4">
+          <ClauseChat
+            key={`${contractId || ''}-${clauseIndex ?? item.clauseIndex ?? 0}`}
+            contractId={contractId || ''}
+            clauseIndex={clauseIndex ?? item.clauseIndex ?? 0}
+            clauseText={item.clause}
+          />
+        </div>
+      )}
     </motion.div>
   )
 }

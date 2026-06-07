@@ -262,11 +262,18 @@ export default function RiskAnalysisDashboard() {
               redlineSuggestion: item.redlineSuggestion,
               confidence: item.confidence,
               sourceFromKB: item.sourceFromKB,
+              clauseIndex: idx,
             }
           }
         ),
       }
-    : MOCK_RISK_DATA
+    : {
+        ...MOCK_RISK_DATA,
+        items: MOCK_RISK_DATA.items.map((item, idx) => ({
+          ...item,
+          clauseIndex: idx,
+        })),
+      }
 
   // Calculate estimated negotiation priority label based on counts
   const negotiationPriority =
@@ -746,7 +753,11 @@ export default function RiskAnalysisDashboard() {
                             id={`clause-details-${item.id}`}
                             className="border-border/40 bg-muted/20 border-t"
                           >
-                            <ClauseCard item={item as ClauseItem} />
+                            <ClauseCard
+                              item={item as ClauseItem}
+                              contractId={contractId || 'mock-contract-id'}
+                              clauseIndex={item.clauseIndex}
+                            />
                           </div>
                         )}
                       </td>
