@@ -10,6 +10,9 @@
 // Account Management types
 export type {
   AccountProfile,
+  CreditsData,
+  CreditLedgerEntry,
+  CreditLedgerReason,
   SubscriptionInfo,
   UpdateProfilePayload,
 } from './account'

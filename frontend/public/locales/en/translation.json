@@ -234,5 +234,29 @@
     "status_active": "Active",
     "status_suspended": "Suspended",
     "status_pending": "Pending"
+  },
+  "credits": {
+    "sectionTitle": "Credits Balance",
+    "creditsLabel": "credits",
+    "currentBalanceLabel": "Current balance",
+    "planAllowanceLabel": "Plan allowance",
+    "creditsRemaining": "{{count}} credits remaining ({{pct}}%)",
+    "noCreditsRemaining": "No credits remaining",
+    "stateHealthy": "Healthy",
+    "stateLow": "Running Low",
+    "stateEmpty": "Depleted",
+    "lowBalanceWarning": "Your credit balance is running low. Consider upgrading your plan.",
+    "recentDeductionsTitle": "Recent deductions",
+    "contractLabel": "Contract",
+    "upgradeCta": "Upgrade Plan to Refill Credits",
+    "errorLoading": "Unable to load credit information. Please refresh.",
+    "ariaLabel": "Credits balance widget",
+    "upgradeAriaLabel": "Upgrade plan to get more credits",
+    "progressAriaLabel": "Credit usage progress bar",
+    "reason_plan_topup": "Plan top-up",
+    "reason_analysis_deduction": "Contract analysis",
+    "reason_chat_deduction": "Clause chat",
+    "reason_manual_adjustment": "Manual adjustment",
+    "reason_refund": "Refund"
   }
 }

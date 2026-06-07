@@ -238,5 +238,29 @@
     "status_active": "نشط",
     "status_suspended": "معلق",
     "status_pending": "قيد المراجعة"
+  },
+  "credits": {
+    "sectionTitle": "رصيد الاعتمادات",
+    "creditsLabel": "اعتماد",
+    "currentBalanceLabel": "الرصيد الحالي",
+    "planAllowanceLabel": "مخصص الخطة",
+    "creditsRemaining": "{{count}} اعتماد متبقٍّ ({{pct}}%)",
+    "noCreditsRemaining": "لا توجد اعتمادات متبقية",
+    "stateHealthy": "جيد",
+    "stateLow": "منخفض",
+    "stateEmpty": "نافد",
+    "lowBalanceWarning": "رصيدك من الاعتمادات منخفض. فكّر في الترقية إلى خطة أعلى.",
+    "recentDeductionsTitle": "آخر الخصومات",
+    "contractLabel": "عقد",
+    "upgradeCta": "ترقية الخطة لتجديد الاعتمادات",
+    "errorLoading": "تعذّر تحميل بيانات الاعتمادات. يرجى إعادة التحميل.",
+    "ariaLabel": "عنصر رصيد الاعتمادات",
+    "upgradeAriaLabel": "ترقية الخطة للحصول على مزيد من الاعتمادات",
+    "progressAriaLabel": "شريط تقدم استخدام الاعتمادات",
+    "reason_plan_topup": "شحن الخطة",
+    "reason_analysis_deduction": "تحليل عقد",
+    "reason_chat_deduction": "محادثة بند",
+    "reason_manual_adjustment": "تعديل يدوي",
+    "reason_refund": "استرداد"
   }
 }
