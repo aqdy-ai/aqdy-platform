@@ -171,10 +171,17 @@ export class PaymentService {
       }
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-        await Subscription.findOneAndUpdate(
+        const subDoc = await Subscription.findOneAndUpdate(
           { stripeSubscriptionId: subscription.id },
-          { status: "cancelled", cancelledAt: new Date() },
+          { status: "cancelled", cancelledAt: new Date(), endDate: new Date() },
+          { new: true },
         );
+        if (subDoc) {
+          await User.findByIdAndUpdate(subDoc.userId, {
+            plan: "free",
+            planSlug: "free",
+          });
+        }
         break;
       }
       case "customer.subscription.updated": {

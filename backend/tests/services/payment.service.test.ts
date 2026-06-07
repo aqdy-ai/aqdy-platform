@@ -159,7 +159,8 @@ describe("PaymentService Unit Tests", () => {
       await paymentService.handleWebhook(Buffer.from(""), "sig");
       expect(Subscription.findOneAndUpdate).toHaveBeenCalledWith(
         { stripeSubscriptionId: "sub_stripe_1" },
-        expect.objectContaining({ status: "cancelled" })
+        expect.objectContaining({ status: "cancelled" }),
+        { new: true }
       );
     });
 
@@ -172,6 +173,153 @@ describe("PaymentService Unit Tests", () => {
         statusCode: 400,
         message: "Webhook signature verification failed"
       });
+    });
+    it("should handle checkout.session.completed and topup credits", async () => {
+      const event = {
+        id: "evt_checkout",
+        type: "checkout.session.completed",
+        data: {
+          object: {
+            id: "cs_123",
+            subscription: "sub_stripe_1",
+            customer: "cus_123",
+            amount_total: 2900,
+            currency: "usd",
+            metadata: {
+              userId: "507f1f77bcf86cd799439011",
+              planId: "507f1f77bcf86cd799439012",
+            },
+          },
+        },
+      };
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue(event as any);
+
+      (AuditLog.findOne as jest.Mock).mockResolvedValue(null);
+
+      (Subscription.findOne as jest.Mock).mockResolvedValue(null);
+
+      (Plan.findById as jest.Mock).mockResolvedValue({
+        _id: "plan_1",
+        slug: "pro",
+        name: "Pro",
+        creditAllowance: 100,
+      });
+
+      jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue({
+        current_period_start: 1000,
+        current_period_end: 2000,
+      } as any);
+
+      (Subscription.create as jest.Mock).mockResolvedValue({
+        _id: "sub_local",
+      });
+
+      (User.findByIdAndUpdate as jest.Mock).mockResolvedValue({});
+      (Payment.create as jest.Mock).mockResolvedValue({});
+      (AuditLog.create as jest.Mock).mockResolvedValue({});
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      expect(creditsService.topup).toHaveBeenCalledWith(
+        "507f1f77bcf86cd799439011",
+        100,
+        "plan_topup",
+      );
+
+      expect(Payment.create).toHaveBeenCalled();
+    });
+    it("should handle invoice.paid and renew subscription", async () => {
+      const event = {
+        id: "evt_paid",
+        type: "invoice.paid",
+        data: {
+          object: {
+            id: "inv_123",
+            subscription: "sub_stripe_1",
+            amount_paid: 2900,
+            currency: "usd",
+          },
+        },
+      };
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue(event as any);
+
+      (AuditLog.findOne as jest.Mock).mockResolvedValue(null);
+
+      jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue({
+        current_period_end: 3000,
+      } as any);
+
+      (Subscription.findOneAndUpdate as jest.Mock).mockResolvedValue({
+        _id: "sub_local",
+        userId: "user_1",
+        planId: "plan_1",
+      });
+
+      (Plan.findById as jest.Mock).mockResolvedValue({
+        creditAllowance: 50,
+      });
+
+      (Payment.create as jest.Mock).mockResolvedValue({});
+      (AuditLog.create as jest.Mock).mockResolvedValue({});
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      expect(creditsService.topup).toHaveBeenCalledWith(
+        "user_1",
+        50,
+        "plan_topup",
+      );
+
+      expect(Payment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "succeeded",
+          providerTxId: "inv_123",
+        }),
+      );
+    });
+    it("should handle invoice.payment_failed", async () => {
+      const event = {
+        id: "evt_failed",
+        type: "invoice.payment_failed",
+        data: {
+          object: {
+            id: "inv_failed",
+            subscription: "sub_stripe_1",
+            amount_due: 2900,
+            currency: "usd",
+          },
+        },
+      };
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue(event as any);
+
+      (AuditLog.findOne as jest.Mock).mockResolvedValue(null);
+
+      (Subscription.findOneAndUpdate as jest.Mock).mockResolvedValue({
+        _id: "sub_local",
+        userId: "user_1",
+      });
+
+      (User.findByIdAndUpdate as jest.Mock).mockResolvedValue({});
+
+      (Payment.create as jest.Mock).mockResolvedValue({});
+      (AuditLog.create as jest.Mock).mockResolvedValue({});
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+        "user_1",
+        { status: "suspended" },
+      );
+
+      expect(Payment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "failed",
+          providerTxId: "inv_failed",
+        }),
+      );
     });
   });
 });
