@@ -1,0 +1,37 @@
+{
+  "accuracy": {
+    "totalClauses": 0,
+    "highConfidenceClauses": 0,
+    "lowConfidenceClauses": 0,
+    "missingKBCitations": 0,
+    "accuracyPercent": 0,
+    "contractsSummary": [
+      {
+        "filename": "عقد_عمل_نيو_دلهي.docx",
+        "type": "employment",
+        "language": "ar",
+        "totalClauses": 0,
+        "overallRisk": "unknown",
+        "lowConfidenceClauses": 0,
+        "missingKBCitations": 0,
+        "status": "failed"
+      }
+    ]
+  },
+  "results": [
+    {
+      "contractId": "1",
+      "filename": "عقد_عمل_نيو_دلهي.docx",
+      "contractType": "employment",
+      "language": "ar",
+      "totalClauses": 0,
+      "overallRisk": "unknown",
+      "lowConfidenceClauses": 0,
+      "missingKBCitations": 0,
+      "clauseResults": [],
+      "durationMs": 7773,
+      "status": "failed",
+      "error": "All LLM providers failed. Please try again later."
+    }
+  ]
+}

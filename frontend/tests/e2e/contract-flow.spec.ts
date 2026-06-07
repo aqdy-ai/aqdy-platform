@@ -4,10 +4,80 @@ test.describe('Contract Upload Flow', () => {
   test('should complete the upload and show analysis elements', async ({
     page,
   }) => {
-    // 1. Start from a fresh state so the Upload Card is visible
-    await page.addInitScript(
-      'window.localStorage.clear(); window.sessionStorage.clear();'
-    )
+    // Mock the getMe API call to simulate authenticated user
+    await page.route('**/api/auth/me', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            user: {
+              id: 'test-user-id',
+              name: 'Test User',
+              email: 'test@example.com',
+            },
+          },
+        }),
+      })
+    })
+
+    // Mock subscription API call
+    await page.route('**/api/account/subscription', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            subscription: {
+              planId: { name: 'Pro Plan' },
+            },
+            usage: {
+              analysesUsed: 2,
+              analysesLimit: 10,
+              renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+          },
+        }),
+      })
+    })
+
+    // Mock credits API call
+    await page.route('**/api/account/credits', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            balance: 80,
+            planAllowance: 100,
+            ledger: [],
+          },
+        }),
+      })
+    })
+
+    // Mock upload API call
+    await page.route('**/api/upload', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          contractId: 'test-123',
+        }),
+      })
+    })
+
+    // 1. Start from a fresh state so the Upload Card is visible, and set logged in status
+    await page.addInitScript(() => {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+      window.localStorage.setItem('isLoggedIn', 'true');
+      window.localStorage.setItem('aqdy_disclaimer_accepted', 'true');
+    })
     await page.goto('/')
 
     // 2. Handle Legal Disclaimer modal
