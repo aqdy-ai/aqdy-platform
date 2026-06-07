@@ -482,15 +482,60 @@ export default function RiskAnalysisDashboard() {
             </span>
           </div>
 
-          <div className="space-y-3">
-            <h3 className="text-foreground text-lg font-bold">
-              {isRtl
-                ? 'النتائج والملخص العام للتحليل'
-                : 'Key Analysis Findings'}
-            </h3>
-            <p className="text-muted-foreground text-base leading-relaxed font-medium">
-              {dataToRender.summary}
-            </p>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+            <div className="space-y-3 md:col-span-3">
+              <h3 className="text-foreground text-lg font-bold">
+                {isRtl
+                  ? 'النتائج والملخص العام للتحليل'
+                  : 'Key Analysis Findings'}
+              </h3>
+              <p className="text-muted-foreground text-base leading-relaxed font-medium">
+                {dataToRender.summary}
+              </p>
+            </div>
+
+            {/* Safety Score Radial/Circular Indicator */}
+            <div className="bg-muted/30 border-border/30 flex flex-col items-center justify-center rounded-2xl border p-4">
+              <div className="relative flex items-center justify-center">
+                <svg className="h-24 w-24 -rotate-90 transform">
+                  {/* Background Circle */}
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    className="stroke-muted-foreground/10"
+                    strokeWidth="8"
+                    fill="transparent"
+                  />
+                  {/* Foreground Circle */}
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    className={`${
+                      dataToRender.overallScore >= 80
+                        ? 'stroke-emerald-500'
+                        : dataToRender.overallScore >= 50
+                          ? 'stroke-amber-500'
+                          : 'stroke-red-500'
+                    } transition-all duration-1000 ease-out`}
+                    strokeWidth="8"
+                    strokeDasharray={2 * Math.PI * 40}
+                    strokeDashoffset={
+                      2 * Math.PI * 40 * (1 - dataToRender.overallScore / 100)
+                    }
+                    strokeLinecap="round"
+                    fill="transparent"
+                  />
+                </svg>
+                <span className="text-foreground absolute text-2xl font-black">
+                  {dataToRender.overallScore}%
+                </span>
+              </div>
+              <span className="text-muted-foreground mt-2 text-xs font-bold">
+                {isRtl ? 'درجة الأمان العامة' : 'Overall Safety Score'}
+              </span>
+            </div>
           </div>
 
           {/* Breakdown bar */}
