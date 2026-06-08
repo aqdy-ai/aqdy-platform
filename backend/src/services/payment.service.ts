@@ -432,6 +432,9 @@ export class PaymentService {
     )) as unknown as IPopulatedPayment | null;
 
     if (!payment) throw new AppError(404, "Payment record not found");
+    if (payment.userId.toString() !== userId) {
+      throw new AppError(403, "Forbidden");
+    }
     return payment;
   }
 
