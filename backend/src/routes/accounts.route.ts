@@ -3,12 +3,14 @@ import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 import { Contract } from "../models/contract.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import { authenticateJwt, requireAdmin } from "../middlewares/auth.middleware.js";
+import { Plan } from "../models/plan.model.js";
+import { creditsService } from "../services/credits.service.js";
 
 const router = Router();
 
 // GET /api/admin/accounts
-router.get("/", requireAdmin, async (req: Request, res: Response) => {
+router.get("/", authenticateJwt, requireAdmin, async (req: Request, res: Response) => {
   try {
     const {
       page: pageRaw,
@@ -74,7 +76,7 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
 });
 
 // GET /api/admin/accounts/:id
-router.get("/:id", requireAdmin, async (req: Request, res: Response) => {
+router.get("/:id", authenticateJwt, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -132,7 +134,7 @@ router.get("/:id", requireAdmin, async (req: Request, res: Response) => {
 });
 
 // PATCH /api/admin/accounts/:id
-router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
+router.patch("/:id", authenticateJwt, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { plan, planSlug, status, role } = req.body;
@@ -148,6 +150,10 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
+    // ── Track whether plan actually changes ──────────────────────────────
+    const originalPlanSlug = user.planSlug;
+    let incomingPlanSlug: string | undefined;
+
     // Handle updates
     if (plan !== undefined) {
       if (!["free", "premium", "enterprise"].includes(plan)) {
@@ -155,6 +161,7 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
           .status(400)
           .json({ success: false, error: "Invalid plan type" });
       }
+      incomingPlanSlug = plan as string;
       user.planSlug = plan;
       user.plan = plan;
     } else if (planSlug !== undefined) {
@@ -163,6 +170,7 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
           .status(400)
           .json({ success: false, error: "Invalid plan slug type" });
       }
+      incomingPlanSlug = planSlug as string;
       user.planSlug = planSlug;
       user.plan = planSlug;
     }
@@ -187,9 +195,39 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
 
     await user.save();
 
+    // ── Credit topup on genuine plan change ──────────────────────────────
+    // Only trigger when the plan slug actually changed to avoid double-crediting
+    // users already on that plan.
+    let creditTopup: { amount: number; newBalance: number } | null = null;
+
+    if (incomingPlanSlug && incomingPlanSlug !== originalPlanSlug) {
+      const planDoc = await Plan.findOne({ slug: incomingPlanSlug });
+
+      if (!planDoc) {
+        // Non-fatal: plan document missing from DB. Log and continue.
+        console.warn(
+          `[admin/accounts] Plan slug "${incomingPlanSlug}" not found in Plan collection — skipping credit topup for user ${id}`,
+        );
+      } else if (planDoc.creditAllowance > 0) {
+        const ledgerEntry = await creditsService.topup(
+          id,
+          planDoc.creditAllowance,
+          "plan_topup",
+        );
+        creditTopup = {
+          amount: planDoc.creditAllowance,
+          newBalance: ledgerEntry.balanceAfter,
+        };
+      }
+    }
+
+    // Re-fetch user so creditBalance reflects any topup
+    const updatedUser = await User.findById(id);
+
     return res.status(200).json({
       success: true,
-      data: user,
+      data: updatedUser,
+      ...(creditTopup && { creditTopup }),
     });
   } catch (error: unknown) {
     console.error("Error in PATCH /api/admin/accounts/:id:", error);
@@ -201,7 +239,7 @@ router.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/admin/accounts/:id
-router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
+router.delete("/:id", authenticateJwt, requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { confirm } = req.body;
