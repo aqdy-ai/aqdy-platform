@@ -407,7 +407,7 @@ export class PaymentService {
           populate: { path: "planId", select: "name slug" },
         }) as unknown as Promise<IPopulatedPayment[]>,
       Payment.countDocuments({ userId }),
-    ]);
+    ]) as [IPopulatedPayment[], number]; // Explicitly cast the Promise.all result
 
     return {
       payments,
@@ -424,12 +424,12 @@ export class PaymentService {
    * Get detailed payment record, ensuring user ownership
    */
   async getPaymentById(paymentId: string, userId: string) {
-    const payment = (await Payment.findOne({ _id: paymentId, userId }).populate(
+    const payment = (await Payment.findOne({ _id: paymentId, userId }).populate<IPopulatedPayment>(
       {
         path: "subscriptionId",
         populate: { path: "planId", select: "name slug" },
       },
-    )) as unknown as IPopulatedPayment | null;
+    ));
 
     if (!payment) throw new AppError(404, "Payment record not found");
     if (payment.userId.toString() !== userId) {

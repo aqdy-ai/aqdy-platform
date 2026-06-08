@@ -357,7 +357,7 @@ describe("PaymentService Unit Tests", () => {
     it("should return paginated payments for a user", async () => {
       const userId = new mongoose.Types.ObjectId().toString();
       const mockPaymentsData: IPopulatedPayment[] = [{
-        _id: new mongoose.Types.ObjectId().toString(),
+        _id: new mongoose.Types.ObjectId(), // Corrected to ObjectId
         userId,
         subscriptionId: { _id: new mongoose.Types.ObjectId(), userId: new mongoose.Types.ObjectId(), planId: { _id: new mongoose.Types.ObjectId(), name: "Pro Plan", slug: "pro", isActive: true }, status: "active", startDate: new Date(), endDate: new Date(), renewalDate: new Date(), stripeCustomerId: "cus_test", stripeSubscriptionId: "sub_test" },
         amount: 10, status: "succeeded", currency: "usd", createdAt: new Date(), provider: "stripe", providerTxId: "tx_1", description: "Test Payment"
@@ -386,7 +386,7 @@ describe("PaymentService Unit Tests", () => {
     it("should return a single payment if owned by user", async () => {
       const userId = new mongoose.Types.ObjectId().toString();
       const mockPayment: IPopulatedPayment = {
-        _id: "pay_1", userId, status: "succeeded", currency: "usd", createdAt: new Date(),
+        _id: new mongoose.Types.ObjectId(), userId: new mongoose.Types.ObjectId(userId), status: "succeeded", currency: "usd", createdAt: new Date(), // Corrected userId to ObjectId
         subscriptionId: { _id: new mongoose.Types.ObjectId(), userId: new mongoose.Types.ObjectId(), planId: { _id: new mongoose.Types.ObjectId(), name: "Pro Plan", slug: "pro", isActive: true }, status: "active", startDate: new Date(), endDate: new Date(), renewalDate: new Date(), stripeCustomerId: "cus_test", stripeSubscriptionId: "sub_test" },
         amount: 100, provider: "stripe", providerTxId: "tx_1", description: "Test Payment", updatedAt: new Date()
       };
@@ -400,7 +400,7 @@ describe("PaymentService Unit Tests", () => {
         populate: jest.fn().mockResolvedValue(mockPayment),
       }));
 
-      const result = await paymentService.getPaymentById("pay_1", userId);
+      const result = await paymentService.getPaymentById(mockPayment._id.toString(), userId);
       expect(result).toEqual(mockPayment);
     });
 
@@ -424,7 +424,7 @@ describe("PaymentService Unit Tests", () => {
     it("should generate a PDF buffer", async () => {
       const userId = "user_1";
       const mockPayment: IPopulatedPayment = {
-        _id: new mongoose.Types.ObjectId().toString(),
+        _id: new mongoose.Types.ObjectId(), // Corrected to ObjectId
         userId,
         subscriptionId: {
           _id: new mongoose.Types.ObjectId(),
