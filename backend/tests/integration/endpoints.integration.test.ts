@@ -7,6 +7,8 @@ let app: any;
 import { Contract } from '../../src/models/contract.model.js';
 import { RiskAnalysis } from '../../src/models/riskAnalysis.model.js';
 import { AuditLog } from '../../src/models/auditLog.model.js';
+import { creditsService } from '../../src/services/credits.service.js';
+import { jest } from '@jest/globals';
 
 beforeAll(async () => {
   const mongoURI = process.env.MONGODB_URI!.replace('aqdy_db', 'aqdy_test');
@@ -14,6 +16,8 @@ beforeAll(async () => {
 
   const imported = await import('../../src/index.js');
   app = imported.default;
+
+  jest.spyOn(creditsService, 'getBalance').mockResolvedValue(10000);
 });
 
 afterAll(async () => {

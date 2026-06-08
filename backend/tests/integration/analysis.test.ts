@@ -6,6 +6,8 @@ import { contractService } from '../../src/services/contract.service.js';
 import { Contract } from '../../src/models/contract.model.js';
 import { RiskAnalysis } from '../../src/models/riskAnalysis.model.js';
 import { resetRateLimitStores } from '../../src/middlewares/rateLimit.js';
+import { creditsService } from '../../src/services/credits.service.js';
+import { jest } from '@jest/globals';
 
 let testContractId: string;
 let emptyContractId: string;
@@ -21,6 +23,8 @@ const analysisRequest = (payload: object) =>
     .send(payload);
 
 beforeAll(async () => {
+  jest.spyOn(creditsService, 'getBalance').mockResolvedValue(10000);
+
   const registerRes = await request(app)
     .post('/api/auth/register')
     .send({
