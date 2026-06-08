@@ -79,7 +79,11 @@ router.get(
             $match: {
               delta: { $lt: 0 },
               reason: {
-                $in: ["analysis_deduction", "chat_deduction", "manual_adjustment"],
+                $in: [
+                  "analysis_deduction",
+                  "chat_deduction",
+                  "manual_adjustment",
+                ],
               },
               createdAt: { $gte: monthStart, $lt: monthEnd },
             },

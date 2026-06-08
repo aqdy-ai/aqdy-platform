@@ -27,7 +27,7 @@ const VALID_STATUSES = ["pending", "succeeded", "failed", "refunded"] as const;
  * IMPORTANT: This route file is intentionally separate from payment.route.ts
  * because that router is mounted before express.json() to support Stripe
  * webhook raw body parsing. This router must be registered AFTER express.json().
- * 
+ *
  */
 router.get(
   "/",
