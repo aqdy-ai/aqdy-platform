@@ -56,8 +56,42 @@ beforeEach(async () => {
 
 
 describe("Admin Account Management API & Role Guard", () => {
-  const adminToken = generateToken({ email: "admin@test.com", role: "admin" });
-  const userToken = generateToken({ email: "user@test.com", role: "user" });
+  // Tokens are generated dynamically per test after seeding real users,
+  // because authenticateJwt now validates the token subject against the DB.
+  let adminToken: string;
+  let userToken: string;
+
+  beforeEach(async () => {
+    // Seed a real admin user so authenticateJwt DB lookup succeeds
+    const adminUser = await User.create({
+      name: "Guard Admin",
+      email: "admin-guard@test.com",
+      role: "admin",
+      status: "active",
+      planSlug: "free",
+      passwordHash: "dummyHash",
+    });
+    adminToken = generateToken({
+      sub: adminUser._id.toString(),
+      email: adminUser.email,
+      role: "admin",
+    });
+
+    // Seed a real regular user for the 403 role-enforcement test
+    const regularUser = await User.create({
+      name: "Guard Regular",
+      email: "user-guard@test.com",
+      role: "user",
+      status: "active",
+      planSlug: "free",
+      passwordHash: "dummyHash",
+    });
+    userToken = generateToken({
+      sub: regularUser._id.toString(),
+      email: regularUser.email,
+      role: "user",
+    });
+  });
 
   test("returns 401 when no token is provided", async () => {
     const res = await request(testApp).get("/api/admin/accounts");
@@ -75,20 +109,20 @@ describe("Admin Account Management API & Role Guard", () => {
   });
 
   test("GET /api/admin/accounts lists paginated, filtered, and searched accounts", async () => {
-    // Seed test users
+    // Seed 3 additional test users (admin-guard@test.com is already seeded in beforeEach)
     await User.create([
-      { name: "Alice Blue", email: "alice@test.com", role: "user", status: "active", planSlug: "free", passwordHash: "dummyHash" },
-      { name: "Bob Green", email: "bob@test.com", role: "user", status: "suspended", planSlug: "premium", passwordHash: "dummyHash" },
-      { name: "Charlie Red", email: "charlie@test.com", role: "admin", status: "active", planSlug: "enterprise", passwordHash: "dummyHash" },
+      { name: "Alice Blue",   email: "alice@test.com",   role: "user",  status: "active",    planSlug: "free",       passwordHash: "dummyHash" },
+      { name: "Bob Green",    email: "bob@test.com",     role: "user",  status: "suspended", planSlug: "premium",    passwordHash: "dummyHash" },
+      { name: "Charlie Red",  email: "charlie@test.com", role: "admin", status: "active",    planSlug: "enterprise", passwordHash: "dummyHash" },
     ]);
 
-    // List all
+    // List all — 5 total: Guard Admin + Guard Regular (seeded in beforeEach) + Alice + Bob + Charlie
     let res = await request(testApp)
       .get("/api/admin/accounts")
       .set("Cookie", `accessToken=${adminToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.data).toHaveLength(3);
-    expect(res.body.pagination.total).toBe(3);
+    expect(res.body.data).toHaveLength(5);
+    expect(res.body.pagination.total).toBe(5);
 
     // Search by name
     res = await request(testApp)
@@ -98,7 +132,7 @@ describe("Admin Account Management API & Role Guard", () => {
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].name).toBe("Alice Blue");
 
-    // Filter by status
+    // Filter by status=suspended
     res = await request(testApp)
       .get("/api/admin/accounts?status=suspended")
       .set("Cookie", `accessToken=${adminToken}`);
@@ -106,7 +140,7 @@ describe("Admin Account Management API & Role Guard", () => {
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].name).toBe("Bob Green");
 
-    // Filter by planSlug
+    // Filter by planSlug=enterprise (only Charlie — Guard Admin is free)
     res = await request(testApp)
       .get("/api/admin/accounts?planSlug=enterprise")
       .set("Cookie", `accessToken=${adminToken}`);
@@ -238,8 +272,8 @@ describe("GET /api/admin/stats", () => {
   });
 
   test("returns 403 when regular user calls the stats endpoint", async () => {
-    // Seed an active admin user so authenticateJwt DB lookup succeeds
-    await User.create({
+    // Seed a real regular user so authenticateJwt DB lookup succeeds
+    const regularUser = await User.create({
       name: "Regular User",
       email: "user@test.com",
       role: "user",
@@ -247,9 +281,14 @@ describe("GET /api/admin/stats", () => {
       planSlug: "free",
       passwordHash: "dummyHash",
     });
+    const localUserToken = generateToken({
+      sub: regularUser._id.toString(),
+      email: regularUser.email,
+      role: "user",
+    });
     const res = await request(testApp)
       .get("/api/admin/stats")
-      .set("Cookie", `accessToken=${userToken}`);
+      .set("Cookie", `accessToken=${localUserToken}`);
     expect(res.status).toBe(403);
     expect(res.body.success).toBe(false);
   });

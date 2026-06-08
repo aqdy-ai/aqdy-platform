@@ -309,12 +309,25 @@ describe("GET /api/admin/payments — filter by date range", () => {
     const past   = new Date("2024-01-15T00:00:00Z");
     const recent = new Date("2026-05-01T00:00:00Z");
 
-    // We need to create docs with explicit createdAt using updateOne after insert
-    // because Mongoose schema uses timestamps: true
-    const p1 = await createPayment(adminUserId);
-    const p2 = await createPayment(adminUserId);
-    await Payment.updateOne({ _id: p1._id }, { $set: { createdAt: past } });
-    await Payment.updateOne({ _id: p2._id }, { $set: { createdAt: recent } });
+    // Use insertMany with timestamps disabled to set explicit createdAt values
+    await Payment.insertMany([
+      {
+        userId: adminUserId,
+        subscriptionId: new mongoose.Types.ObjectId(),
+        amount: 10, currency: "USD", status: "succeeded",
+        provider: "stripe",
+        providerTxId: `pi_past_${Date.now()}_1`,
+        createdAt: past, updatedAt: past,
+      },
+      {
+        userId: adminUserId,
+        subscriptionId: new mongoose.Types.ObjectId(),
+        amount: 20, currency: "USD", status: "succeeded",
+        provider: "stripe",
+        providerTxId: `pi_recent_${Date.now()}_2`,
+        createdAt: recent, updatedAt: recent,
+      },
+    ], { timestamps: false });
 
     const res = await request(testApp)
       .get("/api/admin/payments?dateFrom=2026-01-01T00:00:00Z")
@@ -329,10 +342,24 @@ describe("GET /api/admin/payments — filter by date range", () => {
     const past   = new Date("2024-01-15T00:00:00Z");
     const recent = new Date("2026-05-01T00:00:00Z");
 
-    const p1 = await createPayment(adminUserId);
-    const p2 = await createPayment(adminUserId);
-    await Payment.updateOne({ _id: p1._id }, { $set: { createdAt: past } });
-    await Payment.updateOne({ _id: p2._id }, { $set: { createdAt: recent } });
+    await Payment.insertMany([
+      {
+        userId: adminUserId,
+        subscriptionId: new mongoose.Types.ObjectId(),
+        amount: 10, currency: "USD", status: "succeeded",
+        provider: "stripe",
+        providerTxId: `pi_past_${Date.now()}_a`,
+        createdAt: past, updatedAt: past,
+      },
+      {
+        userId: adminUserId,
+        subscriptionId: new mongoose.Types.ObjectId(),
+        amount: 20, currency: "USD", status: "succeeded",
+        provider: "stripe",
+        providerTxId: `pi_recent_${Date.now()}_b`,
+        createdAt: recent, updatedAt: recent,
+      },
+    ], { timestamps: false });
 
     const res = await request(testApp)
       .get("/api/admin/payments?dateTo=2025-01-01T00:00:00Z")
