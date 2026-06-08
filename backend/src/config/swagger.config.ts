@@ -427,6 +427,119 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        AdminStatsResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            period: {
+              type: "object",
+              properties: {
+                month: { type: "string", example: "2026-06" },
+                from: { type: "string", format: "date-time" },
+                to: { type: "string", format: "date-time" },
+              },
+            },
+            data: {
+              type: "object",
+              properties: {
+                totalAccounts: { type: "integer", example: 150 },
+                activeSubscriptions: { type: "integer", example: 42 },
+                revenueThisMonth: {
+                  type: "object",
+                  description:
+                    "Revenue totals keyed by currency code (e.g. USD, EGP)",
+                  additionalProperties: { type: "number" },
+                  example: { USD: 1290.0 },
+                },
+                analysesThisMonth: { type: "integer", example: 318 },
+                creditsConsumedThisMonth: {
+                  type: "integer",
+                  example: 9450,
+                  description:
+                    "Sum of credits deducted this month (analysis_deduction + chat_deduction only). Excludes topups and refunds.",
+                },
+              },
+            },
+          },
+        },
+        AdminPaymentItem: {
+          type: "object",
+          properties: {
+            _id: { type: "string", example: "64abc123def456" },
+            amount: { type: "number", example: 49.99 },
+            currency: { type: "string", example: "USD" },
+            status: {
+              type: "string",
+              enum: ["pending", "succeeded", "failed", "refunded"],
+              example: "succeeded",
+            },
+            provider: { type: "string", example: "stripe" },
+            providerTxId: {
+              type: "string",
+              example: "pi_3OxampleStripe",
+            },
+            description: {
+              type: "string",
+              nullable: true,
+              example: "Premium plan subscription",
+            },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+            userId: {
+              type: "object",
+              description: "Populated user reference",
+              properties: {
+                _id: { type: "string" },
+                name: { type: "string", example: "Ahmed Ali" },
+                email: {
+                  type: "string",
+                  format: "email",
+                  example: "ahmed@example.com",
+                },
+                planSlug: {
+                  type: "string",
+                  enum: ["free", "premium", "enterprise"],
+                  example: "premium",
+                },
+                status: {
+                  type: "string",
+                  enum: ["active", "suspended", "deleted"],
+                  example: "active",
+                },
+              },
+            },
+          },
+        },
+        AdminPaymentsListResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            pagination: {
+              type: "object",
+              properties: {
+                page: { type: "integer", example: 1 },
+                pageSize: { type: "integer", example: 20 },
+                total: { type: "integer", example: 84 },
+                totalPages: { type: "integer", example: 5 },
+                hasNext: { type: "boolean", example: true },
+                hasPrev: { type: "boolean", example: false },
+              },
+            },
+            filters: {
+              type: "object",
+              properties: {
+                status: { type: "string", nullable: true },
+                userId: { type: "string", nullable: true },
+                dateFrom: { type: "string", nullable: true },
+                dateTo: { type: "string", nullable: true },
+              },
+            },
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/AdminPaymentItem" },
+            },
+          },
+        },
       },
     },
     paths: {
@@ -1564,6 +1677,134 @@ const options: swaggerJsdoc.Options = {
               description: "Access denied - you do not own this contract",
             },
             404: { description: "Contract not found or already deleted" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/admin/stats": {
+        get: {
+          tags: ["Admin"],
+          summary: "Get platform-wide stats for the current calendar month",
+          description:
+            "Returns total accounts, active subscriptions, revenue by currency, analyses run, and credits consumed (deduction events only). Requires admin role.",
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: "Stats retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/AdminStatsResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            403: {
+              description: "Admin role required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/admin/payments": {
+        get: {
+          tags: ["Admin"],
+          summary: "List all payments across all accounts (paginated)",
+          description:
+            "Returns a paginated, filterable list of all payments. Each payment includes a populated user sub-document. Requires admin role.",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "status",
+              in: "query",
+              schema: {
+                type: "string",
+                enum: ["pending", "succeeded", "failed", "refunded"],
+              },
+              description: "Filter by payment status",
+            },
+            {
+              name: "userId",
+              in: "query",
+              schema: { type: "string" },
+              description: "Filter by user MongoDB ObjectId",
+            },
+            {
+              name: "dateFrom",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Filter payments created on or after this ISO date",
+            },
+            {
+              name: "dateTo",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Filter payments created on or before this ISO date",
+            },
+            {
+              name: "page",
+              in: "query",
+              schema: { type: "integer", default: 1, minimum: 1 },
+              description: "Page number",
+            },
+            {
+              name: "pageSize",
+              in: "query",
+              schema: {
+                type: "integer",
+                default: 20,
+                minimum: 1,
+                maximum: 100,
+              },
+              description: "Results per page (max 100)",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Payments list retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/AdminPaymentsListResponse",
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid filter parameter",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            403: {
+              description: "Admin role required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
             500: { description: "Server error" },
           },
         },
