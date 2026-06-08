@@ -6,7 +6,7 @@ import {
 } from "../controllers/analysis.controller.js";
 import { userAnalysisRateLimit } from "../middlewares/rateLimit.js";
 import { validate } from "../middlewares/validate.js";
-import { enforceAnalysisLimit } from "../middlewares/planEnforcement.middleware.js";
+import { enforceCreditsBeforeAnalysis } from "../middlewares/creditsEnforcement.middleware.js";
 import { verifyContractOwnership } from "../middlewares/contractOwnership.middleware.js";
 import {
   authenticateJwt,
@@ -50,7 +50,7 @@ router.post(
   validate(AnalyzeRequestSchema),
   verifyContractOwnership,
   userAnalysisRateLimit(),
-  enforceAnalysisLimit,
+  enforceCreditsBeforeAnalysis,
   analyzeContract,
 );
 

@@ -1,24 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import { Subscription } from "../models/subscription.model.js";
 import { IPlan } from "../models/plan.model.js";
-import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { logger } from "../utils/logger.js";
 import { AuthenticatedRequest } from "../types/auth.js";
 
 const UPGRADE_URL = "https://aqdy.ai/pricing";
 
 const FREE_PLAN_DEFAULTS = {
-  analysisLimit: 5,
   storageLimit: 10,
   planName: "Free",
 };
 
-// جيب الـ subscription أو استخدم الـ Free defaults
-async function getActivePlanLimits(userId: string): Promise<{
-  analysisLimit: number;
+/**
+ * Returns the storage limit and plan name for the given user.
+ * Falls back to free-tier defaults when no active subscription is found.
+ *
+ * NOTE: Analysis-count enforcement has been replaced by credits-based
+ * enforcement — see middlewares/creditsEnforcement.middleware.ts.
+ */
+async function getStoragePlanLimits(userId: string): Promise<{
   storageLimit: number;
   planName: string;
-  startDate: Date;
 }> {
   try {
     const subscription = await Subscription.findOne({
@@ -26,115 +28,28 @@ async function getActivePlanLimits(userId: string): Promise<{
       status: "active",
     }).populate("planId");
 
-    // لو مفيش subscription أو expired → Free tier
-    if (!subscription) {
-      return {
-        ...FREE_PLAN_DEFAULTS,
-        startDate: new Date(new Date().setDate(1)), // أول الشهر
-      };
-    }
-
-    // لو الـ subscription expired → Free tier
-    if (new Date() > subscription.endDate) {
-      return {
-        ...FREE_PLAN_DEFAULTS,
-        startDate: subscription.startDate,
-      };
+    if (!subscription || new Date() > subscription.endDate) {
+      return FREE_PLAN_DEFAULTS;
     }
 
     const plan = subscription.planId as unknown as IPlan;
 
     return {
-      analysisLimit: plan.analysisLimit ?? FREE_PLAN_DEFAULTS.analysisLimit,
       storageLimit: plan.storageLimit ?? FREE_PLAN_DEFAULTS.storageLimit,
       planName: plan.name ?? FREE_PLAN_DEFAULTS.planName,
-      startDate: subscription.startDate,
     };
   } catch (error) {
-    logger.error("planEnforcement: failed to get plan limits", error);
-    return {
-      ...FREE_PLAN_DEFAULTS,
-      startDate: new Date(new Date().setDate(1)),
-    };
+    logger.error("planEnforcement: failed to get storage plan limits", error);
+    return FREE_PLAN_DEFAULTS;
   }
 }
 
-// Middleware: enforce analysis limit
-export async function enforceAnalysisLimit(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const userId = (
-      req as unknown as AuthenticatedRequest
-    ).user?._id?.toString();
-
-    if (!userId) {
-      next();
-      return;
-    }
-
-    const { analysisLimit, planName, startDate } =
-      await getActivePlanLimits(userId);
-
-    // -1 means unlimited
-    if (analysisLimit === -1) {
-      next();
-      return;
-    }
-
-    // limit = 0 → blocked immediately
-    if (analysisLimit === 0) {
-      res.status(403).json({
-        success: false,
-        error: "Analysis limit reached",
-        details: {
-          analysesUsed: 0,
-          analysisLimit: 0,
-          planName,
-          upgradeUrl: UPGRADE_URL,
-          message: `Your ${planName} plan does not include any analyses. Please upgrade to continue.`,
-        },
-      });
-      return;
-    }
-
-    // عد الـ analyses في الـ billing period الحالية
-    const analysesUsed = await RiskAnalysis.countDocuments({
-      userId,
-      createdAt: { $gte: startDate },
-    });
-
-    if (analysesUsed >= analysisLimit) {
-      logger.warn(`planEnforcement: user ${userId} reached analysis limit`, {
-        analysesUsed,
-        analysisLimit,
-        planName,
-      });
-
-      res.status(403).json({
-        success: false,
-        error: "Analysis limit reached",
-        details: {
-          analysesUsed,
-          analysisLimit,
-          planName,
-          upgradeUrl: UPGRADE_URL,
-          message: `You have used ${analysesUsed}/${analysisLimit} analyses this billing period. Upgrade your plan to continue.`,
-        },
-      });
-      return;
-    }
-
-    next();
-  } catch (error) {
-    logger.error("planEnforcement: unexpected error", error);
-    next();
-  }
-}
-
-// Middleware: enforce storage limit
+/**
+ * Middleware: enforce contract storage limit.
+ *
+ * Blocks uploads when the user has reached the maximum number of stored
+ * contracts allowed by their active plan. Returns HTTP 403 with upgrade info.
+ */
 export async function enforceStorageLimit(
   req: Request,
   res: Response,
@@ -150,7 +65,7 @@ export async function enforceStorageLimit(
       return;
     }
 
-    const { storageLimit, planName } = await getActivePlanLimits(userId);
+    const { storageLimit, planName } = await getStoragePlanLimits(userId);
 
     // -1 means unlimited
     if (storageLimit === -1) {

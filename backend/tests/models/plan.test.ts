@@ -1,26 +1,31 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from "@jest/globals";
+import { describe, test, expect, beforeAll, afterAll, beforeEach, jest } from "@jest/globals";
 import mongoose from "mongoose";
 import { Plan } from "../../src/models/plan.model.js";
 
+import { MongoMemoryServer } from "mongodb-memory-server";
+
+jest.setTimeout(60000);
+
 describe("Plan Model Validation Tests", () => {
+  let mongoServer: MongoMemoryServer;
+
   beforeAll(async () => {
-    process.env.NODE_ENV = "test";
-    const mongoURI =
-      process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aqdy_test";
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(mongoURI);
-    }
+    mongoServer = await MongoMemoryServer.create();
+    const uri = mongoServer.getUri();
+    await mongoose.connect(uri);
+    mongoose.set("bufferCommands", false);
   });
 
   afterAll(async () => {
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.connection.dropDatabase();
-      await mongoose.connection.close();
+    await mongoose.disconnect();
+    if (typeof mongoServer !== "undefined") {
+      await mongoServer.stop();
     }
   });
 
   beforeEach(async () => {
     await Plan.deleteMany({});
+    await Plan.init();
   });
 
   test("should successfully save a valid plan", async () => {

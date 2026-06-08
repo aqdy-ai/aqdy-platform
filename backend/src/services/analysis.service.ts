@@ -14,6 +14,7 @@ import {
   AgentJobPayload,
 } from "../pipeline/agentExecution.service.js";
 import { metrics } from "../utils/metrics.js";
+import { creditsService } from "./credits.service.js";
 
 // ── Risk-level weight map for determining escalation direction ──────────
 const RISK_WEIGHTS: Record<string, number> = {
@@ -229,6 +230,32 @@ export class AnalysisService {
       analysisDuration: duration,
     });
 
+    // ── Credits deduction ────────────────────────────────────────────────
+    // Deduct the actual cost based on real token usage from the pipeline.
+    // This runs AFTER a successful save so:
+    //   - No charge on analysis failure or retries
+    //   - No double-charge (deducted once per persisted analysis)
+    try {
+      const tokensUsed = result.tokensUsed;
+      const actualCost = await creditsService.estimateCost(tokensUsed);
+      await creditsService.deduct(job.userId, actualCost, {
+        tokensUsed,
+        contractId: job.contractId,
+      });
+      logger.info("creditsService: deducted credits after analysis", {
+        userId: job.userId,
+        contractId: job.contractId,
+        tokensUsed,
+        actualCost,
+      });
+    } catch (creditError) {
+      // Non-fatal: log but do not fail the analysis job
+      logger.error(
+        `creditsService: deduction failed for user ${job.userId} / contract ${job.contractId}`,
+        creditError,
+      );
+    }
+
     await auditLogService.logEvent({
       contractId: job.contractId,
       userId: job.userId,
@@ -243,6 +270,7 @@ export class AnalysisService {
         durationMs: duration,
         modelUsed: result.extractionMeta.modelUsed,
         usedFallback: result.extractionMeta.usedFallback,
+        tokensUsed: result.tokensUsed,
       },
     });
 
