@@ -23,6 +23,7 @@ import {
   authenticateJwt,
   requireAuth,
 } from "../middlewares/auth.middleware.js";
+import { paymentController } from "../controllers/payment.controller.js";
 import { verifyContractOwnership } from "../middlewares/contractOwnership.middleware.js";
 
 const router = Router();
@@ -35,6 +36,20 @@ router.get("/profile", getProfileHandler);
 router.patch("/profile", updateProfileHandler);
 router.delete("/", deleteAccountHandler);
 router.get("/credits", getCreditsHandler);
+
+// Payment history routes
+router.get(
+  "/payments",
+  paymentController.getUserPayments.bind(paymentController),
+);
+router.get(
+  "/payments/:id",
+  paymentController.getPaymentDetail.bind(paymentController),
+);
+router.get(
+  "/payments/:id/invoice",
+  paymentController.downloadInvoice.bind(paymentController),
+);
 
 // Subscription routes
 router.get("/subscription", getSubscriptionHandler);
