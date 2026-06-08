@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import Stripe from "stripe";
+import PDFDocument from "pdfkit";
+import { IPayment } from "../models/payment.model.js";
+import { ISubscription } from "../models/subscription.model.js";
 import { env } from "../config/env.js";
 import { logger } from "../utils/logger.js";
 import { AppError } from "../middlewares/errorHandler.js";
@@ -17,6 +20,11 @@ type StripeSubWithPeriod = Stripe.Subscription & {
   current_period_start: number;
   current_period_end: number;
 };
+
+// Interface for Payment document after population
+interface IPopulatedPayment extends Omit<IPayment, "subscriptionId"> {
+  subscriptionId: ISubscription & { planId: IPlan };
+}
 
 export class PaymentService {
   /**
@@ -381,6 +389,103 @@ export class PaymentService {
       provider: "stripe",
       providerTxId: invoice.id,
       description: `Payment failed for renewal: ${stripeSubscriptionId}`,
+    });
+  }
+
+  /**
+   * Get paginated list of payments for a user
+   */
+  async getUserPayments(userId: string, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+    const [payments, total] = await Promise.all([
+      Payment.find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate({
+          path: "subscriptionId",
+          populate: { path: "planId", select: "name slug" },
+        }) as unknown as Promise<IPopulatedPayment[]>,
+      Payment.countDocuments({ userId }),
+    ]);
+
+    return {
+      payments,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Get detailed payment record, ensuring user ownership
+   */
+  async getPaymentById(paymentId: string, userId: string) {
+    const payment = (await Payment.findOne({ _id: paymentId, userId }).populate(
+      {
+        path: "subscriptionId",
+        populate: { path: "planId", select: "name slug" },
+      },
+    )) as unknown as IPopulatedPayment | null;
+
+    if (!payment) throw new AppError(404, "Payment record not found");
+    return payment;
+  }
+
+  /**
+   * Generates a simple PDF invoice for a specific payment
+   */
+  async generateInvoicePdf(paymentId: string, userId: string): Promise<Buffer> {
+    const payment = (await this.getPaymentById(
+      paymentId,
+      userId,
+    )) as IPopulatedPayment; // Ensure it's non-null and correctly typed
+    const planName =
+      payment.subscriptionId?.planId?.name || "Subscription Plan";
+
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ margin: 50 });
+      const buffers: Buffer[] = [];
+
+      doc.on("data", (chunk) => buffers.push(chunk));
+      doc.on("end", () => resolve(Buffer.concat(buffers)));
+      doc.on("error", reject);
+
+      doc.fontSize(20).text("INVOICE", { align: "right" });
+      doc.fontSize(12).text("Aqdy Platform", 50, 50);
+      doc.fontSize(10).text("AI Contract Analysis", 50, 65);
+      doc.moveDown();
+
+      doc.text(`Invoice ID: ${payment.providerTxId || payment._id}`);
+      doc.text(`Date: ${new Date(payment.createdAt).toLocaleDateString()}`);
+      doc.text(`Status: ${payment.status.toUpperCase()}`);
+      doc.moveDown();
+
+      doc.fontSize(12).text("Description", 50, 150);
+      doc.text("Amount", 400, 150, { align: "right" });
+      doc.moveTo(50, 165).lineTo(550, 165).stroke();
+
+      doc.fontSize(10).text(`Subscription Renewal - ${planName}`, 50, 180);
+      doc.text(
+        `${payment.amount} ${payment.currency.toUpperCase()}`,
+        400,
+        180,
+        { align: "right" },
+      );
+
+      doc.moveTo(50, 200).lineTo(550, 200).stroke();
+      doc.fontSize(12).text("Total", 350, 215);
+      doc.text(
+        `${payment.amount} ${payment.currency.toUpperCase()}`,
+        400,
+        215,
+        { align: "right" },
+      );
+
+      doc.end();
     });
   }
 }

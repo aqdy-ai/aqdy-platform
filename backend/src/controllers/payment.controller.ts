@@ -131,6 +131,104 @@ export class PaymentController {
       next(error);
     }
   }
+  /*
+   * Get /api/acounts/payments
+   *
+   * Returns a paginated list of payments for the authenticated user
+   * @param req - The request object
+   * @param res - The response object
+   * @param next - The next middleware function
+   *
+   */
+  async getUserPayments(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = req.user._id.toString();
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const result = await paymentService.getUserPayments(userId, page, limit);
+
+      const response: ApiResponse<typeof result> = {
+        success: true,
+        data: result,
+        message: "Payment history retrieved successfully",
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+  /**
+   * GET /api/accounts/payments/:id
+   *
+   * Returns a single payment for the authenticated user
+   * @param req - The request object
+   * @param res - The response object
+   * @param next - The next middleware function
+   *
+   */
+  async getPaymentDetail(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = req.user._id.toString();
+      const paymentId = req.params.id as string;
+
+      const payment = await paymentService.getPaymentById(paymentId, userId);
+
+      const response: ApiResponse<typeof payment> = {
+        success: true,
+        data: payment,
+        message: "Payment details retrieved successfully",
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/accounts/payments/:id/invoice
+   *
+   * Returns a PDF invoice for the authenticated user
+   *
+   * @param req - The request object
+   * @param res - The response object
+   * @param next - The next middleware function
+   *
+   */
+  async downloadInvoice(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = req.user._id.toString();
+      const paymentId = req.params.id as string;
+
+      const invoiceBuffer = await paymentService.generateInvoicePdf(
+        paymentId,
+        userId,
+      );
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="invoice-${paymentId}.pdf"`,
+      );
+      res.status(200).send(invoiceBuffer);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const paymentController = new PaymentController();

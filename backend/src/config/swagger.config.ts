@@ -229,6 +229,41 @@ const options: swaggerJsdoc.Options = {
             redlineDurationMs: { type: "number", example: 550 },
           },
         },
+        Payment: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            amount: { type: "number" },
+            currency: { type: "string" },
+            status: { type: "string" },
+            providerTxId: { type: "string" },
+            description: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
+          },
+        },
+        PaymentListResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean" },
+            data: {
+              type: "object",
+              properties: {
+                payments: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/Payment" },
+                },
+                pagination: {
+                  type: "object",
+                  properties: {
+                    total: { type: "number" },
+                    page: { type: "number" },
+                    totalPages: { type: "number" },
+                  },
+                },
+              },
+            },
+          },
+        },
         RiskAnalysis: {
           type: "object",
           properties: {
@@ -843,6 +878,94 @@ const options: swaggerJsdoc.Options = {
             },
             401: { description: "Authentication required" },
             404: { description: "User not found or already deleted" },
+          },
+        },
+      },
+      "/api/account/payments": {
+        get: {
+          tags: ["Account Payments"],
+          summary: "Get paginated payment history for current user",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "page",
+              in: "query",
+              schema: { type: "integer", default: 1 },
+            },
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer", default: 10 },
+            },
+          ],
+          responses: {
+            200: {
+              description: "Payment history retrieved",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/PaymentListResponse" },
+                },
+              },
+            },
+            401: { description: "Unauthorized" },
+          },
+        },
+      },
+      "/api/account/payments/{id}": {
+        get: {
+          tags: ["Account Payments"],
+          summary: "Get single payment detail",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: {
+              description: "Payment details",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      data: { $ref: "#/components/schemas/Payment" },
+                    },
+                  },
+                },
+              },
+            },
+            404: { description: "Payment not found" },
+          },
+        },
+      },
+      "/api/account/payments/{id}/invoice": {
+        get: {
+          tags: ["Account Payments"],
+          summary: "Download PDF invoice",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: {
+              description: "PDF invoice file",
+              content: {
+                "application/pdf": {
+                  schema: { type: "string", format: "binary" },
+                },
+              },
+            },
+            404: { description: "Payment not found" },
           },
         },
       },

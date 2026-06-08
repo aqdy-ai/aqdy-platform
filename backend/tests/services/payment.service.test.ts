@@ -1,6 +1,8 @@
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 import mongoose from "mongoose";
-
+import { IPopulatedPayment } from "../../src/services/payment.service.js"; // Import IPopulatedPayment
+import { IPlan } from "../../src/models/plan.model.js"; // Import IPlan
+import { ISubscription } from "../../src/models/subscription.model.js"; // Import ISubscription
 // 1. 🛡️ Define mocks BEFORE importing any modules (Required for ESM)
 jest.unstable_mockModule("../../src/models/user.model.js", () => ({
   User: { findById: jest.fn(), findByIdAndUpdate: jest.fn() }
@@ -8,12 +10,40 @@ jest.unstable_mockModule("../../src/models/user.model.js", () => ({
 jest.unstable_mockModule("../../src/models/plan.model.js", () => ({
   Plan: { findOne: jest.fn(), findById: jest.fn() }
 }));
-jest.unstable_mockModule("../../src/models/subscription.model.js", () => ({
-  Subscription: { findOne: jest.fn(), create: jest.fn(), findOneAndUpdate: jest.fn() }
-}));
-jest.unstable_mockModule("../../src/models/payment.model.js", () => ({
-  default: { create: jest.fn() }
-}));
+jest.unstable_mockModule("../../src/models/subscription.model.js", () => {
+  const mockSubscription = {
+    create: jest.fn(),
+    findOneAndUpdate: jest.fn(),
+  };
+  (mockSubscription as any).findOne = jest.fn().mockImplementation(() => {
+    const chain = {
+      populate: jest.fn().mockResolvedValue(null),
+    };
+    return chain;
+  });
+  return { Subscription: mockSubscription };
+});
+jest.unstable_mockModule("../../src/models/payment.model.js", () => {
+  const mockPayment = {
+    create: jest.fn(),
+    countDocuments: jest.fn(),
+  };
+
+  // Mock Payment.find to return a chainable object
+  (mockPayment as any).find = jest.fn().mockImplementation(() => {
+    const chain = {
+      sort: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      populate: jest.fn().mockResolvedValue([]), // Default resolved value
+    };
+    return chain;
+  });
+  (mockPayment as any).findOne = jest.fn().mockImplementation(() => ({
+    populate: jest.fn().mockResolvedValue(null), // Default resolved value
+  }));
+  return { default: mockPayment };
+});
 jest.unstable_mockModule("../../src/models/auditLog.model.js", () => ({
   AuditLog: { findOne: jest.fn(), create: jest.fn() }
 }));
@@ -320,6 +350,96 @@ describe("PaymentService Unit Tests", () => {
           providerTxId: "inv_failed",
         }),
       );
+    });
+  });
+
+  describe("getUserPayments", () => {
+    it("should return paginated payments for a user", async () => {
+      const userId = new mongoose.Types.ObjectId().toString();
+      const mockPaymentsData: IPopulatedPayment[] = [{
+        _id: new mongoose.Types.ObjectId().toString(),
+        userId: new mongoose.Types.ObjectId().toString(),
+        subscriptionId: { _id: new mongoose.Types.ObjectId(), userId: new mongoose.Types.ObjectId(), planId: { _id: new mongoose.Types.ObjectId(), name: "Pro Plan", slug: "pro", isActive: true }, status: "active", startDate: new Date(), endDate: new Date(), renewalDate: new Date(), stripeCustomerId: "cus_test", stripeSubscriptionId: "sub_test" },
+        amount: 10, status: "succeeded", currency: "usd", createdAt: new Date(), provider: "stripe", providerTxId: "tx_1", description: "Test Payment"
+      }];
+      const mockTotal = 1;
+
+      // Get the mock chainable object returned by Payment.find
+      const mockFindChain = (Payment.find as jest.Mock)();
+      mockFindChain.populate.mockResolvedValue(mockPaymentsData); // Mock populate on this specific chain
+      (Payment.countDocuments as jest.Mock).mockResolvedValue(mockTotal);
+
+      // Ensure the mock is reset for this test
+      (Payment.find as jest.Mock).mockImplementationOnce(() => ({
+        sort: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        populate: jest.fn().mockResolvedValue(mockPaymentsData),
+      }));
+      const result = await paymentService.getUserPayments(userId);
+      expect(result.payments).toHaveLength(1);
+      expect(result.pagination.total).toBe(1);
+    });
+  });
+
+  describe("getPaymentById", () => {
+    it("should return a single payment if owned by user", async () => {
+      const userId = new mongoose.Types.ObjectId().toString();
+      const mockPayment: IPopulatedPayment = {
+        _id: "pay_1", userId, status: "succeeded", currency: "usd", createdAt: new Date(),
+        subscriptionId: { _id: new mongoose.Types.ObjectId(), userId: new mongoose.Types.ObjectId(), planId: { _id: new mongoose.Types.ObjectId(), name: "Pro Plan", slug: "pro", isActive: true }, status: "active", startDate: new Date(), endDate: new Date(), renewalDate: new Date(), stripeCustomerId: "cus_test", stripeSubscriptionId: "sub_test" },
+        amount: 100, provider: "stripe", providerTxId: "tx_1", description: "Test Payment", updatedAt: new Date()
+      };
+
+      // Get the mock chainable object returned by Payment.findOne
+      const mockFindOneChain = (Payment.findOne as jest.Mock)();
+      mockFindOneChain.populate.mockResolvedValue(mockPayment); // Mock populate on this specific chain
+
+      // Ensure the mock is reset for this test
+      (Payment.findOne as jest.Mock).mockImplementationOnce(() => ({
+        populate: jest.fn().mockResolvedValue(mockPayment),
+      }));
+
+      const result = await paymentService.getPaymentById("pay_1", "user_1");
+      expect(result).toEqual(mockPayment);
+    });
+
+    it("should throw 404 if payment not found or not owned by user", async () => {
+      (Payment.findOne as jest.Mock).mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      });
+
+      // Ensure the mock is reset for this test
+      (Payment.findOne as jest.Mock).mockImplementationOnce(() => ({
+        populate: jest.fn().mockResolvedValue(null), // Mock populate on this specific chain
+      }));
+
+      await expect(paymentService.getPaymentById("pay_1", "user_1")).rejects.toMatchObject({
+        statusCode: 404,
+      });
+    });
+  });
+
+  describe("generateInvoicePdf", () => {
+    it("should generate a PDF buffer", async () => {
+      const mockPayment: IPopulatedPayment = {
+        _id: new mongoose.Types.ObjectId().toString(),
+        userId: new mongoose.Types.ObjectId().toString(),
+        subscriptionId: {
+          _id: new mongoose.Types.ObjectId(),
+          userId: new mongoose.Types.ObjectId(),
+          planId: { _id: new mongoose.Types.ObjectId(), name: "Pro Plan", slug: "pro", isActive: true }, // Mock IPlan properties
+          status: "active", startDate: new Date(), endDate: new Date(), renewalDate: new Date(), stripeCustomerId: "cus_test", stripeSubscriptionId: "sub_test",
+        },
+        amount: 29, currency: "usd", createdAt: new Date(), status: "succeeded",
+        provider: "stripe", providerTxId: "tx_123", description: "Test Payment", updatedAt: new Date(),
+      };
+
+      jest.spyOn(paymentService, "getPaymentById").mockResolvedValue(mockPayment);
+
+      const buffer = await paymentService.generateInvoicePdf("pay_1", "user_1");
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.length).toBeGreaterThan(0);
     });
   });
 });
