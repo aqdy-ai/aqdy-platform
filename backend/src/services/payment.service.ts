@@ -327,8 +327,6 @@ export class PaymentService {
     );
   }
 
-
-
   private async handleFailedPayment(invoice: Stripe.Invoice) {
     const stripeSubscriptionId = (
       invoice as Stripe.Invoice & { subscription: string }
@@ -363,8 +361,12 @@ export class PaymentService {
    * Handles successful invoice.paid events (subscription renewal).
    */
   private async handleSuccessfulRenewal(invoice: Stripe.Invoice) {
-    const stripeSubscriptionId = (invoice as Stripe.Invoice & { subscription: string }).subscription;
-    const stripeSub = (await stripe.subscriptions.retrieve(stripeSubscriptionId)) as unknown as StripeSubWithPeriod;
+    const stripeSubscriptionId = (
+      invoice as Stripe.Invoice & { subscription: string }
+    ).subscription;
+    const stripeSub = (await stripe.subscriptions.retrieve(
+      stripeSubscriptionId,
+    )) as unknown as StripeSubWithPeriod;
 
     const subscription = await Subscription.findOneAndUpdate(
       { stripeSubscriptionId },
@@ -381,13 +383,24 @@ export class PaymentService {
     const plan = await Plan.findById(String(subscription.planId));
     if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
       try {
-        await creditsService.topup(subscription.userId.toString(), plan.creditAllowance, "plan_topup");
-        logger.info(`💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`);
+        await creditsService.topup(
+          subscription.userId.toString(),
+          plan.creditAllowance,
+          "plan_topup",
+        );
+        logger.info(
+          `💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`,
+        );
       } catch (err) {
-        logger.error(`❌ Renewal credit topup failed for user ${subscription.userId}:`, err);
+        logger.error(
+          `❌ Renewal credit topup failed for user ${subscription.userId}:`,
+          err,
+        );
       }
     } else {
-      logger.warn(`⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`);
+      logger.warn(
+        `⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`,
+      );
     }
 
     await Payment.create({
