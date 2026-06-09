@@ -192,7 +192,11 @@ export class PaymentService {
               planSlug: freePlan.slug,
             });
             if (freePlan.creditAllowance > 0) {
-              await creditsService.topup(String(subDoc.userId), freePlan.creditAllowance, "plan_topup");
+              await creditsService.topup(
+                String(subDoc.userId),
+                freePlan.creditAllowance,
+                "plan_topup",
+              );
             }
           } else {
             await User.findByIdAndUpdate(subDoc.userId, {
