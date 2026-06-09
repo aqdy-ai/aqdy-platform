@@ -113,7 +113,13 @@
     },
     "export_report": "تصدير التقرير",
     "export_pdf": "ملف PDF طباعي",
-    "export_docx": "مستند وورد Word"
+    "export_docx": "مستند وورد Word",
+    "payment_failed": "فشلت عملية الدفع الأخيرة. يرجى تحديث طريقة الدفع لتجنب انقطاع الخدمة.",
+    "retry_payment": "إعادة المحاولة",
+    "subscription_expired": "انتهى الاشتراك",
+    "subscription_expired_desc": "لقد انتهى اشتراكك. يرجى ترقية باقتك للاستمرار في استخدام المنصة.",
+    "upgrade_to_continue": "ترقية للاستمرار",
+    "grace_period_warning": "سينتهي اشتراكك خلال {{days}} أيام. جدد الآن للحفاظ على وصولك دون انقطاع."
   },
   "pricing": {
     "title": "الخطط",
@@ -159,7 +165,10 @@
       "free": "المجانية",
       "pro": "الاحترافية",
       "enterprise": "المؤسسات"
-    }
+    },
+    "upgradeSuccess": "تم بدء الترقية! تحقق من بريدك الإلكتروني.",
+    "cancellationConfirmed": "تم إلغاء الاشتراك بنجاح.",
+    "creditTopupSuccess": "تم شحن الرصيد بنجاح."
   },
   "auth": {
     "loginTitle": "تسجيل دخول",
