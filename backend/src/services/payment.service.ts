@@ -327,62 +327,7 @@ export class PaymentService {
     );
   }
 
-  private async handleSuccessfulRenewal(invoice: Stripe.Invoice) {
-    const stripeSubscriptionId = (
-      invoice as Stripe.Invoice & { subscription: string }
-    ).subscription;
 
-    const stripeSub = (await stripe.subscriptions.retrieve(
-      stripeSubscriptionId,
-    )) as unknown as StripeSubWithPeriod;
-
-    const subscription = await Subscription.findOneAndUpdate(
-      { stripeSubscriptionId },
-      {
-        status: "active",
-        endDate: new Date(stripeSub.current_period_end * 1000),
-        renewalDate: new Date(stripeSub.current_period_end * 1000),
-      },
-      { new: true },
-    );
-
-    if (!subscription) return;
-
-    // Top up credits on renewal too
-    const plan = await Plan.findById(String(subscription.planId));
-    if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
-      try {
-        await creditsService.topup(
-          subscription.userId.toString(),
-          plan.creditAllowance,
-          "plan_topup",
-        );
-        logger.info(
-          `💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`,
-        );
-      } catch (err) {
-        logger.error(
-          `❌ Renewal credit topup failed for user ${subscription.userId}:`,
-          err,
-        );
-      }
-    } else {
-      logger.warn(
-        `⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`,
-      );
-    }
-
-    await Payment.create({
-      userId: subscription.userId,
-      subscriptionId: subscription._id,
-      amount: (invoice.amount_paid || 0) / 100,
-      currency: invoice.currency || "usd",
-      status: "succeeded",
-      provider: "stripe",
-      providerTxId: invoice.id,
-      description: `Subscription renewal: ${stripeSubscriptionId}`,
-    });
-  }
 
   private async handleFailedPayment(invoice: Stripe.Invoice) {
     const stripeSubscriptionId = (
@@ -412,6 +357,48 @@ export class PaymentService {
       provider: "stripe",
       providerTxId: invoice.id,
       description: `Payment failed for renewal: ${stripeSubscriptionId}`,
+    });
+  }
+  /**
+   * Handles successful invoice.paid events (subscription renewal).
+   */
+  private async handleSuccessfulRenewal(invoice: Stripe.Invoice) {
+    const stripeSubscriptionId = (invoice as Stripe.Invoice & { subscription: string }).subscription;
+    const stripeSub = (await stripe.subscriptions.retrieve(stripeSubscriptionId)) as unknown as StripeSubWithPeriod;
+
+    const subscription = await Subscription.findOneAndUpdate(
+      { stripeSubscriptionId },
+      {
+        status: "active",
+        endDate: new Date(stripeSub.current_period_end * 1000),
+        renewalDate: new Date(stripeSub.current_period_end * 1000),
+      },
+      { new: true },
+    );
+
+    if (!subscription) return;
+
+    const plan = await Plan.findById(String(subscription.planId));
+    if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
+      try {
+        await creditsService.topup(subscription.userId.toString(), plan.creditAllowance, "plan_topup");
+        logger.info(`💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`);
+      } catch (err) {
+        logger.error(`❌ Renewal credit topup failed for user ${subscription.userId}:`, err);
+      }
+    } else {
+      logger.warn(`⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`);
+    }
+
+    await Payment.create({
+      userId: subscription.userId,
+      subscriptionId: subscription._id,
+      amount: (invoice.amount_paid || 0) / 100,
+      currency: invoice.currency || "usd",
+      status: "succeeded",
+      provider: "stripe",
+      providerTxId: invoice.id,
+      description: `Subscription renewal: ${stripeSubscriptionId}`,
     });
   }
 
