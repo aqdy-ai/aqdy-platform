@@ -1,6 +1,14 @@
 /* src/components/layout/Navbar.tsx */
 import { useState, useRef, useEffect } from 'react'
-import { Sun, Moon, ExternalLink, User, Settings, LogOut, History } from 'lucide-react'
+import {
+  Sun,
+  Moon,
+  ExternalLink,
+  User,
+  Settings,
+  LogOut,
+  History,
+} from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'

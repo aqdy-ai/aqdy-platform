@@ -1,7 +1,12 @@
 import React from 'react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cleanup, render, screen, waitFor, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ContractHistory from '../src/pages/ContractHistory'
@@ -11,7 +16,8 @@ const translations: Record<string, Record<string, string>> = {
   en: {
     'common.loading': 'Loading...',
     'history.title': 'Contract History',
-    'history.subtitle': 'View and manage all your past contracts and their analysis reports.',
+    'history.subtitle':
+      'View and manage all your past contracts and their analysis reports.',
     'history.search_placeholder': 'Search by filename...',
     'history.date_from': 'From Date',
     'history.date_to': 'To Date',
@@ -32,14 +38,16 @@ const translations: Record<string, Record<string, string>> = {
     'history.action_view_report': 'View Report',
     'history.action_delete': 'Delete',
     'history.delete_confirm_title': 'Delete Contract?',
-    'history.delete_confirm_desc': 'Are you sure you want to delete this contract?',
+    'history.delete_confirm_desc':
+      'Are you sure you want to delete this contract?',
     'history.delete_success': 'Contract deleted successfully',
     'history.reanalyze_success': 'Re-analysis started successfully',
     'history.export_btn': 'Export',
     'history.export_csv': 'Export CSV',
     'history.export_json': 'Export JSON',
     'history.empty_title': 'No Contracts Yet',
-    'history.empty_desc': 'Get started by uploading and analyzing your first legal contract.',
+    'history.empty_desc':
+      'Get started by uploading and analyzing your first legal contract.',
     'history.empty_cta': 'Upload Contract',
     'history.items_per_page': 'items per page',
     'history.pagination_show': 'Showing',
@@ -77,7 +85,8 @@ const translations: Record<string, Record<string, string>> = {
     'history.action_view_report': 'عرض التقرير',
     'history.action_delete': 'حذف',
     'history.delete_confirm_title': 'حذف العقد؟',
-    'history.delete_confirm_desc': 'هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذفه مؤقتاً.',
+    'history.delete_confirm_desc':
+      'هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذفه مؤقتاً.',
     'history.delete_success': 'تم حذف العقد بنجاح',
     'history.reanalyze_success': 'تم بدء إعادة التحليل بنجاح',
     'history.export_btn': 'تصدير البيانات',
@@ -92,23 +101,25 @@ const translations: Record<string, Record<string, string>> = {
     'history.preview_summary': 'ملخص المخاطر',
     'history.preview_clauses_count': 'البنود المحللة: {{count}}',
     'history.preview_risky_clauses': 'بنود عالية الخطورة: {{count}}',
-    'history.preview_no_issues': 'لم يتم العثور على مشاكل حرجة أو عالية الخطورة.',
+    'history.preview_no_issues':
+      'لم يتم العثور على مشاكل حرجة أو عالية الخطورة.',
     'history.version': 'الإصدار',
     'risk.high': 'مخاطر عالية',
     'risk.medium': 'مخاطر متوسطة',
     'risk.low': 'مخاطر منخفضة',
-  }
+  },
 }
 
 let currentTestLanguage = 'en'
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => {
+    t: (key: string, options?: Record<string, unknown>) => {
       let translation = translations[currentTestLanguage]?.[key] ?? key
       if (options) {
         Object.keys(options).forEach((optKey) => {
-          translation = translation.replace(`{{${optKey}}}`, options[optKey])
+          const val = options[optKey]
+          translation = translation.replace(`{{${optKey}}}`, String(val))
         })
       }
       return translation
@@ -130,8 +141,10 @@ vi.mock('@/hooks/useAuth', () => ({
 
 // Mock UpgradeModal to verify its trigger
 vi.mock('../src/components/UpgradeModal', () => ({
-  UpgradeModal: ({ open }: { open: boolean }) => 
-    open ? <div data-testid="upgrade-modal-stub">Upgrade Modal Active</div> : null
+  UpgradeModal: ({ open }: { open: boolean }) =>
+    open ? (
+      <div data-testid="upgrade-modal-stub">Upgrade Modal Active</div>
+    ) : null,
 }))
 
 // Mock sonner toasts
@@ -140,7 +153,7 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
     error: vi.fn(),
     info: vi.fn(),
-  }
+  },
 }))
 
 // ─── Test Helper ────────────────────────────────────────────────────────────
@@ -165,10 +178,10 @@ const renderWithProviders = (ui: React.ReactNode) => {
 }
 
 // Mock responses builder
-const createMockResponse = (ok: boolean, data: any) => ({
+const createMockResponse = (ok: boolean, data: unknown) => ({
   ok,
   status: ok ? 200 : 400,
-  json: () => Promise.resolve(data)
+  json: () => Promise.resolve(data),
 })
 
 describe('ContractHistory Page', () => {
@@ -185,7 +198,7 @@ describe('ContractHistory Page', () => {
         analysisId: 'analysis-1',
         riskSummary: {
           en: 'Indemnification issues found.',
-          ar: 'تم العثور على مشاكل في التعويضات.'
+          ar: 'تم العثور على مشاكل في التعويضات.',
         },
         totalClauses: 12,
         riskyClausesCount: 3,
@@ -204,46 +217,55 @@ describe('ContractHistory Page', () => {
         totalClauses: 0,
         riskyClausesCount: 0,
         version: 0,
-      }
+      },
     ],
     total: 2,
     page: 1,
     totalPages: 1,
-    limit: 10
+    limit: 10,
   }
 
   const mockFreeSubscription = {
     success: true,
     data: {
       subscription: {
-        planId: { slug: 'free' }
-      }
-    }
+        planId: { slug: 'free' },
+      },
+    },
   }
 
   const mockProSubscription = {
     success: true,
     data: {
       subscription: {
-        planId: { slug: 'pro' }
-      }
-    }
+        planId: { slug: 'pro' },
+      },
+    },
   }
 
   beforeEach(() => {
     currentTestLanguage = 'en'
     vi.clearAllMocks()
-    
+
     // Default fetch spy
     vi.spyOn(global, 'fetch').mockImplementation((url) => {
       const urlString = String(url)
       if (urlString.includes('/api/account/subscription')) {
-        return Promise.resolve(createMockResponse(true, mockFreeSubscription) as Response)
+        return Promise.resolve(
+          createMockResponse(true, mockFreeSubscription) as Response
+        )
       }
       if (urlString.includes('/api/account/contracts')) {
-        return Promise.resolve(createMockResponse(true, { success: true, data: mockContractsData }) as Response)
+        return Promise.resolve(
+          createMockResponse(true, {
+            success: true,
+            data: mockContractsData,
+          }) as Response
+        )
       }
-      return Promise.resolve(createMockResponse(false, { message: 'Not Found' }) as Response)
+      return Promise.resolve(
+        createMockResponse(false, { message: 'Not Found' }) as Response
+      )
     })
   })
 
@@ -257,9 +279,11 @@ describe('ContractHistory Page', () => {
 
     // Verify title and headers render
     expect(screen.getByText('Contract History')).toBeInTheDocument()
-    
+
     await waitFor(() => {
-      expect(screen.getByText('Employment_Agreement_2026.pdf')).toBeInTheDocument()
+      expect(
+        screen.getByText('Employment_Agreement_2026.pdf')
+      ).toBeInTheDocument()
       expect(screen.getByText('NDA_Draft_v2.pdf')).toBeInTheDocument()
     })
 
@@ -275,8 +299,9 @@ describe('ContractHistory Page', () => {
 
   it('displays the hover preview tooltip with correct details', async () => {
     // Import and render ContractHistoryRow directly for isolated hover testing
-    const { ContractHistoryRow } = await import('../src/components/ContractHistoryRow')
-    
+    const { ContractHistoryRow } =
+      await import('../src/components/ContractHistoryRow')
+
     const contract = {
       contractId: 'contract-1',
       filename: 'Employment_Agreement_2026.pdf',
@@ -286,23 +311,30 @@ describe('ContractHistory Page', () => {
       status: 'analyzed' as const,
       riskLevel: 'high' as const,
       analysisId: 'analysis-1',
-      riskSummary: { en: 'Indemnification issues found.', ar: 'تم العثور على مشاكل في التعويضات.' },
+      riskSummary: {
+        en: 'Indemnification issues found.',
+        ar: 'تم العثور على مشاكل في التعويضات.',
+      },
       totalClauses: 12,
       riskyClausesCount: 3,
       version: 1,
     }
 
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    const { container } = render(
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+    render(
       <MemoryRouter>
         <QueryClientProvider client={queryClient}>
-          <table><tbody>
-            <ContractHistoryRow
-              contract={contract}
-              onDeleteSuccess={vi.fn()}
-              onReanalyzeSuccess={vi.fn()}
-            />
-          </tbody></table>
+          <table>
+            <tbody>
+              <ContractHistoryRow
+                contract={contract}
+                onDeleteSuccess={vi.fn()}
+                onReanalyzeSuccess={vi.fn()}
+              />
+            </tbody>
+          </table>
         </QueryClientProvider>
       </MemoryRouter>
     )
@@ -311,7 +343,10 @@ describe('ContractHistory Page', () => {
     expect(hoverTarget).toBeInTheDocument()
 
     // Directly dispatch a native mouseover event so React's delegation picks it up
-    const event = new MouseEvent('mouseover', { bubbles: true, cancelable: true })
+    const event = new MouseEvent('mouseover', {
+      bubbles: true,
+      cancelable: true,
+    })
     hoverTarget.dispatchEvent(event)
 
     await waitFor(() => {
@@ -320,12 +355,17 @@ describe('ContractHistory Page', () => {
 
     expect(screen.getByText('Risk Summary')).toBeInTheDocument()
     expect(screen.getByText('Version 1')).toBeInTheDocument()
-    expect(screen.getByText('Indemnification issues found.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Indemnification issues found.')
+    ).toBeInTheDocument()
     expect(screen.getByText('Clauses analyzed: 12')).toBeInTheDocument()
     expect(screen.getByText('High risk clauses: 3')).toBeInTheDocument()
 
     // Hover out
-    const leaveEvent = new MouseEvent('mouseout', { bubbles: true, cancelable: true })
+    const leaveEvent = new MouseEvent('mouseout', {
+      bubbles: true,
+      cancelable: true,
+    })
     hoverTarget.dispatchEvent(leaveEvent)
     await waitFor(() => {
       expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
@@ -334,7 +374,7 @@ describe('ContractHistory Page', () => {
 
   it('filters data by filename search inputs', async () => {
     const fetchSpy = vi.spyOn(global, 'fetch')
-    
+
     renderWithProviders(<ContractHistory />)
 
     const searchInput = screen.getByLabelText('Search filename')
@@ -342,20 +382,24 @@ describe('ContractHistory Page', () => {
 
     // Verify debounce works after 400ms
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('filename=Agreement'))
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('filename=Agreement')
+      )
     })
   })
 
   it('filters data by risk level selector', async () => {
     const fetchSpy = vi.spyOn(global, 'fetch')
-    
+
     renderWithProviders(<ContractHistory />)
 
     const riskSelect = screen.getByLabelText('Filter by Risk Level')
     fireEvent.change(riskSelect, { target: { value: 'high' } })
 
     await waitFor(() => {
-      expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('riskLevel=high'))
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('riskLevel=high')
+      )
     })
   })
 
@@ -371,16 +415,21 @@ describe('ContractHistory Page', () => {
 
     // Verify dialog elements exist
     expect(screen.getByText('Delete Contract?')).toBeInTheDocument()
-    expect(screen.getAllByText('Employment_Agreement_2026.pdf')[0]).toBeInTheDocument()
+    expect(
+      screen.getAllByText('Employment_Agreement_2026.pdf')[0]
+    ).toBeInTheDocument()
 
     // Confirm delete trigger
     const confirmButton = screen.getByTestId('confirm-delete-button')
     fireEvent.click(confirmButton)
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/account/contracts/contract-1', expect.objectContaining({
-        method: 'DELETE'
-      }))
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/account/contracts/contract-1',
+        expect.objectContaining({
+          method: 'DELETE',
+        })
+      )
     })
   })
 
@@ -388,17 +437,25 @@ describe('ContractHistory Page', () => {
     renderWithProviders(<ContractHistory />)
 
     await waitFor(() => {
-      expect(screen.getByTestId('reanalyze-button-contract-1')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('reanalyze-button-contract-1')
+      ).toBeInTheDocument()
     })
 
     // Trigger Re-analyze
     fireEvent.click(screen.getByTestId('reanalyze-button-contract-1'))
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/analysis/analyze', expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ contractId: 'contract-1', userId: 'user-123' })
-      }))
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/analysis/analyze',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            contractId: 'contract-1',
+            userId: 'user-123',
+          }),
+        })
+      )
     })
   })
 
@@ -420,19 +477,30 @@ describe('ContractHistory Page', () => {
     vi.spyOn(global, 'fetch').mockImplementation((url) => {
       const urlString = String(url)
       if (urlString.includes('/api/account/subscription')) {
-        return Promise.resolve(createMockResponse(true, mockProSubscription) as Response)
+        return Promise.resolve(
+          createMockResponse(true, mockProSubscription) as Response
+        )
       }
       if (urlString.includes('/api/account/contracts')) {
-        return Promise.resolve(createMockResponse(true, { success: true, data: mockContractsData }) as Response)
+        return Promise.resolve(
+          createMockResponse(true, {
+            success: true,
+            data: mockContractsData,
+          }) as Response
+        )
       }
-      return Promise.resolve(createMockResponse(false, { message: 'Not Found' }) as Response)
+      return Promise.resolve(
+        createMockResponse(false, { message: 'Not Found' }) as Response
+      )
     })
 
     renderWithProviders(<ContractHistory />)
 
     // Wait for the query to resolve
     await waitFor(() => {
-      expect(screen.getByText('Employment_Agreement_2026.pdf')).toBeInTheDocument()
+      expect(
+        screen.getByText('Employment_Agreement_2026.pdf')
+      ).toBeInTheDocument()
     })
 
     const exportBtn = screen.getByTestId('export-button')
@@ -440,7 +508,7 @@ describe('ContractHistory Page', () => {
 
     // Expect Upgrade Modal NOT to activate, instead export options open
     expect(screen.queryByTestId('upgrade-modal-stub')).toBeNull()
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('export-dropdown')).toBeInTheDocument()
       expect(screen.getByText('Export CSV')).toBeInTheDocument()
@@ -453,9 +521,11 @@ describe('ContractHistory Page', () => {
     renderWithProviders(<ContractHistory />)
 
     expect(screen.getByText('سجل العقود')).toBeInTheDocument()
-    
+
     await waitFor(() => {
-      expect(screen.getByText('Employment_Agreement_2026.pdf')).toBeInTheDocument()
+      expect(
+        screen.getByText('Employment_Agreement_2026.pdf')
+      ).toBeInTheDocument()
       expect(screen.getAllByText('تم التحليل').length).toBeGreaterThan(0)
     })
   })

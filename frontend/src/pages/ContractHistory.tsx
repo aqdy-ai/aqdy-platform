@@ -2,28 +2,49 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { 
-  Search, 
-  ArrowUpDown, 
-  Plus, 
-  Download, 
-  Trash2, 
-  RefreshCw, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  Search,
+  ArrowUpDown,
+  Plus,
+  Download,
+  ChevronLeft,
+  ChevronRight,
   Calendar,
   X,
   FileSpreadsheet,
   FileCode,
   Sparkles,
   Lock,
-  ChevronDown
+  ChevronDown,
 } from 'lucide-react'
 import { Input } from '../components/ui/input'
 import { Button } from '../components/ui/button'
 import { ContractHistoryRow } from '../components/ContractHistoryRow'
 import { UpgradeModal } from '../components/UpgradeModal'
 import { cn } from '@/lib/utils'
+
+interface ContractData {
+  contractId: string
+  filename: string
+  uploadDate: string
+  language: string
+  fileSize: number
+  status: 'analyzed' | 'pending' | 'failed'
+  riskLevel: 'critical' | 'high' | 'medium' | 'low' | null
+  analysisId: string | null
+  riskSummary?: { ar: string; en: string } | null
+  totalClauses?: number | null
+  riskyClausesCount?: number | null
+  version?: number
+}
+
+interface FetchContractsResponse {
+  contracts: ContractData[]
+  total: number
+  page: number
+  totalPages: number
+  limit: number
+}
 
 export default function ContractHistory() {
   const { t, i18n } = useTranslation()
@@ -37,9 +58,11 @@ export default function ContractHistory() {
   const [riskFilter, setRiskFilter] = useState('') // '', 'high', 'medium', 'low'
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  
+
   // Sorting States
-  const [sortBy, setSortBy] = useState<'uploadedAt' | 'analyzedAt' | 'riskLevel'>('uploadedAt')
+  const [sortBy, setSortBy] = useState<
+    'uploadedAt' | 'analyzedAt' | 'riskLevel'
+  >('uploadedAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
   // Modals & UI States
@@ -54,11 +77,6 @@ export default function ContractHistory() {
     }, 400)
     return () => clearTimeout(handler)
   }, [searchQuery])
-
-  // Reset page on filter changes
-  useEffect(() => {
-    setPage(1)
-  }, [dateFrom, dateTo, riskFilter, limit])
 
   // Close export dropdown on click outside
   useEffect(() => {
@@ -76,41 +94,56 @@ export default function ContractHistory() {
       if (!response.ok) throw new Error('Failed to load subscription')
       const resData = await response.json()
       return resData.data
-    }
+    },
   })
 
   const userPlan = subscriptionData?.subscription?.planId?.slug || 'free'
   const isProOrEnterprise = ['pro', 'enterprise', 'premium'].includes(userPlan)
 
   // React Query - Contracts Fetch
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['contracts', debouncedSearchQuery, dateFrom, dateTo, riskFilter, page, limit, sortBy, sortOrder],
-    queryFn: async () => {
-      const params = new URLSearchParams()
-      params.append('page', String(page))
-      params.append('limit', String(limit))
-      params.append('sortBy', sortBy)
-      params.append('sortOrder', sortOrder)
-      if (debouncedSearchQuery) params.append('filename', debouncedSearchQuery)
-      if (dateFrom) params.append('uploadedAfter', new Date(dateFrom).toISOString())
-      if (dateTo) {
-        const toDate = new Date(dateTo)
-        toDate.setHours(23, 59, 59, 999)
-        params.append('uploadedBefore', toDate.toISOString())
-      }
-      if (riskFilter) params.append('riskLevel', riskFilter)
+  const { data, isLoading, isError, refetch } =
+    useQuery<FetchContractsResponse>({
+      queryKey: [
+        'contracts',
+        debouncedSearchQuery,
+        dateFrom,
+        dateTo,
+        riskFilter,
+        page,
+        limit,
+        sortBy,
+        sortOrder,
+      ],
+      queryFn: async () => {
+        const params = new URLSearchParams()
+        params.append('page', String(page))
+        params.append('limit', String(limit))
+        params.append('sortBy', sortBy)
+        params.append('sortOrder', sortOrder)
+        if (debouncedSearchQuery)
+          params.append('filename', debouncedSearchQuery)
+        if (dateFrom)
+          params.append('uploadedAfter', new Date(dateFrom).toISOString())
+        if (dateTo) {
+          const toDate = new Date(dateTo)
+          toDate.setHours(23, 59, 59, 999)
+          params.append('uploadedBefore', toDate.toISOString())
+        }
+        if (riskFilter) params.append('riskLevel', riskFilter)
 
-      const response = await fetch(`/api/account/contracts?${params.toString()}`)
-      if (!response.ok) throw new Error('Failed to fetch contracts')
-      const resData = await response.json()
-      return resData.data
-    }
-  })
+        const response = await fetch(
+          `/api/account/contracts?${params.toString()}`
+        )
+        if (!response.ok) throw new Error('Failed to fetch contracts')
+        const resData = await response.json()
+        return resData.data as FetchContractsResponse
+      },
+    })
 
   // Handlers
   const handleSort = (field: 'uploadedAt' | 'analyzedAt' | 'riskLevel') => {
     if (sortBy === field) {
-      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))
     } else {
       setSortBy(field)
       setSortOrder('desc')
@@ -123,7 +156,7 @@ export default function ContractHistory() {
     if (!isProOrEnterprise) {
       setUpgradeModalOpen(true)
     } else {
-      setExportDropdownOpen(prev => !prev)
+      setExportDropdownOpen((prev) => !prev)
     }
   }
 
@@ -148,9 +181,12 @@ export default function ContractHistory() {
     refetch()
   }
 
-  const hasActiveFilters = searchQuery !== '' || dateFrom !== '' || dateTo !== '' || riskFilter !== ''
-  const showEmptyState = !isLoading && !isError && data?.contracts?.length === 0 && !hasActiveFilters
-  const showNoResults = !isLoading && !isError && data?.contracts?.length === 0 && hasActiveFilters
+  const hasActiveFilters =
+    searchQuery !== '' || dateFrom !== '' || dateTo !== '' || riskFilter !== ''
+  const showEmptyState =
+    !isLoading && !isError && data?.contracts?.length === 0 && !hasActiveFilters
+  const showNoResults =
+    !isLoading && !isError && data?.contracts?.length === 0 && hasActiveFilters
 
   return (
     <div className="animate-in fade-in space-y-8 py-10 duration-500">
@@ -161,7 +197,10 @@ export default function ContractHistory() {
             {t('history.title', { defaultValue: 'Contract History' })}
           </h1>
           <p className="text-muted-foreground mt-1 text-sm font-semibold">
-            {t('history.subtitle', { defaultValue: 'View and manage all your past contracts and their analysis reports.' })}
+            {t('history.subtitle', {
+              defaultValue:
+                'View and manage all your past contracts and their analysis reports.',
+            })}
           </p>
         </div>
 
@@ -171,13 +210,13 @@ export default function ContractHistory() {
             <Button
               variant="outline"
               onClick={handleExportClick}
-              className="h-10 rounded-xl px-4 gap-2 font-bold hover:border-primary hover:text-primary transition-all shadow-sm"
+              className="hover:border-primary hover:text-primary h-10 gap-2 rounded-xl px-4 font-bold shadow-sm transition-all"
               data-testid="export-button"
             >
               <Download size={15} />
               <span>{t('history.export_btn', { defaultValue: 'Export' })}</span>
               {!isProOrEnterprise ? (
-                <Lock size={12} className="text-amber-500 shrink-0" />
+                <Lock size={12} className="shrink-0 text-amber-500" />
               ) : (
                 <ChevronDown size={14} className="opacity-50" />
               )}
@@ -185,26 +224,30 @@ export default function ContractHistory() {
 
             {/* Export Dropdown Options */}
             {exportDropdownOpen && (
-              <div 
+              <div
                 className={cn(
-                  "absolute z-[40] mt-2 w-40 rounded-xl border border-border/50 bg-card p-1.5 shadow-xl backdrop-blur-md animate-in fade-in-0 slide-in-from-top-1 duration-150",
-                  isRtl ? "left-0" : "right-0"
+                  'border-border/50 bg-card animate-in fade-in-0 slide-in-from-top-1 absolute z-[40] mt-2 w-40 rounded-xl border p-1.5 shadow-xl backdrop-blur-md duration-150',
+                  isRtl ? 'left-0' : 'right-0'
                 )}
                 data-testid="export-dropdown"
               >
                 <button
                   onClick={() => triggerDownload('csv')}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="hover:bg-primary/10 hover:text-primary flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-xs font-bold transition-colors"
                 >
                   <FileSpreadsheet size={14} />
-                  <span>{t('history.export_csv', { defaultValue: 'Export CSV' })}</span>
+                  <span>
+                    {t('history.export_csv', { defaultValue: 'Export CSV' })}
+                  </span>
                 </button>
                 <button
                   onClick={() => triggerDownload('json')}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-xs font-bold hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="hover:bg-primary/10 hover:text-primary flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-xs font-bold transition-colors"
                 >
                   <FileCode size={14} />
-                  <span>{t('history.export_json', { defaultValue: 'Export JSON' })}</span>
+                  <span>
+                    {t('history.export_json', { defaultValue: 'Export JSON' })}
+                  </span>
                 </button>
               </div>
             )}
@@ -213,11 +256,13 @@ export default function ContractHistory() {
           {/* Upload New CTA */}
           <Button
             asChild
-            className="h-10 rounded-xl px-5 gap-2 font-bold shadow-md shadow-primary/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="shadow-primary/10 h-10 gap-2 rounded-xl px-5 font-bold shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Link to="/">
               <Plus size={16} strokeWidth={2.5} />
-              <span>{t('history.empty_cta', { defaultValue: 'Upload Contract' })}</span>
+              <span>
+                {t('history.empty_cta', { defaultValue: 'Upload Contract' })}
+              </span>
             </Link>
           </Button>
         </div>
@@ -226,28 +271,30 @@ export default function ContractHistory() {
       <hr className="border-border/40" />
 
       {/* Filters Dashboard Card */}
-      <div className="bg-card border-border/60 rounded-3xl border p-6 shadow-sm space-y-6">
+      <div className="bg-card border-border/60 space-y-6 rounded-3xl border p-6 shadow-sm">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {/* Search bar */}
           <div className="relative">
-            <Search className="text-muted-foreground/60 absolute top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 transition-colors focus-within:text-primary mx-3" />
+            <Search className="text-muted-foreground/60 focus-within:text-primary absolute top-1/2 mx-3 h-4 w-4 shrink-0 -translate-y-1/2 transition-colors" />
             <Input
               type="text"
-              placeholder={t('history.search_placeholder', { defaultValue: 'Search by filename...' })}
+              placeholder={t('history.search_placeholder', {
+                defaultValue: 'Search by filename...',
+              })}
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
-                "h-10 bg-input/10 border-border/60 hover:border-border rounded-xl font-semibold placeholder:text-muted-foreground/50",
-                isRtl ? "pr-10" : "pl-10"
+                'bg-input/10 border-border/60 hover:border-border placeholder:text-muted-foreground/50 h-10 rounded-xl font-semibold',
+                isRtl ? 'pr-10' : 'pl-10'
               )}
               aria-label="Search filename"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className={cn(
-                  "text-muted-foreground/60 hover:text-foreground absolute top-1/2 -translate-y-1/2 rounded-full p-1",
-                  isRtl ? "left-2" : "right-2"
+                  'text-muted-foreground/60 hover:text-foreground absolute top-1/2 -translate-y-1/2 rounded-full p-1',
+                  isRtl ? 'left-2' : 'right-2'
                 )}
               >
                 <X size={14} />
@@ -258,15 +305,20 @@ export default function ContractHistory() {
           {/* Date range from picker */}
           <div className="flex flex-col gap-1.5">
             <div className="relative">
-              <Calendar className="text-muted-foreground/60 absolute top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 pointer-events-none mx-3" />
+              <Calendar className="text-muted-foreground/60 pointer-events-none absolute top-1/2 mx-3 h-4 w-4 shrink-0 -translate-y-1/2" />
               <Input
                 type="date"
                 value={dateFrom}
-                onChange={e => setDateFrom(e.target.value)}
-                placeholder={t('history.date_from', { defaultValue: 'From Date' })}
+                onChange={(e) => {
+                  setDateFrom(e.target.value)
+                  setPage(1)
+                }}
+                placeholder={t('history.date_from', {
+                  defaultValue: 'From Date',
+                })}
                 className={cn(
-                  "h-10 bg-input/10 border-border/60 hover:border-border rounded-xl font-semibold text-xs",
-                  isRtl ? "pr-10" : "pl-10"
+                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl text-xs font-semibold',
+                  isRtl ? 'pr-10' : 'pl-10'
                 )}
                 aria-label="From Date"
               />
@@ -276,15 +328,18 @@ export default function ContractHistory() {
           {/* Date range to picker */}
           <div className="flex flex-col gap-1.5">
             <div className="relative">
-              <Calendar className="text-muted-foreground/60 absolute top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 pointer-events-none mx-3" />
+              <Calendar className="text-muted-foreground/60 pointer-events-none absolute top-1/2 mx-3 h-4 w-4 shrink-0 -translate-y-1/2" />
               <Input
                 type="date"
                 value={dateTo}
-                onChange={e => setDateTo(e.target.value)}
+                onChange={(e) => {
+                  setDateTo(e.target.value)
+                  setPage(1)
+                }}
                 placeholder={t('history.date_to', { defaultValue: 'To Date' })}
                 className={cn(
-                  "h-10 bg-input/10 border-border/60 hover:border-border rounded-xl font-semibold text-xs",
-                  isRtl ? "pr-10" : "pl-10"
+                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl text-xs font-semibold',
+                  isRtl ? 'pr-10' : 'pl-10'
                 )}
                 aria-label="To Date"
               />
@@ -295,21 +350,32 @@ export default function ContractHistory() {
           <div className="flex gap-2">
             <select
               value={riskFilter}
-              onChange={e => setRiskFilter(e.target.value)}
-              className="h-10 w-full rounded-xl border border-border/60 bg-card px-3.5 text-sm font-semibold text-muted-foreground outline-none transition-all hover:border-border focus:border-primary focus:ring-1 focus:ring-primary"
+              onChange={(e) => {
+                setRiskFilter(e.target.value)
+                setPage(1)
+              }}
+              className="border-border/60 bg-card text-muted-foreground hover:border-border focus:border-primary focus:ring-primary h-10 w-full rounded-xl border px-3.5 text-sm font-semibold transition-all outline-none focus:ring-1"
               aria-label="Filter by Risk Level"
             >
-              <option value="">{t('history.risk_all', { defaultValue: 'All Risk Levels' })}</option>
-              <option value="high">{t('history.risk_high', { defaultValue: 'High Risk' })}</option>
-              <option value="medium">{t('history.risk_medium', { defaultValue: 'Medium Risk' })}</option>
-              <option value="low">{t('history.risk_low', { defaultValue: 'Low Risk' })}</option>
+              <option value="">
+                {t('history.risk_all', { defaultValue: 'All Risk Levels' })}
+              </option>
+              <option value="high">
+                {t('history.risk_high', { defaultValue: 'High Risk' })}
+              </option>
+              <option value="medium">
+                {t('history.risk_medium', { defaultValue: 'Medium Risk' })}
+              </option>
+              <option value="low">
+                {t('history.risk_low', { defaultValue: 'Low Risk' })}
+              </option>
             </select>
 
             {hasActiveFilters && (
               <Button
                 variant="outline"
                 onClick={resetFilters}
-                className="h-10 px-3 rounded-xl border-border/60 shrink-0 hover:bg-muted font-semibold"
+                className="border-border/60 hover:bg-muted h-10 shrink-0 rounded-xl px-3 font-semibold"
                 title="Reset Filters"
                 data-testid="reset-filters"
               >
@@ -324,20 +390,27 @@ export default function ContractHistory() {
       {!showEmptyState && !showNoResults && (
         <div className="bg-card border-border/60 overflow-hidden rounded-3xl border shadow-sm transition-all duration-300">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-start text-sm" role="table">
+            <table
+              className="w-full border-collapse text-start text-sm"
+              role="table"
+            >
               <thead>
                 <tr className="border-border/40 bg-muted/40 text-muted-foreground border-b font-bold">
                   <th className="px-6 py-4 text-start font-black">
                     <button
                       onClick={() => handleSort('uploadedAt')}
-                      className="flex items-center gap-1 hover:text-primary transition-colors focus:outline-none"
+                      className="hover:text-primary flex items-center gap-1 transition-colors focus:outline-none"
                     >
-                      {t('history.table_filename', { defaultValue: 'Filename' })}
+                      {t('history.table_filename', {
+                        defaultValue: 'Filename',
+                      })}
                       <ArrowUpDown size={12} className="opacity-50" />
                     </button>
                   </th>
                   <th className="px-6 py-4 text-start font-black">
-                    {t('history.table_upload_date', { defaultValue: 'Upload Date' })}
+                    {t('history.table_upload_date', {
+                      defaultValue: 'Upload Date',
+                    })}
                   </th>
                   <th className="px-6 py-4 text-start font-black">
                     {t('history.table_status', { defaultValue: 'Status' })}
@@ -345,7 +418,7 @@ export default function ContractHistory() {
                   <th className="px-6 py-4 text-start font-black">
                     <button
                       onClick={() => handleSort('riskLevel')}
-                      className="flex items-center gap-1 hover:text-primary transition-colors focus:outline-none"
+                      className="hover:text-primary flex items-center gap-1 transition-colors focus:outline-none"
                     >
                       {t('history.table_risk', { defaultValue: 'Risk Level' })}
                       <ArrowUpDown size={12} className="opacity-50" />
@@ -362,8 +435,8 @@ export default function ContractHistory() {
                     <tr key={`skeleton-${idx}`} className="animate-pulse">
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="bg-muted h-9 w-9 rounded-xl shrink-0" />
-                          <div className="space-y-2 flex-1">
+                          <div className="bg-muted h-9 w-9 shrink-0 rounded-xl" />
+                          <div className="flex-1 space-y-2">
                             <div className="bg-muted h-4 w-32 rounded" />
                             <div className="bg-muted h-3 w-12 rounded" />
                           </div>
@@ -379,18 +452,24 @@ export default function ContractHistory() {
                         <div className="bg-muted h-5 w-20 rounded-full" />
                       </td>
                       <td className="px-6 py-5 text-end">
-                        <div className="bg-muted h-8 w-24 rounded-lg inline-block" />
+                        <div className="bg-muted inline-block h-8 w-24 rounded-lg" />
                       </td>
                     </tr>
                   ))
                 ) : isError ? (
                   <tr>
-                    <td colSpan={5} className="py-16 text-center text-red-500 font-semibold text-sm">
-                      {t('common.error', { defaultValue: 'Something went wrong while fetching data. Please try again.' })}
+                    <td
+                      colSpan={5}
+                      className="py-16 text-center text-sm font-semibold text-red-500"
+                    >
+                      {t('common.error', {
+                        defaultValue:
+                          'Something went wrong while fetching data. Please try again.',
+                      })}
                     </td>
                   </tr>
                 ) : (
-                  data?.contracts?.map(contract => (
+                  data?.contracts?.map((contract) => (
                     <ContractHistoryRow
                       key={contract.contractId}
                       contract={contract}
@@ -406,16 +485,20 @@ export default function ContractHistory() {
           {/* Pagination Controls */}
           {!isLoading && !isError && data && (
             <div className="border-border/40 flex flex-col items-center justify-between gap-4 border-t px-6 py-4 sm:flex-row">
-              <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground">
+              <div className="text-muted-foreground flex items-center gap-4 text-xs font-semibold">
                 <div className="flex items-center gap-2">
-                  <span>{t('history.items_per_page', { defaultValue: 'Items per page' })}</span>
+                  <span>
+                    {t('history.items_per_page', {
+                      defaultValue: 'Items per page',
+                    })}
+                  </span>
                   <select
                     value={limit}
-                    onChange={e => {
+                    onChange={(e) => {
                       setLimit(Number(e.target.value))
                       setPage(1)
                     }}
-                    className="h-8 rounded-lg border border-border/60 bg-card px-2 outline-none font-bold text-foreground"
+                    className="border-border/60 bg-card text-foreground h-8 rounded-lg border px-2 font-bold outline-none"
                     aria-label="Items per page"
                   >
                     <option value={5}>5</option>
@@ -425,23 +508,34 @@ export default function ContractHistory() {
                   </select>
                 </div>
                 <span>
-                  {t('history.pagination_show', { defaultValue: 'Showing' })} {((page - 1) * limit) + 1} - {Math.min(page * limit, data.total)} {t('history.pagination_of', { defaultValue: 'of' })} {data.total}
+                  {t('history.pagination_show', { defaultValue: 'Showing' })}{' '}
+                  {(page - 1) * limit + 1} -{' '}
+                  {Math.min(page * limit, data.total)}{' '}
+                  {t('history.pagination_of', { defaultValue: 'of' })}{' '}
+                  {data.total}
                 </span>
               </div>
 
               {data.totalPages > 1 && (
-                <div className="flex items-center gap-1.5" data-testid="pagination-nav">
+                <div
+                  className="flex items-center gap-1.5"
+                  data-testid="pagination-nav"
+                >
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                     disabled={page === 1}
                     className="h-8 w-8 rounded-lg"
                     aria-label="Previous Page"
                   >
-                    {isRtl ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                    {isRtl ? (
+                      <ChevronRight size={14} />
+                    ) : (
+                      <ChevronLeft size={14} />
+                    )}
                   </Button>
-                  
+
                   {Array.from({ length: data.totalPages }).map((_, idx) => {
                     const pageNum = idx + 1
                     // Show a reasonable range of page buttons
@@ -455,16 +549,27 @@ export default function ContractHistory() {
                           key={`page-${pageNum}`}
                           variant={page === pageNum ? 'default' : 'outline'}
                           onClick={() => setPage(pageNum)}
-                          className={cn("h-8 w-8 rounded-lg text-xs font-bold", page === pageNum && "shadow-md shadow-primary/10")}
+                          className={cn(
+                            'h-8 w-8 rounded-lg text-xs font-bold',
+                            page === pageNum && 'shadow-primary/10 shadow-md'
+                          )}
                         >
                           {pageNum}
                         </Button>
                       )
                     } else if (
                       (pageNum === 2 && page > 3) ||
-                      (pageNum === data.totalPages - 1 && page < data.totalPages - 2)
+                      (pageNum === data.totalPages - 1 &&
+                        page < data.totalPages - 2)
                     ) {
-                      return <span key={`dots-${pageNum}`} className="text-muted-foreground px-1 text-xs">...</span>
+                      return (
+                        <span
+                          key={`dots-${pageNum}`}
+                          className="text-muted-foreground px-1 text-xs"
+                        >
+                          ...
+                        </span>
+                      )
                     }
                     return null
                   })}
@@ -472,12 +577,18 @@ export default function ContractHistory() {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setPage(prev => Math.min(prev + 1, data.totalPages))}
+                    onClick={() =>
+                      setPage((prev) => Math.min(prev + 1, data.totalPages))
+                    }
                     disabled={page === data.totalPages}
                     className="h-8 w-8 rounded-lg"
                     aria-label="Next Page"
                   >
-                    {isRtl ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+                    {isRtl ? (
+                      <ChevronLeft size={14} />
+                    ) : (
+                      <ChevronRight size={14} />
+                    )}
                   </Button>
                 </div>
               )}
@@ -488,24 +599,31 @@ export default function ContractHistory() {
 
       {/* Empty State (No Contracts at all) */}
       {showEmptyState && (
-        <div className="bg-card border-border/60 flex flex-col items-center justify-center rounded-3xl border p-12 text-center shadow-sm py-20 animate-in fade-in duration-300">
-          <div className="bg-primary/10 text-primary mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl relative">
-            <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-lg animate-pulse" />
+        <div className="bg-card border-border/60 animate-in fade-in flex flex-col items-center justify-center rounded-3xl border p-12 py-20 text-center shadow-sm duration-300">
+          <div className="bg-primary/10 text-primary relative mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl">
+            <div className="bg-primary/20 absolute inset-0 animate-pulse rounded-2xl blur-lg" />
             <Sparkles size={32} className="relative" />
           </div>
-          <h2 className="text-2xl font-black tracking-tight mb-2">
+          <h2 className="mb-2 text-2xl font-black tracking-tight">
             {t('history.empty_title', { defaultValue: 'No Contracts Yet' })}
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-relaxed font-semibold mb-8">
-            {t('history.empty_desc', { defaultValue: 'Get started by uploading and analyzing your first legal contract.' })}
+          <p className="text-muted-foreground mx-auto mb-8 max-w-sm text-sm leading-relaxed font-semibold">
+            {t('history.empty_desc', {
+              defaultValue:
+                'Get started by uploading and analyzing your first legal contract.',
+            })}
           </p>
           <Button
             asChild
-            className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/10 hover:scale-105 active:scale-95 transition-all"
+            className="shadow-primary/10 h-11 rounded-xl px-6 font-bold shadow-lg transition-all hover:scale-105 active:scale-95"
           >
             <Link to="/">
               <Plus size={16} strokeWidth={2.5} className="mr-1.5" />
-              <span>{t('history.empty_cta', { defaultValue: 'Upload New Contract' })}</span>
+              <span>
+                {t('history.empty_cta', {
+                  defaultValue: 'Upload New Contract',
+                })}
+              </span>
             </Link>
           </Button>
         </div>
@@ -513,22 +631,22 @@ export default function ContractHistory() {
 
       {/* No Search Results State */}
       {showNoResults && (
-        <div className="bg-card border-border/60 flex flex-col items-center justify-center rounded-3xl border p-12 text-center shadow-sm py-16 animate-in fade-in duration-300">
-          <div className="bg-amber-500/10 text-amber-500 mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl">
+        <div className="bg-card border-border/60 animate-in fade-in flex flex-col items-center justify-center rounded-3xl border p-12 py-16 text-center shadow-sm duration-300">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500">
             <Search size={24} />
           </div>
-          <h3 className="text-lg font-bold tracking-tight mb-2">
+          <h3 className="mb-2 text-lg font-bold tracking-tight">
             {isRtl ? 'لا توجد نتائج مطابقة' : 'No matches found'}
           </h3>
-          <p className="text-muted-foreground mx-auto max-w-sm text-xs font-semibold mb-6">
-            {isRtl 
-              ? 'لم نعثر على أي عقود تطابق خيارات البحث الحالية. جرب تغيير الفلاتر أو الكلمات الدلالية.' 
-              : 'We couldn\'t find any contracts matching your search filters. Try clearing some criteria.'}
+          <p className="text-muted-foreground mx-auto mb-6 max-w-sm text-xs font-semibold">
+            {isRtl
+              ? 'لم نعثر على أي عقود تطابق خيارات البحث الحالية. جرب تغيير الفلاتر أو الكلمات الدلالية.'
+              : "We couldn't find any contracts matching your search filters. Try clearing some criteria."}
           </p>
           <Button
             variant="outline"
             onClick={resetFilters}
-            className="h-9 px-4 rounded-xl font-bold transition-all"
+            className="h-9 rounded-xl px-4 font-bold transition-all"
           >
             {isRtl ? 'إعادة تعيين الفلاتر' : 'Clear Filters'}
           </Button>
@@ -536,7 +654,10 @@ export default function ContractHistory() {
       )}
 
       {/* Upgrade Modal Trigger */}
-      <UpgradeModal open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen} />
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+      />
     </div>
   )
 }
