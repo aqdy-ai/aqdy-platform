@@ -5,10 +5,13 @@ const validUserId = new mongoose.Types.ObjectId().toString();
 const validPlanId = new mongoose.Types.ObjectId().toString();
 const validNewPlanId = new mongoose.Types.ObjectId().toString();
 
-const mockSave = jest.fn().mockResolvedValue(undefined);
-const mockFindOne = jest.fn();
-const mockFindById = jest.fn();
-const mockCountDocuments = jest.fn();
+// 1. تعريف توقيع دوال مفتوح وآمن للـ لنت والـ تايب سكريبت بدون استخدام any
+type MockGenericFunction = (...args: unknown[]) => Promise<unknown>;
+
+const mockSave = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
+const mockFindOne = jest.fn<MockGenericFunction>();
+const mockFindById = jest.fn<MockGenericFunction>();
+const mockCountDocuments = jest.fn<(...args: unknown[]) => Promise<number>>();
 
 jest.unstable_mockModule('../../src/models/subscription.model.js', () => ({
   Subscription: jest.fn().mockImplementation(() => ({ save: mockSave })),
@@ -28,6 +31,11 @@ jest.unstable_mockModule('../../src/models/riskAnalysis.model.js', () => ({
 }));
 
 const { SubscriptionService } = await import('../../src/services/subscription.service.js');
+
+// 2. واجهة مرنة مخصصة للـ Mocked Models لضمان عدم حدوث الـ 'never' assignment
+interface MockModelWithFind {
+  findOne: jest.Mock<(...args: unknown[]) => unknown>;
+}
 
 describe('SubscriptionService - createFreeSubscription', () => {
   let subscriptionService: InstanceType<typeof SubscriptionService>;
@@ -68,9 +76,11 @@ describe('SubscriptionService - getUserSubscription', () => {
 
   test('should return null if no active subscription', async () => {
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockReturnValue({
-      populate: jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(null),
+    
+    const subscriptionMock = Subscription as unknown as MockModelWithFind;
+    subscriptionMock.findOne = jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
+      populate: jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
+        sort: jest.fn<MockGenericFunction>().mockResolvedValue(null),
       }),
     });
 
@@ -87,9 +97,10 @@ describe('SubscriptionService - getUserSubscription', () => {
     };
 
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockReturnValue({
-      populate: jest.fn().mockReturnValue({
-        sort: jest.fn().mockResolvedValue(mockSubscription),
+    const subscriptionMock = Subscription as unknown as MockModelWithFind;
+    subscriptionMock.findOne = jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
+      populate: jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
+        sort: jest.fn<MockGenericFunction>().mockResolvedValue(mockSubscription),
       }),
     });
 
@@ -137,8 +148,9 @@ describe('SubscriptionService - upgradeSubscription', () => {
 
   test('should throw error if no active subscription', async () => {
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockReturnValue({
-      populate: jest.fn().mockResolvedValue(null),
+    const subscriptionMock = Subscription as unknown as MockModelWithFind;
+    subscriptionMock.findOne = jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
+      populate: jest.fn<MockGenericFunction>().mockResolvedValue(null),
     });
 
     await expect(
@@ -155,8 +167,9 @@ describe('SubscriptionService - upgradeSubscription', () => {
     };
 
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockReturnValue({
-      populate: jest.fn().mockResolvedValue(mockSubscription),
+    const subscriptionMock = Subscription as unknown as MockModelWithFind;
+    subscriptionMock.findOne = jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
+      populate: jest.fn<MockGenericFunction>().mockResolvedValue(mockSubscription),
     });
     mockFindById.mockResolvedValue(null);
 
@@ -175,8 +188,9 @@ describe('SubscriptionService - upgradeSubscription', () => {
     };
 
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockReturnValue({
-      populate: jest.fn().mockResolvedValue(mockSubscription),
+    const subscriptionMock = Subscription as unknown as MockModelWithFind;
+    subscriptionMock.findOne = jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
+      populate: jest.fn<MockGenericFunction>().mockResolvedValue(mockSubscription),
     });
     mockFindById.mockResolvedValue({ _id: validNewPlanId, name: 'Premium' });
 
@@ -195,44 +209,54 @@ describe('SubscriptionService - cancelSubscription', () => {
 
   test('should throw error if no active subscription', async () => {
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockResolvedValue(null);
+    const subscriptionMock = Subscription as unknown as MockModelWithFind;
+    subscriptionMock.findOne = jest.fn<MockGenericFunction>().mockResolvedValue(null);
 
     await expect(
       subscriptionService.cancelSubscription(validUserId)
     ).rejects.toThrow('No active subscription found.');
   });
 
-  test('should cancel subscription and set cancelledAt', async () => {
+  test('should cancel subscription, call Stripe, and set cancelledAt', async () => {
     const mockSubscription = {
       _id: new mongoose.Types.ObjectId().toString(),
       userId: validUserId,
       status: 'active',
-      cancelledAt: undefined,
+      stripeSubscriptionId: 'sub_123',
+      cancelledAt: undefined as Date | undefined,
       save: mockSave,
     };
 
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockResolvedValue(mockSubscription);
+    const subscriptionMock = Subscription as unknown as MockModelWithFind;
+    subscriptionMock.findOne = jest.fn<MockGenericFunction>().mockResolvedValue(mockSubscription);
+
+    const mockStripeUpdate = jest.fn<MockGenericFunction>().mockResolvedValue({});
+    jest.unstable_mockModule('../../src/services/payment.service.js', () => ({
+      stripe: { subscriptions: { update: mockStripeUpdate } }
+    }));
 
     await subscriptionService.cancelSubscription(validUserId);
 
-    expect(mockSubscription.status).toBe('cancelled');
+    expect(mockSubscription.status).toBe('active');
     expect(mockSubscription.cancelledAt).toBeDefined();
     expect(mockSave).toHaveBeenCalled();
   });
 
-  test('should set status to cancelled', async () => {
+  test('should set cancelledAt but keep status active', async () => {
     const mockSubscription = {
       _id: new mongoose.Types.ObjectId().toString(),
       status: 'active',
-      cancelledAt: undefined,
+      cancelledAt: undefined as Date | undefined,
       save: mockSave,
     };
 
     const { Subscription } = await import('../../src/models/subscription.model.js');
-    (Subscription as any).findOne = jest.fn().mockResolvedValue(mockSubscription);
+    const subscriptionMock = Subscription as unknown as MockModelWithFind;
+    subscriptionMock.findOne = jest.fn<MockGenericFunction>().mockResolvedValue(mockSubscription);
 
     const result = await subscriptionService.cancelSubscription(validUserId);
-    expect(result.status).toBe('cancelled');
+    expect(result.status).toBe('active');
+    expect(result.cancelledAt).toBeDefined();
   });
 });

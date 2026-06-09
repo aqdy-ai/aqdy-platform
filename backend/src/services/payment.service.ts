@@ -22,7 +22,7 @@ type StripeSubWithPeriod = Stripe.Subscription & {
 };
 
 // Interface for Payment document after population
-interface IPopulatedPayment extends Omit<IPayment, "subscriptionId"> {
+export interface IPopulatedPayment extends Omit<IPayment, "subscriptionId"> {
   subscriptionId: ISubscription & { planId: IPlan };
 }
 
@@ -181,14 +181,25 @@ export class PaymentService {
         const subscription = event.data.object as Stripe.Subscription;
         const subDoc = await Subscription.findOneAndUpdate(
           { stripeSubscriptionId: subscription.id },
-          { status: "cancelled", cancelledAt: new Date(), endDate: new Date() },
+          { status: "expired", endDate: new Date() },
           { new: true },
         );
         if (subDoc) {
-          await User.findByIdAndUpdate(subDoc.userId, {
-            plan: "free",
-            planSlug: "free",
-          });
+          const freePlan = await Plan.findOne({ slug: "free" });
+          if (freePlan) {
+            await User.findByIdAndUpdate(subDoc.userId, {
+              plan: freePlan.slug,
+              planSlug: freePlan.slug,
+            });
+            if (freePlan.creditAllowance > 0) {
+              await creditsService.topup(String(subDoc.userId), freePlan.creditAllowance, "plan_topup");
+            }
+          } else {
+            await User.findByIdAndUpdate(subDoc.userId, {
+              plan: "free",
+              planSlug: "free",
+            });
+          }
         }
         break;
       }
