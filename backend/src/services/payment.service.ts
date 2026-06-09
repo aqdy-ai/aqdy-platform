@@ -349,11 +349,11 @@ export class PaymentService {
     if (!subscription) return;
 
     // Top up credits on renewal too
-    const plan = await Plan.findById(subscription.planId).lean();
+    const plan = await Plan.findById(String(subscription.planId));
     if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
       try {
         await creditsService.topup(
-          String(subscription.userId),
+          subscription.userId.toString(),
           plan.creditAllowance,
           "plan_topup",
         );
