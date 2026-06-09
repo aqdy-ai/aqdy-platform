@@ -1,3 +1,4 @@
+// jest.config.ts
 import type { JestConfigWithTsJest } from "ts-jest";
 
 const jestConfig: JestConfigWithTsJest = {
@@ -24,7 +25,7 @@ const jestConfig: JestConfigWithTsJest = {
       },
     ],
   },
-  setupFilesAfterEnv: ["<rootDir>/tests/setup-env.js"],
+  setupFilesAfterEnv: ["<rootDir>/tests/setup-env.ts"],
   testMatch: ["**/tests/**/*.test.ts"],
   testTimeout: 30000,
   silent: true,

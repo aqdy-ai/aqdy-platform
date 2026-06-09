@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { motion, AnimatePresence } from 'framer-motion'
 import SubscriptionBadge from '../SubscriptionBadge'
+import CreditsBadge from '../CreditsBadge'
 import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
 
@@ -100,6 +101,7 @@ const Navbar = () => {
 
           <div className="flex items-center gap-3">
             <SubscriptionBadge variant="compact" />
+            <CreditsBadge variant="compact" />
 
             <button
               onClick={toggleTheme}

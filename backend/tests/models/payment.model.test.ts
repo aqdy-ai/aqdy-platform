@@ -8,7 +8,10 @@ import {
   describe,
   test,
   expect,
+  jest,
 } from "@jest/globals";
+
+jest.setTimeout(60000);
 
 let mongoServer: MongoMemoryServer;
 
@@ -16,11 +19,14 @@ beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
   await mongoose.connect(uri);
+  mongoose.set("bufferCommands", false);
 });
 
 afterAll(async () => {
   await mongoose.disconnect();
-  await mongoServer.stop();
+  if (typeof mongoServer !== "undefined") {
+    await mongoServer.stop();
+  }
 });
 
 afterEach(async () => {

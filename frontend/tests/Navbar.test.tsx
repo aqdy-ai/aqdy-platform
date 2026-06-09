@@ -91,9 +91,7 @@ describe('Navbar — Authentication States', () => {
       expect(
         screen.getAllByRole('link', { name: /nav\.home/i }).length
       ).toBeGreaterThan(0)
-      expect(
-        screen.getByRole('link', { name: /nav\.pricing/i })
-      ).toBeDefined()
+      expect(screen.getByRole('link', { name: /nav\.pricing/i })).toBeDefined()
     })
   })
 
@@ -202,9 +200,7 @@ describe('Navbar — Authentication States', () => {
 
       await waitFor(() => screen.getByRole('menu'))
 
-      fireEvent.click(
-        screen.getByRole('menuitem', { name: /nav\.settings/i })
-      )
+      fireEvent.click(screen.getByRole('menuitem', { name: /nav\.settings/i }))
 
       await waitFor(() => {
         expect(screen.queryByRole('menu')).toBeNull()

@@ -40,6 +40,8 @@ export interface OrchestratorResult {
     chunkCount: number;
   };
   durationMs: number;
+  /** Total tokens consumed by the pipeline (input + output estimate). */
+  tokensUsed: number;
 }
 
 // ── Risk weight map ───────────────────────────────
@@ -199,6 +201,8 @@ export class OrchestratorService {
           clauseType: clause.clauseType,
           riskLevel,
           confidence,
+          lowConfidenceWarning: confidence < 0.6,
+          kbCitationMissing: sourceFromKB === null,
           explanation,
           sourceFromKB,
           classificationDurationMs,
@@ -233,14 +237,6 @@ export class OrchestratorService {
     const summaryEn = `Contract analysis completed. Identified ${riskyClausesCount} risky clauses out of ${totalClauses} extracted clauses. The overall contract risk level is ${overallRisk}.`;
 
     const durationMs = Date.now() - startTime;
-
-    logger.info("Orchestrator: pipeline complete", {
-      contractId,
-      totalClauses,
-      riskyClausesCount,
-      overallRisk,
-      durationMs,
-    });
 
     logger.info("Orchestrator: pipeline complete", {
       contractId,
@@ -310,6 +306,7 @@ export class OrchestratorService {
         chunkCount: extractionResult.chunkCount,
       },
       durationMs,
+      tokensUsed: tokenEstimate.totalTokens,
     };
   }
 }

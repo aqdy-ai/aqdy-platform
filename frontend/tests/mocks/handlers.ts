@@ -42,4 +42,33 @@ export const handlers = [
       },
     })
   }),
+
+  // Mock for GET /api/account/credits
+  http.get('/api/account/credits', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        balance: 750,
+        planAllowance: 1000,
+        ledger: [
+          {
+            _id: 'ledger-001',
+            delta: -50,
+            balanceAfter: 750,
+            reason: 'analysis_deduction',
+            metadata: { contractId: 'contract-abc123' },
+            createdAt: new Date().toISOString(),
+          },
+          {
+            _id: 'ledger-002',
+            delta: -30,
+            balanceAfter: 800,
+            reason: 'chat_deduction',
+            metadata: {},
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+          },
+        ],
+      },
+    })
+  }),
 ]

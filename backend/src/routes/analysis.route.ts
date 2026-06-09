@@ -6,7 +6,12 @@ import {
 } from "../controllers/analysis.controller.js";
 import { userAnalysisRateLimit } from "../middlewares/rateLimit.js";
 import { validate } from "../middlewares/validate.js";
-import { enforceAnalysisLimit } from "../middlewares/planEnforcement.middleware.js";
+import { enforceCreditsBeforeAnalysis } from "../middlewares/creditsEnforcement.middleware.js";
+import { verifyContractOwnership } from "../middlewares/contractOwnership.middleware.js";
+import {
+  authenticateJwt,
+  requireAuth,
+} from "../middlewares/auth.middleware.js";
 
 /**
  * Validation schema for the analyze request.
@@ -40,10 +45,13 @@ const router = Router();
  */
 router.post(
   "/analyze",
+  authenticateJwt,
+  requireAuth,
   validate(AnalyzeRequestSchema),
+  verifyContractOwnership,
   userAnalysisRateLimit(),
+  enforceCreditsBeforeAnalysis,
   analyzeContract,
-  enforceAnalysisLimit,
 );
 
 /**

@@ -26,6 +26,9 @@ import requestIdMiddleware from "./middleware/requestId.middleware.js";
 import auditLogsRouter from "./routes/auditLogs.route.js";
 import accountsRouter from "./routes/accounts.route.js";
 import plansRouter from "./routes/plans.route.js";
+import paymentRouter from "./routes/payment.route.js";
+import adminStatsRouter from "./routes/admin.stats.route.js";
+import adminPaymentsRouter from "./routes/admin.payments.route.js";
 
 // Initialize Langfuse observability
 initializeLangfuse();
@@ -45,6 +48,10 @@ app.use(
   }),
 );
 app.use(cookieParser());
+
+// ── Payment Webhook (Raw body required) ──────────
+app.use("/api/payments", paymentRouter);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(responseTimeMiddleware());
@@ -60,6 +67,8 @@ app.use("/api/analysis", analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/admin/audit-logs", auditLogsRouter);
 app.use("/api/admin/accounts", accountsRouter);
+app.use("/api/admin/stats", adminStatsRouter);
+app.use("/api/admin/payments", adminPaymentsRouter);
 app.use("/api/plans", plansRouter);
 
 // Use Swagger UI

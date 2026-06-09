@@ -109,7 +109,13 @@
     },
     "export_report": "Export Report",
     "export_pdf": "PDF Document",
-    "export_docx": "Word Document (DOCX)"
+    "export_docx": "Word Document (DOCX)",
+    "payment_failed": "Your latest payment failed. Please update your payment method to avoid service interruption.",
+    "retry_payment": "Retry Payment",
+    "subscription_expired": "Subscription Expired",
+    "subscription_expired_desc": "Your subscription has expired. Please upgrade your plan to continue using the platform.",
+    "upgrade_to_continue": "Upgrade to Continue",
+    "grace_period_warning": "Your subscription will expire in {{days}} days. Renew now to maintain uninterrupted access."
   },
   "pricing": {
     "title": "Pricing",
@@ -155,7 +161,10 @@
       "free": "Free",
       "pro": "Pro",
       "enterprise": "Enterprise"
-    }
+    },
+    "upgradeSuccess": "Upgrade initiated! Check your email.",
+    "cancellationConfirmed": "Subscription cancelled successfully.",
+    "creditTopupSuccess": "Credits topped up successfully."
   },
   "auth": {
     "loginTitle": "Login",
@@ -234,5 +243,75 @@
     "status_active": "Active",
     "status_suspended": "Suspended",
     "status_pending": "Pending"
+  },
+  "credits": {
+    "sectionTitle": "Credits Balance",
+    "creditsLabel": "credits",
+    "currentBalanceLabel": "Current balance",
+    "planAllowanceLabel": "Plan allowance",
+    "creditsRemaining": "{{count}} credits remaining ({{pct}}%)",
+    "noCreditsRemaining": "No credits remaining",
+    "stateHealthy": "Healthy",
+    "stateLow": "Running Low",
+    "stateEmpty": "Depleted",
+    "lowBalanceWarning": "Your credit balance is running low. Consider upgrading your plan.",
+    "recentDeductionsTitle": "Recent deductions",
+    "contractLabel": "Contract",
+    "upgradeCta": "Upgrade Plan to Refill Credits",
+    "errorLoading": "Unable to load credit information. Please refresh.",
+    "ariaLabel": "Credits balance widget",
+    "upgradeAriaLabel": "Upgrade plan to get more credits",
+    "progressAriaLabel": "Credit usage progress bar",
+    "reason_plan_topup": "Plan top-up",
+    "reason_analysis_deduction": "Contract analysis",
+    "reason_chat_deduction": "Clause chat",
+    "reason_manual_adjustment": "Manual adjustment",
+    "reason_refund": "Refund"
+  },
+  "chat": {
+    "chat_about_clause": "Chat about this clause",
+    "hide_chat": "Hide chat",
+    "credits_cost": "~5 credits",
+    "insufficient_credits": "Insufficient credits.",
+    "upgrade_cta": "Upgrade Plan",
+    "rate_limit_reached": "Rate limit reached (20 messages).",
+    "placeholder": "Ask a question about this clause...",
+    "send": "Send",
+    "suggested_questions": {
+      "q1": "What does this mean for me?",
+      "q2": "Is this standard in MENA contracts?",
+      "q3": "How should I negotiate this?",
+      "q4": "What is the worst-case risk here?"
+    }
+  },
+  "upgrade": {
+    "title": "Upgrade Your Contract Management Today",
+    "subtitle": "Choose the perfect plan for your business and unlock advanced AI analytics.",
+    "tooltip_text": "Credits are consumed based on document volume; each analyzed page uses exactly 1 credit from your balance."
+  },
+  "plans": {
+    "free": {
+      "name": "Free Plan",
+      "f1": "Basic document analysis",
+      "f2": "Single language support"
+    },
+    "pro": {
+      "name": "Pro Developer",
+      "f1": "Advanced AI analysis",
+      "f2": "Full multilingual support",
+      "f3": "Version comparison reports (Diff)"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "f1": "Custom team permissions",
+      "f2": "24/7 dedicated support"
+    },
+    "credits_per_month": "credits / month",
+    "upgrade_pro": "Upgrade to Pro",
+    "current": "Your Current Plan",
+    "popular": "Most Popular",
+    "custom_price": "Custom",
+    "month": "mo",
+    "contact_us": "Contact Us"
   }
 }

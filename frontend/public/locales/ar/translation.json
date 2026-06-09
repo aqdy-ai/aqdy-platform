@@ -113,7 +113,13 @@
     },
     "export_report": "تصدير التقرير",
     "export_pdf": "ملف PDF طباعي",
-    "export_docx": "مستند وورد Word"
+    "export_docx": "مستند وورد Word",
+    "payment_failed": "فشلت عملية الدفع الأخيرة. يرجى تحديث طريقة الدفع لتجنب انقطاع الخدمة.",
+    "retry_payment": "إعادة المحاولة",
+    "subscription_expired": "انتهى الاشتراك",
+    "subscription_expired_desc": "لقد انتهى اشتراكك. يرجى ترقية باقتك للاستمرار في استخدام المنصة.",
+    "upgrade_to_continue": "ترقية للاستمرار",
+    "grace_period_warning": "سينتهي اشتراكك خلال {{days}} أيام. جدد الآن للحفاظ على وصولك دون انقطاع."
   },
   "pricing": {
     "title": "الخطط",
@@ -159,7 +165,10 @@
       "free": "المجانية",
       "pro": "الاحترافية",
       "enterprise": "المؤسسات"
-    }
+    },
+    "upgradeSuccess": "تم بدء الترقية! تحقق من بريدك الإلكتروني.",
+    "cancellationConfirmed": "تم إلغاء الاشتراك بنجاح.",
+    "creditTopupSuccess": "تم شحن الرصيد بنجاح."
   },
   "auth": {
     "loginTitle": "تسجيل دخول",
@@ -238,5 +247,75 @@
     "status_active": "نشط",
     "status_suspended": "معلق",
     "status_pending": "قيد المراجعة"
+  },
+  "credits": {
+    "sectionTitle": "رصيد الاعتمادات",
+    "creditsLabel": "اعتماد",
+    "currentBalanceLabel": "الرصيد الحالي",
+    "planAllowanceLabel": "مخصص الخطة",
+    "creditsRemaining": "{{count}} اعتماد متبقٍّ ({{pct}}%)",
+    "noCreditsRemaining": "لا توجد اعتمادات متبقية",
+    "stateHealthy": "جيد",
+    "stateLow": "منخفض",
+    "stateEmpty": "نافد",
+    "lowBalanceWarning": "رصيدك من الاعتمادات منخفض. فكّر في الترقية إلى خطة أعلى.",
+    "recentDeductionsTitle": "آخر الخصومات",
+    "contractLabel": "عقد",
+    "upgradeCta": "ترقية الخطة لتجديد الاعتمادات",
+    "errorLoading": "تعذّر تحميل بيانات الاعتمادات. يرجى إعادة التحميل.",
+    "ariaLabel": "عنصر رصيد الاعتمادات",
+    "upgradeAriaLabel": "ترقية الخطة للحصول على مزيد من الاعتمادات",
+    "progressAriaLabel": "شريط تقدم استخدام الاعتمادات",
+    "reason_plan_topup": "شحن الخطة",
+    "reason_analysis_deduction": "تحليل عقد",
+    "reason_chat_deduction": "محادثة بند",
+    "reason_manual_adjustment": "تعديل يدوي",
+    "reason_refund": "استرداد"
+  },
+  "chat": {
+    "chat_about_clause": "اسأل حول هذا البند",
+    "hide_chat": "إخفاء المحادثة",
+    "credits_cost": "~5 نقاط",
+    "insufficient_credits": "رصيد غير كافٍ.",
+    "upgrade_cta": "ترقية الباقة",
+    "rate_limit_reached": "تم الوصول للحد الأقصى (20 رسالة).",
+    "placeholder": "اسأل سؤالاً حول هذا البند...",
+    "send": "إرسال",
+    "suggested_questions": {
+      "q1": "ماذا يعني هذا بالنسبة لي؟",
+      "q2": "هل هذا قياسي في عقود الشرق الأوسط وشمال أفريقيا؟",
+      "q3": "كيف يجب أن أفاوض على هذا البند؟",
+      "q4": "ما هو أسوأ سيناريو للمخاطر هنا؟"
+    }
+  },
+  "upgrade": {
+    "title": "ارتقِ بإدارة عقودك اليوم",
+    "subtitle": "اختر الباقة المناسبة لحجم أعمالك واستمتع بتحليلات الذكاء الاصطناعي",
+    "tooltip_text": "يُسحب الرصيد بناءً على حجم المستندات؛ كل صفحة يتم فحصها تستهلك 1 رصيد."
+  },
+  "plans": {
+    "free": { 
+      "name": "المجانية",
+      "f1": "تحليل أساسي للمستندات",
+      "f2": "دعم لغة واحدة"
+    },
+    "pro": { 
+      "name": "المحترفة",
+      "f1": "تحليل متقدم بالذكاء الاصطناعي",
+      "f2": "دعم كامل لجميع اللغات",
+      "f3": "تقارير مقارنة النسخ (Diff)"
+    },
+    "enterprise": { 
+      "name": "الشركات",
+      "f1": "صلاحيات مخصصة للفريق",
+      "f2": "دعم فني مخصص 24/7"
+    },
+    "credits_per_month": "رصيد / شهرياً",
+    "upgrade_pro": "الترقية للمحترفين",
+    "current": "باقتك الحالية",
+    "popular": "الأكثر طلباً",
+    "custom_price": "مخصص",
+    "month": "شهر",
+    "contact_us": "تواصل معنا"
   }
 }

@@ -46,6 +46,9 @@ const analysisService = new AnalysisService(3, 1);
 describe("AnalysisService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFindOne.mockReturnValue({
+      sort: jest.fn().mockResolvedValue(null),
+    });
   });
 
   // ── saveAnalysis() ────────────────────────────────────────────────────────
