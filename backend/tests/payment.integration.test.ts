@@ -93,14 +93,13 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-
+  await mongoose.disconnect();
+  await mongod.stop();
+});
 
 // Reset user state before each test to ensure isolation
 beforeEach(async () => {
   await User.findByIdAndUpdate(testUserId, { creditBalance: 0, plan: 'free', planSlug: 'free' });
-});
-
-
 });
 
 /**
