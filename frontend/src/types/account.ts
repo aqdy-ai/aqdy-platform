@@ -11,6 +11,8 @@ export interface SubscriptionInfo {
   analysesUsed: number
   analysesAllowed: number
   renewalDate: string
+  endDate?: string
+  paymentStatus?: 'paid' | 'failed' | 'pending'
 }
 
 export interface UpdateProfilePayload {
@@ -54,6 +56,9 @@ export interface Usage {
 export interface SubscriptionResponseData {
   subscription: Subscription
   usage: Usage
+  latestPayment?: {
+    status: 'paid' | 'failed' | 'pending'
+  }
 }
 
 export type CreditLedgerReason =
