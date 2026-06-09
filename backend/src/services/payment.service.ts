@@ -349,8 +349,8 @@ export class PaymentService {
     if (!subscription) return;
 
     // Top up credits on renewal too
-    const plan = await Plan.findById(subscription.planId);
-    if (plan && plan.creditAllowance > 0) {
+    const plan = await Plan.findById(subscription.planId).lean();
+    if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
       try {
         await creditsService.topup(
           String(subscription.userId),
@@ -366,6 +366,10 @@ export class PaymentService {
           err,
         );
       }
+    } else {
+      logger.warn(
+        `⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`,
+      );
     }
 
     await Payment.create({
