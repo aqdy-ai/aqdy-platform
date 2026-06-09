@@ -181,7 +181,11 @@ export class PaymentService {
         const subscription = event.data.object as Stripe.Subscription;
         const subDoc = await Subscription.findOneAndUpdate(
           { stripeSubscriptionId: subscription.id },
-          { status: "expired", endDate: new Date() },
+          {
+            status: "cancelled",
+            cancelledAt: new Date(),
+            endDate: new Date(),
+          },
           { new: true },
         );
         if (subDoc) {

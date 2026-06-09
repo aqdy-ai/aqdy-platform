@@ -197,7 +197,7 @@ describe("PaymentService Unit Tests", () => {
       await paymentService.handleWebhook(Buffer.from(""), "sig");
       expect(Subscription.findOneAndUpdate).toHaveBeenCalledWith(
         { stripeSubscriptionId: "sub_stripe_1" },
-        expect.objectContaining({ status: "expired" }),
+        expect.objectContaining({ status: "cancelled", cancelledAt: expect.any(Date) }),
         { new: true }
       );
       expect(User.findByIdAndUpdate).toHaveBeenCalledWith("user_1", { plan: "free", planSlug: "free" });
