@@ -1,6 +1,6 @@
 /* src/components/layout/Navbar.tsx */
 import { useState, useRef, useEffect } from 'react'
-import { Sun, Moon, ExternalLink, User, Settings, LogOut } from 'lucide-react'
+import { Sun, Moon, ExternalLink, User, Settings, LogOut, History } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'
@@ -152,6 +152,15 @@ const Navbar = () => {
                             {user.name}
                           </div>
                         )}
+                        <Link
+                          to="/contract-history"
+                          onClick={() => setDropdownOpen(false)}
+                          className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+                          role="menuitem"
+                        >
+                          <History size={16} />
+                          {t('nav.contract_history')}
+                        </Link>
                         <Link
                           to="/account-settings"
                           onClick={() => setDropdownOpen(false)}
