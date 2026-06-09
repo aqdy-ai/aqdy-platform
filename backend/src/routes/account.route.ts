@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { exportContractsHandler } from "../controllers/contractExport.controller.js";
 import {
   getProfileHandler,
   updateProfileHandler,
@@ -11,6 +12,10 @@ import {
   cancelSubscriptionHandler,
 } from "../controllers/subscription.controller.js";
 import {
+  authenticateJwt,
+  requireAuth,
+} from "../middlewares/auth.middleware.js";
+import {
   getContractListHandler,
   getContractDetailHandler,
   deleteContractHandler,
@@ -19,10 +24,6 @@ import {
   getAnalysisVersionsHandler,
   getAnalysisVersionDetailHandler,
 } from "../controllers/analysisVersion.controller.js";
-import {
-  authenticateJwt,
-  requireAuth,
-} from "../middlewares/auth.middleware.js";
 import { paymentController } from "../controllers/payment.controller.js";
 import { verifyContractOwnership } from "../middlewares/contractOwnership.middleware.js";
 
@@ -55,6 +56,8 @@ router.get(
 router.get("/subscription", getSubscriptionHandler);
 router.post("/subscription/upgrade", upgradeSubscriptionHandler);
 router.post("/subscription/cancel", cancelSubscriptionHandler);
+
+router.get("/contracts/export", exportContractsHandler);
 
 // Contract history routes
 router.get("/contracts", getContractListHandler);
