@@ -100,7 +100,13 @@ export class SubscriptionService {
       throw new Error("No active subscription found.");
     }
 
-    subscription.status = "cancelled";
+    if (subscription.stripeSubscriptionId) {
+      const { stripe } = await import("./payment.service.js");
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+    }
+
     subscription.cancelledAt = new Date();
 
     await subscription.save();
