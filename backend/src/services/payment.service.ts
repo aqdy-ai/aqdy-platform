@@ -378,30 +378,33 @@ export class PaymentService {
       { new: true, returnDocument: "after" },
     );
 
-    const plan = await Plan.findById(String(subscription.planId));
-
+    // If no document returned (unlikely), fetch it directly to ensure we have planId
+    const subDoc = subscription ?? (await Subscription.findOne({ stripeSubscriptionId }));
+    if (!subDoc) {
+      logger.warn(`handleSuccessfulRenewal: subscription ${stripeSubscriptionId} not found`);
+      return;
+    }
+    const plan = await Plan.findById(String(subDoc.planId));
     if (!plan) {
-      logger.warn(`⚠️ Plan not found for subscription ${subscription._id}`);
+      logger.warn(`handleSuccessfulRenewal: plan not found for subscription ${subDoc._id}`);
       return;
     }
     if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
       await creditsService.topup(
-        subscription.userId.toString(),
+        subDoc.userId.toString(),
         plan.creditAllowance,
         "plan_topup",
       );
       logger.info(
-        `💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`,
+        `💳 Renewal topup: ${plan.creditAllowance} credits for user ${subDoc.userId}`,
       );
     } else {
-      logger.warn(
-        `⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`,
-      );
+      logger.warn(`⚠️ No credit allowance found for plan during renewal for subscription ${subDoc._id}`);
     }
 
     await Payment.create({
-      userId: subscription.userId,
-      subscriptionId: subscription._id,
+      userId: subDoc.userId,
+      subscriptionId: subDoc._id,
       amount: (invoice.amount_paid || 0) / 100,
       currency: invoice.currency || "usd",
       status: "succeeded",
