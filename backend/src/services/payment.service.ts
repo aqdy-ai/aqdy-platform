@@ -378,22 +378,26 @@ export class PaymentService {
       { new: true, returnDocument: "after" },
     );
 
-const plan = await Plan.findById(String(subscription.planId));
-        
-        if (!plan) {
-          logger.warn(`⚠️ Plan not found for subscription ${subscription._id}`);
-          return;
-        }
-        if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
-          await creditsService.topup(
-            subscription.userId.toString(),
-            plan.creditAllowance,
-            "plan_topup",
-          );
-          logger.info(`💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`);
-        } else {
-          logger.warn(`⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`);
-        }
+    const plan = await Plan.findById(String(subscription.planId));
+
+    if (!plan) {
+      logger.warn(`⚠️ Plan not found for subscription ${subscription._id}`);
+      return;
+    }
+    if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
+      await creditsService.topup(
+        subscription.userId.toString(),
+        plan.creditAllowance,
+        "plan_topup",
+      );
+      logger.info(
+        `💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`,
+      );
+    } else {
+      logger.warn(
+        `⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`,
+      );
+    }
 
     await Payment.create({
       userId: subscription.userId,
