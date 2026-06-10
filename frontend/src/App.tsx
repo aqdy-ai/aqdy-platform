@@ -26,6 +26,7 @@ const RiskAnalysisDashboard = lazy(
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
+const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
 
 /**
@@ -157,6 +158,14 @@ function AppContent() {
               <GuestRoute>
                 <Register />
               </GuestRoute>
+            }
+          />
+          <Route
+            path="/billing-history"
+            element={
+              <ProtectedRoute>
+                <BillingHistory />
+              </ProtectedRoute>
             }
           />
 

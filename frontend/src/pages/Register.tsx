@@ -110,7 +110,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 mt-8 flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold shadow-lg transition-all disabled:opacity-50"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 mt-8 flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold shadow-lg transition-all hover:cursor-pointer disabled:opacity-50"
           >
             {isLoading ? t('common.loading') : t('auth.registerAction')}
           </button>
