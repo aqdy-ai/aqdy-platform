@@ -311,17 +311,23 @@ export class PaymentService {
       }
     }
 
-    // 4. Record payment
-    await Payment.create({
-      userId,
-      subscriptionId: subscription._id,
-      amount: (session.amount_total || 0) / 100,
-      currency: session.currency || "usd",
-      status: "succeeded",
-      provider: "stripe",
-      providerTxId: session.id,
-      description: `Initial payment for ${plan.name} plan`,
-    });
+      // 4. Record payment (idempotent)
+      const existingPayment = await Payment.findOne({ providerTxId: session.id });
+      if (!existingPayment) {
+        await Payment.create({
+          userId,
+          subscriptionId: subscription._id,
+          amount: (session.amount_total || 0) / 100,
+          currency: session.currency || "usd",
+          status: "succeeded",
+          provider: "stripe",
+          providerTxId: session.id,
+          description: `Initial payment for ${plan.name} plan`,
+        });
+        logger.info(`✅ Payment recorded for providerTxId ${session.id}`);
+      } else {
+        logger.info(`✅ Payment already exists for providerTxId ${session.id}, skipping creation`);
+      }
 
     logger.info(
       `✅ Subscription fulfilled for user ${userId}, plan ${plan.slug}`,
