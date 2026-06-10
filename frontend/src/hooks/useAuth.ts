@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import axios from 'axios'
 import { authApi } from '../services/authApi'
-import type { LoginInput, RegisterInput } from '../types/auth'
+import type { LoginInput, RegisterInput, User } from '../types/auth' // Import User type
 import { AuthContext } from './context/AuthContext'
 
 /**
@@ -53,7 +53,12 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider')
   }
 
-  const { setUser, isAuthenticated, user, isInitialLoading } = context
+  const { setUser, isAuthenticated, user, isInitialLoading } = context as {
+    setUser: (user: User | null) => void
+    isAuthenticated: boolean
+    user: User | null // Explicitly type user here
+    isInitialLoading: boolean
+  }
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const { t } = useTranslation()

@@ -6,7 +6,10 @@
     "close": "إغلاق",
     "loading": "جاري التحميل…",
     "error": "حدث خطأ ما",
+    "previous_page": "الصفحة السابقة",
+    "page": "{{page}}",
     "success": "تمت العملية بنجاح",
+    "next_page": "الصفحة التالية",
     "brand_name": "عقدي",
     "tagline": "ذكاء اصطناعي قانوني آمن",
     "get_started": "ابدأ الآن",
@@ -20,7 +23,8 @@
     "language_toggle": "English",
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
-    "settings": "إعدادات الحساب"
+    "settings": "إعدادات الحساب",
+    "contract_history": "سجل العقود"
   },
   "hero": {
     "title": "مستقبلك القانوني، بذكاء.",
@@ -151,7 +155,7 @@
     "monthly_billing": "فوترة شهرية",
     "annual_billing": "فوترة سنوية",
     "save_percent": "وفّر {{percent}}%",
-    "comparePlans":"قارن الخطط",
+    "comparePlans": "قارن الخطط",
     "choosePlan": "اختيار خطة"
   },
   "billing": {
@@ -162,10 +166,30 @@
     "download": "تحميل",
     "billing_details": "تفاصيل الفوترة",
     "plans": {
-      "free": "المجانية",
-      "pro": "الاحترافية",
-      "enterprise": "المؤسسات"
+      "Free": "المجانية",
+      "Pro": "الاحترافية",
+      "Enterprise": "المؤسسات"
     },
+    "date": "تاريخ",
+    "description": "وصف",
+    "amount": "المبلغ",
+    "status": "حالة",
+    "actions": "عمليات",
+    "download_invoice": "تحميل الفاتورة",
+    "no_payments_found": "لم يتم العثور على سجلات الدفع.",
+    "start_using_platform":"ابدأ في استخدام المنصة اليوم!",
+    "plan_payment_description": "دفع خطة {{planName}}",
+    "generic_payment_description": "دفع",
+    "status_succeeded": "نجاح",
+    "status_failed": "فشل",
+    "status_pending": "قيد الانتظار",
+    "status_refunded": "استرداد",
+    "invoice_download_success": "تم تحميل الفاتورة بنجاح",
+    "invoice_download_success_desc": "تم تحميل الفاتورة بنجاح.",
+    "invoice_download_failed": "فشل تحميل الفاتورة. يرجى المحاولة مرة أخرى.",
+    "error_user_id_missing":"معرف المستخدم مفقود. لا يمكن تحميل الفاتورة.",
+    "error_user_not_authenticated": "يجب تسجيل الدخول لتحميل الفواتير.",
+    "error_fetching_payments": "فشل تحميل سجل المدفوعات. يرجى المحاولة مرة أخرى لاحقاً.",
     "upgradeSuccess": "تم بدء الترقية! تحقق من بريدك الإلكتروني.",
     "cancellationConfirmed": "تم إلغاء الاشتراك بنجاح.",
     "creditTopupSuccess": "تم شحن الرصيد بنجاح."
@@ -294,18 +318,18 @@
     "tooltip_text": "يُسحب الرصيد بناءً على حجم المستندات؛ كل صفحة يتم فحصها تستهلك 1 رصيد."
   },
   "plans": {
-    "free": { 
+    "free": {
       "name": "المجانية",
       "f1": "تحليل أساسي للمستندات",
       "f2": "دعم لغة واحدة"
     },
-    "pro": { 
+    "pro": {
       "name": "المحترفة",
       "f1": "تحليل متقدم بالذكاء الاصطناعي",
       "f2": "دعم كامل لجميع اللغات",
       "f3": "تقارير مقارنة النسخ (Diff)"
     },
-    "enterprise": { 
+    "enterprise": {
       "name": "الشركات",
       "f1": "صلاحيات مخصصة للفريق",
       "f2": "دعم فني مخصص 24/7"
@@ -317,5 +341,47 @@
     "custom_price": "مخصص",
     "month": "شهر",
     "contact_us": "تواصل معنا"
+  },
+  "history": {
+    "title": "سجل العقود",
+    "subtitle": "عرض وإدارة جميع عقودك السابقة والتحليلات الخاصة بها",
+    "search_placeholder": "بحث باسم الملف...",
+    "date_from": "من تاريخ",
+    "date_to": "إلى تاريخ",
+    "risk_all": "كل المستويات",
+    "risk_high": "مخاطر عالية",
+    "risk_medium": "مخاطر متوسطة",
+    "risk_low": "مخاطر منخفضة",
+    "table_filename": "اسم الملف",
+    "table_upload_date": "تاريخ الرفع",
+    "table_status": "الحالة",
+    "table_risk": "مستوى المخاطر",
+    "table_actions": "الإجراءات",
+    "status_analyzed": "تم التحليل",
+    "status_pending": "قيد المعالجة",
+    "status_failed": "فشل التحليل",
+    "action_preview": "معاينة سريعة",
+    "action_reanalyze": "إعادة تحليل",
+    "action_view_report": "عرض التقرير",
+    "action_delete": "حذف",
+    "delete_confirm_title": "حذف العقد؟",
+    "delete_confirm_desc": "هل أنت متأكد من رغبتك في حذف هذا العقد؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذفه مؤقتاً.",
+    "delete_success": "تم حذف العقد بنجاح",
+    "reanalyze_success": "تم بدء إعادة التحليل بنجاح",
+    "export_btn": "تصدير البيانات",
+    "export_csv": "تصدير CSV",
+    "export_json": "تصدير JSON",
+    "empty_title": "لا توجد عقود بعد",
+    "empty_desc": "ابدأ برفع أول عقد لك للحصول على تحليل فوري للمخاطر.",
+    "empty_cta": "رفع عقد جديد",
+    "items_per_page": "عنصر لكل صفحة",
+    "upgrade_prompt_title": "ترقية الحساب مطلوبة",
+    "upgrade_prompt_desc": "تصدير البيانات متاح للمشتركين في الباقات المدفوعة (برو ومؤسسات). قم بترقية حسابك الآن للاستفادة من هذه الميزة.",
+    "upgrade_button": "ترقية الآن",
+    "preview_summary": "ملخص المخاطر",
+    "preview_no_issues": "لم يتم العثور على مخاطر حرجة أو عالية.",
+    "preview_clauses_count": "البنود المكتشفة: {{count}}",
+    "preview_risky_clauses": "البنود عالية المخاطر: {{count}}",
+    "version": "الإصدار"
   }
 }
