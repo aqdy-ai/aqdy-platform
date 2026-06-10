@@ -154,7 +154,7 @@ export class ContractHistoryService {
     // فلترة بالـ riskLevel
     if (filters.riskLevel) {
       contractItems = contractItems.filter(
-        (c) => c.riskLevel?.toLowerCase() === filters.riskLevel?.toLowerCase()
+        (c) => c.riskLevel?.toLowerCase() === filters.riskLevel?.toLowerCase(),
       );
     }
 
@@ -183,7 +183,8 @@ export class ContractHistoryService {
     }
 
     // حساب total صح مع فلتر الـ status أو riskLevel
-    const effectiveTotal = (filters.status || filters.riskLevel) ? contractItems.length : total;
+    const effectiveTotal =
+      filters.status || filters.riskLevel ? contractItems.length : total;
 
     return {
       contracts: contractItems,
