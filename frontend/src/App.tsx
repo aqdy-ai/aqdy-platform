@@ -26,6 +26,9 @@ const RiskAnalysisDashboard = lazy(
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
+import AdminRoute from './components/AdminRoute'
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
@@ -122,6 +125,24 @@ function AppContent() {
               <ProtectedRoute>
                 <RiskAnalysisDashboard />
               </ProtectedRoute>
+            }
+          />
+
+          {/* الـ Admin Routes (للمسؤولين فقط) */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/accounts"
+            element={
+              <AdminRoute>
+                <AdminAccounts />
+              </AdminRoute>
             }
           />
 
