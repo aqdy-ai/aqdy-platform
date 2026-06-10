@@ -109,7 +109,13 @@
     },
     "export_report": "Export Report",
     "export_pdf": "PDF Document",
-    "export_docx": "Word Document (DOCX)"
+    "export_docx": "Word Document (DOCX)",
+    "payment_failed": "Your latest payment failed. Please update your payment method to avoid service interruption.",
+    "retry_payment": "Retry Payment",
+    "subscription_expired": "Subscription Expired",
+    "subscription_expired_desc": "Your subscription has expired. Please upgrade your plan to continue using the platform.",
+    "upgrade_to_continue": "Upgrade to Continue",
+    "grace_period_warning": "Your subscription will expire in {{days}} days. Renew now to maintain uninterrupted access."
   },
   "pricing": {
     "title": "Pricing",
@@ -155,7 +161,10 @@
       "free": "Free",
       "pro": "Pro",
       "enterprise": "Enterprise"
-    }
+    },
+    "upgradeSuccess": "Upgrade initiated! Check your email.",
+    "cancellationConfirmed": "Subscription cancelled successfully.",
+    "creditTopupSuccess": "Credits topped up successfully."
   },
   "auth": {
     "loginTitle": "Login",

@@ -27,7 +27,9 @@ export const UpgradeModal: React.FC<{
     const params = new URLSearchParams(location.search)
     if (params.get('checkout_success') === 'true') {
       toast.success(
-        t('upgrade.success', { defaultValue: 'Your plan has been upgraded!' })
+        t('billing.upgradeSuccess', {
+          defaultValue: 'Upgrade initiated! Check your email.',
+        })
       )
       navigate('/', { replace: true })
     } else if (params.get('checkout_cancel') === 'true') {
