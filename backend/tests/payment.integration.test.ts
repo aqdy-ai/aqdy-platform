@@ -98,9 +98,12 @@ afterAll(async () => {
   await mongod.stop();
 });
 
-// Reset user state before each test to ensure isolation
+// Reset user state and collections before each test to ensure isolation
 beforeEach(async () => {
   await User.findByIdAndUpdate(testUserId, { creditBalance: 0, plan: 'free', planSlug: 'free' });
+  await Subscription.deleteMany({});
+  await mongoose.model('AuditLog').deleteMany({});
+  await mongoose.model('CreditLedger').deleteMany({});
 });
 
 /**
