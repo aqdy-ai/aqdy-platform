@@ -194,6 +194,7 @@ export class PaymentService {
             await User.findByIdAndUpdate(subDoc.userId, {
               plan: freePlan.slug,
               planSlug: freePlan.slug,
+              creditBalance: 0,
             });
             if (freePlan.creditAllowance > 0) {
               await creditsService.topup(
@@ -259,11 +260,6 @@ export class PaymentService {
     // Idempotency: bail if subscription already fulfilled
     const exists = await Subscription.findOne({ stripeSubscriptionId });
     if (exists) {
-      // Check for credit topup even if subscription record already exists
-      const plan = await Plan.findById(planId);
-      if (plan && plan.creditAllowance > 0) {
-        await creditsService.topup(userId, plan.creditAllowance, "plan_topup");
-      }
       logger.info(
         `fulfillSubscription: already fulfilled for ${stripeSubscriptionId}`,
       );
@@ -382,7 +378,7 @@ export class PaymentService {
         renewalDate: new Date(stripeSub.current_period_end * 1000),
       },
       { new: true },
-    ).populate("planId");
+    );
 
     if (!subDoc) {
       logger.warn(
@@ -391,7 +387,7 @@ export class PaymentService {
       return;
     }
 
-    const plan = subDoc.planId as unknown as IPlan;
+    const plan = await Plan.findById(subDoc.planId);
     if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
       await creditsService.topup(
         subDoc.userId.toString(),

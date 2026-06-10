@@ -26,6 +26,7 @@ beforeAll(() => {
 import { creditsService, InsufficientCreditsError } from '../src/services/credits.service.js';
 import { subscriptionService } from '../src/services/subscription.service.js';
 import { User } from '../src/models/user.model.js';
+import { Subscription } from '../src/models/subscription.model.js';
 import { env } from '../src/config/env.js';
 
 let mongod: MongoMemoryServer;
@@ -35,7 +36,7 @@ let proPlanId: string;
 
 /** Helper: create a Stripe test event with a valid signature */
 function buildStripeEvent(type: string, data: any): { payload: Buffer; signature: string } {
-  const payloadObj = { id: 'evt_test', object: 'event', type, data: { object: data } };
+  const payloadObj = { id: `evt_test_${type.replace(/\\./g, '_')}`, object: 'event', type, data: { object: data } };
   const payloadStr = JSON.stringify(payloadObj);
   const timestamp = Math.floor(Date.now() / 1000);
   // Use the Stripe instance to generate a test webhook header
@@ -198,7 +199,7 @@ test('processes all relevant Stripe webhook events', async () => {
   );
   await paymentService.handleWebhook(delPayload, delSig);
 
-  sub = await subscriptionService.getUserSubscription(testUserId);
+  sub = await Subscription.findOne({ userId: testUserId, stripeSubscriptionId: 'sub_test_123' }) as any;
   expect(sub?.status).toBe('cancelled');
   const userAfterCancel = await User.findById(testUserId);
   expect(userAfterCancel?.plan).toBe('free');
