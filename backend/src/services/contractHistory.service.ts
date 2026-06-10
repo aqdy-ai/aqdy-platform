@@ -10,6 +10,7 @@ export interface ContractListFilters {
   uploadedBefore?: Date;
   status?: "analyzed" | "pending" | "failed";
   filename?: string;
+  riskLevel?: string;
 }
 
 export interface ContractListSort {
@@ -33,6 +34,10 @@ export interface ContractListItem {
   status: "analyzed" | "pending" | "failed";
   riskLevel: string | null;
   analysisId: string | null;
+  riskSummary?: { ar: string; en: string } | null;
+  totalClauses?: number | null;
+  riskyClausesCount?: number | null;
+  version?: number;
 }
 
 export interface ContractListResult {
@@ -134,12 +139,23 @@ export class ContractHistoryService {
         status,
         riskLevel: analysis?.executiveSummary?.overallRisk ?? null,
         analysisId: analysis ? String(analysis._id) : null,
+        riskSummary: analysis?.executiveSummary?.summary ?? null,
+        totalClauses: analysis?.executiveSummary?.totalClauses ?? 0,
+        riskyClausesCount: analysis?.executiveSummary?.riskyClausesCount ?? 0,
+        version: analysis?.version ?? 0,
       };
     });
 
     // فلترة بالـ status
     if (filters.status) {
       contractItems = contractItems.filter((c) => c.status === filters.status);
+    }
+
+    // فلترة بالـ riskLevel
+    if (filters.riskLevel) {
+      contractItems = contractItems.filter(
+        (c) => c.riskLevel?.toLowerCase() === filters.riskLevel?.toLowerCase(),
+      );
     }
 
     // ترتيب بالـ riskLevel
@@ -166,8 +182,9 @@ export class ContractHistoryService {
       });
     }
 
-    // حساب total صح مع فلتر الـ status
-    const effectiveTotal = filters.status ? contractItems.length : total;
+    // حساب total صح مع فلتر الـ status أو riskLevel
+    const effectiveTotal =
+      filters.status || filters.riskLevel ? contractItems.length : total;
 
     return {
       contracts: contractItems,
