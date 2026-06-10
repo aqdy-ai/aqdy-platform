@@ -375,33 +375,25 @@ export class PaymentService {
         endDate: new Date(stripeSub.current_period_end * 1000),
         renewalDate: new Date(stripeSub.current_period_end * 1000),
       },
-      { new: true },
+      { new: true, returnDocument: "after" },
     );
 
-    if (!subscription) return;
-
-    const plan = await Plan.findById(String(subscription.planId));
-    if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
-      try {
-        await creditsService.topup(
-          subscription.userId.toString(),
-          plan.creditAllowance,
-          "plan_topup",
-        );
-        logger.info(
-          `💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`,
-        );
-      } catch (err) {
-        logger.error(
-          `❌ Renewal credit topup failed for user ${subscription.userId}:`,
-          err,
-        );
-      }
-    } else {
-      logger.warn(
-        `⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`,
-      );
-    }
+const plan = await Plan.findById(String(subscription.planId));
+        
+        if (!plan) {
+          logger.warn(`⚠️ Plan not found for subscription ${subscription._id}`);
+          return;
+        }
+        if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
+          await creditsService.topup(
+            subscription.userId.toString(),
+            plan.creditAllowance,
+            "plan_topup",
+          );
+          logger.info(`💳 Renewal topup: ${plan.creditAllowance} credits for user ${subscription.userId}`);
+        } else {
+          logger.warn(`⚠️ No credit allowance found for plan during renewal for subscription ${subscription._id}`);
+        }
 
     await Payment.create({
       userId: subscription.userId,
