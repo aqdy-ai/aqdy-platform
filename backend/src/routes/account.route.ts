@@ -15,6 +15,7 @@ import {
   getContractDetailHandler,
   deleteContractHandler,
 } from "../controllers/contractHistory.controller.js";
+import { exportContractsHandler } from "../controllers/contractExport.controller.js";
 import {
   getAnalysisVersionsHandler,
   getAnalysisVersionDetailHandler,
@@ -58,6 +59,7 @@ router.post("/subscription/cancel", cancelSubscriptionHandler);
 
 // Contract history routes
 router.get("/contracts", getContractListHandler);
+router.get("/contracts/export", exportContractsHandler);
 router.get(
   "/contracts/:contractId",
   verifyContractOwnership,

@@ -9,6 +9,7 @@ import {
   LogOut,
   Shield,
   Users,
+  History,
 } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 import { useTranslation } from 'react-i18next'
@@ -183,6 +184,15 @@ const Navbar = () => {
                             </Link>
                           </>
                         )}
+                        <Link
+                          to="/contract-history"
+                          onClick={() => setDropdownOpen(false)}
+                          className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+                          role="menuitem"
+                        >
+                          <History size={16} />
+                          {t('nav.contract_history')}
+                        </Link>
                         <Link
                           to="/account-settings"
                           onClick={() => setDropdownOpen(false)}

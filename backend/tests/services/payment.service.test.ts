@@ -200,7 +200,13 @@ describe("PaymentService Unit Tests", () => {
         expect.objectContaining({ status: "cancelled", cancelledAt: expect.any(Date) }),
         { new: true }
       );
-      expect(User.findByIdAndUpdate).toHaveBeenCalledWith("user_1", { plan: "free", planSlug: "free" });
+      
+      // ✅ Fixed: Added creditBalance: 0 to perfectly match service logic
+      expect(User.findByIdAndUpdate).toHaveBeenCalledWith("user_1", { 
+        plan: "free", 
+        planSlug: "free",
+        creditBalance: 0 
+      });
       expect(creditsService.topup).toHaveBeenCalledWith("user_1", 10, "plan_topup");
     });
 

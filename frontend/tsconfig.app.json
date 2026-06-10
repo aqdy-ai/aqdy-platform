@@ -31,6 +31,8 @@
     "src",
     "tests/Register.test.tsx",
     "tests/e2e/useAuth.test.ts",
-    "tests/Login.test.tsx"
-, "tests/UpgradeModal.test.tsx"  ]
+    "tests/Login.test.tsx",
+    "tests/UpgradeModal.test.tsx",
+    "tests/BillingHistory.test.jsx"
+, "tests/PaymentPagination.test.tsx", "tests/EmptyPaymentState.test.tsx", "tests/PaymentStatusBadge.test.tsx", "tests/BillingHistory.test.tsx", "tests/PaymentHistoryTable.test.tsx"  ]
 }

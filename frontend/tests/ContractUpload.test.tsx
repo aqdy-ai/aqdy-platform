@@ -52,7 +52,9 @@ vi.mock('framer-motion', () => ({
       transition: _transition,
       ...props
     }: React.PropsWithChildren<Record<string, unknown>>) => (
-      <span {...(props as React.HTMLAttributes<HTMLSpanElement>)}>{children}</span>
+      <span {...(props as React.HTMLAttributes<HTMLSpanElement>)}>
+        {children}
+      </span>
     ),
   },
   AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
