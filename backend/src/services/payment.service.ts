@@ -259,6 +259,11 @@ export class PaymentService {
     // Idempotency: bail if subscription already fulfilled
     const exists = await Subscription.findOne({ stripeSubscriptionId });
     if (exists) {
+      // Check for credit topup even if subscription record already exists
+      const plan = await Plan.findById(planId);
+      if (plan && plan.creditAllowance > 0) {
+        await creditsService.topup(userId, plan.creditAllowance, "plan_topup");
+      }
       logger.info(
         `fulfillSubscription: already fulfilled for ${stripeSubscriptionId}`,
       );
@@ -368,32 +373,25 @@ export class PaymentService {
       stripeSubscriptionId,
     )) as unknown as StripeSubWithPeriod;
 
-    const subscription = await Subscription.findOneAndUpdate(
+    // Update subscription status and dates
+    const subDoc = await Subscription.findOneAndUpdate(
       { stripeSubscriptionId },
       {
         status: "active",
         endDate: new Date(stripeSub.current_period_end * 1000),
         renewalDate: new Date(stripeSub.current_period_end * 1000),
       },
-      { new: true, returnDocument: "after" },
-    );
+      { new: true },
+    ).populate("planId");
 
-    // If no document returned (unlikely), fetch it directly to ensure we have planId
-    const subDoc =
-      subscription ?? (await Subscription.findOne({ stripeSubscriptionId }));
     if (!subDoc) {
       logger.warn(
         `handleSuccessfulRenewal: subscription ${stripeSubscriptionId} not found`,
       );
       return;
     }
-    const plan = await Plan.findById(String(subDoc.planId));
-    if (!plan) {
-      logger.warn(
-        `handleSuccessfulRenewal: plan not found for subscription ${subDoc._id}`,
-      );
-      return;
-    }
+
+    const plan = subDoc.planId as unknown as IPlan;
     if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
       await creditsService.topup(
         subDoc.userId.toString(),
