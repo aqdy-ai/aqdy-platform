@@ -6,7 +6,10 @@
     "close": "إغلاق",
     "loading": "جاري التحميل…",
     "error": "حدث خطأ ما",
+    "previous_page": "الصفحة السابقة",
+    "page": "{{page}}",
     "success": "تمت العملية بنجاح",
+    "next_page": "الصفحة التالية",
     "brand_name": "عقدي",
     "tagline": "ذكاء اصطناعي قانوني آمن",
     "get_started": "ابدأ الآن",
@@ -151,7 +154,7 @@
     "monthly_billing": "فوترة شهرية",
     "annual_billing": "فوترة سنوية",
     "save_percent": "وفّر {{percent}}%",
-    "comparePlans":"قارن الخطط",
+    "comparePlans": "قارن الخطط",
     "choosePlan": "اختيار خطة"
   },
   "billing": {
@@ -162,10 +165,30 @@
     "download": "تحميل",
     "billing_details": "تفاصيل الفوترة",
     "plans": {
-      "free": "المجانية",
-      "pro": "الاحترافية",
-      "enterprise": "المؤسسات"
+      "Free": "المجانية",
+      "Pro": "الاحترافية",
+      "Enterprise": "المؤسسات"
     },
+    "date": "تاريخ",
+    "description": "وصف",
+    "amount": "المبلغ",
+    "status": "حالة",
+    "actions": "عمليات",
+    "download_invoice": "تحميل الفاتورة",
+    "no_payments_found": "لم يتم العثور على سجلات الدفع.",
+    "start_using_platform":"ابدأ في استخدام المنصة اليوم!",
+    "plan_payment_description": "دفع خطة {{planName}}",
+    "generic_payment_description": "دفع",
+    "status_succeeded": "نجاح",
+    "status_failed": "فشل",
+    "status_pending": "قيد الانتظار",
+    "status_refunded": "استرداد",
+    "invoice_download_success": "تم تحميل الفاتورة بنجاح",
+    "invoice_download_success_desc": "تم تحميل الفاتورة بنجاح.",
+    "invoice_download_failed": "فشل تحميل الفاتورة. يرجى المحاولة مرة أخرى.",
+    "error_user_id_missing":"معرف المستخدم مفقود. لا يمكن تحميل الفاتورة.",
+    "error_user_not_authenticated": "يجب تسجيل الدخول لتحميل الفواتير.",
+    "error_fetching_payments": "فشل تحميل سجل المدفوعات. يرجى المحاولة مرة أخرى لاحقاً.",
     "upgradeSuccess": "تم بدء الترقية! تحقق من بريدك الإلكتروني.",
     "cancellationConfirmed": "تم إلغاء الاشتراك بنجاح.",
     "creditTopupSuccess": "تم شحن الرصيد بنجاح."
@@ -294,18 +317,18 @@
     "tooltip_text": "يُسحب الرصيد بناءً على حجم المستندات؛ كل صفحة يتم فحصها تستهلك 1 رصيد."
   },
   "plans": {
-    "free": { 
+    "free": {
       "name": "المجانية",
       "f1": "تحليل أساسي للمستندات",
       "f2": "دعم لغة واحدة"
     },
-    "pro": { 
+    "pro": {
       "name": "المحترفة",
       "f1": "تحليل متقدم بالذكاء الاصطناعي",
       "f2": "دعم كامل لجميع اللغات",
       "f3": "تقارير مقارنة النسخ (Diff)"
     },
-    "enterprise": { 
+    "enterprise": {
       "name": "الشركات",
       "f1": "صلاحيات مخصصة للفريق",
       "f2": "دعم فني مخصص 24/7"

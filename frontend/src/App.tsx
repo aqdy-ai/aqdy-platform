@@ -26,6 +26,7 @@ const RiskAnalysisDashboard = lazy(
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
+const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
@@ -148,6 +149,14 @@ function AppContent() {
               <GuestRoute>
                 <Register />
               </GuestRoute>
+            }
+          />
+          <Route
+            path="/billing-history"
+            element={
+              <ProtectedRoute>
+                <BillingHistory />
+              </ProtectedRoute>
             }
           />
 
