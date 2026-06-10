@@ -312,8 +312,8 @@ export class PaymentService {
     }
 
       // 4. Record payment (idempotent)
-      const existingPayment = await Payment.findOne({ providerTxId: session.id });
-      if (!existingPayment) {
+      // 4. Record payment (handle duplicate key errors gracefully)
+      try {
         await Payment.create({
           userId,
           subscriptionId: subscription._id,
@@ -325,8 +325,13 @@ export class PaymentService {
           description: `Initial payment for ${plan.name} plan`,
         });
         logger.info(`✅ Payment recorded for providerTxId ${session.id}`);
-      } else {
-        logger.info(`✅ Payment already exists for providerTxId ${session.id}, skipping creation`);
+      } catch (err) {
+        // If duplicate key error, treat as already recorded
+        if ((err as any).code === 11000) {
+          logger.info(`✅ Payment already exists for providerTxId ${session.id}, skipping creation`);
+        } else {
+          throw err;
+        }
       }
 
     logger.info(
