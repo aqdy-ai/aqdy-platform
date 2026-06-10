@@ -311,28 +311,29 @@ export class PaymentService {
       }
     }
 
-      // 4. Record payment (idempotent)
-      // 4. Record payment (handle duplicate key errors gracefully)
-      try {
-        await Payment.create({
-          userId,
-          subscriptionId: subscription._id,
-          amount: (session.amount_total || 0) / 100,
-          currency: session.currency || "usd",
-          status: "succeeded",
-          provider: "stripe",
-          providerTxId: session.id,
-          description: `Initial payment for ${plan.name} plan`,
-        });
-        logger.info(`✅ Payment recorded for providerTxId ${session.id}`);
-      } catch (err) {
-        // If duplicate key error, treat as already recorded
-        if ((err as any).code === 11000) {
-          logger.info(`✅ Payment already exists for providerTxId ${session.id}, skipping creation`);
-        } else {
-          throw err;
-        }
+    // 4. Record payment (handle duplicate key errors gracefully)
+    try {
+      await Payment.create({
+        userId,
+        subscriptionId: subscription._id,
+        amount: (session.amount_total || 0) / 100,
+        currency: session.currency || "usd",
+        status: "succeeded",
+        provider: "stripe",
+        providerTxId: session.id,
+        description: `Initial payment for ${plan.name} plan`,
+      });
+      logger.info(`✅ Payment recorded for providerTxId ${session.id}`);
+    } catch (err) {
+      // If duplicate key error, treat as already recorded
+      if ((err as any).code === 11000) {
+        logger.info(
+          `✅ Payment already exists for providerTxId ${session.id}, skipping creation`,
+        );
+      } else {
+        throw err;
       }
+    }
 
     logger.info(
       `✅ Subscription fulfilled for user ${userId}, plan ${plan.slug}`,
