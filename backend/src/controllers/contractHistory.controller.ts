@@ -31,6 +31,7 @@ export const getContractListHandler = async (
     if (req.query.status)
       filters.status = req.query.status as "analyzed" | "pending" | "failed";
     if (req.query.filename) filters.filename = String(req.query.filename);
+    if (req.query.riskLevel) filters.riskLevel = String(req.query.riskLevel);
 
     // Sort
     const sortField = (req.query.sortBy as string) ?? "uploadedAt";
