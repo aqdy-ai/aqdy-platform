@@ -342,6 +342,49 @@
     "month": "شهر",
     "contact_us": "تواصل معنا"
   },
+<<<<<<< HEAD
+  "admin": {
+    "dashboard_title": "لوحة تحكم المسؤول",
+    "accounts_title": "إدارة حسابات المستخدمين",
+    "total_users": "إجمالي المستخدمين",
+    "active_subscriptions": "الاشتراكات النشطة",
+    "mrr": "الإيرادات المتكررة شهرياً (MRR)",
+    "analyses_this_month": "التحليلات هذا الشهر",
+    "credits_consumed_this_month": "الاعتمادات المستهلكة هذا الشهر",
+    "recent_signups": "أحدث التسجيلات",
+    "recent_payments": "أحدث المدفوعات",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "plan": "الباقة",
+    "join_date": "تاريخ الانضمام",
+    "amount": "المبلغ",
+    "status": "الحالة",
+    "actions": "الإجراءات",
+    "credit_balance": "رصيد الاعتمادات",
+    "last_login": "آخر دخول",
+    "joined_date": "تاريخ الانضمام",
+    "filter_plan": "الباقة (الكل)",
+    "filter_status": "الحالة (الكل)",
+    "search_placeholder": "بحث بالاسم أو البريد الإلكتروني...",
+    "change_plan": "تغيير الباقة",
+    "suspend": "تعليق",
+    "activate": "تفعيل",
+    "status_active": "نشط",
+    "status_suspended": "معلق",
+    "plan_free": "مجانية",
+    "plan_pro": "برو",
+    "plan_enterprise": "شركات",
+    "plan_updated": "تم تحديث الباقة بنجاح",
+    "status_updated": "تم تحديث حالة الحساب بنجاح",
+    "error_updating": "حدث خطأ أثناء التحديث",
+    "no_data": "لا توجد بيانات متاحة",
+    "success": "نجاح",
+    "usd": "دولار أمريكي",
+    "payment_succeeded": "ناجحة",
+    "payment_failed": "فاشلة",
+    "payment_pending": "معلقة",
+    "payment_refunded": "مستردة"
+=======
   "history": {
     "title": "سجل العقود",
     "subtitle": "عرض وإدارة جميع عقودك السابقة والتحليلات الخاصة بها",
@@ -383,5 +426,6 @@
     "preview_clauses_count": "البنود المكتشفة: {{count}}",
     "preview_risky_clauses": "البنود عالية المخاطر: {{count}}",
     "version": "الإصدار"
+>>>>>>> origin/develop
   }
 }
