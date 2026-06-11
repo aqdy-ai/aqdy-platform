@@ -28,6 +28,8 @@ const Register = lazy(() => import('./pages/Register'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
+const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
+const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
 import AdminRoute from './components/AdminRoute'
 const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
@@ -144,6 +146,22 @@ function AppContent() {
             element={
               <AdminRoute>
                 <AdminAccounts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/contracts"
+            element={
+              <AdminRoute>
+                <AdminContracts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/payments"
+            element={
+              <AdminRoute>
+                <AdminPayments />
               </AdminRoute>
             }
           />
