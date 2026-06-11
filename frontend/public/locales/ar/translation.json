@@ -177,7 +177,7 @@
     "actions": "عمليات",
     "download_invoice": "تحميل الفاتورة",
     "no_payments_found": "لم يتم العثور على سجلات الدفع.",
-    "start_using_platform":"ابدأ في استخدام المنصة اليوم!",
+    "start_using_platform": "ابدأ في استخدام المنصة اليوم!",
     "plan_payment_description": "دفع خطة {{planName}}",
     "generic_payment_description": "دفع",
     "status_succeeded": "نجاح",
@@ -187,7 +187,7 @@
     "invoice_download_success": "تم تحميل الفاتورة بنجاح",
     "invoice_download_success_desc": "تم تحميل الفاتورة بنجاح.",
     "invoice_download_failed": "فشل تحميل الفاتورة. يرجى المحاولة مرة أخرى.",
-    "error_user_id_missing":"معرف المستخدم مفقود. لا يمكن تحميل الفاتورة.",
+    "error_user_id_missing": "معرف المستخدم مفقود. لا يمكن تحميل الفاتورة.",
     "error_user_not_authenticated": "يجب تسجيل الدخول لتحميل الفواتير.",
     "error_fetching_payments": "فشل تحميل سجل المدفوعات. يرجى المحاولة مرة أخرى لاحقاً.",
     "upgradeSuccess": "تم بدء الترقية! تحقق من بريدك الإلكتروني.",
@@ -342,7 +342,6 @@
     "month": "شهر",
     "contact_us": "تواصل معنا"
   },
-<<<<<<< HEAD
   "admin": {
     "dashboard_title": "لوحة تحكم المسؤول",
     "accounts_title": "إدارة حسابات المستخدمين",
@@ -384,7 +383,7 @@
     "payment_failed": "فاشلة",
     "payment_pending": "معلقة",
     "payment_refunded": "مستردة"
-=======
+  },
   "history": {
     "title": "سجل العقود",
     "subtitle": "عرض وإدارة جميع عقودك السابقة والتحليلات الخاصة بها",
@@ -426,6 +425,5 @@
     "preview_clauses_count": "البنود المكتشفة: {{count}}",
     "preview_risky_clauses": "البنود عالية المخاطر: {{count}}",
     "version": "الإصدار"
->>>>>>> origin/develop
   }
 }
