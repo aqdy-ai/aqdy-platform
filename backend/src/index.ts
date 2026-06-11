@@ -29,6 +29,7 @@ import plansRouter from "./routes/plans.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import adminStatsRouter from "./routes/admin.stats.route.js";
 import adminPaymentsRouter from "./routes/admin.payments.route.js";
+import adminContractsRouter from "./routes/admin.contracts.route.js";
 
 // Initialize Langfuse observability
 initializeLangfuse();
@@ -69,6 +70,7 @@ app.use("/api/admin/audit-logs", auditLogsRouter);
 app.use("/api/admin/accounts", accountsRouter);
 app.use("/api/admin/stats", adminStatsRouter);
 app.use("/api/admin/payments", adminPaymentsRouter);
+app.use("/api/admin/contracts", adminContractsRouter);
 app.use("/api/plans", plansRouter);
 
 // Use Swagger UI

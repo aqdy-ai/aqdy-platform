@@ -79,13 +79,56 @@ export interface AccountsResponse {
   data: UserAccount[]
 }
 
+export interface ContractOwner {
+  _id: string
+  name: string
+  email: string
+}
+
+export interface AdminContract {
+  _id: string
+  filename: string
+  uploadedAt: string
+  language: string
+  fileSize: number
+  owner: ContractOwner | null
+  status: 'analyzed' | 'pending' | 'failed'
+  riskLevel: 'critical' | 'high' | 'medium' | 'low' | null
+}
+
+export interface ContractsResponse {
+  success: boolean
+  pagination: {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+  data: AdminContract[]
+}
+
 export const adminApi = {
   getStats: () => adminClient.get<AdminStats>('/stats'),
   getPayments: (params?: {
     page?: number
     pageSize?: number
     status?: string
+    dateFrom?: string
+    dateTo?: string
+    userId?: string
+    search?: string
   }) => adminClient.get<PaymentsResponse>('/payments', { params }),
+  getContracts: (params?: {
+    page?: number
+    pageSize?: number
+    status?: string
+    riskLevel?: string
+    dateFrom?: string
+    dateTo?: string
+    search?: string
+  }) => adminClient.get<ContractsResponse>('/contracts', { params }),
   getAccounts: (params?: {
     page?: number
     pageSize?: number
