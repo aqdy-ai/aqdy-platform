@@ -33,6 +33,7 @@ const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
 import AdminRoute from './components/AdminRoute'
 const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
@@ -204,6 +205,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <BillingHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment/success"
+            element={
+              <ProtectedRoute>
+                <PaymentSuccess />
               </ProtectedRoute>
             }
           />

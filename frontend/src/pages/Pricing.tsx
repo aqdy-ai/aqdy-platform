@@ -85,52 +85,81 @@ export default function Pricing({
     return null
   }
 
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
+
+  const handleCheckout = async (planSlug: string) => {
+    if (!isLoggedIn) {
+      window.location.assign('/login')
+      return
+    }
+    setCheckoutLoading(planSlug)
+    try {
+      const res = await fetch('/api/payments/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planSlug }),
+      })
+      const resData = await res.json()
+      if (resData?.data?.url) {
+        window.location.assign(resData.data.url)
+      } else {
+        throw new Error(resData?.message || 'Failed to start checkout')
+      }
+    } catch (err: unknown) {
+      console.error(err)
+      alert(
+        err instanceof Error
+          ? err.message
+          : 'Unable to start checkout.'
+      )
+    } finally {
+      setCheckoutLoading(null)
+    }
+  }
+
   const planCta = (plan: Plan) => {
     const isCurrent =
       isLoggedIn &&
       userPlan &&
       plan.name.toLowerCase() === userPlan.toLowerCase()
 
-    // خطة الـ Free -> تسجيل جديد
+    // Free Plan -> Register
     if (plan.name.toLowerCase() === 'free') {
       return (
         <Link
           to="/register"
-          className={`block w-full rounded-xl border px-4 py-2.5 text-center font-semibold transition-all duration-200 ${
-            isCurrent
-              ? 'bg-secondary text-muted-foreground pointer-events-none border-transparent'
-              : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
-          }`}
+          className={`block w-full rounded-xl border px-4 py-2.5 text-center font-semibold transition-all duration-200 ${isCurrent
+            ? 'bg-secondary text-muted-foreground pointer-events-none border-transparent'
+            : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
+            }`}
         >
-          {t('pricing.get_started')}
+          {isCurrent ? t('pricing.current_plan') : t('pricing.get_started')}
         </Link>
       )
     }
 
-    // خطة الـ Pro -> الـ Checkout مع ربط الـ billing cycle الحالية (UI Toggle)
-    if (plan.name.toLowerCase() === 'pro') {
-      return (
-        <Link
-          to={`/checkout?plan=pro&cycle=${billing}`}
-          className={`block w-full rounded-xl py-2.5 text-center font-semibold transition-all duration-200 ${
-            isCurrent
-              ? 'bg-secondary text-muted-foreground pointer-events-none border-transparent'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10 shadow-md'
-          }`}
-        >
-          {t('pricing.upgrade')}
-        </Link>
-      )
-    }
-
-    // خطة الـ Enterprise -> رابط الـ mailto المعتمد في الـ Criteria
+    // Pro or Enterprise
+    const isLoading = checkoutLoading === plan.slug
     return (
-      <a
-        href="mailto:partnerships@aqdy.ai?subject=Enterprise%20Plan%20Inquiry"
-        className="border-accent text-accent hover:bg-accent hover:text-accent-foreground block w-full rounded-xl border px-4 py-2.5 text-center font-semibold transition-colors duration-200"
+      <button
+        type="button"
+        onClick={() => handleCheckout(plan.slug)}
+        disabled={isCurrent || isLoading}
+        className={`block w-full rounded-xl py-2.5 text-center font-semibold transition-all duration-200 ${isCurrent
+          ? 'bg-secondary text-muted-foreground cursor-default border-transparent'
+          : plan.name.toLowerCase() === 'pro'
+            ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10 shadow-md'
+            : 'border border-primary text-primary hover:bg-primary hover:text-primary-foreground'
+          } disabled:opacity-70`}
       >
-        {t('pricing.contact_us')}
-      </a>
+        {isLoading ? (
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : isCurrent ? (
+          t('pricing.current_plan')
+        ) : (
+          t('pricing.upgrade')
+        )}
+      </button>
     )
   }
 
@@ -175,22 +204,20 @@ export default function Pricing({
         <div className="bg-secondary mx-auto mb-16 flex max-w-xs justify-center gap-2 rounded-xl p-1">
           <button
             type="button"
-            className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all duration-200 ${
-              billing === 'monthly'
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all duration-200 ${billing === 'monthly'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+              }`}
             onClick={() => setBilling('monthly')}
           >
             {isRtl ? 'شهرياً' : 'Monthly'}
           </button>
           <button
             type="button"
-            className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all duration-200 ${
-              billing === 'annual'
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all duration-200 ${billing === 'annual'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+              }`}
             onClick={() => setBilling('annual')}
           >
             {isRtl ? 'سنوياً' : 'Annual'}
@@ -207,22 +234,19 @@ export default function Pricing({
             return (
               <div
                 key={plan.id}
-                className={`bg-card relative flex flex-col justify-between rounded-2xl border p-8 transition-all duration-300 ${
-                  isPro
-                    ? 'border-primary z-10 shadow-xl md:scale-105'
-                    : 'border-border shadow-sm hover:shadow-md'
-                }`}
+                className={`bg-card relative flex flex-col justify-between rounded-2xl border p-8 transition-all duration-300 ${isPro
+                  ? 'border-primary z-10 shadow-xl md:scale-105'
+                  : 'border-border shadow-sm hover:shadow-md'
+                  }`}
               >
                 {/* شارات الكروت الاحترافية */}
                 {badgeText && (
                   <div
-                    className={`absolute top-0 rounded-full px-4 py-1 text-xs font-bold tracking-wider uppercase shadow-sm ${
-                      isRtl ? 'left-6' : 'right-6'
-                    } -translate-y-1/2 ${
-                      isCurrentBadge
+                    className={`absolute top-0 rounded-full px-4 py-1 text-xs font-bold tracking-wider uppercase shadow-sm ${isRtl ? 'left-6' : 'right-6'
+                      } -translate-y-1/2 ${isCurrentBadge
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-accent text-accent-foreground animate-pulse'
-                    }`}
+                      }`}
                   >
                     {badgeText}
                   </div>
@@ -262,8 +286,8 @@ export default function Pricing({
                       <span className="text-card-foreground font-mono font-bold">
                         {plan.creditAllowance !== undefined
                           ? plan.creditAllowance.toLocaleString(
-                              isRtl ? 'ar-EG' : 'en-US'
-                            )
+                            isRtl ? 'ar-EG' : 'en-US'
+                          )
                           : '—'}
                       </span>
                     </p>

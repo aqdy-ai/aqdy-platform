@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import Stripe from "stripe";
 import { Plan } from "../models/plan.model.js";
 import connectDB from "../config/database.js";
 import { logger } from "../utils/logger.js";
 
 dotenv.config();
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
 const plansData = [
   {
@@ -12,19 +15,24 @@ const plansData = [
     slug: "free",
     price: 0,
     billingCycle: "monthly" as const,
-    features: ["300 credits included", "10 contracts max", "No export"],
+    features: [
+      "~3 avg contract analyses",
+      "10 contracts max",
+      "No export"
+    ],
     analysisLimit: 5,
     storageLimit: 10,
     creditAllowance: 300,
     isActive: true,
+    stripePriceId: null as string | null,
   },
   {
     name: "Pro",
     slug: "pro",
-    price: null, // Price is TBD
+    price: 9,
     billingCycle: "monthly" as const,
     features: [
-      "4,000 credits/month",
+      "~40 avg contract analyses/month",
       "Unlimited contracts",
       "Full history export",
       "Priority support",
@@ -33,14 +41,15 @@ const plansData = [
     storageLimit: -1, // -1 means unlimited
     creditAllowance: 4000,
     isActive: true,
+    stripePriceId: null as string | null,
   },
   {
     name: "Enterprise",
     slug: "enterprise",
-    price: null, // Custom pricing
+    price: 39,
     billingCycle: "monthly" as const,
     features: [
-      "40,000 credits/month",
+      "~400 avg contract analyses/month",
       "Unlimited contracts",
       "Custom contract history",
       "SLA guarantee",
@@ -49,8 +58,53 @@ const plansData = [
     storageLimit: -1, // -1 means unlimited
     creditAllowance: 40000,
     isActive: true,
+    stripePriceId: null as string | null,
   },
 ];
+
+const getOrCreateStripePrice = async (planName: string, slug: string, priceAmount: number) => {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    logger.warn(`⚠️ No STRIPE_SECRET_KEY found, using placeholder for ${planName}`);
+    return `price_${slug}_placeholder`;
+  }
+
+  try {
+    // 1. Search for existing product
+    const products = await stripe.products.list();
+    let product = products.data.find(
+      (p) => p.name === planName || p.metadata?.slug === slug
+    );
+
+    if (!product) {
+      logger.info(`Creating Stripe product for ${planName}...`);
+      product = await stripe.products.create({
+        name: planName,
+        metadata: { slug },
+      });
+    }
+
+    // 2. Search for existing active price for this product and price amount
+    const prices = await stripe.prices.list({ product: product.id, active: true });
+    let price = prices.data.find(
+      (p) => p.unit_amount === priceAmount * 100 && p.recurring?.interval === "month"
+    );
+
+    if (!price) {
+      logger.info(`Creating Stripe monthly price of $${priceAmount} for ${planName}...`);
+      price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: priceAmount * 100,
+        currency: "usd",
+        recurring: { interval: "month" },
+      });
+    }
+
+    return price.id;
+  } catch (error) {
+    logger.error(`❌ Failed to configure Stripe product/price for ${planName}, falling back to placeholder:`, error);
+    return `price_${slug}_placeholder`;
+  }
+};
 
 const seedPlans = async () => {
   try {
@@ -58,6 +112,14 @@ const seedPlans = async () => {
 
     // Connect to database
     await connectDB();
+
+    // Configure Stripe prices
+    for (const plan of plansData) {
+      if (plan.price > 0) {
+        plan.stripePriceId = await getOrCreateStripePrice(plan.name, plan.slug, plan.price);
+        logger.info(`Price configured for ${plan.name}: ${plan.stripePriceId}`);
+      }
+    }
 
     // Clear existing plans
     logger.info("Cleaning up existing plans...");

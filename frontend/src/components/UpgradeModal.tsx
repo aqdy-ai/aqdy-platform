@@ -39,10 +39,10 @@ export const UpgradeModal: React.FC<{
   }, [location.search, navigate, t])
 
   const handleUpgrade = async (planId: string) => {
-    if (planId === 'free' || planId === 'enterprise') {
+    if (planId === 'free') {
       toast.info(
         t('plans.contact_us', {
-          defaultValue: 'Please contact sales for Enterprise.',
+          defaultValue: 'Please contact sales.',
         })
       )
       return
@@ -52,13 +52,13 @@ export const UpgradeModal: React.FC<{
       const res = await fetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planSlug: planId }),
       })
-      const data = await res.json()
-      if (data?.url) {
-        window.location.assign(data.url)
+      const resData = await res.json()
+      if (resData?.data?.url) {
+        window.location.assign(resData.data.url)
       } else {
-        throw new Error('Invalid response from checkout API')
+        throw new Error(resData?.message || 'Invalid response from checkout API')
       }
     } catch (err) {
       console.error(err)
