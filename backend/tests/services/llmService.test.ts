@@ -130,9 +130,11 @@ describe("LLM Service", () => {
         .mockRejectedValueOnce(new Error("Service unavailable"));
 
       const responsePromise = llmService.call("Doomed prompt");
+      const assertion = expect(responsePromise).rejects.toThrow(
+        "All LLM providers failed",
+      );
       await jest.runAllTimersAsync();
-
-      await expect(responsePromise).rejects.toThrow("All LLM providers failed");
+      await assertion;
       expect(mockOpenAIInvoke).toHaveBeenCalledTimes(3);
       expect(mockGeminiInvoke).toHaveBeenCalledTimes(3);
     });
@@ -158,9 +160,9 @@ describe("LLM Service", () => {
         .mockRejectedValueOnce(new Error("Fail 3"));
 
       const responsePromise = llmService.callPrimary("No fallback");
+      const assertion = expect(responsePromise).rejects.toThrow();
       await jest.runAllTimersAsync();
-
-      await expect(responsePromise).rejects.toThrow();
+      await assertion;
       expect(mockOpenAIInvoke).toHaveBeenCalledTimes(3);
       expect(mockGeminiInvoke).not.toHaveBeenCalled();
     });
@@ -186,9 +188,9 @@ describe("LLM Service", () => {
         .mockRejectedValueOnce(new Error("F3"));
 
       const responsePromise = llmService.callFallback("Failing fallback");
+      const assertion = expect(responsePromise).rejects.toThrow();
       await jest.runAllTimersAsync();
-
-      await expect(responsePromise).rejects.toThrow();
+      await assertion;
       expect(mockGeminiInvoke).toHaveBeenCalledTimes(3);
     });
   });
@@ -233,9 +235,11 @@ describe("LLM Service", () => {
         .mockResolvedValueOnce({ content: ["not", "a", "string"] });
 
       const responsePromise = llmService.call("Array response");
+      const assertion = expect(responsePromise).rejects.toThrow(
+        "All LLM providers failed",
+      );
       await jest.runAllTimersAsync();
-
-      await expect(responsePromise).rejects.toThrow("All LLM providers failed");
+      await assertion;
     });
   });
 });
