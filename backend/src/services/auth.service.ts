@@ -88,7 +88,11 @@ export const registerUser = async (
   }
 
   try {
-    await creditsService.topup(String(user._id), env.FREE_PLAN_CREDITS, "plan_topup");
+    await creditsService.topup(
+      String(user._id),
+      env.FREE_PLAN_CREDITS,
+      "plan_topup",
+    );
   } catch (error) {
     logger.warn(
       `Failed to initialize credit balance for user ${user._id}:`,

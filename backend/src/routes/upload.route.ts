@@ -52,7 +52,8 @@ uploadRouter.post(
         res.status(402).json({
           success: false,
           error: "Insufficient credits",
-          message: "Your credit balance is exhausted. Please upgrade or purchase more credits to continue.",
+          message:
+            "Your credit balance is exhausted. Please upgrade or purchase more credits to continue.",
         });
         return;
       }

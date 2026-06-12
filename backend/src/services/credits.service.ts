@@ -46,8 +46,7 @@ export class CreditsService {
    * TOKEN_UNIT=4000).
    */
   calculateAnalysisCost(inputTokens: number, outputTokens: number): number {
-    const weighted =
-      inputTokens * 1 + outputTokens * env.CREDIT_OUTPUT_WEIGHT;
+    const weighted = inputTokens * 1 + outputTokens * env.CREDIT_OUTPUT_WEIGHT;
     const variable = Math.ceil(weighted / env.CREDIT_TOKEN_UNIT);
     return env.CREDIT_BASE_FEE + variable;
   }
@@ -59,8 +58,7 @@ export class CreditsService {
    * A typical chat exchange (~3k input, ~1k output) costs ~4–5 credits.
    */
   calculateChatCost(inputTokens: number, outputTokens: number): number {
-    const weighted =
-      inputTokens * 1 + outputTokens * env.CREDIT_OUTPUT_WEIGHT;
+    const weighted = inputTokens * 1 + outputTokens * env.CREDIT_OUTPUT_WEIGHT;
     const variable = Math.ceil(weighted / env.CREDIT_TOKEN_UNIT);
     return env.CREDIT_CHAT_BASE + variable;
   }

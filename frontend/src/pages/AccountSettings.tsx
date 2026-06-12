@@ -362,8 +362,6 @@ export default function AccountSettings() {
                   </span>
                 </div>
 
-
-
                 {planDetails?.planName?.toLowerCase().includes('free') && (
                   <button
                     type="button"

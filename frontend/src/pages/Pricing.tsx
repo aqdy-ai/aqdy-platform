@@ -259,9 +259,11 @@ export default function Pricing({
                           (isRtl ? 'رصيد الائتمان' : 'Credit Allowance')}
                         :
                       </span>
-                      <span className="text-card-foreground font-bold font-mono">
+                      <span className="text-card-foreground font-mono font-bold">
                         {plan.creditAllowance !== undefined
-                          ? plan.creditAllowance.toLocaleString(isRtl ? 'ar-EG' : 'en-US')
+                          ? plan.creditAllowance.toLocaleString(
+                              isRtl ? 'ar-EG' : 'en-US'
+                            )
                           : '—'}
                       </span>
                     </p>

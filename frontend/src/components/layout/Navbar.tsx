@@ -109,7 +109,7 @@ const Navbar = () => {
           <div className="bg-border/60 mx-2 hidden h-6 w-[1px] md:block" />
 
           <div className="flex items-center gap-3">
-            <CreditsBadge variant="compact" />
+            {isAuthenticated && <CreditsBadge variant="compact" />}
 
             <button
               onClick={toggleTheme}
