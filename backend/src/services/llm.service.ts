@@ -21,6 +21,7 @@ export interface LLMRequestOptions {
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
+  callbacks?: any[];
 }
 
 export interface LLMResponse {
@@ -93,7 +94,7 @@ const callWithRetry = async (
         ? createGeminiFallbackClient(options)
         : createGeminiPrimaryClient(options);
 
-      const response = await client.invoke(messages);
+      const response = await client.invoke(messages, { callbacks: options.callbacks });
       const content = response.content;
 
       if (typeof content !== "string") {

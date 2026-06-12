@@ -82,6 +82,7 @@ export class ExtractorAgent {
   async extract(
     contractText: string,
     language?: "ar" | "en",
+    options?: { callbacks?: any[] },
   ): Promise<ExtractionResult> {
     const startTime = Date.now();
 
@@ -123,7 +124,7 @@ export class ExtractorAgent {
         chunks.length,
       );
 
-      const llmResponse = await this.callLLM(userPrompt);
+      const llmResponse = await this.callLLM(userPrompt, options?.callbacks);
       lastLLMResponse = llmResponse;
 
       const parsed = this.parseAndValidate(llmResponse.content);
@@ -161,11 +162,12 @@ export class ExtractorAgent {
   /**
    * Calls the LLM service with the extraction system prompt.
    */
-  private async callLLM(userPrompt: string): Promise<LLMResponse> {
+  private async callLLM(userPrompt: string, callbacks?: any[]): Promise<LLMResponse> {
     return llmService.call(userPrompt, {
       systemPrompt: EXTRACTOR_SYSTEM_PROMPT,
       temperature: 0.1,
       maxTokens: 8192,
+      callbacks,
     });
   }
 

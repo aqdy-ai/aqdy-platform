@@ -12,13 +12,14 @@
  *   - Clean separation from persistence (AnalysisService owns DB writes).
  */
 
-import { extractorAgent } from "../agents/extractor.agent.js";
+import { extractorAgent, type ExtractionResult } from "../agents/extractor.agent.js";
 import { riskClassifierAgent } from "../agents/riskClassifier.agent.js";
 import { redlineAgent } from "../agents/redline.agent.js";
 import { sanitizationService } from "../services/sanitization.service.js";
 import type { ExtractedClause } from "../agents/extractor.agent.js";
 import { logger } from "../utils/logger.js";
 import { createLangfuseHandler } from "../config/langfuse.config.js";
+import { traceAgent } from "../services/langfuse.tracing.js";
 import { getStableHash } from "../utils/text.utils.js";
 import type { IClauseAnalysis } from "../models/riskAnalysis.model.js";
 import { metrics } from "../utils/metrics.js";
@@ -120,11 +121,22 @@ export class OrchestratorService {
       `${sanitizedText.trim()}|${language}`,
     );
     const cachedExtraction = this.extractionCache.get(extractionCacheKey);
-    const extractionResult =
-      cachedExtraction ??
-      (await extractorAgent.extract(sanitizedText, language));
 
-    if (!cachedExtraction) {
+    let extractionResult: ExtractionResult;
+    if (cachedExtraction) {
+      extractionResult = cachedExtraction;
+    } else {
+      const traceResult = await traceAgent(
+        () =>
+          extractorAgent.extract(sanitizedText, language, {
+            callbacks: langfuseHandler ? [langfuseHandler] : [],
+          }),
+        { agentName: "extractor", contractId, userId, language },
+      );
+      if (!traceResult.success || !traceResult.data) {
+        throw new Error(traceResult.error || "Extraction failed");
+      }
+      extractionResult = traceResult.data;
       this.extractionCache.set(extractionCacheKey, extractionResult);
     }
 
@@ -154,12 +166,28 @@ export class OrchestratorService {
             `Orchestrator: Step 2 — Classifying clause ${clause.clauseNumber}`,
           );
 
-          const classification = await riskClassifierAgent.classify(
-            clause.clauseText,
-            clause.clauseType,
-            language,
+          const classificationTrace = await traceAgent(
+            () =>
+              riskClassifierAgent.classify(
+                clause.clauseText,
+                clause.clauseType,
+                language,
+                { callbacks: langfuseHandler ? [langfuseHandler] : [] },
+              ),
+            {
+              agentName: "riskClassifier",
+              contractId,
+              userId,
+              language,
+              clauseNumber: clause.clauseNumber,
+            },
           );
 
+          if (!classificationTrace.success || !classificationTrace.data) {
+            throw new Error(classificationTrace.error || "Classification failed");
+          }
+
+          const classification = classificationTrace.data;
           riskLevel = classification.riskLevel;
           confidence = classification.confidence;
           explanation = classification.explanation;
@@ -172,16 +200,35 @@ export class OrchestratorService {
                 `Orchestrator: Step 3 — Generating redline for clause ${clause.clauseNumber}`,
               );
 
-              const redline = await redlineAgent.generate(
-                clause.clauseText,
-                riskLevel,
-                clause.clauseType,
-                language,
-                classification.saferAlternative,
+              const redlineTrace = await traceAgent(
+                () =>
+                  redlineAgent.generate(
+                    clause.clauseText,
+                    riskLevel,
+                    clause.clauseType,
+                    language,
+                    classification.saferAlternative,
+                    { callbacks: langfuseHandler ? [langfuseHandler] : [] },
+                  ),
+                {
+                  agentName: "redline",
+                  contractId,
+                  userId,
+                  language,
+                  clauseNumber: clause.clauseNumber,
+                },
               );
 
-              redlineSuggestion = redline.suggestedText;
-              redlineDurationMs = redline.durationMs;
+              if (redlineTrace.success && redlineTrace.data) {
+                const redline = redlineTrace.data;
+                redlineSuggestion = redline.suggestedText;
+                redlineDurationMs = redline.durationMs;
+              } else {
+                logger.error(
+                  `Orchestrator: redline generation failed for clause ${clause.clauseNumber}`,
+                  redlineTrace.error,
+                );
+              }
             } catch (err) {
               logger.error(
                 `Orchestrator: redline generation failed for clause ${clause.clauseNumber}`,
