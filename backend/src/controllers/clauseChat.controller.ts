@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { ChatOpenAI } from "@langchain/openai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import {
   HumanMessage,
   SystemMessage,
@@ -36,6 +37,66 @@ export const clauseChatLimits = new Map<
 export const resetClauseChatLimits = (): void => {
   clauseChatLimits.clear();
 };
+
+/**
+ * Helper function to create a stream with automatic fallback.
+ * Tries GPT-4o first, then falls back to Gemini if it fails.
+ */
+async function createStreamWithFallback(messages: BaseMessage[]): Promise<{
+  stream: AsyncIterable<any>;
+  model: string;
+}> {
+  const primaryModel = "gpt-4o";
+  const fallbackModel = "gemini-3.1-flash-lite";
+
+  // Try GPT-4o first
+  try {
+    logger.info("Attempting to stream from GPT-4o");
+    const llm = new ChatOpenAI({
+      model: primaryModel,
+      apiKey: env.OPENAI_API_KEY,
+      temperature: 0.2,
+      maxTokens: 2048,
+      maxRetries: 0, // Handle retries manually
+    });
+
+    // Try to get the stream
+    const stream = await llm.stream(messages);
+    logger.info("Successfully created GPT-4o stream");
+    return { stream, model: primaryModel };
+  } catch (primaryError) {
+    logger.warn("GPT-4o streaming failed, falling back to Gemini", {
+      error:
+        primaryError instanceof Error
+          ? primaryError.message
+          : "Unknown error",
+    });
+
+    // Fallback to Gemini
+    try {
+      logger.info("Attempting to stream from Gemini");
+      const llm = new ChatGoogleGenerativeAI({
+        model: fallbackModel,
+        apiKey: env.GEMINI_API_KEY,
+        temperature: 0.2,
+        maxOutputTokens: 2048,
+        maxRetries: 0,
+      });
+
+      const stream = await llm.stream(messages);
+      logger.info("Successfully created Gemini stream (fallback)");
+      return { stream, model: fallbackModel };
+    } catch (fallbackError) {
+      logger.error("Both primary and fallback models failed", {
+        error:
+          fallbackError instanceof Error
+            ? fallbackError.message
+            : "Unknown error",
+      });
+      throw new Error("Unable to create stream from both models");
+    }
+  }
+}
 
 export const clauseChatController = async (
   req: Request,
@@ -105,17 +166,10 @@ export const clauseChatController = async (
       }
     }
 
-    // 5. Credit Check
-    // Estimate tokens for a typical clause chat exchange:
-    //   ~3,000 input tokens (clause context + system prompt + question)
-    //   ~1,000 output tokens (focused answer)
-    const CHAT_INPUT_TOKENS = 3000;
-    const CHAT_OUTPUT_TOKENS = 1000;
-    const creditCost = creditsService.calculateChatCost(
-      CHAT_INPUT_TOKENS,
-      CHAT_OUTPUT_TOKENS,
-    );
-    const currentBalance = await creditsService.getBalance(userId);
+    // 5. Credit Check (flat rate per message — see CHAT_CREDIT_COST)
+    const creditCost = creditsService.calculateChatCost(0, 0);
+    const currentBalance =
+      await creditsService.ensureInitialPlanCredits(userId);
     if (currentBalance < creditCost) {
       res.status(402).json({
         success: false,
@@ -177,23 +231,28 @@ INSTRUCTIONS:
 
     messages.push(new HumanMessage(message));
 
-    // 10. Configure SSE headers
+    // 10. Try to create stream with fallback (before sending SSE headers)
+    let stream;
+    let modelUsed: string;
+    try {
+      const streamResult = await createStreamWithFallback(messages);
+      stream = streamResult.stream;
+      modelUsed = streamResult.model;
+    } catch (streamError) {
+      logger.error("Failed to create stream from any model", streamError);
+      return next(
+        new AppError(500, "Failed to initialize chat stream. Please try again."),
+      );
+    }
+
+    // 11. Configure SSE headers (only after we know the stream is ready)
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
 
-    // 11. Stream from GPT-4o via LangChain
-    const llm = new ChatOpenAI({
-      model: "gpt-4o",
-      apiKey: env.OPENAI_API_KEY,
-      temperature: 0.2,
-      maxTokens: 2048,
-    });
-
+    // 12. Stream the response
     try {
-      const stream = await llm.stream(messages);
-
       for await (const chunk of stream) {
         const text = chunk.content;
         if (text) {
@@ -203,8 +262,15 @@ INSTRUCTIONS:
 
       res.write("data: [DONE]\n\n");
       res.end();
+      logger.info("Clause chat stream completed successfully", { modelUsed });
     } catch (streamError) {
-      logger.error("Error during clause chat streaming:", streamError);
+      logger.error("Error during clause chat streaming", {
+        error:
+          streamError instanceof Error
+            ? streamError.message
+            : "Unknown error",
+        modelUsed,
+      });
       res.write(
         `data: ${JSON.stringify({ error: "An error occurred during response streaming." })}\n\n`,
       );

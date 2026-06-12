@@ -55,6 +55,12 @@ describe("Credits domain and account credits endpoint", () => {
     expect(creditsService.estimateCost(combinedTokens)).toBe(expected);
   });
 
+  test("calculateChatCost uses flat CHAT_CREDIT_COST per message", () => {
+    expect(creditsService.calculateChatCost(3000, 1000)).toBe(
+      env.CHAT_CREDIT_COST,
+    );
+  });
+
   test("deduct throws InsufficientCreditsError for low balance", async () => {
     const user = await User.create({
       name: "Credit User",

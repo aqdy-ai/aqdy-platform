@@ -153,7 +153,7 @@ export const getCreditsHandler = async (
     }
 
     const userId = String(user._id);
-    const balance = await creditsService.getBalance(userId);
+    const balance = await creditsService.ensureInitialPlanCredits(userId);
     const ledgerEntries = await creditsService.getLedgerEntries(userId, 20);
 
     // Resolve plan allowance so the frontend can render a meaningful progress bar

@@ -52,15 +52,12 @@ export class CreditsService {
   }
 
   /**
-   * Clause-chat message cost (single LLM call, focused context):
-   *   CHAT_BASE + ceil((inputTokens + outputTokens×OUTPUT_WEIGHT) / TOKEN_UNIT)
-   *
-   * A typical chat exchange (~3k input, ~1k output) costs ~4–5 credits.
+   * Clause-chat message cost — flat rate per message (`CHAT_CREDIT_COST`).
+   * Chat is a single focused LLM call; it is not priced with the analysis
+   * weighted-token formula (which uses `CREDIT_TOKEN_UNIT` tuned for pipelines).
    */
-  calculateChatCost(inputTokens: number, outputTokens: number): number {
-    const weighted = inputTokens * 1 + outputTokens * env.CREDIT_OUTPUT_WEIGHT;
-    const variable = Math.ceil(weighted / env.CREDIT_TOKEN_UNIT);
-    return env.CREDIT_CHAT_BASE + variable;
+  calculateChatCost(_inputTokens: number, _outputTokens: number): number {
+    return env.CHAT_CREDIT_COST;
   }
 
   /**
@@ -86,6 +83,30 @@ export class CreditsService {
     }
 
     return await this.getCurrentPlanAllowance(userId);
+  }
+
+  /**
+   * One-time bootstrap for accounts that never received an initial plan topup
+   * (e.g. legacy users or failed registration topup). Does not refill spent credits.
+   */
+  async ensureInitialPlanCredits(userId: string): Promise<number> {
+    const balance = await this.getBalance(userId);
+    if (balance > 0) {
+      return balance;
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const existingTopup = await CreditLedger.exists({
+      userId: userObjectId,
+      reason: "plan_topup",
+    });
+
+    if (existingTopup) {
+      return balance;
+    }
+
+    const topup = await this.topupForPlanAllowance(userId);
+    return topup ? topup.balanceAfter : balance;
   }
 
   async getLedgerEntries(userId: string, limit = 20): Promise<ICreditLedger[]> {
