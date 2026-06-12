@@ -308,7 +308,7 @@ export class OrchestratorService {
     metrics.observe("analyses.tokens.total", tokenEstimate.totalTokens);
 
     const cost = metricsService.calculateCost(
-      "gemini-3.5-flash",
+      "gpt-4o",
       tokenEstimate,
     );
     metrics.observe("analyses.costUSD", cost);

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatOpenAI } from "@langchain/openai";
 import {
   HumanMessage,
   SystemMessage,
@@ -183,12 +183,12 @@ INSTRUCTIONS:
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
 
-    // 11. Stream from Gemini via LangChain
-    const llm = new ChatGoogleGenerativeAI({
-      model: "gemini-3.5-flash",
-      apiKey: env.GEMINI_API_KEY,
+    // 11. Stream from GPT-4o via LangChain
+    const llm = new ChatOpenAI({
+      model: "gpt-4o",
+      apiKey: env.OPENAI_API_KEY,
       temperature: 0.2,
-      maxOutputTokens: 2048,
+      maxTokens: 2048,
     });
 
     try {

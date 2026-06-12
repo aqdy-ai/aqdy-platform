@@ -10,6 +10,7 @@ const envSchema = z.object({
     .default("development"),
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
   GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required"),
+  OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY is required"),
   PINECONE_API_KEY: z.string().min(1, "PINECONE_API_KEY is required"),
   PINECONE_INDEX: z.string().min(1, "PINECONE_INDEX is required"),
   LANGFUSE_SECRET_KEY: z.string().min(1, "LANGFUSE_SECRET_KEY is required"),

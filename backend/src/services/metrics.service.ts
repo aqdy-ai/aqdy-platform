@@ -33,8 +33,12 @@ export interface AnalysisMetrics {
   success: boolean;
 }
 
-// ── Gemini Pricing (per 1M tokens) ───────────────
-const GEMINI_PRICING = {
+// ── Model Pricing (per 1M tokens) ─────────────────
+const MODEL_PRICING = {
+  "gpt-4o": {
+    inputPer1M: 2.50,
+    outputPer1M: 10.00,
+  },
   "gemini-3.5-flash": {
     inputPer1M: 0.075,
     outputPer1M: 0.3,
@@ -72,8 +76,8 @@ export class MetricsService {
   // Calculate estimated cost
   calculateCost(model: string, tokenUsage: TokenUsage): number {
     const pricing =
-      GEMINI_PRICING[model as keyof typeof GEMINI_PRICING] ??
-      GEMINI_PRICING["gemini-3.1-flash-lite"];
+      MODEL_PRICING[model as keyof typeof MODEL_PRICING] ??
+      MODEL_PRICING["gemini-3.1-flash-lite"];
 
     const inputCost = (tokenUsage.inputTokens / 1_000_000) * pricing.inputPer1M;
     const outputCost =

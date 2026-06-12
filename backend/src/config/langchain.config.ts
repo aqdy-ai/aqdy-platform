@@ -1,4 +1,5 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { RunnableSequence } from "@langchain/core/runnables";
@@ -6,21 +7,20 @@ import { env } from "./env.js";
 
 // ── Model Names ──────────────────────────────────
 
-export const GEMINI_PRIMARY_MODEL = "gemini-3.5-flash";
+export const OPENAI_PRIMARY_MODEL = "gpt-4o";
 export const GEMINI_FALLBACK_MODEL = "gemini-3.1-flash-lite";
 
 // ── Shared Model Instances ───────────────────────
 
 /**
- * Gemini 3.5 Flash — Primary model
+ * GPT-4o — Primary model
  * Best for: complex clause analysis, risk classification, redline generation
- * Context window: 1M tokens
  */
-export const geminiPrimary = new ChatGoogleGenerativeAI({
-  model: GEMINI_PRIMARY_MODEL,
-  apiKey: env.GEMINI_API_KEY,
+export const geminiPrimary = new ChatOpenAI({
+  model: OPENAI_PRIMARY_MODEL,
+  apiKey: env.OPENAI_API_KEY,
   temperature: 0.1,
-  maxOutputTokens: 4096,
+  maxTokens: 4096,
 });
 
 /**
@@ -45,7 +45,7 @@ export const outputParser = new StringOutputParser();
  * Used by all agents in Week 2.
  *
  * @param systemPrompt - The system instruction for the agent
- * @param useFallback  - If true, uses Gemini 3.1 Flash Lite instead of 3.5 Flash
+ * @param useFallback  - If true, uses Gemini 3.1 Flash Lite instead of GPT-4o
  *
  * @example
  * const chain = buildChain(EXTRACTION_SYSTEM_PROMPT);
