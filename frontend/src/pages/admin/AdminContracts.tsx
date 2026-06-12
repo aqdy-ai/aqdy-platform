@@ -56,7 +56,6 @@ const AdminContracts = () => {
       if (res.data.success) {
         setContracts(res.data.data)
         setTotalPages(res.data.pagination.totalPages)
-        setTotalCount(res.data.pagination.total)
       }
     } catch (error) {
       console.error('Failed to fetch contracts:', error)
