@@ -3,6 +3,29 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/** Dummy values for required vars when running under Jest (CI may leave secrets empty). */
+const TEST_ENV_DEFAULTS: Record<string, string> = {
+  MONGODB_URI: "mongodb://127.0.0.1:27017/aqdy_test",
+  GEMINI_API_KEY: "test",
+  OPENAI_API_KEY: "test",
+  PINECONE_API_KEY: "test",
+  PINECONE_INDEX: "test",
+  LANGFUSE_SECRET_KEY: "test",
+  LANGFUSE_PUBLIC_KEY: "test",
+  JWT_SECRET: "test",
+  STRIPE_SECRET_KEY: "test",
+  STRIPE_PUBLISHABLE_KEY: "test",
+  STRIPE_WEBHOOK_SECRET: "test",
+};
+
+if (process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID) {
+  for (const [key, value] of Object.entries(TEST_ENV_DEFAULTS)) {
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
+  }
+}
+
 const envSchema = z.object({
   PORT: z.string().default("5000"),
   NODE_ENV: z

@@ -24,6 +24,7 @@ const jestConfig: JestConfigWithTsJest = {
       },
     ],
   },
+  setupFiles: ["<rootDir>/tests/setup-env-vars.ts"],
   setupFilesAfterEnv: ["<rootDir>/tests/setup-env.ts"],
   testMatch: ["**/tests/**/*.test.ts"],
   testTimeout: 30000,

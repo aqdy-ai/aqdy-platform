@@ -14,7 +14,7 @@ import { RiskAnalysis } from "../src/models/riskAnalysis.model.js";
 import { CreditLedger } from "../src/models/creditLedger.model.js";
 import accountsRouter from "../src/routes/accounts.route.js";
 import adminStatsRouter from "../src/routes/admin.stats.route.js";
-import requestIdMiddleware from "../src/middleware/requestId.middleware.js";
+import requestIdMiddleware from "../src/middlewares/requestId.middleware.js";
 import { errorHandler } from "../src/middlewares/errorHandler.js";
 import { env } from "../src/config/env.js";
 

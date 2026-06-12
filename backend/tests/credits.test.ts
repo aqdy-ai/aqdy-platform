@@ -43,9 +43,16 @@ describe("Credits domain and account credits endpoint", () => {
     ]);
   });
 
-  test("estimateCost returns base cost plus token rate", async () => {
-    const estimated = await creditsService.estimateCost(100);
-    expect(estimated).toBe(env.CREDIT_BASE_COST + 100 * env.CREDIT_TOKEN_RATE);
+  test("estimateCost applies weighted analysis cost formula", () => {
+    const combinedTokens = 100;
+    const inputTokens = Math.round(combinedTokens * 0.7);
+    const outputTokens = Math.round(combinedTokens * 0.3);
+    const expected = creditsService.calculateAnalysisCost(
+      inputTokens,
+      outputTokens,
+    );
+
+    expect(creditsService.estimateCost(combinedTokens)).toBe(expected);
   });
 
   test("deduct throws InsufficientCreditsError for low balance", async () => {

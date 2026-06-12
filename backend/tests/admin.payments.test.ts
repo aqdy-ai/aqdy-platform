@@ -14,7 +14,7 @@ import cookieParser from "cookie-parser";
 import { User } from "../src/models/user.model.js";
 import Payment from "../src/models/payment.model.js";
 import adminPaymentsRouter from "../src/routes/admin.payments.route.js";
-import requestIdMiddleware from "../src/middleware/requestId.middleware.js";
+import requestIdMiddleware from "../src/middlewares/requestId.middleware.js";
 import { errorHandler } from "../src/middlewares/errorHandler.js";
 import { env } from "../src/config/env.js";
 

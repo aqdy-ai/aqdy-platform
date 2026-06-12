@@ -21,6 +21,7 @@ jest.unstable_mockModule("../../src/agents/redline.agent.js", () => ({
 
 jest.unstable_mockModule("../../src/config/langfuse.config.js", () => ({
   createLangfuseHandler: mockCreateLangfuseHandler,
+  logAgentExecution: jest.fn(),
 }));
 
 let orchestratorService: any;
