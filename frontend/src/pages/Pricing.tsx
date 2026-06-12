@@ -16,6 +16,7 @@ export interface Plan {
   features?: string[]
   analysisLimit?: number
   storageLimit?: number
+  creditAllowance?: number
   limits?: PlanLimits
   ctaKey?: string // مضاف لدعم المفاتيح الديناميكية من الـ API والـ Tests
 }
@@ -84,13 +85,41 @@ export default function Pricing({
     return null
   }
 
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
+
+  const handleCheckout = async (planSlug: string) => {
+    if (!isLoggedIn) {
+      window.location.assign('/login')
+      return
+    }
+    setCheckoutLoading(planSlug)
+    try {
+      const res = await fetch('/api/payments/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planSlug, billingCycle: billing }),
+      })
+      const resData = await res.json()
+      if (resData?.data?.url) {
+        window.location.assign(resData.data.url)
+      } else {
+        throw new Error(resData?.message || 'Failed to start checkout')
+      }
+    } catch (err: unknown) {
+      console.error(err)
+      alert(err instanceof Error ? err.message : 'Unable to start checkout.')
+    } finally {
+      setCheckoutLoading(null)
+    }
+  }
+
   const planCta = (plan: Plan) => {
     const isCurrent =
       isLoggedIn &&
       userPlan &&
       plan.name.toLowerCase() === userPlan.toLowerCase()
 
-    // خطة الـ Free -> تسجيل جديد
+    // Free Plan -> Register
     if (plan.name.toLowerCase() === 'free') {
       return (
         <Link
@@ -101,35 +130,34 @@ export default function Pricing({
               : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
           }`}
         >
-          {t('pricing.get_started')}
+          {isCurrent ? t('pricing.current_plan') : t('pricing.get_started')}
         </Link>
       )
     }
 
-    // خطة الـ Pro -> الـ Checkout مع ربط الـ billing cycle الحالية (UI Toggle)
-    if (plan.name.toLowerCase() === 'pro') {
-      return (
-        <Link
-          to={`/checkout?plan=pro&cycle=${billing}`}
-          className={`block w-full rounded-xl py-2.5 text-center font-semibold transition-all duration-200 ${
-            isCurrent
-              ? 'bg-secondary text-muted-foreground pointer-events-none border-transparent'
-              : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10 shadow-md'
-          }`}
-        >
-          {t('pricing.upgrade')}
-        </Link>
-      )
-    }
-
-    // خطة الـ Enterprise -> رابط الـ mailto المعتمد في الـ Criteria
+    // Pro or Enterprise
+    const isLoading = checkoutLoading === plan.slug
     return (
-      <a
-        href="mailto:partnerships@aqdy.ai?subject=Enterprise%20Plan%20Inquiry"
-        className="border-accent text-accent hover:bg-accent hover:text-accent-foreground block w-full rounded-xl border px-4 py-2.5 text-center font-semibold transition-colors duration-200"
+      <button
+        type="button"
+        onClick={() => handleCheckout(plan.slug)}
+        disabled={isCurrent || isLoading}
+        className={`block w-full rounded-xl py-2.5 text-center font-semibold transition-all duration-200 ${
+          isCurrent
+            ? 'bg-secondary text-muted-foreground cursor-default border-transparent'
+            : plan.name.toLowerCase() === 'pro'
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10 shadow-md'
+              : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground border'
+        } disabled:opacity-70`}
       >
-        {t('pricing.contact_us')}
-      </a>
+        {isLoading ? (
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : isCurrent ? (
+          t('pricing.current_plan')
+        ) : (
+          t('pricing.upgrade')
+        )}
+      </button>
     )
   }
 
@@ -239,33 +267,41 @@ export default function Pricing({
                         {isRtl ? 'تواصل معنا' : 'Custom'}
                       </p>
                     ) : (
-                      <p className="text-3xl font-extrabold tracking-tight">
-                        ${plan.price}
-                        <span className="text-muted-foreground mr-1 ml-1 text-xs font-medium">
+                      <div className="space-y-1">
+                        <p className="text-3xl font-extrabold tracking-tight">
+                          $
                           {billing === 'annual'
-                            ? t('pricing.per_year') || '/yr'
-                            : t('pricing.per_month') || '/mo'}
-                        </span>
-                      </p>
+                            ? ((plan.price * 10) / 12).toFixed(2)
+                            : plan.price}
+                          <span className="text-muted-foreground mr-1 ml-1 text-xs font-medium">
+                            {t('pricing.per_month') || '/mo'}
+                          </span>
+                        </p>
+                        {billing === 'annual' && plan.price > 0 && (
+                          <p className="text-muted-foreground text-xs font-medium">
+                            {isRtl
+                              ? `$${plan.price * 10}/سنة — شهرين مجاناً`
+                              : `$${plan.price * 10}/yr — 2 months free`}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
 
-                  {/* صندوق حدود الاستخدام (Analysis & Storage Limits) */}
+                  {/* صندوق حدود الاستخدام (Credit Allowance & Storage Limits) */}
                   <div className="bg-muted text-muted-foreground border-border mb-6 space-y-2 rounded-xl border p-4 text-xs">
                     <p className="flex justify-between font-medium">
                       <span>
-                        {t('pricing.analysis_limit') ||
-                          (isRtl ? 'حد التحليلات' : 'Analysis Limit')}
+                        {t('credits.planAllowanceLabel') ||
+                          (isRtl ? 'رصيد الائتمان' : 'Credit Allowance')}
                         :
                       </span>
-                      <span className="text-card-foreground font-bold">
-                        {plan.analysisLimit === -1
-                          ? isRtl
-                            ? 'غير محدود'
-                            : 'Unlimited'
-                          : (plan.analysisLimit ??
-                            plan.limits?.analysis ??
-                            '—')}
+                      <span className="text-card-foreground font-mono font-bold">
+                        {plan.creditAllowance !== undefined
+                          ? plan.creditAllowance.toLocaleString(
+                              isRtl ? 'ar-EG' : 'en-US'
+                            )
+                          : '—'}
                       </span>
                     </p>
                     <p className="flex justify-between font-medium">

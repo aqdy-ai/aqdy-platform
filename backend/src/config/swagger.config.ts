@@ -229,6 +229,41 @@ const options: swaggerJsdoc.Options = {
             redlineDurationMs: { type: "number", example: 550 },
           },
         },
+        Payment: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            amount: { type: "number" },
+            currency: { type: "string" },
+            status: { type: "string" },
+            providerTxId: { type: "string" },
+            description: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
+          },
+        },
+        PaymentListResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean" },
+            data: {
+              type: "object",
+              properties: {
+                payments: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/Payment" },
+                },
+                pagination: {
+                  type: "object",
+                  properties: {
+                    total: { type: "number" },
+                    page: { type: "number" },
+                    totalPages: { type: "number" },
+                  },
+                },
+              },
+            },
+          },
+        },
         RiskAnalysis: {
           type: "object",
           properties: {
@@ -275,6 +310,31 @@ const options: swaggerJsdoc.Options = {
             message: { type: "string", example: "Error message" },
           },
         },
+        CheckoutSessionRequest: {
+          type: "object",
+          required: ["planSlug"],
+          properties: {
+            planSlug: {
+              type: "string",
+              enum: ["free", "premium", "enterprise"],
+              example: "premium",
+            },
+          },
+        },
+        CheckoutSessionResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            url: { type: "string", example: "https://checkout.stripe.com/..." },
+          },
+        },
+        ConfirmSessionResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            status: { type: "string", example: "succeeded" },
+          },
+        },
         Plan: {
           type: "object",
           properties: {
@@ -319,6 +379,164 @@ const options: swaggerJsdoc.Options = {
             message: {
               type: "string",
               example: "Active plans retrieved successfully",
+            },
+          },
+        },
+        ContractListItem: {
+          type: "object",
+          properties: {
+            contractId: { type: "string", example: "64abc123def456" },
+            filename: { type: "string", example: "employment-contract.pdf" },
+            uploadDate: { type: "string", format: "date-time" },
+            language: { type: "string", enum: ["ar", "en"] },
+            fileSize: { type: "number", example: 2048 },
+            status: { type: "string", enum: ["analyzed", "pending", "failed"] },
+            riskLevel: {
+              type: "string",
+              nullable: true,
+              enum: ["low", "medium", "high", "critical"],
+              example: "high",
+            },
+            analysisId: {
+              type: "string",
+              nullable: true,
+              example: "64abc789ghi012",
+            },
+          },
+        },
+        ContractListResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            data: {
+              type: "object",
+              properties: {
+                contracts: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/ContractListItem" },
+                },
+                total: { type: "number", example: 25 },
+                page: { type: "number", example: 1 },
+                totalPages: { type: "number", example: 3 },
+                limit: { type: "number", example: 10 },
+              },
+            },
+            message: {
+              type: "string",
+              example: "Contract list retrieved successfully",
+            },
+          },
+        },
+        AdminStatsResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            period: {
+              type: "object",
+              properties: {
+                month: { type: "string", example: "2026-06" },
+                from: { type: "string", format: "date-time" },
+                to: { type: "string", format: "date-time" },
+              },
+            },
+            data: {
+              type: "object",
+              properties: {
+                totalAccounts: { type: "integer", example: 150 },
+                activeSubscriptions: { type: "integer", example: 42 },
+                revenueThisMonth: {
+                  type: "object",
+                  description:
+                    "Revenue totals keyed by currency code (e.g. USD, EGP)",
+                  additionalProperties: { type: "number" },
+                  example: { USD: 1290.0 },
+                },
+                analysesThisMonth: { type: "integer", example: 318 },
+                creditsConsumedThisMonth: {
+                  type: "integer",
+                  example: 9450,
+                  description:
+                    "Sum of credits deducted this month (analysis_deduction + chat_deduction only). Excludes topups and refunds.",
+                },
+              },
+            },
+          },
+        },
+        AdminPaymentItem: {
+          type: "object",
+          properties: {
+            _id: { type: "string", example: "64abc123def456" },
+            amount: { type: "number", example: 49.99 },
+            currency: { type: "string", example: "USD" },
+            status: {
+              type: "string",
+              enum: ["pending", "succeeded", "failed", "refunded"],
+              example: "succeeded",
+            },
+            provider: { type: "string", example: "stripe" },
+            providerTxId: {
+              type: "string",
+              example: "pi_3OxampleStripe",
+            },
+            description: {
+              type: "string",
+              nullable: true,
+              example: "Premium plan subscription",
+            },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+            userId: {
+              type: "object",
+              description: "Populated user reference",
+              properties: {
+                _id: { type: "string" },
+                name: { type: "string", example: "Ahmed Ali" },
+                email: {
+                  type: "string",
+                  format: "email",
+                  example: "ahmed@example.com",
+                },
+                planSlug: {
+                  type: "string",
+                  enum: ["free", "premium", "enterprise"],
+                  example: "premium",
+                },
+                status: {
+                  type: "string",
+                  enum: ["active", "suspended", "deleted"],
+                  example: "active",
+                },
+              },
+            },
+          },
+        },
+        AdminPaymentsListResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            pagination: {
+              type: "object",
+              properties: {
+                page: { type: "integer", example: 1 },
+                pageSize: { type: "integer", example: 20 },
+                total: { type: "integer", example: 84 },
+                totalPages: { type: "integer", example: 5 },
+                hasNext: { type: "boolean", example: true },
+                hasPrev: { type: "boolean", example: false },
+              },
+            },
+            filters: {
+              type: "object",
+              properties: {
+                status: { type: "string", nullable: true },
+                userId: { type: "string", nullable: true },
+                dateFrom: { type: "string", nullable: true },
+                dateTo: { type: "string", nullable: true },
+              },
+            },
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/AdminPaymentItem" },
             },
           },
         },
@@ -393,6 +611,101 @@ const options: swaggerJsdoc.Options = {
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/payments/checkout": {
+        post: {
+          tags: ["Payments"],
+          summary: "Create a Stripe Checkout session",
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/CheckoutSessionRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Session created",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/CheckoutSessionResponse",
+                  },
+                },
+              },
+            },
+            400: { description: "Invalid plan or user state" },
+            401: { description: "Unauthorized" },
+            404: { description: "User or Plan not found" },
+          },
+        },
+      },
+      "/api/payments/success": {
+        get: {
+          tags: ["Payments"],
+          summary: "Stripe success callback",
+          parameters: [
+            {
+              name: "session_id",
+              in: "query",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: {
+              description: "Session confirmed",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ConfirmSessionResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/payments/cancel": {
+        get: {
+          tags: ["Payments"],
+          summary: "Stripe cancel callback",
+          responses: {
+            200: {
+              description: "Payment cancelled message",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/payments/webhook": {
+        post: {
+          tags: ["Payments"],
+          summary: "Stripe Webhook handler",
+          description:
+            "Receives asynchronous events from Stripe (raw body required)",
+          responses: {
+            200: {
+              description: "Webhook received",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      received: { type: "boolean", example: true },
+                    },
+                  },
                 },
               },
             },
@@ -681,6 +994,94 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      "/api/account/payments": {
+        get: {
+          tags: ["Account Payments"],
+          summary: "Get paginated payment history for current user",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "page",
+              in: "query",
+              schema: { type: "integer", default: 1 },
+            },
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer", default: 10 },
+            },
+          ],
+          responses: {
+            200: {
+              description: "Payment history retrieved",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/PaymentListResponse" },
+                },
+              },
+            },
+            401: { description: "Unauthorized" },
+          },
+        },
+      },
+      "/api/account/payments/{id}": {
+        get: {
+          tags: ["Account Payments"],
+          summary: "Get single payment detail",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: {
+              description: "Payment details",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      data: { $ref: "#/components/schemas/Payment" },
+                    },
+                  },
+                },
+              },
+            },
+            404: { description: "Payment not found" },
+          },
+        },
+      },
+      "/api/account/payments/{id}/invoice": {
+        get: {
+          tags: ["Account Payments"],
+          summary: "Download PDF invoice",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: {
+              description: "PDF invoice file",
+              content: {
+                "application/pdf": {
+                  schema: { type: "string", format: "binary" },
+                },
+              },
+            },
+            404: { description: "Payment not found" },
+          },
+        },
+      },
       "/api/account/subscription": {
         get: {
           tags: ["Account"],
@@ -790,6 +1191,79 @@ const options: swaggerJsdoc.Options = {
               },
             },
             404: { description: "Contract not found" },
+          },
+        },
+      },
+      "/api/contracts/{contractId}/clauses/{clauseIndexStr}/chat": {
+        post: {
+          tags: ["Contracts"],
+          summary:
+            "Have a focused AI conversation about a specific contract clause",
+          parameters: [
+            {
+              name: "contractId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "The 24-character contract ID",
+            },
+            {
+              name: "clauseIndexStr",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "The 0-based index of the clause in the analysis",
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["message"],
+                  properties: {
+                    message: {
+                      type: "string",
+                      example: "What does this indemnity clause cover?",
+                    },
+                    history: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          role: { type: "string", enum: ["user", "assistant"] },
+                          content: { type: "string" },
+                        },
+                      },
+                      example: [],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description:
+                "Streamed Server-Sent Events (SSE) response containing the AI answer chunks",
+              content: {
+                "text/event-stream": {
+                  schema: {
+                    type: "string",
+                    example:
+                      'data: {"text":"According"}\n\ndata: {"text":" to"}\n\ndata: [DONE]\n\n',
+                  },
+                },
+              },
+            },
+            400: { description: "Invalid input or index format" },
+            402: { description: "Insufficient credits available" },
+            429: {
+              description:
+                "Rate limit exceeded (Max 20 messages per clause per 24 hours)",
+            },
+            404: { description: "Contract analysis or clause index not found" },
           },
         },
       },
@@ -1062,6 +1536,276 @@ const options: swaggerJsdoc.Options = {
             401: { description: "Unauthorized" },
             403: { description: "Forbidden" },
             404: { description: "User not found" },
+          },
+        },
+      },
+      "/api/account/contracts": {
+        get: {
+          tags: ["Contract History"],
+          summary: "Get paginated list of user contracts",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "page",
+              in: "query",
+              schema: { type: "integer", default: 1 },
+              description: "Page number",
+            },
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer", default: 10, maximum: 50 },
+              description: "Items per page (max 50)",
+            },
+            {
+              name: "uploadedAfter",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Filter contracts uploaded after this date",
+            },
+            {
+              name: "uploadedBefore",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Filter contracts uploaded before this date",
+            },
+            {
+              name: "status",
+              in: "query",
+              schema: {
+                type: "string",
+                enum: ["analyzed", "pending", "failed"],
+              },
+              description: "Filter by analysis status",
+            },
+            {
+              name: "filename",
+              in: "query",
+              schema: { type: "string" },
+              description: "Partial filename search (case-insensitive)",
+            },
+            {
+              name: "sortBy",
+              in: "query",
+              schema: {
+                type: "string",
+                enum: ["uploadedAt", "analyzedAt", "riskLevel"],
+                default: "uploadedAt",
+              },
+              description: "Sort field",
+            },
+            {
+              name: "sortOrder",
+              in: "query",
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+                default: "desc",
+              },
+              description: "Sort order",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Contract list retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ContractListResponse" },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/account/contracts/{contractId}": {
+        get: {
+          tags: ["Contract History"],
+          summary: "Get full contract detail with latest analysis",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "contractId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Contract ID",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Contract detail retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            403: {
+              description: "Access denied - you do not own this contract",
+            },
+            404: { description: "Contract not found" },
+            500: { description: "Server error" },
+          },
+        },
+        delete: {
+          tags: ["Contract History"],
+          summary: "Soft delete a contract (hides from list, keeps in DB)",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "contractId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Contract ID",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Contract deleted successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiResponse" },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            403: {
+              description: "Access denied - you do not own this contract",
+            },
+            404: { description: "Contract not found or already deleted" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/admin/stats": {
+        get: {
+          tags: ["Admin"],
+          summary: "Get platform-wide stats for the current calendar month",
+          description:
+            "Returns total accounts, active subscriptions, revenue by currency, analyses run, and credits consumed (deduction events only). Requires admin role.",
+          security: [{ cookieAuth: [] }],
+          responses: {
+            200: {
+              description: "Stats retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/AdminStatsResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            403: {
+              description: "Admin role required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/admin/payments": {
+        get: {
+          tags: ["Admin"],
+          summary: "List all payments across all accounts (paginated)",
+          description:
+            "Returns a paginated, filterable list of all payments. Each payment includes a populated user sub-document. Requires admin role.",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "status",
+              in: "query",
+              schema: {
+                type: "string",
+                enum: ["pending", "succeeded", "failed", "refunded"],
+              },
+              description: "Filter by payment status",
+            },
+            {
+              name: "userId",
+              in: "query",
+              schema: { type: "string" },
+              description: "Filter by user MongoDB ObjectId",
+            },
+            {
+              name: "dateFrom",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Filter payments created on or after this ISO date",
+            },
+            {
+              name: "dateTo",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Filter payments created on or before this ISO date",
+            },
+            {
+              name: "page",
+              in: "query",
+              schema: { type: "integer", default: 1, minimum: 1 },
+              description: "Page number",
+            },
+            {
+              name: "pageSize",
+              in: "query",
+              schema: {
+                type: "integer",
+                default: 20,
+                minimum: 1,
+                maximum: 100,
+              },
+              description: "Results per page (max 100)",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Payments list retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/AdminPaymentsListResponse",
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid filter parameter",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            403: {
+              description: "Admin role required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: { description: "Server error" },
           },
         },
       },

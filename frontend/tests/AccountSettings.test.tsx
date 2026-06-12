@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { cleanup, render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { Mock } from 'vitest'
@@ -44,6 +45,13 @@ const translations: Record<string, Record<string, string>> = {
     'account.metadataTitle': 'Metadata',
     'account.memberSinceLabel': 'Member since',
     'account.upgradeNotAvailable': 'Upgrade not available',
+    'credits.sectionTitle': 'Credits Balance',
+    'credits.currentBalanceLabel': 'Current balance',
+    'credits.planAllowanceLabel': 'Plan allowance',
+    'credits.creditsRemaining': '{{count}} credits remaining ({{pct}}%)',
+    'credits.stateHealthy': 'Healthy',
+    'credits.ariaLabel': 'Credits balance widget',
+    'credits.progressAriaLabel': 'Credit usage progress bar',
   },
   ar: {
     'common.loading': 'تحميل',
@@ -80,6 +88,7 @@ vi.mock('../src/services/accountApi', () => ({
   accountApi: {
     getProfile: vi.fn(),
     getSubscription: vi.fn(),
+    getCredits: vi.fn(),
     updateProfile: vi.fn(),
   },
 }))
@@ -117,7 +126,9 @@ const createQueryClient = () =>
 const renderWithProviders = (ui: ReactNode) => {
   const queryClient = createQueryClient()
   return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    <MemoryRouter>
+      <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+    </MemoryRouter>
   )
 }
 
@@ -148,6 +159,12 @@ const subscriptionData = {
   renewalDate: '2024-12-31T00:00:00.000Z',
 }
 
+const creditsData = {
+  balance: 7,
+  planAllowance: 10,
+  ledger: [],
+}
+
 describe('AccountSettings page', () => {
   beforeEach(() => {
     currentTestLanguage = 'en'
@@ -157,7 +174,9 @@ describe('AccountSettings page', () => {
     vi.clearAllMocks()
     vi.mocked(accountApi.getProfile).mockReset()
     vi.mocked(accountApi.getSubscription).mockReset()
+    vi.mocked(accountApi.getCredits).mockReset()
     vi.mocked(accountApi.updateProfile).mockReset()
+    vi.mocked(accountApi.getCredits).mockResolvedValue(creditsData)
   })
 
   it('should validate account settings form fields', () => {
@@ -224,7 +243,10 @@ describe('AccountSettings page', () => {
 
     expect(screen.getByDisplayValue('john.doe@example.com')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Free' })).toBeInTheDocument()
-    expect(screen.getByText('3/10')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('7')).toBeInTheDocument()
+      expect(screen.getByText('10')).toBeInTheDocument()
+    })
     expect(screen.getByRole('button', { name: 'Upgrade plan' })).toBeInTheDocument()
   })
 

@@ -114,6 +114,9 @@ jobs:
           LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           JWT_SECRET: test-jwt-secret-for-ci
+          STRIPE_SECRET_KEY: test-stripe-secret-for-ci
+          STRIPE_PUBLISHABLE_KEY: test-stripe-publishable-for-ci
+          STRIPE_WEBHOOK_SECRET: test-stripe-webhook-for-ci
 
       - name: Upload backend coverage report
         uses: actions/upload-artifact@v4

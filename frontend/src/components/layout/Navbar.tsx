@@ -1,11 +1,21 @@
 /* src/components/layout/Navbar.tsx */
 import { useState, useRef, useEffect } from 'react'
-import { Sun, Moon, ExternalLink, User, Settings, LogOut } from 'lucide-react'
+import {
+  Sun,
+  Moon,
+  ExternalLink,
+  User,
+  Settings,
+  LogOut,
+  Shield,
+  Users,
+  History,
+} from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { motion, AnimatePresence } from 'framer-motion'
-import SubscriptionBadge from '../SubscriptionBadge'
+import CreditsBadge from '../CreditsBadge'
 import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
 
@@ -99,7 +109,7 @@ const Navbar = () => {
           <div className="bg-border/60 mx-2 hidden h-6 w-[1px] md:block" />
 
           <div className="flex items-center gap-3">
-            <SubscriptionBadge variant="compact" />
+            {isAuthenticated && <CreditsBadge variant="compact" />}
 
             <button
               onClick={toggleTheme}
@@ -150,6 +160,37 @@ const Navbar = () => {
                             {user.name}
                           </div>
                         )}
+                        {user?.role === 'admin' && (
+                          <>
+                            <Link
+                              to="/admin/dashboard"
+                              onClick={() => setDropdownOpen(false)}
+                              className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+                              role="menuitem"
+                            >
+                              <Shield size={16} />
+                              {t('admin.dashboard_title')}
+                            </Link>
+                            <Link
+                              to="/admin/accounts"
+                              onClick={() => setDropdownOpen(false)}
+                              className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+                              role="menuitem"
+                            >
+                              <Users size={16} />
+                              {t('admin.accounts_title')}
+                            </Link>
+                          </>
+                        )}
+                        <Link
+                          to="/contract-history"
+                          onClick={() => setDropdownOpen(false)}
+                          className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+                          role="menuitem"
+                        >
+                          <History size={16} />
+                          {t('nav.contract_history')}
+                        </Link>
                         <Link
                           to="/account-settings"
                           onClick={() => setDropdownOpen(false)}

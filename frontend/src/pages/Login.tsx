@@ -85,7 +85,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="group bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary/50 relative flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold shadow-lg transition-all focus:ring-2 focus:outline-none disabled:opacity-50"
+            className="group bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary/50 relative flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold shadow-lg transition-all hover:cursor-pointer focus:ring-2 focus:outline-none disabled:opacity-50"
           >
             {isLoading ? t('common.loading') : t('auth.loginAction')}
           </button>

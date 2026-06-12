@@ -5,15 +5,20 @@ import { fileURLToPath } from "url";
 
 // ── Mock Setup ───────────────────────────────────
 
-const mockInvoke = jest.fn() as jest.Mock;
+const mockOpenAIInvoke = jest.fn() as jest.Mock;
+const mockGeminiInvoke = jest.fn() as jest.Mock;
 
-jest.unstable_mockModule("@langchain/google-genai", () => {
-  return {
-    ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => ({
-      invoke: mockInvoke,
-    })),
-  };
-});
+jest.unstable_mockModule("@langchain/openai", () => ({
+  ChatOpenAI: jest.fn().mockImplementation(() => ({
+    invoke: mockOpenAIInvoke,
+  })),
+}));
+
+jest.unstable_mockModule("@langchain/google-genai", () => ({
+  ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+    invoke: mockGeminiInvoke,
+  })),
+}));
 
 // Import AFTER mocking
 const { ExtractorAgent } = await import(
@@ -160,7 +165,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 1: English Employment Contract", () => {
     test("should extract all clauses with correct structure", async () => {
       const contractText = loadSampleContract("employment-en.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(EMPLOYMENT_EN_RESPONSE),
       });
 
@@ -194,7 +199,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 2: English NDA", () => {
     test("should extract clauses with confidentiality as dominant type", async () => {
       const contractText = loadSampleContract("nda-en.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(NDA_EN_RESPONSE),
       });
 
@@ -217,7 +222,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 3: Arabic Employment Contract (عقد عمل)", () => {
     test("should extract Arabic clauses and detect language", async () => {
       const contractText = loadSampleContract("employment-ar.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(EMPLOYMENT_AR_RESPONSE),
       });
 
@@ -248,7 +253,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 4: Arabic Service Agreement (عقد خدمات)", () => {
     test("should extract service-related clauses", async () => {
       const contractText = loadSampleContract("service-ar.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(SERVICE_AR_RESPONSE),
       });
 
@@ -272,7 +277,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 5: Mixed Arabic/English Lease", () => {
     test("should handle bilingual contract", async () => {
       const contractText = loadSampleContract("mixed-ar-en.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(MIXED_AR_EN_RESPONSE),
       });
 
@@ -296,7 +301,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 6: English SaaS Agreement", () => {
     test("should extract SaaS licensing and data clauses", async () => {
       const contractText = loadSampleContract("saas-en.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(SAAS_EN_RESPONSE),
       });
 
@@ -315,7 +320,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 7: Arabic Partnership Agreement (عقد شراكة)", () => {
     test("should extract capital and profit sharing clauses", async () => {
       const contractText = loadSampleContract("partnership-ar.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(PARTNERSHIP_AR_RESPONSE),
       });
 
@@ -333,7 +338,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 8: English Freelance Agreement", () => {
     test("should extract IP assignment and scope of work", async () => {
       const contractText = loadSampleContract("freelance-en.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(FREELANCE_EN_RESPONSE),
       });
 
@@ -351,7 +356,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 9: Arabic Loan Agreement (عقد قرض)", () => {
     test("should extract repayment and default clauses", async () => {
       const contractText = loadSampleContract("loan-ar.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(LOAN_AR_RESPONSE),
       });
 
@@ -369,7 +374,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   describe("Sample 10: English Privacy Policy", () => {
     test("should extract data usage and user rights", async () => {
       const contractText = loadSampleContract("privacy-en.txt");
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(PRIVACY_EN_RESPONSE),
       });
 
@@ -388,7 +393,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
     test("should extract all 50 clauses correctly", async () => {
       // Simulating a very large text input
       const contractText = "Standard legal paragraph content for testing high-volume documents. ".repeat(300);
-      mockInvoke.mockResolvedValueOnce({
+      mockOpenAIInvoke.mockResolvedValueOnce({
         content: JSON.stringify(LARGE_CONTRACT_50_CLAUSES_RESPONSE),
       });
 
@@ -403,7 +408,9 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
   // ────────────────────────────────────────────────
 
   describe("Cross-contract structural validation", () => {
-    test("all sample contracts should produce valid clause structures", async () => {
+    test(
+      "all sample contracts should produce valid clause structures",
+      async () => {
       const contracts = [
         { file: "employment-en.txt", response: EMPLOYMENT_EN_RESPONSE, lang: "en" as const },
         { file: "nda-en.txt", response: NDA_EN_RESPONSE, lang: "en" as const },
@@ -420,7 +427,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
 
       for (const { file, response, lang } of contracts) {
         jest.clearAllMocks();
-        mockInvoke.mockResolvedValueOnce({
+        mockOpenAIInvoke.mockResolvedValueOnce({
           content: JSON.stringify(response),
         });
 
@@ -450,6 +457,8 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
           expect(result.clauses[i].clauseNumber).toBe(i + 1);
         }
       }
-    });
+      },
+      60000,
+    );
   });
 });

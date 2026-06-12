@@ -11,6 +11,8 @@ export interface SubscriptionInfo {
   analysesUsed: number
   analysesAllowed: number
   renewalDate: string
+  endDate?: string
+  paymentStatus?: 'paid' | 'failed' | 'pending'
 }
 
 export interface UpdateProfilePayload {
@@ -54,4 +56,33 @@ export interface Usage {
 export interface SubscriptionResponseData {
   subscription: Subscription
   usage: Usage
+  latestPayment?: {
+    status: 'paid' | 'failed' | 'pending'
+  }
+}
+
+export type CreditLedgerReason =
+  | 'plan_topup'
+  | 'analysis_deduction'
+  | 'chat_deduction'
+  | 'manual_adjustment'
+  | 'refund'
+
+export interface CreditLedgerEntry {
+  _id: string
+  delta: number
+  balanceAfter: number
+  reason: CreditLedgerReason
+  metadata: {
+    tokensUsed?: number
+    hostingCost?: number
+    contractId?: string
+  }
+  createdAt: string
+}
+
+export interface CreditsData {
+  balance: number
+  planAllowance: number
+  ledger: CreditLedgerEntry[]
 }

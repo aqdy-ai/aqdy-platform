@@ -66,6 +66,7 @@ export class RiskClassifierAgent {
     clauseText: string,
     clauseType: string,
     language: "ar" | "en",
+    options?: { callbacks?: any[] },
   ): Promise<ClassificationResult> {
     const startTime = Date.now();
 
@@ -146,11 +147,11 @@ export class RiskClassifierAgent {
       kbMatch || undefined,
     );
 
-    // 3. Call LLM service
     const llmResponse = await llmService.call(userPrompt, {
       systemPrompt,
       temperature: 0.1,
       maxTokens: 2048,
+      callbacks: options?.callbacks,
     });
 
     // 4. Parse & Validate LLM Output

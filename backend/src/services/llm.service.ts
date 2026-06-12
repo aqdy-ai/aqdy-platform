@@ -1,4 +1,5 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatOpenAI } from "@langchain/openai";
 import {
   BaseMessage,
   HumanMessage,
@@ -12,7 +13,7 @@ import { logger } from "../utils/logger.js";
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
-const GEMINI_PRIMARY = "gemini-3.5-flash";
+const PRIMARY_MODEL = "gpt-4o";
 const GEMINI_FALLBACK = "gemini-3.1-flash-lite";
 
 // ── Interfaces ───────────────────────────────────
@@ -21,6 +22,7 @@ export interface LLMRequestOptions {
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
+  callbacks?: any[];
 }
 
 export interface LLMResponse {
@@ -48,14 +50,12 @@ const buildMessages = (
 
 // ── Client Factories ─────────────────────────────
 
-const createGeminiPrimaryClient = (
-  options: LLMRequestOptions,
-): ChatGoogleGenerativeAI => {
-  return new ChatGoogleGenerativeAI({
-    model: GEMINI_PRIMARY,
-    apiKey: env.GEMINI_API_KEY,
+const createPrimaryClient = (options: LLMRequestOptions): ChatOpenAI => {
+  return new ChatOpenAI({
+    model: PRIMARY_MODEL,
+    apiKey: env.OPENAI_API_KEY,
     temperature: options.temperature ?? 0.1,
-    maxOutputTokens: options.maxTokens ?? 4096,
+    maxTokens: options.maxTokens ?? 4096,
     maxRetries: 0, // We handle retries manually
   });
 };
@@ -79,7 +79,7 @@ const callWithRetry = async (
   options: LLMRequestOptions,
   useFallback = false,
 ): Promise<string> => {
-  const clientName = useFallback ? GEMINI_FALLBACK : GEMINI_PRIMARY;
+  const clientName = useFallback ? GEMINI_FALLBACK : PRIMARY_MODEL;
   const messages = buildMessages(prompt, options.systemPrompt);
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -91,9 +91,11 @@ const callWithRetry = async (
 
       const client = useFallback
         ? createGeminiFallbackClient(options)
-        : createGeminiPrimaryClient(options);
+        : createPrimaryClient(options);
 
-      const response = await client.invoke(messages);
+      const response = await client.invoke(messages, {
+        callbacks: options.callbacks,
+      });
       const content = response.content;
 
       if (typeof content !== "string") {
@@ -118,19 +120,18 @@ const callWithRetry = async (
         throw error;
       }
 
-      // Exponential backoff: 1s → 2s → 4s
-      await sleep(RETRY_DELAY_MS * Math.pow(2, attempt - 1));
+      await sleep(RETRY_DELAY_MS * attempt);
     }
   }
 
-  throw new Error(`All ${MAX_RETRIES} attempts failed for ${clientName}`);
+  throw new Error("LLM call failed after max retries");
 };
 
 // ── Public API ───────────────────────────────────
 
 export const llmService = {
   /**
-   * Call Gemini 3.5 Flash with automatic fallback to Gemini 3.1 Flash Lite
+   * Call GPT-4o with automatic fallback to Gemini 3.1 Flash Lite
    * if the primary model fails all retries.
    * This is the main method all agents should use.
    */
@@ -138,17 +139,17 @@ export const llmService = {
     prompt: string,
     options: LLMRequestOptions = {},
   ): Promise<LLMResponse> {
-    // Try Gemini 3.5 Flash first
+    // Try GPT-4o first
     try {
       const content = await callWithRetry(prompt, options, false);
       return {
         content,
-        model: GEMINI_PRIMARY,
+        model: PRIMARY_MODEL,
         usedFallback: false,
       };
     } catch (primaryError) {
       logger.warn(
-        "Gemini 3.5 Flash exhausted all retries — switching to Gemini 3.1 Flash Lite fallback",
+        "GPT-4o exhausted all retries — switching to Gemini 3.1 Flash Lite fallback",
         {
           error:
             primaryError instanceof Error
@@ -167,7 +168,7 @@ export const llmService = {
         usedFallback: true,
       };
     } catch (fallbackError) {
-      logger.error("Both Gemini models failed", {
+      logger.error("Both primary and fallback models failed", {
         error:
           fallbackError instanceof Error
             ? fallbackError.message
@@ -180,7 +181,7 @@ export const llmService = {
   },
 
   /**
-   * Call Gemini 3.5 Flash (primary) directly — no fallback.
+   * Call GPT-4o (primary) directly — no fallback.
    * Use when you specifically need the larger, more capable model.
    */
   async callPrimary(
@@ -190,7 +191,7 @@ export const llmService = {
     const content = await callWithRetry(prompt, options, false);
     return {
       content,
-      model: GEMINI_PRIMARY,
+      model: PRIMARY_MODEL,
       usedFallback: false,
     };
   },

@@ -21,6 +21,10 @@ export interface AuthenticatedRequest extends Request {
   user?: IUser;
   requestId?: string;
   langfuseTraceId?: string;
+  /** Estimated credit cost attached by creditsEnforcement.middleware before analysis */
+  estimatedCreditCost?: number;
+  /** Estimated token count attached by creditsEnforcement.middleware before analysis */
+  estimatedTokens?: number;
 }
 export interface JwtPayload {
   sub: string;

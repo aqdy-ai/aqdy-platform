@@ -4,6 +4,7 @@ import { AppError } from "../middlewares/errorHandler.js";
 import { env } from "../config/env.js";
 import { User, IUser } from "../models/user.model.js";
 import { subscriptionService } from "./subscription.service.js";
+import { creditsService } from "./credits.service.js";
 import { logger } from "../utils/logger.js";
 import {
   RegisterInput,
@@ -77,12 +78,24 @@ export const registerUser = async (
   user.password = userData.password;
   await user.save();
 
-  // ← ضيف الـ subscription هنا
   try {
     await subscriptionService.createFreeSubscription(String(user._id));
   } catch (error) {
     logger.warn(
       `Failed to create free subscription for user ${user._id}:`,
+      error,
+    );
+  }
+
+  try {
+    await creditsService.topup(
+      String(user._id),
+      env.FREE_PLAN_CREDITS,
+      "plan_topup",
+    );
+  } catch (error) {
+    logger.warn(
+      `Failed to initialize credit balance for user ${user._id}:`,
       error,
     );
   }

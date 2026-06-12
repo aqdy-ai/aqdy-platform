@@ -26,6 +26,14 @@ const RiskAnalysisDashboard = lazy(
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
+const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
+const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
+import AdminRoute from './components/AdminRoute'
+const BillingHistory = lazy(() => import('./pages/BillingHistory'))
+const ContractHistory = lazy(() => import('./pages/ContractHistory'))
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
@@ -125,12 +133,54 @@ function AppContent() {
             }
           />
 
+          {/* الـ Admin Routes (للمسؤولين فقط) */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/accounts"
+            element={
+              <AdminRoute>
+                <AdminAccounts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/contracts"
+            element={
+              <AdminRoute>
+                <AdminContracts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/payments"
+            element={
+              <AdminRoute>
+                <AdminPayments />
+              </AdminRoute>
+            }
+          />
+
           {/* الـ Guest Routes (ممنوعة على المسجلين) */}
           <Route
             path="/account-settings"
             element={
               <ProtectedRoute>
                 <AccountSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contract-history"
+            element={
+              <ProtectedRoute>
+                <ContractHistory />
               </ProtectedRoute>
             }
           />
@@ -148,6 +198,22 @@ function AppContent() {
               <GuestRoute>
                 <Register />
               </GuestRoute>
+            }
+          />
+          <Route
+            path="/billing-history"
+            element={
+              <ProtectedRoute>
+                <BillingHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment/success"
+            element={
+              <ProtectedRoute>
+                <PaymentSuccess />
+              </ProtectedRoute>
             }
           />
 

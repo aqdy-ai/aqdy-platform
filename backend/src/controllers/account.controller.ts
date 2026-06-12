@@ -7,6 +7,8 @@ import {
   updateProfile,
   deleteAccount,
 } from "../services/account.service.js";
+import { creditsService } from "../services/credits.service.js";
+import { subscriptionService } from "../services/subscription.service.js";
 
 const updateProfileSchema = z
   .object({
@@ -131,6 +133,55 @@ export const deleteAccountHandler = async (
     const response: ApiResponse<null> = {
       success: true,
       message: "Account deleted successfully.",
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCreditsHandler = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AppError(401, "Authentication required.");
+    }
+
+    const userId = String(user._id);
+    const balance = await creditsService.ensureInitialPlanCredits(userId);
+    const ledgerEntries = await creditsService.getLedgerEntries(userId, 20);
+
+    // Resolve plan allowance so the frontend can render a meaningful progress bar
+    let planAllowance = 0;
+    const subscription = await subscriptionService.getUserSubscription(userId);
+    if (
+      subscription &&
+      subscription.planId &&
+      typeof subscription.planId !== "string"
+    ) {
+      const plan = subscription.planId as unknown as {
+        creditAllowance?: number;
+      };
+      planAllowance = plan.creditAllowance ?? 0;
+    }
+
+    const response: ApiResponse<{
+      balance: number;
+      planAllowance: number;
+      ledger: typeof ledgerEntries;
+    }> = {
+      success: true,
+      data: {
+        balance,
+        planAllowance,
+        ledger: ledgerEntries,
+      },
+      message: "Credits retrieved successfully.",
     };
 
     res.status(200).json(response);

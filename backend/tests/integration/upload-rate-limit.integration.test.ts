@@ -40,6 +40,12 @@ jest.unstable_mockModule("../../src/services/analysis.service.js", () => ({
   analysisService: { triggerAnalysis: mockTriggerAnalysis },
 }));
 
+jest.unstable_mockModule("../../src/services/credits.service.js", () => ({
+  creditsService: {
+    getBalance: jest.fn().mockResolvedValue(100),
+  },
+}));
+
 jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
   authenticateJwt: (req: any, res: any, next: any) => {
     req.user = {

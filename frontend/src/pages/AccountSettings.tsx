@@ -2,9 +2,11 @@ import { useMemo, useState, useEffect } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { accountApi } from '../services/accountApi'
 import type { UpdateProfilePayload } from '../types/account'
+import CreditsBadge from '../components/CreditsBadge'
 
 export interface AccountSettingsForm {
   name: string
@@ -81,6 +83,7 @@ const formatDate = (value: string, locale: string) => {
 
 export default function AccountSettings() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const isRtl = i18n.language === 'ar'
 
   const [formData, setFormData] = useState<AccountSettingsForm>({
@@ -361,38 +364,21 @@ export default function AccountSettings() {
                   </span>
                 </div>
 
-                <div className="text-foreground/80 space-y-3 text-sm">
-                  <div className="bg-background flex items-center justify-between rounded-2xl p-4">
-                    <span>{t('account.analysesUsageLabel')}</span>
-                    <span>
-                      {planDetails?.analysesUsed ?? 0}/
-                      {planDetails?.analysesAllowed ?? 0}
-                    </span>
-                  </div>
-                  <div className="bg-background flex items-center justify-between rounded-2xl p-4">
-                    <span>{t('account.analysesAllowedLabel')}</span>
-                    <span>{planDetails?.analysesAllowed ?? 0}</span>
-                  </div>
-                  <div className="bg-background flex items-center justify-between rounded-2xl p-4">
-                    <span>{t('account.renewalDateLabel')}</span>
-                    <span>
-                      {planDetails
-                        ? formatDate(planDetails.renewalDate, i18n.language)
-                        : '—'}
-                    </span>
-                  </div>
-                </div>
-
-                {planDetails?.planName?.toLowerCase().includes('free') && (
+                {!planDetails?.planName
+                  ?.toLowerCase()
+                  .includes('enterprise') && (
                   <button
                     type="button"
-                    onClick={() => toast.info(t('account.upgradeNotAvailable'))}
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/90 mt-6 w-full rounded-2xl px-4 py-3 text-sm font-semibold transition"
+                    onClick={() => navigate('/pricing')}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10 mt-6 w-full rounded-2xl px-4 py-3 text-sm font-semibold shadow-md transition-all active:scale-[0.98]"
                   >
                     {t('account.upgradeAction')}
                   </button>
                 )}
               </div>
+
+              {/* Credits Balance Widget */}
+              <CreditsBadge variant="expanded" />
 
               <div className="border-border/70 bg-card rounded-3xl border p-6 shadow-xl">
                 <div className="mb-4 flex items-center justify-between gap-4">

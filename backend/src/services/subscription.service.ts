@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Subscription, ISubscription } from "../models/subscription.model.js";
 import { Plan, IPlan } from "../models/plan.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
+
 import { logger } from "../utils/logger.js";
 
 export class SubscriptionService {
@@ -99,7 +100,13 @@ export class SubscriptionService {
       throw new Error("No active subscription found.");
     }
 
-    subscription.status = "cancelled";
+    if (subscription.stripeSubscriptionId) {
+      const { stripe } = await import("./payment.service.js");
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+    }
+
     subscription.cancelledAt = new Date();
 
     await subscription.save();
