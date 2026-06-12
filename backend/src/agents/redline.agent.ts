@@ -61,6 +61,7 @@ export class RedlineAgent {
     clauseType: string,
     language: "ar" | "en",
     saferAlternative?: string,
+    options?: { callbacks?: any[] },
   ): Promise<RedlineResult> {
     const startTime = Date.now();
 
@@ -107,11 +108,11 @@ export class RedlineAgent {
       saferAlternative,
     );
 
-    // 2. Call LLM service (Gemini 3.5 with fallback)
     const llmResponse = await llmService.call(userPrompt, {
       systemPrompt,
       temperature: 0.2, // slightly higher temp for creative/negotiation suggestions
       maxTokens: 2048,
+      callbacks: options?.callbacks,
     });
 
     // 3. Parse & Validate LLM Output

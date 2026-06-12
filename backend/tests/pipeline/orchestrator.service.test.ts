@@ -13,7 +13,7 @@ jest.unstable_mockModule("../../src/agents/riskClassifier.agent.js", () => ({
 }));
 
 const mockGenerateRedline = jest.fn() as jest.Mock<any>;
-jest.unstable_mockModule("../../src/agents/redline.agent.ts", () => ({
+jest.unstable_mockModule("../../src/agents/redline.agent.js", () => ({
   redlineAgent: { generate: mockGenerateRedline },
 }));
 
@@ -27,6 +27,7 @@ jest.unstable_mockModule("../../src/config/langfuse.config.js", () => ({
   createLangfuseHandler: jest.fn().mockReturnValue({
     shutdownAsync: jest.fn().mockResolvedValue(true),
   }),
+  logAgentExecution: jest.fn(),
 }));
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
@@ -100,7 +101,8 @@ describe("OrchestratorService", () => {
       "high",
       "liability",
       "en",
-      undefined // No RAG match found in this test
+      undefined, // No RAG match found in this test
+      expect.objectContaining({ callbacks: expect.any(Array) }),
     );
 
     expect(result.executiveSummary.overallRisk).toBe("high");
@@ -234,7 +236,8 @@ describe("OrchestratorService", () => {
       "high",
       "liability",
       "en",
-      "The safer alternative text from KB"
+      "The safer alternative text from KB",
+      expect.objectContaining({ callbacks: expect.any(Array) }),
     );
   });
 

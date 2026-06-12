@@ -120,37 +120,20 @@ describe('Pricing Page', () => {
   test('CTA links and navigation targets', async () => {
     renderWithProviders((props) => <Pricing {...props} />)
 
-    // التأكد من تحميل الكروت أولاً قبل فحص الروابط
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /free/i })).toBeInTheDocument()
     })
 
-    const allLinks = screen.getAllByRole('link')
+    const registerLink = screen.getByRole('link', { name: /get started free/i })
+    expect(registerLink).toHaveAttribute('href', '/register')
 
-    // 1. فحص رابط تسجيل الخطة المجانية
-    const registerLink = allLinks.find(
-      (l) => l.getAttribute('href') === '/register'
-    )
-    expect(registerLink).toBeInTheDocument()
-
-    // 2. فحص رابط الدفع وترقية الـ Pro مع الـ Query parameters الجديدة
-    const checkoutLink = allLinks.find((l) =>
-      l.getAttribute('href')?.includes('/checkout')
-    )
-    expect(checkoutLink).toBeInTheDocument()
-    // 🌟 التعديل السليم هنا: استخدام toHaveAttribute المباشر والآمن مع الـ Linter
-    expect(checkoutLink).toHaveAttribute(
-      'href',
-      expect.stringContaining('plan=pro')
-    )
-
-    // 3. فحص رابط البريد الإلكتروني للشركات والمؤسسات (Enterprise)
-    const mailtoLink = screen.getByRole('link', { name: /contact us/i })
-    expect(mailtoLink).toBeInTheDocument()
-    expect(mailtoLink).toHaveAttribute(
-      'href',
-      expect.stringContaining('mailto:partnerships@aqdy.ai')
-    )
+    const upgradeButtons = screen.getAllByRole('button', {
+      name: /upgrade to pro/i,
+    })
+    expect(upgradeButtons.length).toBeGreaterThanOrEqual(1)
+    upgradeButtons.forEach((button) => {
+      expect(button).not.toBeDisabled()
+    })
   })
 
   test('disables current plan interactions when user is logged in', async () => {
@@ -164,19 +147,9 @@ describe('Pricing Page', () => {
       expect(screen.getByRole('heading', { name: /pro/i })).toBeInTheDocument()
     })
 
-    const allLinks = screen.getAllByRole('link')
-    const proLink = allLinks.find((l) =>
-      l.getAttribute('href')?.includes('plan=pro')
-    )
-
-    // الـ Criteria بتقول إن الـ Link الحالي لازم يتعطل وما يقبلش الـ clicks
-    if (proLink) {
-      expect(proLink).toHaveClass('pointer-events-none')
-    } else {
-      // لو الكود قرر يخفيه تماماً ويكتب شارة مكان الزرار
-      expect(
-        screen.queryByRole('link', { name: /upgrade to pro/i })
-      ).not.toBeInTheDocument()
-    }
+    const currentPlanButton = screen.getByRole('button', {
+      name: /current plan/i,
+    })
+    expect(currentPlanButton).toBeDisabled()
   })
 })

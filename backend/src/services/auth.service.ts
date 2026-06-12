@@ -78,13 +78,7 @@ export const registerUser = async (
   user.password = userData.password;
   await user.save();
 
-  // ← اضف الـ subscription ورصيد الائتمان الافتراضي هنا
-  let freePlanAllowance = 0;
   try {
-    const freePlan = await subscriptionService.getFreePlan();
-    if (freePlan?.creditAllowance) {
-      freePlanAllowance = freePlan.creditAllowance;
-    }
     await subscriptionService.createFreeSubscription(String(user._id));
   } catch (error) {
     logger.warn(
@@ -93,15 +87,17 @@ export const registerUser = async (
     );
   }
 
-  if (freePlanAllowance > 0) {
-    try {
-      await creditsService.topupForPlanAllowance(String(user._id));
-    } catch (error) {
-      logger.warn(
-        `Failed to initialize credit balance for user ${user._id}:`,
-        error,
-      );
-    }
+  try {
+    await creditsService.topup(
+      String(user._id),
+      env.FREE_PLAN_CREDITS,
+      "plan_topup",
+    );
+  } catch (error) {
+    logger.warn(
+      `Failed to initialize credit balance for user ${user._id}:`,
+      error,
+    );
   }
 
   const { token, refreshToken } = await issueTokens(user);

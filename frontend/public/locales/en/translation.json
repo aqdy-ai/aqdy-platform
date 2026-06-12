@@ -184,12 +184,11 @@
     "invoice_download_failed": "Failed to download invoice. Please try again.",
     "error_user_id_missing": "User ID is missing. Cannot download invoice.",
     "error_user_not_authenticated": "You must be logged in to download invoices.",
-    "error_fetching_payments": "Failed to load payment history. Please try again later."
-    },
+    "error_fetching_payments": "Failed to load payment history. Please try again later.",
     "upgradeSuccess": "Upgrade initiated! Check your email.",
     "cancellationConfirmed": "Subscription cancelled successfully.",
     "creditTopupSuccess": "Credits topped up successfully."
-  ,
+  },
   "auth": {
     "loginTitle": "Login",
     "loginSubtitle": "Join us today and unlock the power of AI legal analysis",

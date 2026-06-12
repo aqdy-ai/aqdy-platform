@@ -120,6 +120,9 @@ export function createLangfuseHandler(
 
   try {
     const handler = new CallbackHandler({
+      publicKey: env.LANGFUSE_PUBLIC_KEY,
+      secretKey: env.LANGFUSE_SECRET_KEY,
+      baseUrl: env.LANGFUSE_URL,
       sessionId: options.sessionId,
       userId: options.userId,
       traceMetadata: options.traceName
@@ -159,6 +162,7 @@ export function logAgentExecution(metadata: AgentTraceMetadata): void {
       id: traceId,
       name: `agent-${metadata.agentName}`,
       userId: metadata.userId,
+      sessionId: `analysis-${metadata.contractId}`,
       metadata: {
         agentName: metadata.agentName,
         contractId: metadata.contractId,

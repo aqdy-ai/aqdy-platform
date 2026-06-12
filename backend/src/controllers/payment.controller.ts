@@ -25,17 +25,19 @@ export class PaymentController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { planSlug } = req.body;
+      const { planSlug, billingCycle } = req.body;
       if (!planSlug || typeof planSlug !== "string") {
         throw new AppError(400, "planSlug is required.");
       }
 
+      const cycle = billingCycle === "annual" ? "annual" : "monthly";
       const userId = req.user._id.toString();
 
-      // Pass planSlug — paymentService.createCheckoutSession resolves it
+      // Pass planSlug + billing cycle — paymentService resolves it
       const result = await paymentService.createCheckoutSession(
         userId,
         planSlug,
+        cycle,
       );
 
       logger.info(

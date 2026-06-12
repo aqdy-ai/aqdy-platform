@@ -232,20 +232,29 @@ export class AnalysisService {
 
     // ── Credits deduction ────────────────────────────────────────────────
     // Deduct the actual cost based on real token usage from the pipeline.
-    // This runs AFTER a successful save so:
+    // The pipeline reports a combined tokensUsed; we apply a 70/30 input/output
+    // split (matching the pre-flight estimate heuristic) to feed the weighted
+    // formula. This runs AFTER a successful save so:
     //   - No charge on analysis failure or retries
     //   - No double-charge (deducted once per persisted analysis)
     try {
-      const tokensUsed = result.tokensUsed;
-      const actualCost = await creditsService.estimateCost(tokensUsed);
+      const combinedTokens = result.tokensUsed ?? 0;
+      const inputTokens = Math.round(combinedTokens * 0.7);
+      const outputTokens = Math.round(combinedTokens * 0.3);
+      const actualCost = Math.max(
+        1,
+        creditsService.calculateAnalysisCost(inputTokens, outputTokens),
+      );
       await creditsService.deduct(job.userId, actualCost, {
-        tokensUsed,
+        tokensUsed: combinedTokens,
         contractId: job.contractId,
       });
       logger.info("creditsService: deducted credits after analysis", {
         userId: job.userId,
         contractId: job.contractId,
-        tokensUsed,
+        combinedTokens,
+        inputTokens,
+        outputTokens,
         actualCost,
       });
     } catch (creditError) {

@@ -7,13 +7,13 @@ const validContractId = new mongoose.Types.ObjectId().toString();
 
 // ── Mock: creditsService ───────────────────────────────────────────────────
 const mockGetBalance = jest.fn<() => Promise<number>>();
-const mockEstimateCost = jest.fn<() => Promise<number>>();
+const mockCalculateAnalysisCost = jest.fn<(inputTokens: number, outputTokens: number) => number>();
 const mockDeduct = jest.fn<() => Promise<unknown>>();
 
 jest.unstable_mockModule('../../src/services/credits.service.js', () => ({
   creditsService: {
     getBalance: mockGetBalance,
-    estimateCost: mockEstimateCost,
+    calculateAnalysisCost: mockCalculateAnalysisCost,
     deduct: mockDeduct,
   },
   InsufficientCreditsError: class InsufficientCreditsError extends Error {
@@ -78,7 +78,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
     // Default: contract text of 2000 chars → ~500 tokens
     mockGetContractById.mockResolvedValue({ text: 'x'.repeat(2000) });
     // Default estimated cost: 5 credits
-    mockEstimateCost.mockResolvedValue(5);
+    mockCalculateAnalysisCost.mockReturnValue(5);
   });
 
   // ── Test 1: Sufficient balance passes ─────────────────────────────────
@@ -98,7 +98,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
 
   test('should attach estimatedCreditCost and estimatedTokens to req', async () => {
     mockGetBalance.mockResolvedValue(100);
-    mockEstimateCost.mockResolvedValue(7.5);
+    mockCalculateAnalysisCost.mockReturnValue(7.5);
 
     const req = mockReq(validUserId, validContractId);
     const res = mockRes();
@@ -136,7 +136,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
 
   test('402 response body should contain a human-readable message', async () => {
     mockGetBalance.mockResolvedValue(1);
-    mockEstimateCost.mockResolvedValue(10);
+    mockCalculateAnalysisCost.mockReturnValue(10);
 
     const req = mockReq(validUserId, validContractId);
     const res = mockRes();
@@ -151,7 +151,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
 
   test('should call next() when balance exactly equals estimated cost', async () => {
     const exactCost = 5;
-    mockEstimateCost.mockResolvedValue(exactCost);
+    mockCalculateAnalysisCost.mockReturnValue(exactCost);
     mockGetBalance.mockResolvedValue(exactCost); // balance == requiredCredits
 
     const req = mockReq(validUserId, validContractId);
@@ -173,7 +173,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
 
     expect(mockNext).toHaveBeenCalledWith();
     expect(mockGetBalance).not.toHaveBeenCalled();
-    expect(mockEstimateCost).not.toHaveBeenCalled();
+    expect(mockCalculateAnalysisCost).not.toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
   });
 
@@ -182,7 +182,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
   test('should use default token estimate and still enforce when contract lookup fails', async () => {
     mockGetContractById.mockResolvedValue(null); // contract not found
     mockGetBalance.mockResolvedValue(0); // zero balance → should block
-    mockEstimateCost.mockResolvedValue(3);
+    mockCalculateAnalysisCost.mockReturnValue(3);
 
     const req = mockReq(validUserId, validContractId);
     const res = mockRes();
@@ -190,7 +190,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
     await enforceCreditsBeforeAnalysis(req, res, mockNext);
 
     // Should still attempt cost check using default estimate
-    expect(mockEstimateCost).toHaveBeenCalled();
+    expect(mockCalculateAnalysisCost).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(402);
   });
 

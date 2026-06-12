@@ -22,7 +22,7 @@ import uploadRouter from "./routes/upload.route.js";
 import metricsRouter from "./routes/metrics.route.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.config.js";
-import requestIdMiddleware from "./middleware/requestId.middleware.js";
+import requestIdMiddleware from "./middlewares/requestId.middleware.js";
 import auditLogsRouter from "./routes/auditLogs.route.js";
 import accountsRouter from "./routes/accounts.route.js";
 import plansRouter from "./routes/plans.route.js";
@@ -50,8 +50,11 @@ app.use(
 );
 app.use(cookieParser());
 
-// ── Payment Webhook (Raw body required) ──────────
-app.use("/api/payments", paymentRouter);
+// ── Stripe webhook needs raw body BEFORE express.json() ──────────
+app.use(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" }),
+);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -66,6 +69,7 @@ app.use("/api/account", accountRouter);
 app.use("/api/contracts", contractRouter);
 app.use("/api/analysis", analysisRouter);
 app.use("/api/metrics", metricsRouter);
+app.use("/api/payments", paymentRouter);
 app.use("/api/admin/audit-logs", auditLogsRouter);
 app.use("/api/admin/accounts", accountsRouter);
 app.use("/api/admin/stats", adminStatsRouter);

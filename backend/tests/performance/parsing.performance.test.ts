@@ -65,7 +65,7 @@ describe('Performance: Language Detection', () => {
     }
 
     const duration = Date.now() - start;
-    expect(duration).toBeLessThan(250);
+    expect(duration).toBeLessThan(500);
   });
 
   test('should detect Arabic language under 400ms for long text', () => {

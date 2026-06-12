@@ -45,7 +45,11 @@ describe("PaymentController Unit Tests", () => {
 
       await paymentController.createCheckoutSession(mockRequest as any, mockResponse as Response, nextFunction);
 
-      expect(paymentService.createCheckoutSession).toHaveBeenCalledWith("user123", "premium");
+      expect(paymentService.createCheckoutSession).toHaveBeenCalledWith(
+        "user123",
+        "premium",
+        "monthly",
+      );
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
         success: true,

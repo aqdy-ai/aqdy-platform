@@ -12,11 +12,15 @@ import { AuthenticatedRequest } from "../types/auth.js";
  *   → userAnalysisRateLimit → enforceCreditsBeforeAnalysis → analyzeContract
  *
  * Behaviour:
- *  - Estimates token count from the contract text length.
- *  - Calls creditsService.estimateCost(estimatedTokens) to get the required credits.
+ *  - Estimates input/output token counts from the contract text length.
+ *  - Calls creditsService.calculateAnalysisCost(inputTokens, outputTokens).
  *  - Calls creditsService.getBalance(userId) to fetch the current balance.
  *  - If balance < estimatedCost → responds 402 with { currentBalance, requiredCredits }.
  *  - Otherwise attaches { estimatedCreditCost, estimatedTokens } to req and calls next().
+ *
+ * Token split heuristic (matches post-analysis deduction):
+ *   inputTokens  ≈ text.length / 4        (chars → tokens at ~4 chars/token)
+ *   outputTokens ≈ inputTokens × 0.30     (conservative pipeline output estimate)
  */
 export async function enforceCreditsBeforeAnalysis(
   req: AuthenticatedRequest,
@@ -32,20 +36,20 @@ export async function enforceCreditsBeforeAnalysis(
       return;
     }
 
-    // ── Estimate token count ──────────────────────────────────────────────
-    // The contract text isn't on req.body directly at this point (only contractId
-    // is), so we load it from the DB. contractService.getContractById is already
-    // called in the controller, but we need the text here for the estimate.
+    // ── Estimate token counts from contract text ──────────────────────────
     const { contractId } = req.body as { contractId?: string };
 
-    let estimatedTokens = 500; // safe default when no text is available
+    let estimatedInputTokens = 400; // safe defaults
+    let estimatedOutputTokens = 120;
 
     if (contractId) {
       try {
         const contract = await contractService.getContractById(contractId);
         if (contract?.text) {
-          // Approximation: 1 token ≈ 4 characters (GPT-style tokenisation heuristic)
-          estimatedTokens = Math.ceil(contract.text.length / 4);
+          // ~4 chars per token (GPT-style heuristic)
+          estimatedInputTokens = Math.ceil(contract.text.length / 4);
+          // Pipeline output is roughly 30% of input for multi-agent workflows
+          estimatedOutputTokens = Math.ceil(estimatedInputTokens * 0.3);
         }
       } catch {
         // Non-critical — fall back to the default estimate
@@ -56,13 +60,17 @@ export async function enforceCreditsBeforeAnalysis(
     }
 
     // ── Cost estimation & balance check ──────────────────────────────────
-    const estimatedCost = await creditsService.estimateCost(estimatedTokens);
+    const estimatedCost = creditsService.calculateAnalysisCost(
+      estimatedInputTokens,
+      estimatedOutputTokens,
+    );
     const currentBalance = await creditsService.getBalance(userId);
 
     logger.info("creditsEnforcement: pre-analysis credit check", {
       userId,
       contractId,
-      estimatedTokens,
+      estimatedInputTokens,
+      estimatedOutputTokens,
       estimatedCost,
       currentBalance,
     });
@@ -88,7 +96,7 @@ export async function enforceCreditsBeforeAnalysis(
 
     // ── Attach estimates for downstream use ──────────────────────────────
     req.estimatedCreditCost = estimatedCost;
-    req.estimatedTokens = estimatedTokens;
+    req.estimatedTokens = estimatedInputTokens + estimatedOutputTokens;
 
     next();
   } catch (error) {

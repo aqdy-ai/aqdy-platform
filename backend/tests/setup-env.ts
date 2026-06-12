@@ -32,6 +32,7 @@ if (!mongoServer) throw new Error("Failed to start in-memory MongoDB server");
 
 process.env.MONGODB_URI = mongoServer.getUri();
 process.env.GEMINI_API_KEY = "test";
+process.env.OPENAI_API_KEY = "test";
 process.env.PINECONE_API_KEY = "test";
 process.env.PINECONE_INDEX = "test";
 process.env.LANGFUSE_SECRET_KEY = "test";

@@ -11,8 +11,7 @@ const jestConfig: JestConfigWithTsJest = {
     // Force resolution of hoisted monorepo packages
     "^@langfuse/langchain$": "<rootDir>/../node_modules/@langfuse/langchain",
     "^langfuse$": "<rootDir>/tests/__mocks__/langfuse.ts",
-    "pdfjs-dist/legacy/build/pdf.mjs": "<rootDir>/src/__mocks__/pdfjs-dist.js",
-    "^pdf-parse$": "<rootDir>/src/__mocks__/pdf-parse.js",
+    "pdfjs-dist/legacy/build/pdf.mjs": "<rootDir>/tests/__mocks__/pdfjs-dist.js",
   },
   moduleDirectories: ["node_modules", "<rootDir>/node_modules", "../../node_modules"],
   moduleFileExtensions: ["ts", "js", "json", "node"],
@@ -25,6 +24,7 @@ const jestConfig: JestConfigWithTsJest = {
       },
     ],
   },
+  setupFiles: ["<rootDir>/tests/setup-env-vars.ts"],
   setupFilesAfterEnv: ["<rootDir>/tests/setup-env.ts"],
   testMatch: ["**/tests/**/*.test.ts"],
   testTimeout: 30000,

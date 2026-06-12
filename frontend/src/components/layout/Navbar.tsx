@@ -15,7 +15,6 @@ import { useTheme } from '../../hooks/useTheme'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { motion, AnimatePresence } from 'framer-motion'
-import SubscriptionBadge from '../SubscriptionBadge'
 import CreditsBadge from '../CreditsBadge'
 import { useAuth } from '../../hooks/useAuth'
 import { Link } from 'react-router-dom'
@@ -110,8 +109,7 @@ const Navbar = () => {
           <div className="bg-border/60 mx-2 hidden h-6 w-[1px] md:block" />
 
           <div className="flex items-center gap-3">
-            <SubscriptionBadge variant="compact" />
-            <CreditsBadge variant="compact" />
+            {isAuthenticated && <CreditsBadge variant="compact" />}
 
             <button
               onClick={toggleTheme}

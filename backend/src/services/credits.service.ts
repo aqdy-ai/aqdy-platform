@@ -36,6 +36,44 @@ export interface CreditMetadata {
 }
 
 export class CreditsService {
+  // ── Weighted-token formula (new) ─────────────────────────────────────
+  /**
+   * Full analysis cost:
+   *   BASE_FEE + ceil((inputTokens×1 + outputTokens×OUTPUT_WEIGHT) / TOKEN_UNIT)
+   *
+   * Designed so a typical 15-clause contract (~83k input, ~23.5k output) costs
+   * ~55 credits with the default env values (BASE_FEE=10, OUTPUT_WEIGHT=4,
+   * TOKEN_UNIT=4000).
+   */
+  calculateAnalysisCost(inputTokens: number, outputTokens: number): number {
+    const weighted = inputTokens * 1 + outputTokens * env.CREDIT_OUTPUT_WEIGHT;
+    const variable = Math.ceil(weighted / env.CREDIT_TOKEN_UNIT);
+    return env.CREDIT_BASE_FEE + variable;
+  }
+
+  /**
+   * Clause-chat message cost — flat rate per message (`CHAT_CREDIT_COST`).
+   * Chat is a single focused LLM call; it is not priced with the analysis
+   * weighted-token formula (which uses `CREDIT_TOKEN_UNIT` tuned for pipelines).
+   */
+  calculateChatCost(_inputTokens: number, _outputTokens: number): number {
+    return env.CHAT_CREDIT_COST;
+  }
+
+  /**
+   * Legacy shim — accepts a combined token count and applies a 70/30
+   * input/output split before delegating to calculateAnalysisCost().
+   * Used by pre-flight middleware that only has a rough token estimate.
+   */
+  estimateCost(combinedTokens: number): number {
+    if (combinedTokens < 0) {
+      throw new AppError(400, "tokensUsed must be non-negative.");
+    }
+    const inputTokens = Math.round(combinedTokens * 0.7);
+    const outputTokens = Math.round(combinedTokens * 0.3);
+    return this.calculateAnalysisCost(inputTokens, outputTokens);
+  }
+
   async getBalance(userId: string): Promise<number> {
     const userObjectId = new mongoose.Types.ObjectId(userId);
     const user = await User.findById(userObjectId).select("creditBalance");
@@ -47,19 +85,35 @@ export class CreditsService {
     return await this.getCurrentPlanAllowance(userId);
   }
 
+  /**
+   * One-time bootstrap for accounts that never received an initial plan topup
+   * (e.g. legacy users or failed registration topup). Does not refill spent credits.
+   */
+  async ensureInitialPlanCredits(userId: string): Promise<number> {
+    const balance = await this.getBalance(userId);
+    if (balance > 0) {
+      return balance;
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const existingTopup = await CreditLedger.exists({
+      userId: userObjectId,
+      reason: "plan_topup",
+    });
+
+    if (existingTopup) {
+      return balance;
+    }
+
+    const topup = await this.topupForPlanAllowance(userId);
+    return topup ? topup.balanceAfter : balance;
+  }
+
   async getLedgerEntries(userId: string, limit = 20): Promise<ICreditLedger[]> {
     const userObjectId = new mongoose.Types.ObjectId(userId);
     return CreditLedger.find({ userId: userObjectId })
       .sort({ createdAt: -1 })
       .limit(limit);
-  }
-
-  async estimateCost(tokensUsed: number): Promise<number> {
-    if (tokensUsed < 0) {
-      throw new AppError(400, "tokensUsed must be non-negative.");
-    }
-
-    return env.CREDIT_BASE_COST + tokensUsed * env.CREDIT_TOKEN_RATE;
   }
 
   async topup(
@@ -134,6 +188,8 @@ export class CreditsService {
     }
 
     const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    // Atomic: only succeeds if creditBalance >= cost (enforces zero-credit gate)
     const updatedUser = await User.findOneAndUpdate(
       { _id: userObjectId, creditBalance: { $gte: cost } },
       { $inc: { creditBalance: -cost } },

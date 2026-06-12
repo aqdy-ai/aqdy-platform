@@ -46,6 +46,7 @@ jest.unstable_mockModule("../../src/services/rag.service.js", () => ({
 }));
 jest.unstable_mockModule("../../src/config/langfuse.config.js", () => ({
   createLangfuseHandler: jest.fn().mockReturnValue(null),
+  logAgentExecution: jest.fn(),
 }));
 
 // ── Latency Simulation Configs ────────────────────
