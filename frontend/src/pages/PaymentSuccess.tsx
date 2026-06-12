@@ -12,7 +12,9 @@ export const PaymentSuccess: React.FC = () => {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
 
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
+    'loading'
+  )
   const [errorMsg, setErrorMsg] = useState<string>('')
 
   const isRtl = i18n.language === 'ar'
@@ -26,7 +28,9 @@ export const PaymentSuccess: React.FC = () => {
       }
 
       try {
-        const response = await fetch(`/api/payments/success?session_id=${sessionId}`)
+        const response = await fetch(
+          `/api/payments/success?session_id=${sessionId}`
+        )
         if (!response.ok) {
           throw new Error('Verification failed')
         }
@@ -39,7 +43,7 @@ export const PaymentSuccess: React.FC = () => {
               ? 'تم تفعيل اشتراكك وتحديث رصيدك بنجاح!'
               : 'Subscription activated and credit topped up successfully!'
           )
-          
+
           // Force profile reload on transition or store local flag
           localStorage.setItem('isLoggedIn', 'true')
         } else {
@@ -117,7 +121,9 @@ export const PaymentSuccess: React.FC = () => {
               <h2 className="text-foreground text-xl font-bold">
                 {isRtl ? 'فشلت عملية التأكيد' : 'Confirmation Failed'}
               </h2>
-              <p className="text-destructive text-sm font-semibold">{errorMsg}</p>
+              <p className="text-destructive text-sm font-semibold">
+                {errorMsg}
+              </p>
               <div className="flex gap-4">
                 <Button
                   variant="outline"

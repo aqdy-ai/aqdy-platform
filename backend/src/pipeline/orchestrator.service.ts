@@ -12,7 +12,10 @@
  *   - Clean separation from persistence (AnalysisService owns DB writes).
  */
 
-import { extractorAgent, type ExtractionResult } from "../agents/extractor.agent.js";
+import {
+  extractorAgent,
+  type ExtractionResult,
+} from "../agents/extractor.agent.js";
 import { riskClassifierAgent } from "../agents/riskClassifier.agent.js";
 import { redlineAgent } from "../agents/redline.agent.js";
 import { sanitizationService } from "../services/sanitization.service.js";
@@ -184,7 +187,9 @@ export class OrchestratorService {
           );
 
           if (!classificationTrace.success || !classificationTrace.data) {
-            throw new Error(classificationTrace.error || "Classification failed");
+            throw new Error(
+              classificationTrace.error || "Classification failed",
+            );
           }
 
           const classification = classificationTrace.data;
@@ -307,10 +312,7 @@ export class OrchestratorService {
 
     metrics.observe("analyses.tokens.total", tokenEstimate.totalTokens);
 
-    const cost = metricsService.calculateCost(
-      "gpt-4o",
-      tokenEstimate,
-    );
+    const cost = metricsService.calculateCost("gpt-4o", tokenEstimate);
     metrics.observe("analyses.costUSD", cost);
 
     metricsService.trackAnalysis({

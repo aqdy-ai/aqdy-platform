@@ -50,9 +50,7 @@ const buildMessages = (
 
 // ── Client Factories ─────────────────────────────
 
-const createPrimaryClient = (
-  options: LLMRequestOptions,
-): ChatOpenAI => {
+const createPrimaryClient = (options: LLMRequestOptions): ChatOpenAI => {
   return new ChatOpenAI({
     model: PRIMARY_MODEL,
     apiKey: env.OPENAI_API_KEY,
@@ -95,7 +93,9 @@ const callWithRetry = async (
         ? createGeminiFallbackClient(options)
         : createPrimaryClient(options);
 
-      const response = await client.invoke(messages, { callbacks: options.callbacks });
+      const response = await client.invoke(messages, {
+        callbacks: options.callbacks,
+      });
       const content = response.content;
 
       if (typeof content !== "string") {

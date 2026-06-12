@@ -58,7 +58,9 @@ export const UpgradeModal: React.FC<{
       if (resData?.data?.url) {
         window.location.assign(resData.data.url)
       } else {
-        throw new Error(resData?.message || 'Invalid response from checkout API')
+        throw new Error(
+          resData?.message || 'Invalid response from checkout API'
+        )
       }
     } catch (err) {
       console.error(err)

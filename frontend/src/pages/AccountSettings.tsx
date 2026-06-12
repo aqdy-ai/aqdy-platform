@@ -364,7 +364,9 @@ export default function AccountSettings() {
                   </span>
                 </div>
 
-                {!planDetails?.planName?.toLowerCase().includes('enterprise') && (
+                {!planDetails?.planName
+                  ?.toLowerCase()
+                  .includes('enterprise') && (
                   <button
                     type="button"
                     onClick={() => navigate('/pricing')}

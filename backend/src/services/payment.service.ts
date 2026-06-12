@@ -49,7 +49,11 @@ export class PaymentService {
    * Accepts either a plan slug (string) or a plan ObjectId — the controller
    * always passes a slug from the request body, so we resolve it here.
    */
-  async createCheckoutSession(userId: string, planSlugOrId: string, billingCycle: "monthly" | "annual" = "monthly") {
+  async createCheckoutSession(
+    userId: string,
+    planSlugOrId: string,
+    billingCycle: "monthly" | "annual" = "monthly",
+  ) {
     const user = (await User.findById(userId)) as IUser;
     if (!user) throw new AppError(404, "User not found");
 
@@ -102,7 +106,12 @@ export class PaymentService {
       success_url: `${env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${env.FRONTEND_URL}/pricing`,
       // Store both slug and ObjectId in metadata for reliable lookup
-      metadata: { userId, planId: String(plan._id), planSlug: plan.slug, billingCycle },
+      metadata: {
+        userId,
+        planId: String(plan._id),
+        planSlug: plan.slug,
+        billingCycle,
+      },
     });
 
     logger.info(

@@ -107,11 +107,7 @@ export default function Pricing({
       }
     } catch (err: unknown) {
       console.error(err)
-      alert(
-        err instanceof Error
-          ? err.message
-          : 'Unable to start checkout.'
-      )
+      alert(err instanceof Error ? err.message : 'Unable to start checkout.')
     } finally {
       setCheckoutLoading(null)
     }
@@ -128,10 +124,11 @@ export default function Pricing({
       return (
         <Link
           to="/register"
-          className={`block w-full rounded-xl border px-4 py-2.5 text-center font-semibold transition-all duration-200 ${isCurrent
-            ? 'bg-secondary text-muted-foreground pointer-events-none border-transparent'
-            : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
-            }`}
+          className={`block w-full rounded-xl border px-4 py-2.5 text-center font-semibold transition-all duration-200 ${
+            isCurrent
+              ? 'bg-secondary text-muted-foreground pointer-events-none border-transparent'
+              : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground'
+          }`}
         >
           {isCurrent ? t('pricing.current_plan') : t('pricing.get_started')}
         </Link>
@@ -145,12 +142,13 @@ export default function Pricing({
         type="button"
         onClick={() => handleCheckout(plan.slug)}
         disabled={isCurrent || isLoading}
-        className={`block w-full rounded-xl py-2.5 text-center font-semibold transition-all duration-200 ${isCurrent
-          ? 'bg-secondary text-muted-foreground cursor-default border-transparent'
-          : plan.name.toLowerCase() === 'pro'
-            ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10 shadow-md'
-            : 'border border-primary text-primary hover:bg-primary hover:text-primary-foreground'
-          } disabled:opacity-70`}
+        className={`block w-full rounded-xl py-2.5 text-center font-semibold transition-all duration-200 ${
+          isCurrent
+            ? 'bg-secondary text-muted-foreground cursor-default border-transparent'
+            : plan.name.toLowerCase() === 'pro'
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10 shadow-md'
+              : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground border'
+        } disabled:opacity-70`}
       >
         {isLoading ? (
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -204,20 +202,22 @@ export default function Pricing({
         <div className="bg-secondary mx-auto mb-16 flex max-w-xs justify-center gap-2 rounded-xl p-1">
           <button
             type="button"
-            className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all duration-200 ${billing === 'monthly'
-              ? 'bg-card text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-              }`}
+            className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all duration-200 ${
+              billing === 'monthly'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
             onClick={() => setBilling('monthly')}
           >
             {isRtl ? 'شهرياً' : 'Monthly'}
           </button>
           <button
             type="button"
-            className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all duration-200 ${billing === 'annual'
-              ? 'bg-card text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-              }`}
+            className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all duration-200 ${
+              billing === 'annual'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
             onClick={() => setBilling('annual')}
           >
             {isRtl ? 'سنوياً' : 'Annual'}
@@ -234,19 +234,22 @@ export default function Pricing({
             return (
               <div
                 key={plan.id}
-                className={`bg-card relative flex flex-col justify-between rounded-2xl border p-8 transition-all duration-300 ${isPro
-                  ? 'border-primary z-10 shadow-xl md:scale-105'
-                  : 'border-border shadow-sm hover:shadow-md'
-                  }`}
+                className={`bg-card relative flex flex-col justify-between rounded-2xl border p-8 transition-all duration-300 ${
+                  isPro
+                    ? 'border-primary z-10 shadow-xl md:scale-105'
+                    : 'border-border shadow-sm hover:shadow-md'
+                }`}
               >
                 {/* شارات الكروت الاحترافية */}
                 {badgeText && (
                   <div
-                    className={`absolute top-0 rounded-full px-4 py-1 text-xs font-bold tracking-wider uppercase shadow-sm ${isRtl ? 'left-6' : 'right-6'
-                      } -translate-y-1/2 ${isCurrentBadge
+                    className={`absolute top-0 rounded-full px-4 py-1 text-xs font-bold tracking-wider uppercase shadow-sm ${
+                      isRtl ? 'left-6' : 'right-6'
+                    } -translate-y-1/2 ${
+                      isCurrentBadge
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-accent text-accent-foreground animate-pulse'
-                      }`}
+                    }`}
                   >
                     {badgeText}
                   </div>
@@ -296,8 +299,8 @@ export default function Pricing({
                       <span className="text-card-foreground font-mono font-bold">
                         {plan.creditAllowance !== undefined
                           ? plan.creditAllowance.toLocaleString(
-                            isRtl ? 'ar-EG' : 'en-US'
-                          )
+                              isRtl ? 'ar-EG' : 'en-US'
+                            )
                           : '—'}
                       </span>
                     </p>

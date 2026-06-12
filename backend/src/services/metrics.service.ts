@@ -36,8 +36,8 @@ export interface AnalysisMetrics {
 // ── Model Pricing (per 1M tokens) ─────────────────
 const MODEL_PRICING = {
   "gpt-4o": {
-    inputPer1M: 2.50,
-    outputPer1M: 10.00,
+    inputPer1M: 2.5,
+    outputPer1M: 10.0,
   },
   "gemini-3.5-flash": {
     inputPer1M: 0.075,

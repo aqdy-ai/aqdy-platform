@@ -162,7 +162,10 @@ export class ExtractorAgent {
   /**
    * Calls the LLM service with the extraction system prompt.
    */
-  private async callLLM(userPrompt: string, callbacks?: any[]): Promise<LLMResponse> {
+  private async callLLM(
+    userPrompt: string,
+    callbacks?: any[],
+  ): Promise<LLMResponse> {
     return llmService.call(userPrompt, {
       systemPrompt: EXTRACTOR_SYSTEM_PROMPT,
       temperature: 0.1,

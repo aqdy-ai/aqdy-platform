@@ -15,11 +15,7 @@ const plansData = [
     slug: "free",
     price: 0,
     billingCycle: "monthly" as const,
-    features: [
-      "~3 avg contract analyses",
-      "10 contracts max",
-      "No export"
-    ],
+    features: ["~3 avg contract analyses", "10 contracts max", "No export"],
     analysisLimit: 5,
     storageLimit: 10,
     creditAllowance: 300,
@@ -76,7 +72,9 @@ const getOrCreateStripePrice = async (
   interval: "month" | "year",
 ) => {
   if (!process.env.STRIPE_SECRET_KEY) {
-    logger.warn(`⚠️ No STRIPE_SECRET_KEY found, using placeholder for ${planName} (${interval})`);
+    logger.warn(
+      `⚠️ No STRIPE_SECRET_KEY found, using placeholder for ${planName} (${interval})`,
+    );
     return `price_${slug}_${interval}_placeholder`;
   }
 
@@ -84,7 +82,7 @@ const getOrCreateStripePrice = async (
     // 1. Find or create product
     const products = await stripe.products.list();
     let product = products.data.find(
-      (p) => p.name === planName || p.metadata?.slug === slug
+      (p) => p.name === planName || p.metadata?.slug === slug,
     );
 
     if (!product) {
@@ -96,15 +94,19 @@ const getOrCreateStripePrice = async (
     }
 
     // 2. Find existing active price matching amount + interval
-    const prices = await stripe.prices.list({ product: product.id, active: true });
+    const prices = await stripe.prices.list({
+      product: product.id,
+      active: true,
+    });
     let price = prices.data.find(
       (p) =>
-        p.unit_amount === unitAmountCents &&
-        p.recurring?.interval === interval
+        p.unit_amount === unitAmountCents && p.recurring?.interval === interval,
     );
 
     if (!price) {
-      logger.info(`Creating Stripe ${interval}ly price of $${unitAmountCents / 100} for ${planName}...`);
+      logger.info(
+        `Creating Stripe ${interval}ly price of $${unitAmountCents / 100} for ${planName}...`,
+      );
       price = await stripe.prices.create({
         product: product.id,
         unit_amount: unitAmountCents,
@@ -139,7 +141,9 @@ const seedPlans = async () => {
           plan.price * 100,
           "month",
         );
-        logger.info(`Monthly price configured for ${plan.name}: ${plan.stripePriceId}`);
+        logger.info(
+          `Monthly price configured for ${plan.name}: ${plan.stripePriceId}`,
+        );
 
         // Annual price: "2 months free" → pay for 10 months yearly
         // e.g. Pro = $9 * 10 = $90/yr = 9000 cents
@@ -150,7 +154,9 @@ const seedPlans = async () => {
           annualAmount,
           "year",
         );
-        logger.info(`Annual price configured for ${plan.name}: ${plan.stripeAnnualPriceId}`);
+        logger.info(
+          `Annual price configured for ${plan.name}: ${plan.stripeAnnualPriceId}`,
+        );
       }
     }
 

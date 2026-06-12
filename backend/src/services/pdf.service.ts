@@ -1,4 +1,7 @@
-import { getDocument, type PDFDocumentProxy } from "pdfjs-dist/legacy/build/pdf.mjs";
+import {
+  getDocument,
+  type PDFDocumentProxy,
+} from "pdfjs-dist/legacy/build/pdf.mjs";
 import { logger } from "../utils/logger.js";
 
 export interface ParsedDocument {
@@ -79,9 +82,7 @@ export class PdfService {
       }
 
       const language = this.detectLanguage(fullText);
-      logger.info(
-        `✅ PDF parsed: ${file.originalname} (${numPages} pages)`,
-      );
+      logger.info(`✅ PDF parsed: ${file.originalname} (${numPages} pages)`);
 
       return {
         text: fullText,
