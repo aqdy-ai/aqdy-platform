@@ -362,27 +362,7 @@ export default function AccountSettings() {
                   </span>
                 </div>
 
-                <div className="text-foreground/80 space-y-3 text-sm">
-                  <div className="bg-background flex items-center justify-between rounded-2xl p-4">
-                    <span>{t('account.analysesUsageLabel')}</span>
-                    <span>
-                      {planDetails?.analysesUsed ?? 0}/
-                      {planDetails?.analysesAllowed ?? 0}
-                    </span>
-                  </div>
-                  <div className="bg-background flex items-center justify-between rounded-2xl p-4">
-                    <span>{t('account.analysesAllowedLabel')}</span>
-                    <span>{planDetails?.analysesAllowed ?? 0}</span>
-                  </div>
-                  <div className="bg-background flex items-center justify-between rounded-2xl p-4">
-                    <span>{t('account.renewalDateLabel')}</span>
-                    <span>
-                      {planDetails
-                        ? formatDate(planDetails.renewalDate, i18n.language)
-                        : '—'}
-                    </span>
-                  </div>
-                </div>
+
 
                 {planDetails?.planName?.toLowerCase().includes('free') && (
                   <button

@@ -106,13 +106,22 @@ export const clauseChatController = async (
     }
 
     // 5. Credit Check
-    const creditCost = env.CHAT_CREDIT_COST;
+    // Estimate tokens for a typical clause chat exchange:
+    //   ~3,000 input tokens (clause context + system prompt + question)
+    //   ~1,000 output tokens (focused answer)
+    const CHAT_INPUT_TOKENS = 3000;
+    const CHAT_OUTPUT_TOKENS = 1000;
+    const creditCost = creditsService.calculateChatCost(
+      CHAT_INPUT_TOKENS,
+      CHAT_OUTPUT_TOKENS,
+    );
     const currentBalance = await creditsService.getBalance(userId);
     if (currentBalance < creditCost) {
       res.status(402).json({
         success: false,
         error: "Insufficient credits available.",
         balance: currentBalance,
+        requiredCredits: creditCost,
       });
       return;
     }

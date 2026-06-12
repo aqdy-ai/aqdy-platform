@@ -19,6 +19,11 @@ const envSchema = z.object({
   CREDIT_BASE_COST: z.coerce.number().nonnegative().default(0),
   CREDIT_TOKEN_RATE: z.coerce.number().nonnegative().default(0.001),
   CHAT_CREDIT_COST: z.coerce.number().nonnegative().default(5),
+  CREDIT_BASE_FEE: z.coerce.number().nonnegative().default(10),
+  CREDIT_OUTPUT_WEIGHT: z.coerce.number().nonnegative().default(4),
+  CREDIT_TOKEN_UNIT: z.coerce.number().positive().default(4000),
+  CREDIT_CHAT_BASE: z.coerce.number().nonnegative().default(3),
+  FREE_PLAN_CREDITS: z.coerce.number().positive().default(300),
   CLAUSE_CHAT_RATE_LIMIT: z.coerce.number().nonnegative().default(20),
   STRIPE_SECRET_KEY: z.string().min(1, "STRIPE_SECRET_KEY is required"),
   STRIPE_PUBLISHABLE_KEY: z

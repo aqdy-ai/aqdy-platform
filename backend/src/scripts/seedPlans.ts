@@ -12,10 +12,10 @@ const plansData = [
     slug: "free",
     price: 0,
     billingCycle: "monthly" as const,
-    features: ["5 analyses/month", "10 contracts max", "No export"],
+    features: ["300 credits included", "10 contracts max", "No export"],
     analysisLimit: 5,
     storageLimit: 10,
-    creditAllowance: 500,
+    creditAllowance: 300,
     isActive: true,
   },
   {
@@ -24,14 +24,14 @@ const plansData = [
     price: null, // Price is TBD
     billingCycle: "monthly" as const,
     features: [
-      "100 analyses/month",
+      "4,000 credits/month",
       "Unlimited contracts",
       "Full history export",
       "Priority support",
     ],
     analysisLimit: 100,
     storageLimit: -1, // -1 means unlimited
-    creditAllowance: 5000,
+    creditAllowance: 4000,
     isActive: true,
   },
   {
@@ -40,14 +40,14 @@ const plansData = [
     price: null, // Custom pricing
     billingCycle: "monthly" as const,
     features: [
-      "Unlimited analyses",
+      "40,000 credits/month",
       "Unlimited contracts",
       "Custom contract history",
       "SLA guarantee",
     ],
     analysisLimit: -1, // -1 means unlimited
     storageLimit: -1, // -1 means unlimited
-    creditAllowance: 50000,
+    creditAllowance: 40000,
     isActive: true,
   },
 ];

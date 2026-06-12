@@ -16,6 +16,7 @@ export interface Plan {
   features?: string[]
   analysisLimit?: number
   storageLimit?: number
+  creditAllowance?: number
   limits?: PlanLimits
   ctaKey?: string // مضاف لدعم المفاتيح الديناميكية من الـ API والـ Tests
 }
@@ -250,22 +251,18 @@ export default function Pricing({
                     )}
                   </div>
 
-                  {/* صندوق حدود الاستخدام (Analysis & Storage Limits) */}
+                  {/* صندوق حدود الاستخدام (Credit Allowance & Storage Limits) */}
                   <div className="bg-muted text-muted-foreground border-border mb-6 space-y-2 rounded-xl border p-4 text-xs">
                     <p className="flex justify-between font-medium">
                       <span>
-                        {t('pricing.analysis_limit') ||
-                          (isRtl ? 'حد التحليلات' : 'Analysis Limit')}
+                        {t('credits.planAllowanceLabel') ||
+                          (isRtl ? 'رصيد الائتمان' : 'Credit Allowance')}
                         :
                       </span>
-                      <span className="text-card-foreground font-bold">
-                        {plan.analysisLimit === -1
-                          ? isRtl
-                            ? 'غير محدود'
-                            : 'Unlimited'
-                          : (plan.analysisLimit ??
-                            plan.limits?.analysis ??
-                            '—')}
+                      <span className="text-card-foreground font-bold font-mono">
+                        {plan.creditAllowance !== undefined
+                          ? plan.creditAllowance.toLocaleString(isRtl ? 'ar-EG' : 'en-US')
+                          : '—'}
                       </span>
                     </p>
                     <p className="flex justify-between font-medium">

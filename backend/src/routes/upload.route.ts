@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import { upload, handleUploadError } from "../middlewares/upload.middleware.js";
 import { anonymousIpRateLimit } from "../middlewares/rateLimit.js";
 import { pdfService } from "../services/pdf.service.js";
@@ -18,6 +18,7 @@ import {
   requireAuth,
 } from "../middlewares/auth.middleware.js";
 import { AuthenticatedRequest } from "../types/auth.js";
+import { creditsService } from "../services/credits.service.js";
 
 const uploadRouter = Router();
 uploadRouter.use(anonymousIpRateLimit());
@@ -42,6 +43,24 @@ uploadRouter.post(
   "/",
   authenticateJwt,
   requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const userId = String(authReq.user!._id);
+      const balance = await creditsService.getBalance(userId);
+      if (balance <= 0) {
+        res.status(402).json({
+          success: false,
+          error: "Insufficient credits",
+          message: "Your credit balance is exhausted. Please upgrade or purchase more credits to continue.",
+        });
+        return;
+      }
+      next();
+    } catch (error) {
+      next(error);
+    }
+  },
   upload.single("contract"),
   handleUploadError,
   async (req: Request, res: Response) => {

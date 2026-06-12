@@ -36,6 +36,49 @@ export interface CreditMetadata {
 }
 
 export class CreditsService {
+  // ── Weighted-token formula (new) ─────────────────────────────────────
+  /**
+   * Full analysis cost:
+   *   BASE_FEE + ceil((inputTokens×1 + outputTokens×OUTPUT_WEIGHT) / TOKEN_UNIT)
+   *
+   * Designed so a typical 15-clause contract (~83k input, ~23.5k output) costs
+   * ~55 credits with the default env values (BASE_FEE=10, OUTPUT_WEIGHT=4,
+   * TOKEN_UNIT=4000).
+   */
+  calculateAnalysisCost(inputTokens: number, outputTokens: number): number {
+    const weighted =
+      inputTokens * 1 + outputTokens * env.CREDIT_OUTPUT_WEIGHT;
+    const variable = Math.ceil(weighted / env.CREDIT_TOKEN_UNIT);
+    return env.CREDIT_BASE_FEE + variable;
+  }
+
+  /**
+   * Clause-chat message cost (single LLM call, focused context):
+   *   CHAT_BASE + ceil((inputTokens + outputTokens×OUTPUT_WEIGHT) / TOKEN_UNIT)
+   *
+   * A typical chat exchange (~3k input, ~1k output) costs ~4–5 credits.
+   */
+  calculateChatCost(inputTokens: number, outputTokens: number): number {
+    const weighted =
+      inputTokens * 1 + outputTokens * env.CREDIT_OUTPUT_WEIGHT;
+    const variable = Math.ceil(weighted / env.CREDIT_TOKEN_UNIT);
+    return env.CREDIT_CHAT_BASE + variable;
+  }
+
+  /**
+   * Legacy shim — accepts a combined token count and applies a 70/30
+   * input/output split before delegating to calculateAnalysisCost().
+   * Used by pre-flight middleware that only has a rough token estimate.
+   */
+  estimateCost(combinedTokens: number): number {
+    if (combinedTokens < 0) {
+      throw new AppError(400, "tokensUsed must be non-negative.");
+    }
+    const inputTokens = Math.round(combinedTokens * 0.7);
+    const outputTokens = Math.round(combinedTokens * 0.3);
+    return this.calculateAnalysisCost(inputTokens, outputTokens);
+  }
+
   async getBalance(userId: string): Promise<number> {
     const userObjectId = new mongoose.Types.ObjectId(userId);
     const user = await User.findById(userObjectId).select("creditBalance");
@@ -52,14 +95,6 @@ export class CreditsService {
     return CreditLedger.find({ userId: userObjectId })
       .sort({ createdAt: -1 })
       .limit(limit);
-  }
-
-  async estimateCost(tokensUsed: number): Promise<number> {
-    if (tokensUsed < 0) {
-      throw new AppError(400, "tokensUsed must be non-negative.");
-    }
-
-    return env.CREDIT_BASE_COST + tokensUsed * env.CREDIT_TOKEN_RATE;
   }
 
   async topup(
@@ -134,6 +169,8 @@ export class CreditsService {
     }
 
     const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    // Atomic: only succeeds if creditBalance >= cost (enforces zero-credit gate)
     const updatedUser = await User.findOneAndUpdate(
       { _id: userObjectId, creditBalance: { $gte: cost } },
       { $inc: { creditBalance: -cost } },
