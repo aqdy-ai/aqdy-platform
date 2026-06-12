@@ -7,6 +7,7 @@ import {
   SystemMessage,
   AIMessage,
   BaseMessage,
+  BaseMessageChunk,
 } from "@langchain/core/messages";
 import { env } from "../config/env.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
@@ -43,7 +44,7 @@ export const resetClauseChatLimits = (): void => {
  * Tries GPT-4o first, then falls back to Gemini if it fails.
  */
 async function createStreamWithFallback(messages: BaseMessage[]): Promise<{
-  stream: AsyncIterable<any>;
+  stream: AsyncIterable<BaseMessageChunk>;
   model: string;
 }> {
   const primaryModel = "gpt-4o";
@@ -67,9 +68,7 @@ async function createStreamWithFallback(messages: BaseMessage[]): Promise<{
   } catch (primaryError) {
     logger.warn("GPT-4o streaming failed, falling back to Gemini", {
       error:
-        primaryError instanceof Error
-          ? primaryError.message
-          : "Unknown error",
+        primaryError instanceof Error ? primaryError.message : "Unknown error",
     });
 
     // Fallback to Gemini
@@ -93,7 +92,9 @@ async function createStreamWithFallback(messages: BaseMessage[]): Promise<{
             ? fallbackError.message
             : "Unknown error",
       });
-      throw new Error("Unable to create stream from both models");
+      throw new Error("Unable to create stream from both models", {
+        cause: fallbackError,
+      });
     }
   }
 }
@@ -241,7 +242,10 @@ INSTRUCTIONS:
     } catch (streamError) {
       logger.error("Failed to create stream from any model", streamError);
       return next(
-        new AppError(500, "Failed to initialize chat stream. Please try again."),
+        new AppError(
+          500,
+          "Failed to initialize chat stream. Please try again.",
+        ),
       );
     }
 
@@ -266,9 +270,7 @@ INSTRUCTIONS:
     } catch (streamError) {
       logger.error("Error during clause chat streaming", {
         error:
-          streamError instanceof Error
-            ? streamError.message
-            : "Unknown error",
+          streamError instanceof Error ? streamError.message : "Unknown error",
         modelUsed,
       });
       res.write(
