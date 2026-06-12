@@ -27,7 +27,7 @@ Welcome to Aqdy! This guide covers everything you need to start contributing —
 | Name | GitHub |
 |------|--------|
 | Islam Ahmed Ibrahim | |
-| Kareem Khaled Ismail *(Tech Lead)* | |
+| Kareem Khaled Ismail | |
 | Merna Hamada Hanafy | |
 | Belal Mahmoud Abdelfattah | |
 | Mostafa Nageh Fathi | |

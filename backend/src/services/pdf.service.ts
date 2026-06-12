@@ -1,4 +1,4 @@
-import pdf from "pdf-parse";
+import { getDocument, type PDFDocumentProxy } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { logger } from "../utils/logger.js";
 
 export interface ParsedDocument {
@@ -52,21 +52,40 @@ export class PdfService {
   async parsePdf(file: MulterFile): Promise<ParsedDocument> {
     this.validateFile(file);
 
-    try {
-      const data = await pdf(file.buffer);
+    let doc: PDFDocumentProxy | null = null;
 
-      if (!data.text || data.text.trim().length === 0) {
+    try {
+      // Convert Buffer to Uint8Array for pdfjs-dist
+      const data = new Uint8Array(file.buffer);
+      doc = await getDocument({ data, useSystemFonts: true }).promise;
+
+      const numPages = doc.numPages;
+      const textParts: string[] = [];
+
+      for (let i = 1; i <= numPages; i++) {
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items
+          .filter((item): item is { str: string } => "str" in item)
+          .map((item) => item.str)
+          .join(" ");
+        textParts.push(pageText);
+      }
+
+      const fullText = textParts.join("\n").trim();
+
+      if (!fullText || fullText.length === 0) {
         throw new Error("Could not extract text from PDF.");
       }
 
-      const language = this.detectLanguage(data.text);
+      const language = this.detectLanguage(fullText);
       logger.info(
-        `✅ PDF parsed: ${file.originalname} (${data.numpages} pages)`,
+        `✅ PDF parsed: ${file.originalname} (${numPages} pages)`,
       );
 
       return {
-        text: data.text.trim(),
-        pages: data.numpages || 1,
+        text: fullText,
+        pages: numPages,
         fileSize: file.size,
         filename: file.originalname,
         language,
@@ -74,6 +93,10 @@ export class PdfService {
     } catch (error) {
       logger.error("Error parsing PDF:", error);
       throw error;
+    } finally {
+      if (doc) {
+        await doc.destroy();
+      }
     }
   }
 }

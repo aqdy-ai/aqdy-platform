@@ -22,7 +22,7 @@ import uploadRouter from "./routes/upload.route.js";
 import metricsRouter from "./routes/metrics.route.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.config.js";
-import requestIdMiddleware from "./middleware/requestId.middleware.js";
+import requestIdMiddleware from "./middlewares/requestId.middleware.js";
 import auditLogsRouter from "./routes/auditLogs.route.js";
 import accountsRouter from "./routes/accounts.route.js";
 import plansRouter from "./routes/plans.route.js";
