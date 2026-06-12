@@ -101,7 +101,8 @@ describe("OrchestratorService", () => {
       "high",
       "liability",
       "en",
-      undefined // No RAG match found in this test
+      undefined, // No RAG match found in this test
+      expect.objectContaining({ callbacks: expect.any(Array) }),
     );
 
     expect(result.executiveSummary.overallRisk).toBe("high");
@@ -235,7 +236,8 @@ describe("OrchestratorService", () => {
       "high",
       "liability",
       "en",
-      "The safer alternative text from KB"
+      "The safer alternative text from KB",
+      expect.objectContaining({ callbacks: expect.any(Array) }),
     );
   });
 

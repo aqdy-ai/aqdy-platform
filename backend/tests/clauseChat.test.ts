@@ -7,15 +7,11 @@ import cookieParser from "cookie-parser";
 // ── Mock Setup ───────────────────────────────────
 const mockStream = jest.fn();
 
-jest.unstable_mockModule("@langchain/google-genai", () => {
-  return {
-    ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => {
-      return {
-        stream: mockStream,
-      };
-    }),
-  };
-});
+jest.unstable_mockModule("@langchain/openai", () => ({
+  ChatOpenAI: jest.fn().mockImplementation(() => ({
+    stream: mockStream,
+  })),
+}));
 
 // Import after mocking (required for ESM mock hoisting)
 const { User } = await import("../src/models/user.model.js");

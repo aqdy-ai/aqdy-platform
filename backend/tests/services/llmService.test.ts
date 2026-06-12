@@ -1,236 +1,241 @@
-import { jest, describe, test, expect, beforeEach } from "@jest/globals";
+import { jest, describe, test, expect, beforeEach, afterEach } from "@jest/globals";
 
 // ── Mock Setup ───────────────────────────────────
-const mockInvoke = jest.fn() as jest.Mock;
+const mockOpenAIInvoke = jest.fn() as jest.Mock;
+const mockGeminiInvoke = jest.fn() as jest.Mock;
 
-jest.unstable_mockModule("@langchain/google-genai", () => {
-  return {
-    ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => ({
-      invoke: mockInvoke,
-    })),
-  };
-});
+jest.unstable_mockModule("@langchain/openai", () => ({
+  ChatOpenAI: jest.fn().mockImplementation(() => ({
+    invoke: mockOpenAIInvoke,
+  })),
+}));
+
+jest.unstable_mockModule("@langchain/google-genai", () => ({
+  ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+    invoke: mockGeminiInvoke,
+  })),
+}));
 
 // Import AFTER mocking (required for ESM mock hoisting)
 const { llmService } = await import("../../src/services/llm.service.js");
+
+const PRIMARY_MODEL = "gpt-4o";
+const FALLBACK_MODEL = "gemini-3.1-flash-lite";
 
 // ── Tests ────────────────────────────────────────
 
 describe("LLM Service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
   });
 
-  // ────────────────────────────────────────────────
-  // llmService.call() — Primary success
-  // ────────────────────────────────────────────────
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   describe("call() — Primary model success", () => {
     test("should return content from the primary model on first attempt", async () => {
-      mockInvoke.mockResolvedValueOnce({ content: "Primary result" });
+      mockOpenAIInvoke.mockResolvedValueOnce({ content: "Primary result" });
 
-      const response = await llmService.call("Analyze this contract");
+      const responsePromise = llmService.call("Analyze this contract");
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.content).toBe("Primary result");
-      expect(response.model).toBe("gemini-3.5-flash");
+      expect(response.model).toBe(PRIMARY_MODEL);
       expect(response.usedFallback).toBe(false);
-      expect(mockInvoke).toHaveBeenCalledTimes(1);
+      expect(mockOpenAIInvoke).toHaveBeenCalledTimes(1);
+      expect(mockGeminiInvoke).not.toHaveBeenCalled();
     });
   });
 
-  // ────────────────────────────────────────────────
-  // llmService.call() — Retry logic
-  // ────────────────────────────────────────────────
-
   describe("call() — Retry logic", () => {
     test("should retry and succeed on 2nd attempt without fallback", async () => {
-      mockInvoke
+      mockOpenAIInvoke
         .mockRejectedValueOnce(new Error("Transient error"))
         .mockResolvedValueOnce({ content: "Recovered" });
 
-      const response = await llmService.call("Retry test");
+      const responsePromise = llmService.call("Retry test");
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.content).toBe("Recovered");
-      expect(response.model).toBe("gemini-3.5-flash");
+      expect(response.model).toBe(PRIMARY_MODEL);
       expect(response.usedFallback).toBe(false);
-      expect(mockInvoke).toHaveBeenCalledTimes(2);
+      expect(mockOpenAIInvoke).toHaveBeenCalledTimes(2);
     });
 
     test("should retry and succeed on 3rd attempt without fallback", async () => {
-      mockInvoke
+      mockOpenAIInvoke
         .mockRejectedValueOnce(new Error("Error 1"))
         .mockRejectedValueOnce(new Error("Error 2"))
         .mockResolvedValueOnce({ content: "Third try" });
 
-      const response = await llmService.call("Retry test 2");
+      const responsePromise = llmService.call("Retry test 2");
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.content).toBe("Third try");
-      expect(response.model).toBe("gemini-3.5-flash");
+      expect(response.model).toBe(PRIMARY_MODEL);
       expect(response.usedFallback).toBe(false);
-      expect(mockInvoke).toHaveBeenCalledTimes(3);
+      expect(mockOpenAIInvoke).toHaveBeenCalledTimes(3);
     });
   });
 
-  // ────────────────────────────────────────────────
-  // llmService.call() — Fallback chain
-  // ────────────────────────────────────────────────
-
   describe("call() — Fallback chain", () => {
     test("should fallback to the fallback model if primary exhausts all retries", async () => {
-      // Primary fails 3 times, fallback succeeds on first try
-      mockInvoke
+      mockOpenAIInvoke
         .mockRejectedValueOnce(new Error("Primary Down"))
         .mockRejectedValueOnce(new Error("Primary Down"))
-        .mockRejectedValueOnce(new Error("Primary Down"))
-        .mockResolvedValueOnce({ content: "Fallback Result" });
+        .mockRejectedValueOnce(new Error("Primary Down"));
+      mockGeminiInvoke.mockResolvedValueOnce({ content: "Fallback Result" });
 
-      const response = await llmService.call("Test contract text");
+      const responsePromise = llmService.call("Test contract text");
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.usedFallback).toBe(true);
-      expect(response.model).toBe("gemini-3.1-flash-lite");
+      expect(response.model).toBe(FALLBACK_MODEL);
       expect(response.content).toBe("Fallback Result");
-    }, 15000);
+    });
 
     test("should succeed on fallback retry after fallback initial failure", async () => {
-      // Primary fails 3 times, fallback fails 1 time then succeeds
-      mockInvoke
+      mockOpenAIInvoke
         .mockRejectedValueOnce(new Error("Primary 1"))
         .mockRejectedValueOnce(new Error("Primary 2"))
-        .mockRejectedValueOnce(new Error("Primary 3"))
+        .mockRejectedValueOnce(new Error("Primary 3"));
+      mockGeminiInvoke
         .mockRejectedValueOnce(new Error("Fallback transient"))
         .mockResolvedValueOnce({ content: "Fallback recovered" });
 
-      const response = await llmService.call("Fallback retry test");
+      const responsePromise = llmService.call("Fallback retry test");
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.usedFallback).toBe(true);
       expect(response.content).toBe("Fallback recovered");
-    }, 15000);
+    });
   });
-
-  // ────────────────────────────────────────────────
-  // llmService.call() — Total failure
-  // ────────────────────────────────────────────────
 
   describe("call() — Total failure", () => {
     test("should throw when both primary and fallback exhaust all retries", async () => {
-      mockInvoke
+      mockOpenAIInvoke
         .mockRejectedValueOnce(new Error("Service unavailable"))
         .mockRejectedValueOnce(new Error("Service unavailable"))
-        .mockRejectedValueOnce(new Error("Service unavailable"))
+        .mockRejectedValueOnce(new Error("Service unavailable"));
+      mockGeminiInvoke
         .mockRejectedValueOnce(new Error("Service unavailable"))
         .mockRejectedValueOnce(new Error("Service unavailable"))
         .mockRejectedValueOnce(new Error("Service unavailable"));
 
-      await expect(llmService.call("Doomed prompt")).rejects.toThrow(
-        "All LLM providers failed",
-      );
+      const responsePromise = llmService.call("Doomed prompt");
+      await jest.runAllTimersAsync();
 
-      // 3 primary retries + 3 fallback retries = 6 total calls
-      expect(mockInvoke).toHaveBeenCalledTimes(6);
-    }, 15000);
+      await expect(responsePromise).rejects.toThrow("All LLM providers failed");
+      expect(mockOpenAIInvoke).toHaveBeenCalledTimes(3);
+      expect(mockGeminiInvoke).toHaveBeenCalledTimes(3);
+    });
   });
-
-  // ────────────────────────────────────────────────
-  // llmService.callPrimary()
-  // ────────────────────────────────────────────────
 
   describe("callPrimary()", () => {
     test("should return content directly from the primary model", async () => {
-      mockInvoke.mockResolvedValueOnce({ content: "Primary only" });
+      mockOpenAIInvoke.mockResolvedValueOnce({ content: "Primary only" });
 
-      const response = await llmService.callPrimary("Direct primary");
+      const responsePromise = llmService.callPrimary("Direct primary");
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.content).toBe("Primary only");
-      expect(response.model).toBe("gemini-3.5-flash");
+      expect(response.model).toBe(PRIMARY_MODEL);
       expect(response.usedFallback).toBe(false);
     });
 
     test("should throw without falling back when primary fails all retries", async () => {
-      mockInvoke
+      mockOpenAIInvoke
         .mockRejectedValueOnce(new Error("Fail 1"))
         .mockRejectedValueOnce(new Error("Fail 2"))
         .mockRejectedValueOnce(new Error("Fail 3"));
 
-      await expect(llmService.callPrimary("No fallback")).rejects.toThrow();
+      const responsePromise = llmService.callPrimary("No fallback");
+      await jest.runAllTimersAsync();
 
-      // Only 3 calls — no fallback
-      expect(mockInvoke).toHaveBeenCalledTimes(3);
-    }, 15000);
+      await expect(responsePromise).rejects.toThrow();
+      expect(mockOpenAIInvoke).toHaveBeenCalledTimes(3);
+      expect(mockGeminiInvoke).not.toHaveBeenCalled();
+    });
   });
-
-  // ────────────────────────────────────────────────
-  // llmService.callFallback()
-  // ────────────────────────────────────────────────
 
   describe("callFallback()", () => {
     test("should return content from the fallback model directly", async () => {
-      mockInvoke.mockResolvedValueOnce({ content: "Fallback direct" });
+      mockGeminiInvoke.mockResolvedValueOnce({ content: "Fallback direct" });
 
-      const response = await llmService.callFallback("Direct fallback");
+      const responsePromise = llmService.callFallback("Direct fallback");
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.content).toBe("Fallback direct");
-      expect(response.model).toBe("gemini-3.1-flash-lite");
+      expect(response.model).toBe(FALLBACK_MODEL);
+      expect(mockOpenAIInvoke).not.toHaveBeenCalled();
     });
 
     test("should throw when fallback fails all retries", async () => {
-      mockInvoke
+      mockGeminiInvoke
         .mockRejectedValueOnce(new Error("F1"))
         .mockRejectedValueOnce(new Error("F2"))
         .mockRejectedValueOnce(new Error("F3"));
 
-      await expect(llmService.callFallback("Failing fallback")).rejects.toThrow();
+      const responsePromise = llmService.callFallback("Failing fallback");
+      await jest.runAllTimersAsync();
 
-      expect(mockInvoke).toHaveBeenCalledTimes(3);
-    }, 15000);
+      await expect(responsePromise).rejects.toThrow();
+      expect(mockGeminiInvoke).toHaveBeenCalledTimes(3);
+    });
   });
-
-  // ────────────────────────────────────────────────
-  // Options forwarding
-  // ────────────────────────────────────────────────
 
   describe("Options forwarding", () => {
     test("should pass system prompt to message builder", async () => {
-      mockInvoke.mockResolvedValueOnce({ content: "With system prompt" });
+      mockOpenAIInvoke.mockResolvedValueOnce({ content: "With system prompt" });
 
-      const response = await llmService.call("User prompt", {
+      const responsePromise = llmService.call("User prompt", {
         systemPrompt: "You are a legal assistant",
       });
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.content).toBe("With system prompt");
-      // The invoke should have been called with an array that includes a SystemMessage
-      const invokedMessages = mockInvoke.mock.calls[0][0];
-      expect(invokedMessages).toHaveLength(2); // SystemMessage + HumanMessage
+      const invokedMessages = mockOpenAIInvoke.mock.calls[0][0];
+      expect(invokedMessages).toHaveLength(2);
     });
 
     test("should work without system prompt (only HumanMessage)", async () => {
-      mockInvoke.mockResolvedValueOnce({ content: "No system" });
+      mockOpenAIInvoke.mockResolvedValueOnce({ content: "No system" });
 
-      const response = await llmService.call("Just user prompt");
+      const responsePromise = llmService.call("Just user prompt");
+      await jest.runAllTimersAsync();
+      const response = await responsePromise;
 
       expect(response.content).toBe("No system");
-      const invokedMessages = mockInvoke.mock.calls[0][0];
-      expect(invokedMessages).toHaveLength(1); // HumanMessage only
+      const invokedMessages = mockOpenAIInvoke.mock.calls[0][0];
+      expect(invokedMessages).toHaveLength(1);
     });
   });
 
-  // ────────────────────────────────────────────────
-  // Non-string response handling
-  // ────────────────────────────────────────────────
-
   describe("Non-string response handling", () => {
     test("should throw when LLM returns non-string content", async () => {
-      // Non-string response causes an error → triggers retries on both models
-      mockInvoke
+      mockOpenAIInvoke
         .mockResolvedValueOnce({ content: ["not", "a", "string"] })
         .mockResolvedValueOnce({ content: ["not", "a", "string"] })
-        .mockResolvedValueOnce({ content: ["not", "a", "string"] })
+        .mockResolvedValueOnce({ content: ["not", "a", "string"] });
+      mockGeminiInvoke
         .mockResolvedValueOnce({ content: ["not", "a", "string"] })
         .mockResolvedValueOnce({ content: ["not", "a", "string"] })
         .mockResolvedValueOnce({ content: ["not", "a", "string"] });
 
-      await expect(llmService.call("Array response")).rejects.toThrow(
-        "All LLM providers failed",
-      );
-    }, 15000);
+      const responsePromise = llmService.call("Array response");
+      await jest.runAllTimersAsync();
+
+      await expect(responsePromise).rejects.toThrow("All LLM providers failed");
+    });
   });
 });
