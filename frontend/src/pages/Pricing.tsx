@@ -97,7 +97,7 @@ export default function Pricing({
       const res = await fetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planSlug }),
+        body: JSON.stringify({ planSlug, billingCycle: billing }),
       })
       const resData = await res.json()
       if (resData?.data?.url) {
@@ -264,14 +264,24 @@ export default function Pricing({
                         {isRtl ? 'تواصل معنا' : 'Custom'}
                       </p>
                     ) : (
-                      <p className="text-3xl font-extrabold tracking-tight">
-                        ${plan.price}
-                        <span className="text-muted-foreground mr-1 ml-1 text-xs font-medium">
+                      <div className="space-y-1">
+                        <p className="text-3xl font-extrabold tracking-tight">
+                          $
                           {billing === 'annual'
-                            ? t('pricing.per_year') || '/yr'
-                            : t('pricing.per_month') || '/mo'}
-                        </span>
-                      </p>
+                            ? ((plan.price * 10) / 12).toFixed(2)
+                            : plan.price}
+                          <span className="text-muted-foreground mr-1 ml-1 text-xs font-medium">
+                            {t('pricing.per_month') || '/mo'}
+                          </span>
+                        </p>
+                        {billing === 'annual' && plan.price > 0 && (
+                          <p className="text-muted-foreground text-xs font-medium">
+                            {isRtl
+                              ? `$${plan.price * 10}/سنة — شهرين مجاناً`
+                              : `$${plan.price * 10}/yr — 2 months free`}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
 

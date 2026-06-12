@@ -18,6 +18,7 @@ export const PlanZodSchema = z.object({
   storageLimit: z.number().int(), // -1 for unlimited
   creditAllowance: z.number().int().nonnegative().default(0),
   stripePriceId: z.string().optional(),
+  stripeAnnualPriceId: z.string().optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -31,6 +32,7 @@ export interface IPlan extends Document {
   storageLimit: number;
   creditAllowance: number;
   stripePriceId?: string;
+  stripeAnnualPriceId?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -58,6 +60,7 @@ const PlanSchema = new Schema<IPlan>(
     storageLimit: { type: Number, required: true }, // -1 for unlimited
     creditAllowance: { type: Number, required: true, default: 0, min: 0 },
     stripePriceId: { type: String, default: null },
+    stripeAnnualPriceId: { type: String, default: null },
     isActive: { type: Boolean, default: true, index: true },
   },
   {
