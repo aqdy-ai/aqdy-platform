@@ -217,7 +217,7 @@
     "errors": {
       "invalidEmail": "Email address is invalid",
       "passwordTooShort": "Password must be at least 8 characters long",
-      "passwordWeak": "Password is too weak",
+      "passwordWeak": "Password is too weak - it should contain at least one uppercase letter, one lowercase letter, one number, and one special character",
       "confirmPasswordRequired": "Please confirm password",
       "passwordsMismatch": "Passwords do not match",
       "nameTooShort": "Name must be at least 3 characters long",
