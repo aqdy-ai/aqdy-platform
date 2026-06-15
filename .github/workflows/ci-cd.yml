@@ -200,6 +200,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend, security-audit]
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/pre-stage'
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
