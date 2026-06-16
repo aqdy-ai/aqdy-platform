@@ -212,7 +212,10 @@ router.patch(
               session,
             );
             // Attach topup info to be returned in the response later
-            (user as any)._creditTopup = { amount: allowance, newBalance: allowance };
+            (user as any)._creditTopup = {
+              amount: allowance,
+              newBalance: allowance,
+            };
           } else {
             // No allowance – keep existing balance, no ledger entry
           }
