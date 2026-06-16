@@ -5,14 +5,24 @@ import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import axios from 'axios'
 import { authApi } from '../services/authApi'
-import type { LoginInput, RegisterInput, User } from '../types/auth' // Import User type
+import type {
+  LoginInput,
+  PasswordValidationResult,
+  RegisterInput,
+  User,
+} from '../types/auth'
 import { AuthContext } from './context/AuthContext'
 
 /**
- * Shared Password Regex: Requires 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+ * Password validation constants and rules
  */
-const PASSWORD_REGEX =
-  /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
+export const PASSWORD_RULES = {
+  minLength: 8,
+  uppercase: /[A-Z]/,
+  lowercase: /[a-z]/,
+  number: /[0-9]/,
+  special: /[@$!%*?&]/,
+}
 
 /**
  * Validation Schemas - Aligned with backend requirements
@@ -34,8 +44,11 @@ export const registerSchema = z
     email: z.string().email('auth.errors.invalidEmail'),
     password: z
       .string()
-      .min(8, 'auth.errors.passwordTooShort')
-      .regex(PASSWORD_REGEX, 'auth.errors.passwordWeak'),
+      .min(PASSWORD_RULES.minLength, 'auth.errors.passwordTooShort')
+      .regex(PASSWORD_RULES.uppercase, 'auth.errors.passwordNoUppercase')
+      .regex(PASSWORD_RULES.lowercase, 'auth.errors.passwordNoLowercase')
+      .regex(PASSWORD_RULES.number, 'auth.errors.passwordNoNumber')
+      .regex(PASSWORD_RULES.special, 'auth.errors.passwordNoSpecial'),
     confirmPassword: z.string().min(1, 'auth.errors.confirmPasswordRequired'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -120,6 +133,11 @@ export const useAuth = () => {
         navigate('/', { replace: true })
       }
     } catch (error: unknown) {
+      if (error instanceof z.ZodError) {
+        // Local validation is handled inline by the form/component
+        return
+      }
+
       let errorMessage = t('auth.errors.generic')
 
       if (axios.isAxiosError(error)) {
@@ -150,6 +168,18 @@ export const useAuth = () => {
     navigate('/login')
   }
 
+  const getPasswordStrength = (password: string): PasswordValidationResult => {
+    const hasMinLength = password.length >= PASSWORD_RULES.minLength
+    return {
+      hasMinLength,
+      hasUppercase: PASSWORD_RULES.uppercase.test(password),
+      hasLowercase: PASSWORD_RULES.lowercase.test(password),
+      hasNumber: PASSWORD_RULES.number.test(password),
+      hasSpecial: PASSWORD_RULES.special.test(password),
+      allValid: registerSchema.shape.password.safeParse(password).success,
+    }
+  }
+
   return {
     login,
     register,
@@ -159,5 +189,6 @@ export const useAuth = () => {
     isAuthenticated,
     user,
     isInitialLoading,
+    getPasswordStrength,
   }
 }

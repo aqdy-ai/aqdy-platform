@@ -233,6 +233,13 @@
       "invalidCredentials": "Invalid credentials",
       "generic": "Something went wrong, please try again later",
       "emailInUse": "Email address is already in use"
+    },
+    "passwordRules": {
+      "minLength": "At least {{count}} characters",
+      "uppercase": "One uppercase letter",
+      "lowercase": "One lowercase letter",
+      "number": "One number",
+      "special": "One special character (@$!%*?&)"
     }
   },
   "account": {

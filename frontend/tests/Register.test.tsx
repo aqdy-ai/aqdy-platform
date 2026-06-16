@@ -37,6 +37,14 @@ describe('Register Page', () => {
       isAuthenticated: false,
       user: null,
       isInitialLoading: false,
+      getPasswordStrength: vi.fn((password: string) => ({
+        hasMinLength: (password || '').length >= 8,
+        hasUppercase: true,
+        hasLowercase: true,
+        hasNumber: true,
+        hasSpecial: true,
+        allValid: (password || '').length >= 8,
+      })),
     })
     // Use real schema behavior by default
   })
@@ -131,6 +139,14 @@ describe('Register Page', () => {
       isAuthenticated: false,
       user: null,
       isInitialLoading: false,
+      getPasswordStrength: vi.fn((password: string) => ({
+        hasMinLength: (password || '').length >= 8,
+        hasUppercase: true,
+        hasLowercase: true,
+        hasNumber: true,
+        hasSpecial: true,
+        allValid: (password || '').length >= 8,
+      })),
     })
 
     renderComponent()
