@@ -201,13 +201,21 @@ router.patch(
           session,
         );
         if (planDoc) {
-          user.creditBalance = planDoc.creditAllowance;
-          await creditsService.createEntry(
-            userId.toHexString(),
-            planDoc.creditAllowance,
-            "plan_reset",
-            session,
-          );
+          const allowance = planDoc.creditAllowance ?? 0;
+          if (allowance > 0) {
+            user.creditBalance = allowance;
+            // Record the top‑up in the ledger
+            await creditsService.createEntry(
+              userId.toHexString(),
+              allowance,
+              "plan_reset",
+              session,
+            );
+            // Attach topup info to be returned in the response later
+            (user as any)._creditTopup = { amount: allowance, newBalance: allowance };
+          } else {
+            // No allowance – keep existing balance, no ledger entry
+          }
         }
       }
 
@@ -215,7 +223,12 @@ router.patch(
       await session.commitTransaction();
 
       const updatedUser = await User.findById(userId);
-      return res.status(200).json({ success: true, data: updatedUser });
+      // If a topup was performed, include it in the response
+      const responsePayload: any = { success: true, data: updatedUser };
+      if ((user as any)._creditTopup) {
+        responsePayload.creditTopup = (user as any)._creditTopup;
+      }
+      return res.status(200).json(responsePayload);
     } catch (error: unknown) {
       await session.abortTransaction();
       console.error("Error in PATCH /api/admin/accounts/:id:", error);
