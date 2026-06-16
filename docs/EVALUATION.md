@@ -45,17 +45,3 @@ To automate the calculation of the metrics above without requiring constant huma
   3. For each sampled trace, the evaluation service extracts the query, context, and generated answer.
   4. The service constructs the evaluation prompts and calls the Judge Model.
   5. The resulting scores are parsed and pushed back to Langfuse via the Langfuse SDK, attaching them to the original trace ID.
-
-## Human Feedback Loop
-
-While automated metrics provide scale, human feedback provides the ultimate ground truth for perceived quality.
-
-- **Thumbs Up/Down Capture:** The frontend UI includes explicit thumbs up (👍) and thumbs down (👎) buttons on every AI-generated response. Users are also presented with an optional text field to explain their rating.
-- **Storage:** 
-  - Feedback events are sent to the backend API.
-  - The backend logs the feedback in the primary application database for user history.
-  - Crucially, the feedback is also sent to Langfuse using the `traceId` associated with the response, attaching a `score` (e.g., 1 for thumbs up, 0 for thumbs down) and a `comment` directly to the trace.
-- **Dashboard Visibility:** 
-  - Langfuse automatically aggregates these user feedback scores. 
-  - The "Analytics" dashboard in Langfuse displays the average user satisfaction score over time.
-  - Developers can filter the "Traces" view to show only traces with a thumbs-down score, allowing them to isolate and debug bad interactions, inspect the exact prompt/context that led to the failure, and add the query to an evaluation dataset for future regression testing.
