@@ -5,16 +5,19 @@ import { useAuth } from '../hooks/useAuth'
 import { registerSchema } from '../hooks/useAuth'
 import { Helmet } from 'react-helmet-async'
 import { toast } from 'sonner'
+import { PasswordStrengthIndicator } from '../components/features/PasswordStrengthIndicator'
 
 export default function Register() {
   const { t } = useTranslation()
-  const { register, isLoading } = useAuth()
+  const { register, isLoading, getPasswordStrength } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   })
+
+  const passwordStrength = getPasswordStrength(formData.password)
 
   const validate = () => {
     const result = registerSchema.safeParse(formData)
@@ -56,6 +59,7 @@ export default function Register() {
             <label className={labelClass}>{t('auth.nameLabel')}</label>
             <input
               type="text"
+              name="name"
               required
               className={inputClass}
               placeholder={t('auth.namePlaceholder')}
@@ -69,6 +73,7 @@ export default function Register() {
             <label className={labelClass}>{t('auth.emailLabel')}</label>
             <input
               type="email"
+              name="email"
               required
               className={inputClass}
               placeholder="name@example.com"
@@ -82,6 +87,7 @@ export default function Register() {
             <label className={labelClass}>{t('auth.passwordLabel')}</label>
             <input
               type="password"
+              name="password"
               required
               className={inputClass}
               placeholder="••••••••"
@@ -90,6 +96,10 @@ export default function Register() {
                 setFormData({ ...formData, password: e.target.value })
               }
             />
+            <PasswordStrengthIndicator
+              result={passwordStrength}
+              password={formData.password}
+            />
           </div>
           <div>
             <label className={labelClass}>
@@ -97,6 +107,7 @@ export default function Register() {
             </label>
             <input
               type="password"
+              name="confirmPassword"
               required
               className={inputClass}
               placeholder="••••••••"
@@ -109,8 +120,9 @@ export default function Register() {
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 mt-8 flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold shadow-lg transition-all hover:cursor-pointer disabled:opacity-50"
+            data-testid="register-submit"
+            disabled={isLoading || !passwordStrength.allValid}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 mt-8 flex w-full justify-center rounded-xl px-4 py-3 text-sm font-bold shadow-lg transition-all hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? t('common.loading') : t('auth.registerAction')}
           </button>

@@ -22,3 +22,13 @@ export interface User {
   email: string
   role: string
 }
+
+/** Detailed password validation breakdown for real-time UI feedback */
+export interface PasswordValidationResult {
+  hasMinLength: boolean
+  hasUppercase: boolean
+  hasLowercase: boolean
+  hasNumber: boolean
+  hasSpecial: boolean
+  allValid: boolean
+}
