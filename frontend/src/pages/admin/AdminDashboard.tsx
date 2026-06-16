@@ -3,19 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   Users,
-  CreditCard,
   TrendingUp,
   BarChart2,
   Layers,
   UserPlus,
   DollarSign,
   Loader2,
+  AlertTriangle,
 } from 'lucide-react'
 import {
   adminApi,
   AdminStats,
   UserAccount,
   PaymentRecord,
+  AuditLogError,
 } from '../../services/adminApi'
 import { toast } from 'sonner'
 
@@ -109,9 +110,9 @@ const AdminDashboard = () => {
       color: 'from-purple-500/20 to-pink-500/20 text-purple-500',
     },
     {
-      title: t('admin.credits_consumed_this_month'),
-      value: stats?.creditsConsumedThisMonth?.toLocaleString() || '0',
-      icon: CreditCard,
+      title: t('admin.total_analyses') || 'Total Analyses',
+      value: stats?.totalAnalyses?.toLocaleString() || '0',
+      icon: BarChart2,
       color: 'from-rose-500/20 to-red-500/20 text-rose-500',
     },
   ]
@@ -158,8 +159,8 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Lists for Recent Signups and Recent Payments */}
-      <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
+      {/* Lists for Recent Signups, Recent Payments and Recent Errors */}
+      <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Recent Signups */}
         <motion.div
           initial={{ opacity: 0, x: isRtl ? 20 : -20 }}
@@ -267,6 +268,62 @@ const AdminDashboard = () => {
                   </div>
                 )
               })
+            )}
+          </div>
+        </motion.div>
+
+        {/* Recent Errors */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm"
+        >
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-foreground flex items-center gap-2 text-lg font-black">
+              <AlertTriangle className="h-5 w-5 text-rose-500" />
+              {t('admin.recent_errors') || 'Recent Errors'}
+            </h2>
+          </div>
+
+          <div className="divide-border/40 divide-y">
+            {!stats?.recentErrors || stats.recentErrors.length === 0 ? (
+              <p className="text-muted-foreground py-4 text-center text-sm font-semibold">
+                {t('admin.no_data')}
+              </p>
+            ) : (
+              stats.recentErrors.map((err: AuditLogError) => (
+                <div
+                  key={err._id}
+                  className="flex flex-col gap-1 py-3"
+                  data-testid="error-log-entry"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-foreground max-w-[120px] truncate text-xs font-bold capitalize">
+                      {err.action?.replace(/_/g, ' ')}
+                    </span>
+                    <span className="text-muted-foreground text-[10px] font-semibold">
+                      {new Date(err.timestamp).toLocaleTimeString(
+                        i18n.language,
+                        {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }
+                      )}
+                    </span>
+                  </div>
+                  {err.userEmail && (
+                    <p className="text-muted-foreground truncate text-[10px]">
+                      {err.userEmail}
+                    </p>
+                  )}
+                  {err.errorMessage && (
+                    <p className="line-clamp-2 text-[10px] leading-tight font-semibold text-rose-500">
+                      {err.errorMessage}
+                    </p>
+                  )}
+                </div>
+              ))
             )}
           </div>
         </motion.div>

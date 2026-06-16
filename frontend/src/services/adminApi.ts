@@ -5,6 +5,18 @@ const adminClient = axios.create({
   withCredentials: true,
 })
 
+export interface AuditLogError {
+  _id: string
+  userId?: string
+  userEmail?: string
+  errorMessage?: string
+  action: string
+  category: string
+  outcome: string
+  details?: string
+  timestamp: string
+}
+
 export interface AdminStats {
   success: boolean
   period: {
@@ -18,6 +30,8 @@ export interface AdminStats {
     revenueThisMonth: Record<string, number>
     analysesThisMonth: number
     creditsConsumedThisMonth: number
+    totalAnalyses: number
+    recentErrors: AuditLogError[]
   }
 }
 

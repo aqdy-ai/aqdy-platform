@@ -30,6 +30,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
+const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
 const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
@@ -135,18 +136,26 @@ function AppContent() {
 
           {/* الـ Admin Routes (للمسؤولين فقط) */}
           <Route
-            path="/admin/dashboard"
+            path="/admin"
             element={
               <AdminRoute>
-                <AdminDashboard />
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
               </AdminRoute>
             }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={<Navigate to="/admin" replace />}
           />
           <Route
             path="/admin/accounts"
             element={
               <AdminRoute>
-                <AdminAccounts />
+                <AdminLayout>
+                  <AdminAccounts />
+                </AdminLayout>
               </AdminRoute>
             }
           />
@@ -154,7 +163,9 @@ function AppContent() {
             path="/admin/contracts"
             element={
               <AdminRoute>
-                <AdminContracts />
+                <AdminLayout>
+                  <AdminContracts />
+                </AdminLayout>
               </AdminRoute>
             }
           />
@@ -162,7 +173,9 @@ function AppContent() {
             path="/admin/payments"
             element={
               <AdminRoute>
-                <AdminPayments />
+                <AdminLayout>
+                  <AdminPayments />
+                </AdminLayout>
               </AdminRoute>
             }
           />

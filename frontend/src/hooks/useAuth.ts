@@ -70,11 +70,16 @@ export const useAuth = () => {
       loginSchema.parse(credentials)
 
       const response = await authApi.login(credentials)
-      setUser(response.data.data.user)
+      const loggedInUser = response.data.data.user
+      setUser(loggedInUser)
 
       localStorage.setItem('isLoggedIn', 'true')
       toast.success(t('auth.loginSuccess'))
-      navigate('/', { replace: true })
+      if (loggedInUser?.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
     } catch (error: unknown) {
       let errorMessage = t('auth.errors.generic')
 
@@ -105,10 +110,15 @@ export const useAuth = () => {
       void _confirmPassword
 
       const response = await authApi.register(apiData)
-      setUser(response.data.data.user)
+      const registeredUser = response.data.data.user
+      setUser(registeredUser)
 
       toast.success(t('auth.registerSuccess'))
-      navigate('/', { replace: true })
+      if (registeredUser?.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
     } catch (error: unknown) {
       let errorMessage = t('auth.errors.generic')
 

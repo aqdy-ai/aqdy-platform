@@ -20,7 +20,7 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
   }
 
   if (!isAuthenticated || user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/login" replace />
   }
 
   return <>{children}</>
