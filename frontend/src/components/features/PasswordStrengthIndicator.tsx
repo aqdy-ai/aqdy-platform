@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { PasswordValidationResult } from '../../types/auth'
 import { cn } from '@/lib/utils'
-import { CheckIcon, Cancel01Icon } from '@hugeicons/core-free-icons'
+import { Tick01Icon, Cancel01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 interface Props {
   result: PasswordValidationResult
@@ -66,7 +66,7 @@ export const PasswordStrengthIndicator: React.FC<Props> = ({
           >
             {rule.met ? (
               <HugeiconsIcon
-                icon={CheckIcon}
+                icon={Tick01Icon}
                 strokeWidth={2}
                 size={14}
                 className="shrink-0"
