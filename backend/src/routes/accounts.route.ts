@@ -155,24 +155,28 @@ router.patch(
   async (req: Request, res: Response) => {
     const session = await mongoose.startSession();
     session.startTransaction();
-      try {
-        const id = req.params.id as string; // Ensure id is a string
-        const userId = new mongoose.Types.ObjectId(id);
-        const { plan, planSlug, status, role } = req.body;
+    try {
+      const id = req.params.id as string; // Ensure id is a string
+      const userId = new mongoose.Types.ObjectId(id);
+      const { plan, planSlug, status, role } = req.body;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-          await session.abortTransaction();
-          return res.status(400).json({ success: false, error: "Invalid user ID format" });
-        }
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        await session.abortTransaction();
+        return res
+          .status(400)
+          .json({ success: false, error: "Invalid user ID format" });
+      }
 
-        const user = await User.findById(userId).session(session);
-        if (!user) {
-          await session.abortTransaction();
-          return res.status(404).json({ success: false, error: "User not found" });
-        }
+      const user = await User.findById(userId).session(session);
+      if (!user) {
+        await session.abortTransaction();
+        return res
+          .status(404)
+          .json({ success: false, error: "User not found" });
+      }
 
-        const originalPlanSlug = user.planSlug;
-        let incomingPlanSlug: string | undefined;
+      const originalPlanSlug = user.planSlug;
+      let incomingPlanSlug: string | undefined;
 
       if (plan !== undefined) {
         incomingPlanSlug = plan as string;
@@ -193,14 +197,16 @@ router.patch(
       }
 
       if (incomingPlanSlug && incomingPlanSlug !== originalPlanSlug) {
-        const planDoc = await Plan.findOne({ slug: incomingPlanSlug }).session(session);
+        const planDoc = await Plan.findOne({ slug: incomingPlanSlug }).session(
+          session,
+        );
         if (planDoc) {
           user.creditBalance = planDoc.creditAllowance;
           await creditsService.createEntry(
             userId.toHexString(),
             planDoc.creditAllowance,
             "plan_reset",
-            session
+            session,
           );
         }
       }

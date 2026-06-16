@@ -162,7 +162,10 @@ export class CreditsService {
     if (amount === 0) {
       throw new AppError(400, "Entry amount must be non-zero.");
     }
-    if (!TOPUP_REASONS.includes(reason) && !DEDUCTION_REASONS.includes(reason)) {
+    if (
+      !TOPUP_REASONS.includes(reason) &&
+      !DEDUCTION_REASONS.includes(reason)
+    ) {
       throw new AppError(400, `Invalid credit entry reason: ${reason}`);
     }
     const userObjectId = new mongoose.Types.ObjectId(userId);
@@ -178,7 +181,7 @@ export class CreditsService {
     ledgerEntry.balanceAfter = currentBalance + amount;
     await ledgerEntry.save({ session });
     return ledgerEntry;
-  };
+  }
 
   async topupForPlanAllowance(userId: string): Promise<ICreditLedger | null> {
     const subscription = await subscriptionService.getUserSubscription(userId);
@@ -244,9 +247,13 @@ export class CreditsService {
     try {
       await ledgerEntry.save({ session });
     } catch (error) {
-      await User.findByIdAndUpdate(userObjectId, {
-        $inc: { creditBalance: cost },
-      }, { session });
+      await User.findByIdAndUpdate(
+        userObjectId,
+        {
+          $inc: { creditBalance: cost },
+        },
+        { session },
+      );
       throw error;
     }
 
