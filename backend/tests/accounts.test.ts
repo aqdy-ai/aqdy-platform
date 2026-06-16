@@ -480,6 +480,7 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
       .set("Cookie", `accessToken=${tok}`)
       .send({ plan: "free" });
 
+    if (res.status !== 200) throw new Error(JSON.stringify(res.body));
     expect(res.status).toBe(200);
     // No topup info in response
     expect(res.body.creditTopup).toBeUndefined();

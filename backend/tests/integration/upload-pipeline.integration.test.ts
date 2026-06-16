@@ -466,7 +466,7 @@ describe("Upload → Extract → Store Pipeline", () => {
         analysisService.triggerAnalysis(
           MOCK_CONTRACT_ID,
           "user_test",
-          ENGLISH_CONTRACT_TEXT,
+          "FAILING_CONTRACT_TEXT_TO_BYPASS_CACHE",
           "en",
         ),
       ).resolves.toBeUndefined();

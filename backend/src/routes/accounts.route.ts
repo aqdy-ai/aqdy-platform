@@ -153,23 +153,19 @@ router.patch(
   authenticateJwt,
   requireAdmin,
   async (req: Request, res: Response) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
     try {
       const id = req.params.id as string; // Ensure id is a string
       const userId = new mongoose.Types.ObjectId(id);
       const { plan, planSlug, status, role } = req.body;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        await session.abortTransaction();
         return res
           .status(400)
           .json({ success: false, error: "Invalid user ID format" });
       }
 
-      const user = await User.findById(userId).session(session);
+      const user = await User.findById(userId);
       if (!user) {
-        await session.abortTransaction();
         return res
           .status(404)
           .json({ success: false, error: "User not found" });
@@ -197,9 +193,7 @@ router.patch(
       }
 
       if (incomingPlanSlug && incomingPlanSlug !== originalPlanSlug) {
-        const planDoc = await Plan.findOne({ slug: incomingPlanSlug }).session(
-          session,
-        );
+        const planDoc = await Plan.findOne({ slug: incomingPlanSlug });
         if (planDoc) {
           const allowance = planDoc.creditAllowance ?? 0;
           if (allowance > 0) {
@@ -208,8 +202,7 @@ router.patch(
             await creditsService.createEntry(
               userId.toHexString(),
               allowance,
-              "plan_reset",
-              session,
+              "plan_topup",
             );
             // Attach topup info to be returned in the response later
             (user as any)._creditTopup = {
@@ -222,8 +215,7 @@ router.patch(
         }
       }
 
-      await user.save({ session });
-      await session.commitTransaction();
+      await user.save();
 
       const updatedUser = await User.findById(userId);
       // If a topup was performed, include it in the response
@@ -233,14 +225,11 @@ router.patch(
       }
       return res.status(200).json(responsePayload);
     } catch (error: unknown) {
-      await session.abortTransaction();
       console.error("Error in PATCH /api/admin/accounts/:id:", error);
       return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : String(error),
       });
-    } finally {
-      session.endSession();
     }
   },
 );

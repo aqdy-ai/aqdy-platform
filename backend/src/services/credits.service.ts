@@ -157,7 +157,7 @@ export class CreditsService {
     userId: string,
     amount: number,
     reason: CreditLedgerReason,
-    session: mongoose.ClientSession,
+    session?: mongoose.ClientSession,
   ): Promise<ICreditLedger> {
     if (amount === 0) {
       throw new AppError(400, "Entry amount must be non-zero.");
@@ -179,7 +179,7 @@ export class CreditsService {
     // Retrieve current balance to compute balanceAfter
     const currentBalance = await this.getBalance(userId);
     ledgerEntry.balanceAfter = currentBalance + amount;
-    await ledgerEntry.save({ session });
+    await ledgerEntry.save(session ? { session } : undefined);
     return ledgerEntry;
   }
 
