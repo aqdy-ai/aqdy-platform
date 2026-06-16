@@ -90,7 +90,7 @@ router.get(
   requireAdmin,
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
@@ -148,114 +148,77 @@ router.get(
   },
 );
 
-// PATCH /api/admin/accounts/:id
 router.patch(
   "/:id",
   authenticateJwt,
   requireAdmin,
   async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { plan, planSlug, status, role } = req.body;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+      try {
+        const id = req.params.id as string; // Ensure id is a string
+        const userId = new mongoose.Types.ObjectId(id);
+        const { plan, planSlug, status, role } = req.body;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res
-          .status(400)
-          .json({ success: false, error: "Invalid user ID format" });
-      }
-
-      const user = await User.findById(id);
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, error: "User not found" });
-      }
-
-      // ── Track whether plan actually changes ──────────────────────────────
-      const originalPlanSlug = user.planSlug;
-      let incomingPlanSlug: string | undefined;
-
-      // Handle updates
-      if (plan !== undefined) {
-        if (!["free", "premium", "enterprise"].includes(plan)) {
-          return res
-            .status(400)
-            .json({ success: false, error: "Invalid plan type" });
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+          await session.abortTransaction();
+          return res.status(400).json({ success: false, error: "Invalid user ID format" });
         }
+
+        const user = await User.findById(userId).session(session);
+        if (!user) {
+          await session.abortTransaction();
+          return res.status(404).json({ success: false, error: "User not found" });
+        }
+
+        const originalPlanSlug = user.planSlug;
+        let incomingPlanSlug: string | undefined;
+
+      if (plan !== undefined) {
         incomingPlanSlug = plan as string;
         user.planSlug = plan;
         user.plan = plan;
       } else if (planSlug !== undefined) {
-        if (!["free", "premium", "enterprise"].includes(planSlug)) {
-          return res
-            .status(400)
-            .json({ success: false, error: "Invalid plan slug type" });
-        }
         incomingPlanSlug = planSlug as string;
         user.planSlug = planSlug;
         user.plan = planSlug;
       }
 
       if (status !== undefined) {
-        if (!["active", "suspended"].includes(status)) {
-          return res
-            .status(400)
-            .json({ success: false, error: "Invalid status type" });
-        }
         user.status = status;
       }
 
       if (role !== undefined) {
-        if (!["admin", "user"].includes(role)) {
-          return res
-            .status(400)
-            .json({ success: false, error: "Invalid role type" });
-        }
         user.role = role;
       }
 
-      await user.save();
-
-      // ── Credit topup on genuine plan change ──────────────────────────────
-      // Only trigger when the plan slug actually changed to avoid double-crediting
-      // users already on that plan.
-      let creditTopup: { amount: number; newBalance: number } | null = null;
-
       if (incomingPlanSlug && incomingPlanSlug !== originalPlanSlug) {
-        const planDoc = await Plan.findOne({ slug: incomingPlanSlug });
-
-        if (!planDoc) {
-          // Non-fatal: plan document missing from DB. Log and continue.
-          console.warn(
-            `[admin/accounts] Plan slug "${incomingPlanSlug}" not found in Plan collection — skipping credit topup for user ${id}`,
-          );
-        } else if (planDoc.creditAllowance > 0) {
-          const ledgerEntry = await creditsService.topup(
-            id,
+        const planDoc = await Plan.findOne({ slug: incomingPlanSlug }).session(session);
+        if (planDoc) {
+          user.creditBalance = planDoc.creditAllowance;
+          await creditsService.createEntry(
+            userId.toHexString(),
             planDoc.creditAllowance,
-            "plan_topup",
+            "plan_reset",
+            session
           );
-          creditTopup = {
-            amount: planDoc.creditAllowance,
-            newBalance: ledgerEntry.balanceAfter,
-          };
         }
       }
 
-      // Re-fetch user so creditBalance reflects any topup
-      const updatedUser = await User.findById(id);
+      await user.save({ session });
+      await session.commitTransaction();
 
-      return res.status(200).json({
-        success: true,
-        data: updatedUser,
-        ...(creditTopup && { creditTopup }),
-      });
+      const updatedUser = await User.findById(userId);
+      return res.status(200).json({ success: true, data: updatedUser });
     } catch (error: unknown) {
+      await session.abortTransaction();
       console.error("Error in PATCH /api/admin/accounts/:id:", error);
       return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : String(error),
       });
+    } finally {
+      session.endSession();
     }
   },
 );
@@ -267,7 +230,7 @@ router.delete(
   requireAdmin,
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string; // Ensure id is a string
       const { confirm } = req.body;
 
       if (!confirm) {
