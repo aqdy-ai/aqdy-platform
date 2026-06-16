@@ -161,8 +161,12 @@ export const useAuth = () => {
     toast.info(t('auth.forgotPasswordComingSoon'))
   }
 
-  const logout = () => {
-    // Add logic to call logout API and clear context
+  const logout = async () => {
+    try {
+      await authApi.logout()
+    } catch {
+      // Ignore API errors during logout
+    }
     setUser(null)
     localStorage.removeItem('isLoggedIn')
     navigate('/login')
