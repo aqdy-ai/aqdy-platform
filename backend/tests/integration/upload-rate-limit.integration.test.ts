@@ -95,7 +95,7 @@ describe("Anonymous IP Rate Limit Integration", () => {
         .set("x-forwarded-for", ipAddress)
         .attach("contract", Buffer.from("%PDF-1.4 dummy pdf data"), "contract.pdf");
 
-      expect(res.status).toBe(202);
+      expect(res.status).toBe(201);
       expect(res.body.status).toBe("processing");
       expect(mockParsePdf).toHaveBeenCalledTimes(i + 1);
       expect(mockSaveContract).toHaveBeenCalledTimes(i + 1);

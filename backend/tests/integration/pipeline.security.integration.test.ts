@@ -112,8 +112,8 @@ describe("Upload Route Security Integration", () => {
       .attach("contract", Buffer.from("dummy pdf content"), "clean_contract.pdf")
       .set("x-user-id", "user_123");
 
-    // 3. Verify success (202 Accepted)
-    expect(response.status).toBe(202);
+    // 3. Verify success (201 Created)
+    expect(response.status).toBe(201);
     expect(response.body.contractId).toBe("contract_xyz");
 
     // 4. Verify text was sanitized before saving

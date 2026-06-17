@@ -755,7 +755,7 @@ export default function RiskAnalysisDashboard() {
                           >
                             <ClauseCard
                               item={item as ClauseItem}
-                              contractId={contractId || 'mock-contract-id'}
+                              contractId={contractId || ''}
                               clauseIndex={item.clauseIndex}
                             />
                           </div>
