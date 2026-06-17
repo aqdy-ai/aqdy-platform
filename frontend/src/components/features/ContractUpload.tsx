@@ -17,7 +17,7 @@ export default function ContractUpload({
   onUploadSuccess,
 }: ContractUploadProps) {
   const { t, i18n } = useTranslation()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -108,7 +108,7 @@ export default function ContractUpload({
         const formData = new FormData()
         formData.append('contract', targetFile)
 
-        const response = await fetch('http://localhost:3000/api/upload', {
+        const response = await fetch('/api/upload', {
           method: 'POST',
           credentials: 'include',
           body: formData,
@@ -133,14 +133,11 @@ export default function ContractUpload({
         onUploadSuccess?.(targetFile)
       } catch (error: unknown) {
         clearInterval(progressInterval)
-        // In test environments without a real backend, preserve the file UI and simulate success
         const err = error as Error
-        // Show toast but continue as if upload succeeded to allow UI flow in tests
         showErrorToast(err.message || 'Failed to upload contract')
-        setUploadProgress(100)
-        setContractId('mock-contract-id')
+        setUploadProgress(0)
+        setContractId(null)
         setIsUploading(false)
-        // Keep the file state to display filename
       }
     },
     [onUploadSuccess, t, showErrorToast]
@@ -226,9 +223,21 @@ export default function ContractUpload({
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  const handleStartAnalysis = () => {
+  const handleStartAnalysis = async () => {
     if (!file || !contractId) return
-    console.log('Starting analysis for:', file.name, contractId)
+    try {
+      await fetch('/api/analysis/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          contractId,
+          userId: user?.id,
+        }),
+      })
+    } catch {
+      // Navigate anyway; dashboard will handle missing analysis
+    }
     navigate(`/risk-analysis?id=${contractId}`)
   }
 
