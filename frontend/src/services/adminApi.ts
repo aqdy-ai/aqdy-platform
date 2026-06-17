@@ -5,6 +5,18 @@ const adminClient = axios.create({
   withCredentials: true,
 })
 
+export interface AuditLogError {
+  _id: string
+  userId?: string
+  userEmail?: string
+  errorMessage?: string
+  action: string
+  category: string
+  outcome: string
+  details?: string
+  timestamp: string
+}
+
 export interface AdminStats {
   success: boolean
   period: {
@@ -18,6 +30,8 @@ export interface AdminStats {
     revenueThisMonth: Record<string, number>
     analysesThisMonth: number
     creditsConsumedThisMonth: number
+    totalAnalyses: number
+    recentErrors: AuditLogError[]
   }
 }
 
@@ -109,7 +123,73 @@ export interface ContractsResponse {
   data: AdminContract[]
 }
 
+export interface DashboardData {
+  totalAccounts: number
+  accountsThisWeek: number
+  activeSubscriptions: number
+  mrrCurrent: number
+  mrrChange: number
+  mrrByCurrency: Record<string, number>
+  analysesThisMonth: number
+  analysesChange: number
+  totalAnalyses: number
+  avgCreditsPerAnalysis: number
+
+  creditsIssuedAllTime: number
+  creditsConsumedThisMonth: number
+  creditsConsumedLastMonth: number
+  creditsRemaining: number
+  avgInputTokens: number
+
+  mrrTrend: { month: string; usd: number }[]
+  weeklySignups: { week: string; count: number }[]
+
+  analysesPerDay: { date: string; count: number }[]
+  creditsPerDay: { date: string; credits: number }[]
+
+  riskDistribution: { risk: string; count: number }[]
+  agentLatency: { extractor: number; classifier: number; redline: number }
+  topContractTypes: { type: string; count: number }[]
+
+  topCreditConsumers: {
+    _id: string
+    name: string
+    email: string
+    planSlug: string
+    credits: number
+  }[]
+  planBreakdown: { plan: string; count: number }[]
+  languageSplit: { language: string; count: number }[]
+
+  recentAnalyses: {
+    _id: string
+    contractId: string | null
+    filename: string
+    language: string
+    overallRisk: string
+    userId: string
+    createdAt: string
+  }[]
+  recentPayments: {
+    _id: string
+    user: { name: string; email: string; planSlug?: string }
+    amount: number
+    currency: string
+    status: string
+    createdAt: string
+  }[]
+  pipelineErrors: {
+    _id: string
+    action: string
+    errorMessage?: string
+    timestamp: string
+  }[]
+}
+
 export const adminApi = {
+  getDashboard: () =>
+    adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard'),
+  getStats: () => adminClient.get<AdminStats>('/stats'),
   getStats: () => adminClient.get<AdminStats>('/stats'),
   getPayments: (params?: {
     page?: number

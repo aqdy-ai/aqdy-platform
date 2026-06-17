@@ -13,7 +13,8 @@
     "brand_name": "عقدي",
     "tagline": "ذكاء اصطناعي قانوني آمن",
     "get_started": "ابدأ الآن",
-    "remove": "حذف"
+    "remove": "حذف",
+    "toggle_theme": "تغيير المظهر"
   },
   "nav": {
     "home": "الرئيسية",
@@ -357,6 +358,8 @@
     "mrr": "الإيرادات المتكررة شهرياً (MRR)",
     "analyses_this_month": "التحليلات هذا الشهر",
     "credits_consumed_this_month": "الاعتمادات المستهلكة هذا الشهر",
+    "total_analyses": "إجمالي التحليلات",
+    "recent_errors": "الأخطاء الأخيرة",
     "recent_signups": "أحدث التسجيلات",
     "recent_payments": "أحدث المدفوعات",
     "name": "الاسم",

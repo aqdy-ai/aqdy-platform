@@ -83,11 +83,16 @@ export const useAuth = () => {
       loginSchema.parse(credentials)
 
       const response = await authApi.login(credentials)
-      setUser(response.data.data.user)
+      const loggedInUser = response.data.data.user
+      setUser(loggedInUser)
 
       localStorage.setItem('isLoggedIn', 'true')
       toast.success(t('auth.loginSuccess'))
-      navigate('/', { replace: true })
+      if (loggedInUser?.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
     } catch (error: unknown) {
       let errorMessage = t('auth.errors.generic')
 
@@ -118,10 +123,15 @@ export const useAuth = () => {
       void _confirmPassword
 
       const response = await authApi.register(apiData)
-      setUser(response.data.data.user)
+      const registeredUser = response.data.data.user
+      setUser(registeredUser)
 
       toast.success(t('auth.registerSuccess'))
-      navigate('/', { replace: true })
+      if (registeredUser?.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
     } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         // Local validation is handled inline by the form/component
@@ -151,8 +161,12 @@ export const useAuth = () => {
     toast.info(t('auth.forgotPasswordComingSoon'))
   }
 
-  const logout = () => {
-    // Add logic to call logout API and clear context
+  const logout = async () => {
+    try {
+      await authApi.logout()
+    } catch {
+      // Ignore API errors during logout
+    }
     setUser(null)
     localStorage.removeItem('isLoggedIn')
     navigate('/login')
