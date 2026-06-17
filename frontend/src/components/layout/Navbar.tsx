@@ -8,7 +8,6 @@ import {
   Settings,
   LogOut,
   Shield,
-  Users,
   History,
 } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
@@ -161,26 +160,15 @@ const Navbar = () => {
                           </div>
                         )}
                         {user?.role === 'admin' && (
-                          <>
-                            <Link
-                              to="/admin/dashboard"
-                              onClick={() => setDropdownOpen(false)}
-                              className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
-                              role="menuitem"
-                            >
-                              <Shield size={16} />
-                              {t('admin.dashboard_title')}
-                            </Link>
-                            <Link
-                              to="/admin/accounts"
-                              onClick={() => setDropdownOpen(false)}
-                              className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
-                              role="menuitem"
-                            >
-                              <Users size={16} />
-                              {t('admin.accounts_title')}
-                            </Link>
-                          </>
+                          <Link
+                            to="/admin"
+                            onClick={() => setDropdownOpen(false)}
+                            className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+                            role="menuitem"
+                          >
+                            <Shield size={16} />
+                            {t('admin.dashboard_title')}
+                          </Link>
                         )}
                         <Link
                           to="/contract-history"

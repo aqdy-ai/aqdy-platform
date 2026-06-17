@@ -30,6 +30,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
+const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
 const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
@@ -39,12 +40,15 @@ const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
  */
 const GuestRoute = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated, isInitialLoading } = useAuth()
+  const { isAuthenticated, isInitialLoading, user } = useAuth()
 
   if (isInitialLoading) {
     return null
   }
-  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>
+  if (isAuthenticated) {
+    return <Navigate to={user?.role === 'admin' ? '/admin' : '/'} replace />
+  }
+  return <>{children}</>
 }
 
 /**
@@ -91,19 +95,62 @@ function AppContent() {
     >
       <DisclaimerModal />
 
-      <MainLayout>
-        <Routes>
-          {/* الـ Public Routes */}
-          <Route path="/" element={<Home />} />
+      <Routes>
+        {/* 👑 Admin Routes - بدون MainLayout (بدون Navbar عادية) */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminDashboard />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={<Navigate to="/admin" replace />}
+        />
+        <Route
+          path="/admin/accounts"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminAccounts />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/contracts"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminContracts />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/payments"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminPayments />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
 
-          {/* 🌟 دمج صفحة الأسعار وتمرير الـ Props المتوافقة مع الـ Types بنجاح */}
+        {/* 🏠 Normal Routes - داخل MainLayout */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
           <Route
             path="/pricing"
             element={
               <Pricing isLoggedIn={isAuthenticated} userPlan={userPlan} />
             }
           />
-
           <Route
             path="/test-dashboard"
             element={
@@ -112,8 +159,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* الـ Protected Routes (المحمية) */}
           <Route
             path="/dashboard"
             element={
@@ -132,42 +177,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* الـ Admin Routes (للمسؤولين فقط) */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/accounts"
-            element={
-              <AdminRoute>
-                <AdminAccounts />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/contracts"
-            element={
-              <AdminRoute>
-                <AdminContracts />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/payments"
-            element={
-              <AdminRoute>
-                <AdminPayments />
-              </AdminRoute>
-            }
-          />
-
-          {/* الـ Guest Routes (ممنوعة على المسجلين) */}
           <Route
             path="/account-settings"
             element={
@@ -216,11 +225,9 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* Fallback في حال كتابة مسار خاطئ */}
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </MainLayout>
+        </Route>
+      </Routes>
     </Suspense>
   )
 }

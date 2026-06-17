@@ -219,4 +219,69 @@ describe('useAuth', () => {
 
     expect(authApi.login).not.toHaveBeenCalled()
   })
+
+  it('should redirect admin to /admin on login', async () => {
+    vi.mocked(authApi.login).mockResolvedValueOnce({
+      data: {
+        success: true,
+        data: {
+          user: {
+            id: '1',
+            name: 'Admin User',
+            email: 'admin@test.com',
+            role: 'admin',
+          },
+        },
+      },
+    } as any)
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper,
+    })
+
+    await act(async () => {
+      await result.current.login({
+        email: 'admin@test.com',
+        password: 'Password123!',
+      })
+    })
+
+    expect(authApi.login).toHaveBeenCalled()
+    expect(mockSetUser).toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith('/admin', { replace: true })
+  })
+
+  it('should redirect admin to /admin on register', async () => {
+    vi.mocked(authApi.register).mockResolvedValueOnce({
+      data: {
+        success: true,
+        data: {
+          user: {
+            id: '1',
+            name: 'Admin User',
+            email: 'admin@test.com',
+            role: 'admin',
+          },
+        },
+      },
+    } as any)
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper,
+    })
+
+    await act(async () => {
+      await result.current.register({
+        name: 'Admin User',
+        email: 'admin@test.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      })
+    })
+
+    expect(authApi.register).toHaveBeenCalled()
+    expect(mockSetUser).toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith('/admin', { replace: true })
+  })
 })
+

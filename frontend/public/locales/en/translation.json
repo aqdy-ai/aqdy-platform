@@ -12,7 +12,8 @@
     "brand_name": "Aqdy",
     "tagline": "Secure AI Legal Assistant",
     "get_started": "Get Started",
-    "remove": "Remove"
+    "remove": "Remove",
+    "toggle_theme": "Toggle Theme"
   },
   "nav": {
     "home": "Home",
@@ -352,6 +353,8 @@
     "mrr": "Monthly Recurring Revenue (MRR)",
     "analyses_this_month": "Analyses This Month",
     "credits_consumed_this_month": "Credits Consumed This Month",
+    "total_analyses": "Total Analyses",
+    "recent_errors": "Recent Errors",
     "recent_signups": "Recent Signups",
     "recent_payments": "Recent Payments",
     "name": "Name",

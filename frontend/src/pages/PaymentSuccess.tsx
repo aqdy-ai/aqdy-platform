@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 
 export const PaymentSuccess: React.FC = () => {
-  const { t, i18n } = useTranslation()
+  const { i18n } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
