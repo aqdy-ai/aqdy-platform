@@ -406,7 +406,7 @@ describe("GET /api/admin/payments — populated user in response", () => {
       email: "ahmed@test.com",
       role: "user",
       status: "active",
-      planSlug: "premium",
+      planSlug: "pro",
       passwordHash: "h",
     });
     await createPayment(user._id as mongoose.Types.ObjectId);
@@ -423,6 +423,6 @@ describe("GET /api/admin/payments — populated user in response", () => {
     expect(typeof payment.userId).toBe("object");
     expect(payment.userId.name).toBe("Ahmed Ali");
     expect(payment.userId.email).toBe("ahmed@test.com");
-    expect(payment.userId.planSlug).toBe("premium");
+    expect(payment.userId.planSlug).toBe("pro");
   });
 });

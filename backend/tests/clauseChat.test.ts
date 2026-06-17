@@ -61,7 +61,7 @@ describe("Clause Chat API Endpoint", () => {
       email: "chat@user.com",
       role: "user",
       status: "active",
-      planSlug: "premium",
+      planSlug: "pro",
       passwordHash: "dummyHash",
       creditBalance: 20,
     });
