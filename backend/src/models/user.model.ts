@@ -23,7 +23,7 @@ export const UserZodSchema = z.object({
       "Password must include uppercase, lowercase, number, and special character",
     ),
   role: z.enum(["user", "admin"]).default("user"),
-  plan: z.enum(["free", "premium", "enterprise"]).default("free"),
+  plan: z.enum(["free", "pro", "enterprise"]).default("free"),
   status: z.enum(["active", "suspended", "deleted"]).default("active"),
   lastLogin: z.date().optional(),
   refreshToken: z.string().optional(),
@@ -67,7 +67,7 @@ const UserSchema = new Schema<IUser>(
     plan: { type: String, required: true, default: "free" },
     planSlug: {
       type: String,
-      enum: ["free", "premium", "enterprise"],
+      enum: ["free", "pro", "enterprise"],
       default: "free",
       index: true,
     },

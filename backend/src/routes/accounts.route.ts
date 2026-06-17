@@ -8,6 +8,7 @@ import {
   requireAdmin,
 } from "../middlewares/auth.middleware.js";
 import { Plan } from "../models/plan.model.js";
+import { Subscription } from "../models/subscription.model.js";
 import { creditsService } from "../services/credits.service.js";
 
 const router = Router();
@@ -30,7 +31,11 @@ router.get(
       const filter: Record<string, unknown> = {};
 
       if (planSlug && typeof planSlug === "string") {
-        filter.planSlug = planSlug;
+        if (planSlug === "pro") {
+          filter.planSlug = { $in: ["pro", "premium"] };
+        } else {
+          filter.planSlug = planSlug;
+        }
       }
 
       if (status && typeof status === "string") {
@@ -90,7 +95,7 @@ router.get(
   requireAdmin,
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
@@ -148,14 +153,14 @@ router.get(
   },
 );
 
-// PATCH /api/admin/accounts/:id
 router.patch(
   "/:id",
   authenticateJwt,
   requireAdmin,
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string; // Ensure id is a string
+      const userId = new mongoose.Types.ObjectId(id);
       const { plan, planSlug, status, role } = req.body;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -164,92 +169,78 @@ router.patch(
           .json({ success: false, error: "Invalid user ID format" });
       }
 
-      const user = await User.findById(id);
+      const user = await User.findById(userId);
       if (!user) {
         return res
           .status(404)
           .json({ success: false, error: "User not found" });
       }
 
-      // ── Track whether plan actually changes ──────────────────────────────
       const originalPlanSlug = user.planSlug;
       let incomingPlanSlug: string | undefined;
 
-      // Handle updates
       if (plan !== undefined) {
-        if (!["free", "premium", "enterprise"].includes(plan)) {
-          return res
-            .status(400)
-            .json({ success: false, error: "Invalid plan type" });
-        }
         incomingPlanSlug = plan as string;
-        user.planSlug = plan;
-        user.plan = plan;
+        if (incomingPlanSlug === "premium") incomingPlanSlug = "pro";
+        user.planSlug = incomingPlanSlug;
+        user.plan = incomingPlanSlug;
       } else if (planSlug !== undefined) {
-        if (!["free", "premium", "enterprise"].includes(planSlug)) {
-          return res
-            .status(400)
-            .json({ success: false, error: "Invalid plan slug type" });
-        }
         incomingPlanSlug = planSlug as string;
-        user.planSlug = planSlug;
-        user.plan = planSlug;
+        if (incomingPlanSlug === "premium") incomingPlanSlug = "pro";
+        user.planSlug = incomingPlanSlug;
+        user.plan = incomingPlanSlug;
       }
 
+      // Normalize any existing "premium" values to "pro" before saving
+      if (user.planSlug === "premium") user.planSlug = "pro";
+      if (user.plan === "premium") user.plan = "pro";
+
       if (status !== undefined) {
-        if (!["active", "suspended"].includes(status)) {
-          return res
-            .status(400)
-            .json({ success: false, error: "Invalid status type" });
-        }
         user.status = status;
       }
 
       if (role !== undefined) {
-        if (!["admin", "user"].includes(role)) {
-          return res
-            .status(400)
-            .json({ success: false, error: "Invalid role type" });
-        }
         user.role = role;
+      }
+
+      if (incomingPlanSlug && incomingPlanSlug !== originalPlanSlug) {
+        const planDoc = await Plan.findOne({ slug: incomingPlanSlug });
+        if (planDoc) {
+          const allowance = planDoc.creditAllowance ?? 0;
+          if (allowance > 0) {
+            user.creditBalance = allowance;
+            // Record the top‑up in the ledger
+            await creditsService.createEntry(
+              userId.toHexString(),
+              allowance,
+              "plan_topup",
+            );
+            // Attach topup info to be returned in the response later
+            (user as any)._creditTopup = {
+              amount: allowance,
+              newBalance: allowance,
+            };
+          } else {
+            // No allowance – keep existing balance, no ledger entry
+          }
+
+          // Also update the user's active subscription to reflect the new plan
+          await Subscription.updateOne(
+            { userId, status: "active" },
+            { planId: planDoc._id },
+          );
+        }
       }
 
       await user.save();
 
-      // ── Credit topup on genuine plan change ──────────────────────────────
-      // Only trigger when the plan slug actually changed to avoid double-crediting
-      // users already on that plan.
-      let creditTopup: { amount: number; newBalance: number } | null = null;
-
-      if (incomingPlanSlug && incomingPlanSlug !== originalPlanSlug) {
-        const planDoc = await Plan.findOne({ slug: incomingPlanSlug });
-
-        if (!planDoc) {
-          // Non-fatal: plan document missing from DB. Log and continue.
-          console.warn(
-            `[admin/accounts] Plan slug "${incomingPlanSlug}" not found in Plan collection — skipping credit topup for user ${id}`,
-          );
-        } else if (planDoc.creditAllowance > 0) {
-          const ledgerEntry = await creditsService.topup(
-            id,
-            planDoc.creditAllowance,
-            "plan_topup",
-          );
-          creditTopup = {
-            amount: planDoc.creditAllowance,
-            newBalance: ledgerEntry.balanceAfter,
-          };
-        }
+      const updatedUser = await User.findById(userId);
+      // If a topup was performed, include it in the response
+      const responsePayload: any = { success: true, data: updatedUser };
+      if ((user as any)._creditTopup) {
+        responsePayload.creditTopup = (user as any)._creditTopup;
       }
-
-      // Re-fetch user so creditBalance reflects any topup
-      const updatedUser = await User.findById(id);
-
-      return res.status(200).json({
-        success: true,
-        data: updatedUser,
-        ...(creditTopup && { creditTopup }),
-      });
+      return res.status(200).json(responsePayload);
     } catch (error: unknown) {
       console.error("Error in PATCH /api/admin/accounts/:id:", error);
       return res.status(500).json({
@@ -267,7 +258,7 @@ router.delete(
   requireAdmin,
   async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string; // Ensure id is a string
       const { confirm } = req.body;
 
       if (!confirm) {

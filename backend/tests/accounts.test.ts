@@ -112,7 +112,7 @@ describe("Admin Account Management API & Role Guard", () => {
     // Seed 3 additional test users (admin-guard@test.com is already seeded in beforeEach)
     await User.create([
       { name: "Alice Blue",   email: "alice@test.com",   role: "user",  status: "active",    planSlug: "free",       passwordHash: "dummyHash" },
-      { name: "Bob Green",    email: "bob@test.com",     role: "user",  status: "suspended", planSlug: "premium",    passwordHash: "dummyHash" },
+      { name: "Bob Green",    email: "bob@test.com",     role: "user",  status: "suspended", planSlug: "pro",        passwordHash: "dummyHash" },
       { name: "Charlie Red",  email: "charlie@test.com", role: "admin", status: "active",    planSlug: "enterprise", passwordHash: "dummyHash" },
     ]);
 
@@ -155,7 +155,7 @@ describe("Admin Account Management API & Role Guard", () => {
       email: "test@account.com",
       role: "user",
       status: "active",
-      planSlug: "premium",
+      planSlug: "pro",
       passwordHash: "dummyHash",
     });
 
@@ -184,7 +184,7 @@ describe("Admin Account Management API & Role Guard", () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.user.name).toBe("Test Account");
-    expect(res.body.data.subscription.planSlug).toBe("premium");
+    expect(res.body.data.subscription.planSlug).toBe("pro");
     expect(res.body.data.usageStats.contractsCount).toBe(1);
     expect(res.body.data.usageStats.totalFileSizeBytes).toBe(1500);
     expect(res.body.data.recentActivity).toHaveLength(1);
@@ -207,20 +207,20 @@ describe("Admin Account Management API & Role Guard", () => {
       .patch(`/api/admin/accounts/${userIdStr}`)
       .set("Cookie", `accessToken=${adminToken}`)
       .send({
-        plan: "premium",
+        plan: "pro",
         status: "suspended",
         role: "admin",
       });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.planSlug).toBe("premium");
+    expect(res.body.data.planSlug).toBe("pro");
     expect(res.body.data.status).toBe("suspended");
     expect(res.body.data.role).toBe("admin");
 
     // Verify database directly
     const updated = await User.findById(user._id);
-    expect(updated?.planSlug).toBe("premium");
+    expect(updated?.planSlug).toBe("pro");
     expect(updated?.status).toBe("suspended");
     expect(updated?.role).toBe("admin");
   });
@@ -307,7 +307,7 @@ describe("GET /api/admin/stats", () => {
 
     // Seed 3 users
     const u1 = await User.create({ name: "U1", email: "u1@test.com", role: "user", status: "active", planSlug: "free", passwordHash: "h" });
-    const u2 = await User.create({ name: "U2", email: "u2@test.com", role: "user", status: "active", planSlug: "premium", passwordHash: "h" });
+    const u2 = await User.create({ name: "U2", email: "u2@test.com", role: "user", status: "active", planSlug: "pro", passwordHash: "h" });
 
     // Seed active subscription
     const freePlan = await Plan.create({ name: "Free", slug: "free", billingCycle: "monthly", features: [], analysisLimit: 5, storageLimit: 100, creditAllowance: 0, isActive: true });
@@ -384,7 +384,7 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
     });
     const tok = generateToken({ email: "admin3@test.com", role: "admin", sub: adminUser._id.toString() });
 
-    await User.create({ name: "Rich User", email: "rich@test.com", role: "user", status: "active", planSlug: "premium", passwordHash: "h", creditBalance: 250 });
+    await User.create({ name: "Rich User", email: "rich@test.com", role: "user", status: "active", planSlug: "pro", passwordHash: "h", creditBalance: 250 });
 
     const res = await request(testApp)
       .get("/api/admin/accounts")
@@ -407,15 +407,15 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
     });
     const tok = generateToken({ email: "admin4@test.com", role: "admin", sub: adminUser._id.toString() });
 
-    // Seed the plan and the target user already on premium
-    await Plan.create({ name: "Premium", slug: "premium", billingCycle: "monthly", features: [], analysisLimit: 50, storageLimit: -1, creditAllowance: 100, isActive: true });
-    const target = await User.create({ name: "Same Plan User", email: "same@plan.com", role: "user", status: "active", planSlug: "premium", passwordHash: "h", creditBalance: 100 });
+    // Seed the plan and the target user already on pro
+    await Plan.create({ name: "Premium", slug: "pro", billingCycle: "monthly", features: [], analysisLimit: 50, storageLimit: -1, creditAllowance: 100, isActive: true });
+    const target = await User.create({ name: "Same Plan User", email: "same@plan.com", role: "user", status: "active", planSlug: "pro", passwordHash: "h", creditBalance: 100 });
 
     // PATCH with the same plan the user already has
     const res = await request(testApp)
       .patch(`/api/admin/accounts/${target._id}`)
       .set("Cookie", `accessToken=${tok}`)
-      .send({ plan: "premium" });
+      .send({ plan: "pro" });
 
     expect(res.status).toBe(200);
     // creditTopup must NOT appear in the response
@@ -437,14 +437,14 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
     });
     const tok = generateToken({ email: "admin5@test.com", role: "admin", sub: adminUser._id.toString() });
 
-    // Seed premium plan with 100 credit allowance
-    await Plan.create({ name: "Premium", slug: "premium", billingCycle: "monthly", features: [], analysisLimit: 50, storageLimit: -1, creditAllowance: 100, isActive: true });
+    // Seed pro plan with 100 credit allowance
+    await Plan.create({ name: "Premium", slug: "pro", billingCycle: "monthly", features: [], analysisLimit: 50, storageLimit: -1, creditAllowance: 100, isActive: true });
     const target = await User.create({ name: "Upgrading User", email: "upgrade@test.com", role: "user", status: "active", planSlug: "free", passwordHash: "h", creditBalance: 0 });
 
     const res = await request(testApp)
       .patch(`/api/admin/accounts/${target._id}`)
       .set("Cookie", `accessToken=${tok}`)
-      .send({ plan: "premium" });
+      .send({ plan: "pro" });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -456,7 +456,7 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
     // User creditBalance in DB must have increased
     const afterUser = await User.findById(target._id);
     expect(afterUser?.creditBalance).toBe(100);
-    expect(afterUser?.planSlug).toBe("premium");
+    expect(afterUser?.planSlug).toBe("pro");
 
     // A ledger entry must exist
     const ledger = await CreditLedger.findOne({ userId: target._id, reason: "plan_topup" });
@@ -473,13 +473,14 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
 
     // Free plan has 0 credit allowance
     await Plan.create({ name: "Free", slug: "free", billingCycle: "monthly", features: [], analysisLimit: 5, storageLimit: 100, creditAllowance: 0, isActive: true });
-    const target = await User.create({ name: "Downgrade User", email: "downgrade@test.com", role: "user", status: "active", planSlug: "premium", passwordHash: "h", creditBalance: 50 });
+    const target = await User.create({ name: "Downgrade User", email: "downgrade@test.com", role: "user", status: "active", planSlug: "pro", passwordHash: "h", creditBalance: 50 });
 
     const res = await request(testApp)
       .patch(`/api/admin/accounts/${target._id}`)
       .set("Cookie", `accessToken=${tok}`)
       .send({ plan: "free" });
 
+    if (res.status !== 200) throw new Error(JSON.stringify(res.body));
     expect(res.status).toBe(200);
     // No topup info in response
     expect(res.body.creditTopup).toBeUndefined();

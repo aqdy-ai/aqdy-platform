@@ -291,6 +291,15 @@ export class PaymentService {
       stripeSubscriptionId,
     )) as unknown as StripeSubWithPeriod;
 
+    // 0. Expire any existing active subscriptions for this user so only one remains
+    await Subscription.updateMany(
+      {
+        userId: new mongoose.Types.ObjectId(userId),
+        status: "active",
+      },
+      { status: "expired" },
+    );
+
     // 1. Create subscription record
     const subscription = await Subscription.create({
       userId: new mongoose.Types.ObjectId(userId),

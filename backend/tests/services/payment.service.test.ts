@@ -13,6 +13,7 @@ jest.unstable_mockModule("../../src/models/subscription.model.js", () => {
   const mockSubscription = {
     create: jest.fn(),
     findOneAndUpdate: jest.fn(),
+    updateMany: jest.fn(),
     findOne: jest.fn().mockImplementation(() => {
       const chain = {
         populate: jest.fn().mockResolvedValue(null),

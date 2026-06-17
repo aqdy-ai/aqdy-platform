@@ -161,6 +161,7 @@ const AdminPayments = () => {
   const getPlanBadge = (planSlug: string | undefined) => {
     switch (planSlug) {
       case 'premium':
+      case 'pro':
         return 'bg-indigo-500/10 text-indigo-500'
       case 'enterprise':
         return 'bg-amber-500/10 text-amber-600'

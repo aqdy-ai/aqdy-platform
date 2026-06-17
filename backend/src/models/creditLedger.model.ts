@@ -5,6 +5,7 @@ export type CreditLedgerReason =
   | "analysis_deduction"
   | "chat_deduction"
   | "manual_adjustment"
+  | "plan_reset"
   | "refund";
 
 export interface CreditMetadata {
