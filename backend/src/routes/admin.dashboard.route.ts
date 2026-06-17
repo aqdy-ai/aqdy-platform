@@ -63,31 +63,62 @@ router.get(
         User.countDocuments({ createdAt: { $gte: weekAgo } }),
         User.countDocuments({ planSlug: { $ne: "free" } }),
         Payment.aggregate([
-          { $match: { status: "succeeded", createdAt: { $gte: monthStart, $lt: monthEnd } } },
+          {
+            $match: {
+              status: "succeeded",
+              createdAt: { $gte: monthStart, $lt: monthEnd },
+            },
+          },
           { $group: { _id: "$currency", total: { $sum: "$amount" } } },
         ]),
         Payment.aggregate([
-          { $match: { status: "succeeded", createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd } } },
+          {
+            $match: {
+              status: "succeeded",
+              createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd },
+            },
+          },
           { $group: { _id: "$currency", total: { $sum: "$amount" } } },
         ]),
-        RiskAnalysis.countDocuments({ createdAt: { $gte: monthStart, $lt: monthEnd } }),
-        RiskAnalysis.countDocuments({ createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd } }),
+        RiskAnalysis.countDocuments({
+          createdAt: { $gte: monthStart, $lt: monthEnd },
+        }),
+        RiskAnalysis.countDocuments({
+          createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd },
+        }),
         RiskAnalysis.countDocuments({}),
         CreditLedger.aggregate([
           { $match: { delta: { $gt: 0 } } },
           { $group: { _id: null, total: { $sum: "$delta" } } },
         ]),
         CreditLedger.aggregate([
-          { $match: { delta: { $lt: 0 }, createdAt: { $gte: monthStart, $lt: monthEnd } } },
+          {
+            $match: {
+              delta: { $lt: 0 },
+              createdAt: { $gte: monthStart, $lt: monthEnd },
+            },
+          },
           { $group: { _id: null, total: { $sum: { $abs: "$delta" } } } },
         ]),
         CreditLedger.aggregate([
-          { $match: { delta: { $lt: 0 }, createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd } } },
+          {
+            $match: {
+              delta: { $lt: 0 },
+              createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd },
+            },
+          },
           { $group: { _id: null, total: { $sum: { $abs: "$delta" } } } },
         ]),
-        User.aggregate([{ $group: { _id: null, total: { $sum: "$creditBalance" } } }]),
+        User.aggregate([
+          { $group: { _id: null, total: { $sum: "$creditBalance" } } },
+        ]),
         RiskAnalysis.aggregate([
-          { $group: { _id: "$executiveSummary.overallRisk", count: { $sum: 1 } } },
+          {
+            $group: {
+              _id: "$executiveSummary.overallRisk",
+              count: { $sum: 1 },
+            },
+          },
         ]),
         RiskAnalysis.aggregate([
           { $group: { _id: "$language", count: { $sum: 1 } } },
@@ -98,16 +129,21 @@ router.get(
           .populate("contractId", "filename language")
           .lean(),
         AuditLog.find({
-          action: { $in: ["AGENT_EXTRACTOR", "AGENT_RISK_CLASSIFIER", "AGENT_REDLINE", "AGENT_PIPELINE"] },
+          action: {
+            $in: [
+              "AGENT_EXTRACTOR",
+              "AGENT_RISK_CLASSIFIER",
+              "AGENT_REDLINE",
+              "AGENT_PIPELINE",
+            ],
+          },
           outcome: "failure",
           timestamp: { $gte: new Date(now.getTime() - 86400000) },
         })
           .sort({ timestamp: -1 })
           .limit(10)
           .lean(),
-        User.aggregate([
-          { $group: { _id: "$planSlug", count: { $sum: 1 } } },
-        ]),
+        User.aggregate([{ $group: { _id: "$planSlug", count: { $sum: 1 } } }]),
       ]);
 
       // ── Revenue ──
@@ -122,7 +158,8 @@ router.get(
 
       const mrrUsdCurrent = mrrCurrent["USD"] || 0;
       const mrrUsdLast = mrrLast["USD"] || 0;
-      const mrrChange = mrrUsdLast > 0 ? ((mrrUsdCurrent - mrrUsdLast) / mrrUsdLast) * 100 : 0;
+      const mrrChange =
+        mrrUsdLast > 0 ? ((mrrUsdCurrent - mrrUsdLast) / mrrUsdLast) * 100 : 0;
 
       // ── Credits ──
       const creditsIssuedAllTime =
@@ -132,11 +169,14 @@ router.get(
       const creditsConsumedLastMonth =
         creditsLastMonth.length > 0 ? Math.round(creditsLastMonth[0].total) : 0;
       const creditsRemainingAll =
-        totalCreditBalance.length > 0 ? Math.round(totalCreditBalance[0].total) : 0;
+        totalCreditBalance.length > 0
+          ? Math.round(totalCreditBalance[0].total)
+          : 0;
 
       const avgCredits =
         analysesThisMonth > 0
-          ? Math.round((creditsConsumedThisMonth / analysesThisMonth) * 100) / 100
+          ? Math.round((creditsConsumedThisMonth / analysesThisMonth) * 100) /
+            100
           : 0;
 
       // ── MRR trend last 6 months ──
@@ -144,7 +184,12 @@ router.get(
       for (let i = 5; i >= 0; i--) {
         const { start, end } = monthRange(y, m - i);
         const rows = await Payment.aggregate([
-          { $match: { status: "succeeded", createdAt: { $gte: start, $lt: end } } },
+          {
+            $match: {
+              status: "succeeded",
+              createdAt: { $gte: start, $lt: end },
+            },
+          },
           { $group: { _id: "$currency", total: { $sum: "$amount" } } },
         ]);
         const usd = rows.find((r) => r._id === "USD")?.total || 0;
@@ -324,7 +369,11 @@ router.get(
           analysesThisMonth,
           analysesChange:
             analysesLastMonth > 0
-              ? Math.round(((analysesThisMonth - analysesLastMonth) / analysesLastMonth) * 10000) / 100
+              ? Math.round(
+                  ((analysesThisMonth - analysesLastMonth) /
+                    analysesLastMonth) *
+                    10000,
+                ) / 100
               : 0,
           totalAnalyses,
           avgCreditsPerAnalysis: avgCredits,
@@ -345,10 +394,12 @@ router.get(
           creditsPerDay,
 
           // Section 5 - Pipeline
-          riskDistribution: riskDistribution.map((r: { _id: string; count: number }) => ({
-            risk: r._id || "unknown",
-            count: r.count,
-          })),
+          riskDistribution: riskDistribution.map(
+            (r: { _id: string; count: number }) => ({
+              risk: r._id || "unknown",
+              count: r.count,
+            }),
+          ),
           agentLatency: {
             extractor:
               extractorLatency.length > 0
@@ -367,7 +418,7 @@ router.get(
             (t: { _id: string; count: number }) => ({
               type: t._id || "unknown",
               count: t.count,
-            })
+            }),
           ),
 
           // Section 6 - Users
@@ -376,12 +427,14 @@ router.get(
             (p: { _id: string; count: number }) => ({
               plan: p._id || "free",
               count: p.count,
-            })
+            }),
           ),
-          languageSplit: languageData.map((l: { _id: string; count: number }) => ({
-            language: l._id || "unknown",
-            count: l.count,
-          })),
+          languageSplit: languageData.map(
+            (l: { _id: string; count: number }) => ({
+              language: l._id || "unknown",
+              count: l.count,
+            }),
+          ),
 
           // Section 7
           recentAnalyses: recentAnalyses.map((a: Record<string, unknown>) => ({
@@ -398,8 +451,9 @@ router.get(
               typeof a.contractId === "object" && a.contractId
                 ? (a.contractId as Record<string, unknown>).language
                 : "en",
-            overallRisk: (a.executiveSummary as Record<string, unknown>)
-              ?.overallRisk || "unknown",
+            overallRisk:
+              (a.executiveSummary as Record<string, unknown>)?.overallRisk ||
+              "unknown",
             userId: a.userId,
             createdAt: a.createdAt,
           })),
@@ -433,7 +487,7 @@ router.get(
         error: error instanceof Error ? error.message : String(error),
       });
     }
-  }
+  },
 );
 
 export default router;
