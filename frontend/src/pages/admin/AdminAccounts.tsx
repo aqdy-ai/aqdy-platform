@@ -153,7 +153,7 @@ const AdminAccounts = () => {
           >
             <option value="">{t('admin.filter_plan')}</option>
             <option value="free">{t('admin.plan_free')}</option>
-            <option value="premium">{t('admin.plan_pro')}</option>
+            <option value="pro">{t('admin.plan_pro')}</option>
             <option value="enterprise">{t('admin.plan_enterprise')}</option>
           </select>
           <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
@@ -254,7 +254,9 @@ const AdminAccounts = () => {
                       {/* Plan */}
                       <td className="px-6 py-4.5">
                         <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold capitalize">
-                          {t(`admin.plan_${account.planSlug || 'free'}`)}
+                          {t(
+                            `admin.plan_${account.planSlug === 'premium' ? 'pro' : account.planSlug || 'free'}`
+                          )}
                         </span>
                       </td>
 
@@ -319,9 +321,7 @@ const AdminAccounts = () => {
                               <option value="free">
                                 {t('admin.plan_free')}
                               </option>
-                              <option value="premium">
-                                {t('admin.plan_pro')}
-                              </option>
+                              <option value="pro">{t('admin.plan_pro')}</option>
                               <option value="enterprise">
                                 {t('admin.plan_enterprise')}
                               </option>

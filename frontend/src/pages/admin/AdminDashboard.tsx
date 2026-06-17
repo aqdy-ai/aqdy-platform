@@ -702,7 +702,7 @@ export default function AdminDashboard() {
                   const dotColor =
                     p.plan === 'enterprise'
                       ? COLORS.purple
-                      : p.plan === 'premium'
+                      : p.plan === 'premium' || p.plan === 'pro'
                         ? COLORS.primary
                         : p.plan === 'starter'
                           ? COLORS.info

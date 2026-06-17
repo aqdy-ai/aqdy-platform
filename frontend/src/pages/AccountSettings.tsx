@@ -119,7 +119,7 @@ export default function AccountSettings() {
   const subscriptionQuery = useQuery({
     queryKey: ['account-subscription'],
     queryFn: async () => await accountApi.getSubscription(),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
     retry: false,
   })
 

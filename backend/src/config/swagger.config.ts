@@ -316,8 +316,8 @@ const options: swaggerJsdoc.Options = {
           properties: {
             planSlug: {
               type: "string",
-              enum: ["free", "premium", "enterprise"],
-              example: "premium",
+              enum: ["free", "pro", "enterprise"],
+              example: "pro",
             },
           },
         },
@@ -498,8 +498,8 @@ const options: swaggerJsdoc.Options = {
                 },
                 planSlug: {
                   type: "string",
-                  enum: ["free", "premium", "enterprise"],
-                  example: "premium",
+                  enum: ["free", "pro", "enterprise"],
+                  example: "pro",
                 },
                 status: {
                   type: "string",
@@ -1340,7 +1340,7 @@ const options: swaggerJsdoc.Options = {
               in: "query",
               schema: {
                 type: "string",
-                enum: ["free", "premium", "enterprise"],
+                enum: ["free", "pro", "enterprise"],
               },
             },
             {
@@ -1480,11 +1480,11 @@ const options: swaggerJsdoc.Options = {
                   properties: {
                     plan: {
                       type: "string",
-                      enum: ["free", "premium", "enterprise"],
+                      enum: ["free", "pro", "enterprise"],
                     },
                     planSlug: {
                       type: "string",
-                      enum: ["free", "premium", "enterprise"],
+                      enum: ["free", "pro", "enterprise"],
                     },
                     status: { type: "string", enum: ["active", "suspended"] },
                     role: { type: "string", enum: ["admin", "user"] },

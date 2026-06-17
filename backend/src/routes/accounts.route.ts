@@ -8,6 +8,7 @@ import {
   requireAdmin,
 } from "../middlewares/auth.middleware.js";
 import { Plan } from "../models/plan.model.js";
+import { Subscription } from "../models/subscription.model.js";
 import { creditsService } from "../services/credits.service.js";
 
 const router = Router();
@@ -30,7 +31,11 @@ router.get(
       const filter: Record<string, unknown> = {};
 
       if (planSlug && typeof planSlug === "string") {
-        filter.planSlug = planSlug;
+        if (planSlug === "pro") {
+          filter.planSlug = { $in: ["pro", "premium"] };
+        } else {
+          filter.planSlug = planSlug;
+        }
       }
 
       if (status && typeof status === "string") {
@@ -176,13 +181,19 @@ router.patch(
 
       if (plan !== undefined) {
         incomingPlanSlug = plan as string;
-        user.planSlug = plan;
-        user.plan = plan;
+        if (incomingPlanSlug === "premium") incomingPlanSlug = "pro";
+        user.planSlug = incomingPlanSlug;
+        user.plan = incomingPlanSlug;
       } else if (planSlug !== undefined) {
         incomingPlanSlug = planSlug as string;
-        user.planSlug = planSlug;
-        user.plan = planSlug;
+        if (incomingPlanSlug === "premium") incomingPlanSlug = "pro";
+        user.planSlug = incomingPlanSlug;
+        user.plan = incomingPlanSlug;
       }
+
+      // Normalize any existing "premium" values to "pro" before saving
+      if (user.planSlug === "premium") user.planSlug = "pro";
+      if (user.plan === "premium") user.plan = "pro";
 
       if (status !== undefined) {
         user.status = status;
@@ -212,6 +223,12 @@ router.patch(
           } else {
             // No allowance – keep existing balance, no ledger entry
           }
+
+          // Also update the user's active subscription to reflect the new plan
+          await Subscription.updateOne(
+            { userId, status: "active" },
+            { planId: planDoc._id },
+          );
         }
       }
 
