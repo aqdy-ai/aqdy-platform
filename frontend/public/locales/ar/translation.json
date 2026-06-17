@@ -13,7 +13,8 @@
     "brand_name": "عقدي",
     "tagline": "ذكاء اصطناعي قانوني آمن",
     "get_started": "ابدأ الآن",
-    "remove": "حذف"
+    "remove": "حذف",
+    "toggle_theme": "تغيير المظهر"
   },
   "nav": {
     "home": "الرئيسية",

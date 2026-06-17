@@ -12,7 +12,8 @@
     "brand_name": "Aqdy",
     "tagline": "Secure AI Legal Assistant",
     "get_started": "Get Started",
-    "remove": "Remove"
+    "remove": "Remove",
+    "toggle_theme": "Toggle Theme"
   },
   "nav": {
     "home": "Home",

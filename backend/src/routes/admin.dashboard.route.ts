@@ -3,7 +3,6 @@ import { authenticateJwt } from "../middlewares/auth.middleware.js";
 import { requireAdmin } from "../middlewares/auth.middleware.js";
 import { User } from "../models/user.model.js";
 import { Contract } from "../models/contract.model.js";
-import { Subscription } from "../models/subscription.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { CreditLedger } from "../models/creditLedger.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
@@ -62,7 +61,7 @@ router.get(
       ] = await Promise.all([
         User.countDocuments({}),
         User.countDocuments({ createdAt: { $gte: weekAgo } }),
-        Subscription.countDocuments({ status: "active" }),
+        User.countDocuments({ planSlug: { $ne: "free" } }),
         Payment.aggregate([
           { $match: { status: "succeeded", createdAt: { $gte: monthStart, $lt: monthEnd } } },
           { $group: { _id: "$currency", total: { $sum: "$amount" } } },

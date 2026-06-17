@@ -75,22 +75,22 @@ function MetricCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay }}
-      className="border-border/40 bg-card/40 hover:border-primary/30 relative overflow-hidden rounded-2xl border p-5 shadow-sm transition-all duration-300 hover:shadow-md"
+      className="border-border/40 bg-card/40 hover:border-primary/30 relative min-h-[130px] overflow-hidden rounded-2xl border p-6 shadow-sm transition-all duration-300 hover:shadow-md"
     >
       <div className="flex items-start justify-between">
-        <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
+        <span className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
           {title}
         </span>
-        <div className={`rounded-xl bg-gradient-to-br p-2 ${color}`}>
+        <div className={`rounded-xl bg-gradient-to-br p-2.5 ${color}`}>
           <Icon className="h-4 w-4" />
         </div>
       </div>
       <div className="mt-3">
-        <h3 className="text-foreground text-2xl font-black tracking-tight">
+        <h3 className="text-foreground text-3xl font-black tracking-tight">
           {value}
         </h3>
         {trend && (
-          <p className="text-muted-foreground mt-0.5 text-xs font-semibold">
+          <p className="text-muted-foreground mt-1 text-xs font-semibold">
             {trend}
           </p>
         )}
@@ -101,7 +101,7 @@ function MetricCard({
 
 function SectionHeading({ title }: { title: string }) {
   return (
-    <h3 className="text-muted-foreground mb-4 text-[11px] font-black tracking-widest uppercase">
+    <h3 className="text-muted-foreground mb-4 text-sm font-black tracking-widest uppercase">
       {title}
     </h3>
   )
@@ -185,12 +185,12 @@ export default function AdminDashboard() {
       : 0
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* ── Section 1: Business Overview ── */}
       <SectionHeading
         title={isRtl ? 'نظرة عامة على الأعمال' : 'BUSINESS OVERVIEW'}
       />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <MetricCard
           title={t('admin.total_users')}
           value={formatNumber(data.totalAccounts)}
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
 
       {/* ── Section 2: Credits Ledger ── */}
       <SectionHeading title={isRtl ? 'سجل الاعتمادات' : 'CREDITS LEDGER'} />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <MetricCard
           title={
             isRtl
@@ -317,7 +317,7 @@ export default function AdminDashboard() {
               ? 'اتجاه الإيرادات الشهرية'
               : 'Monthly Recurring Revenue Trend'}
           </h4>
-          <p className="text-muted-foreground mb-4 text-xs">
+          <p className="text-muted-foreground mb-4 text-sm">
             {isRtl ? 'آخر 6 أشهر' : 'Last 6 months'}
           </p>
           <ResponsiveContainer width="100%" height={240}>
@@ -357,7 +357,7 @@ export default function AdminDashboard() {
           <h4 className="text-foreground mb-1 text-sm font-bold">
             {isRtl ? 'تسجيلات المستخدمين الجدد' : 'New User Signups'}
           </h4>
-          <p className="text-muted-foreground mb-4 text-xs">
+          <p className="text-muted-foreground mb-4 text-sm">
             {isRtl ? 'آخر 8 أسابيع' : 'Last 8 weeks'}
           </p>
           <ResponsiveContainer width="100%" height={240}>
@@ -407,7 +407,7 @@ export default function AdminDashboard() {
           <h4 className="text-foreground mb-1 text-sm font-bold">
             {isRtl ? 'التحليلات لكل يوم' : 'Contract Analyses Per Day'}
           </h4>
-          <p className="text-muted-foreground mb-4 text-xs">
+          <p className="text-muted-foreground mb-4 text-sm">
             {isRtl ? 'الشهر الحالي' : 'Current month'}
           </p>
           <ResponsiveContainer width="100%" height={220}>
@@ -444,7 +444,7 @@ export default function AdminDashboard() {
               ? 'الاعتمادات المستهلكة لكل يوم'
               : 'Credits Consumed Per Day'}
           </h4>
-          <p className="text-muted-foreground mb-4 text-xs">
+          <p className="text-muted-foreground mb-4 text-sm">
             {isRtl ? 'الشهر الحالي' : 'Current month'}
           </p>
           <ResponsiveContainer width="100%" height={220}>
@@ -492,7 +492,7 @@ export default function AdminDashboard() {
           <h4 className="text-foreground mb-1 text-sm font-bold">
             {isRtl ? 'توزيع مستوى المخاطر' : 'Risk Level Distribution'}
           </h4>
-          <p className="text-muted-foreground mb-2 text-xs">
+          <p className="text-muted-foreground mb-2 text-sm">
             {isRtl ? 'نسبة التحليلات حسب المخاطر' : '% of analyses by risk'}
           </p>
           <ResponsiveContainer width="100%" height={200}>
@@ -539,7 +539,7 @@ export default function AdminDashboard() {
           <h4 className="text-foreground mb-1 text-sm font-bold">
             {isRtl ? 'متوسط زمن استجابة الوكلاء' : 'Average Agent Latency'}
           </h4>
-          <p className="text-muted-foreground mb-4 text-xs">
+          <p className="text-muted-foreground mb-4 text-sm">
             {isRtl ? 'بالثواني' : 'in seconds'}
           </p>
           <div className="space-y-4">
@@ -601,7 +601,7 @@ export default function AdminDashboard() {
           <h4 className="text-foreground mb-1 text-sm font-bold">
             {isRtl ? 'أكثر أنواع العقود تحليلاً' : 'Top Contract Types'}
           </h4>
-          <p className="text-muted-foreground mb-4 text-xs">
+          <p className="text-muted-foreground mb-4 text-sm">
             {isRtl ? 'حسب عدد التحليلات' : 'by analysis count'}
           </p>
           <div className="space-y-2.5">
@@ -668,7 +668,7 @@ export default function AdminDashboard() {
                       {u.email}
                     </p>
                   </div>
-                  <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-[10px] font-bold capitalize">
+                  <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-bold capitalize">
                     {u.planSlug}
                   </span>
                   <span className="text-foreground text-sm font-black">
@@ -790,18 +790,18 @@ export default function AdminDashboard() {
             {data.recentAnalyses.map((a) => (
               <div key={a._id} className="flex items-center gap-4 py-3.5">
                 <span
-                  className={`rounded-md px-2 py-0.5 text-[10px] font-black uppercase ${a.language === 'ar' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}
+                  className={`rounded-md px-2 py-0.5 text-xs font-black uppercase ${a.language === 'ar' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}
                 >
                   {a.language}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{a.filename}</p>
-                  <p className="text-muted-foreground text-[10px] font-semibold">
+                  <p className="text-muted-foreground text-xs font-semibold">
                     {a.contractId || '—'}
                   </p>
                 </div>
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize ${a.overallRisk === 'high' || a.overallRisk === 'critical' ? 'bg-rose-500/10 text-rose-500' : a.overallRisk === 'medium' ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}`}
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-bold capitalize ${a.overallRisk === 'high' || a.overallRisk === 'critical' ? 'bg-rose-500/10 text-rose-500' : a.overallRisk === 'medium' ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}`}
                 >
                   {a.overallRisk}
                 </span>
@@ -840,7 +840,7 @@ export default function AdminDashboard() {
                     <p className="text-foreground truncate text-sm font-bold">
                       {p.user.name}
                     </p>
-                    <p className="text-muted-foreground truncate text-[10px]">
+                    <p className="text-muted-foreground truncate text-xs">
                       {p.user.planSlug || ''}
                     </p>
                   </div>
@@ -858,7 +858,7 @@ export default function AdminDashboard() {
                     <Clock size={16} className="shrink-0 text-amber-500" />
                   )}
                   <span
-                    className={`text-[10px] font-bold ${p.status === 'succeeded' ? 'text-emerald-500' : p.status === 'failed' ? 'text-rose-500' : 'text-amber-500'}`}
+                    className={`text-xs font-bold ${p.status === 'succeeded' ? 'text-emerald-500' : p.status === 'failed' ? 'text-rose-500' : 'text-amber-500'}`}
                   >
                     {p.status === 'succeeded'
                       ? isRtl
@@ -941,12 +941,12 @@ export default function AdminDashboard() {
                     {e.action?.replace(/_/g, ' ')}
                   </p>
                   {e.errorMessage && (
-                    <p className="text-muted-foreground truncate text-[10px]">
+                    <p className="text-muted-foreground truncate text-xs">
                       {e.errorMessage}
                     </p>
                   )}
                 </div>
-                <span className="text-muted-foreground shrink-0 text-[10px] font-semibold">
+                <span className="text-muted-foreground shrink-0 text-xs font-semibold">
                   {timeAgo(e.timestamp, i18n.language)}
                 </span>
               </div>
