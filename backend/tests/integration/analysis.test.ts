@@ -141,14 +141,18 @@ describe('Analysis API Integration', () => {
   it('should persist the analysis state and retrieve it via the GET endpoint', async () => {
     await analysisRequest({ contractId: testContractId, userId });
 
-    const response = await request(app).get(`/api/analysis/${testContractId}`);
+    const response = await request(app)
+      .get(`/api/analysis/${testContractId}`)
+      .set('Authorization', `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveProperty('status', 'processing');
   });
 
   it('should return the full analysis report structure when completed', async () => {
-    const response = await request(app).get(`/api/analysis/${realContractId}`);
+    const response = await request(app)
+      .get(`/api/analysis/${realContractId}`)
+      .set('Authorization', `Bearer ${authToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
@@ -169,7 +173,9 @@ describe('Analysis API Integration', () => {
   });
 
   it('should return bilingual (AR/EN) content for summary and clause explanations', async () => {
-    const response = await request(app).get(`/api/analysis/${realContractId}`);
+    const response = await request(app)
+      .get(`/api/analysis/${realContractId}`)
+      .set('Authorization', `Bearer ${authToken}`);
 
     if (response.status === 200 && response.body.data.executiveSummary) {
       const { executiveSummary, clauseAnalysis } = response.body.data;
@@ -182,7 +188,9 @@ describe('Analysis API Integration', () => {
   });
 
   it('should ensure all risk levels in the report are within the allowed set', async () => {
-    const response = await request(app).get(`/api/analysis/${realContractId}`);
+    const response = await request(app)
+      .get(`/api/analysis/${realContractId}`)
+      .set('Authorization', `Bearer ${authToken}`);
 
     if (response.status === 200 && response.body.data.executiveSummary) {
       const { executiveSummary, clauseAnalysis } = response.body.data;

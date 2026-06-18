@@ -38,6 +38,7 @@ jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
       _id: "6a21a76caad3374228b4d6b0",
       email: "user@example.com",
       status: "active",
+      isEmailVerified: true,
     };
     next();
   },
@@ -45,6 +46,9 @@ jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
     next();
   },
   requireAdmin: (req: any, res: any, next: any) => {
+    next();
+  },
+  requireEmailVerified: (req: any, res: any, next: any) => {
     next();
   },
   verifyJWT: () => ({ sub: "6a21a76caad3374228b4d6b0" }),

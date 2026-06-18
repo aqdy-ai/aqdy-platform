@@ -1,14 +1,66 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, jest } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  jest,
+} from "@jest/globals";
 import mongoose from "mongoose";
 import request from "supertest";
 import { config } from "dotenv";
 import { User } from "../../src/models/user.model.js";
+import { generateAccessToken } from "../../src/services/auth.service.js";
 
 config();
 
 let app: unknown;
 
 jest.setTimeout(30000);
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Creates an unverified user directly in the DB (bypasses the register route
+ * which auto-verifies in test env) and returns the user + a signed access token.
+ */
+const createUnverifiedUser = async (
+  email: string,
+  name = "Test User",
+  password = "StrongPass123!",
+) => {
+  const crypto = await import("crypto");
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+
+  const user = new User({
+    name,
+    email,
+    role: "user",
+    plan: "free",
+    status: "active",
+    isEmailVerified: false,
+    emailVerificationToken: verificationToken,
+    emailVerificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    emailVerificationSentAt: new Date(),
+  });
+  user.password = password;
+  await user.save();
+
+  const token = generateAccessToken(user);
+  return { user, token, verificationToken };
+};
+
+const getCookieValue = (res: request.Response, name: string) => {
+  const setCookies = res.headers["set-cookie"] || [];
+  for (const c of setCookies) {
+    const match = c.match(new RegExp(`${name}=([^;]+)`));
+    if (match) return match[1];
+  }
+  return undefined;
+};
+
+// ── Suite ──────────────────────────────────────────────────────────────────
 
 describe("Email Verification Integration Tests", () => {
   beforeAll(async () => {
@@ -33,44 +85,28 @@ describe("Email Verification Integration Tests", () => {
     await User.deleteMany({});
   });
 
-  const getCookieValue = (res: request.Response, name: string) => {
-    const setCookies = res.headers["set-cookie"] || [];
-    for (const c of setCookies) {
-      const match = c.match(new RegExp(`${name}=([^;]+)`));
-      if (match) return match[1];
-    }
-    return undefined;
-  };
+  // ── Test 1 ────────────────────────────────────────────────────────────────
 
-  test("Registration creates user with isEmailVerified: false and emailVerificationToken", async () => {
-    const res = await request(app).post("/api/auth/register").send({
-      name: "Verify Tester",
-      email: "verify-test@example.com",
-      password: "StrongPass123!",
-    });
+  test("Unverified user created directly has isEmailVerified: false and emailVerificationToken", async () => {
+    const { user, verificationToken } = await createUnverifiedUser(
+      "verify-test@example.com",
+      "Verify Tester",
+    );
 
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.user.isEmailVerified).toBe(false);
-
-    const user = await User.findOne({ email: "verify-test@example.com" }).select("+emailVerificationToken");
-    expect(user).toBeTruthy();
-    expect(user?.isEmailVerified).toBe(false);
-    expect(user?.emailVerificationToken).toBeDefined();
-    expect(user?.emailVerificationExpiresAt).toBeDefined();
+    expect(user.isEmailVerified).toBe(false);
+    expect(user.emailVerificationToken).toBe(verificationToken);
+    expect(user.emailVerificationExpiresAt).toBeDefined();
   });
 
+  // ── Test 2 ────────────────────────────────────────────────────────────────
+
   test("Unverified user is blocked from protected routes with 403 Forbidden", async () => {
-    // 1. Register
-    const registerRes = await request(app).post("/api/auth/register").send({
-      name: "Unverified User",
-      email: "unverified@example.com",
-      password: "StrongPass123!",
-    });
+    // Create an unverified user directly (bypasses test-env auto-verify)
+    const { token: access } = await createUnverifiedUser(
+      "unverified@example.com",
+      "Unverified User",
+    );
 
-    const access = getCookieValue(registerRes, "accessToken");
-
-    // 2. Request a protected route
     const res = await request(app)
       .get("/api/contracts")
       .set("Cookie", `accessToken=${access}`);
@@ -80,22 +116,21 @@ describe("Email Verification Integration Tests", () => {
     expect(res.body.error).toBe("Email verification required.");
   });
 
+  // ── Test 3 ────────────────────────────────────────────────────────────────
+
   test("POST /api/auth/verify-email verifies email with valid token", async () => {
-    // 1. Register user
-    await request(app).post("/api/auth/register").send({
-      name: "User To Verify",
-      email: "to-verify@example.com",
-      password: "StrongPass123!",
-    });
+    // Create unverified user with a known token
+    const { verificationToken } = await createUnverifiedUser(
+      "to-verify@example.com",
+      "User To Verify",
+    );
 
-    const userBefore = await User.findOne({ email: "to-verify@example.com" }).select("+emailVerificationToken");
-    const token = userBefore?.emailVerificationToken;
-    expect(token).toBeDefined();
+    expect(verificationToken).toBeDefined();
 
-    // 2. Verify email
+    // Verify email via API
     const verifyRes = await request(app)
       .post("/api/auth/verify-email")
-      .send({ token });
+      .send({ token: verificationToken });
 
     expect(verifyRes.status).toBe(200);
     expect(verifyRes.body.success).toBe(true);
@@ -106,8 +141,9 @@ describe("Email Verification Integration Tests", () => {
     expect(userAfter?.emailVerificationExpiresAt).toBeUndefined();
   });
 
+  // ── Test 4 ────────────────────────────────────────────────────────────────
+
   test("POST /api/auth/verify-email fails with invalid or expired token", async () => {
-    // Try to verify with fake token
     const verifyRes = await request(app)
       .post("/api/auth/verify-email")
       .send({ token: "invalid-token-12345" });
@@ -116,32 +152,34 @@ describe("Email Verification Integration Tests", () => {
     expect(verifyRes.body.success).toBe(false);
   });
 
+  // ── Test 5 ────────────────────────────────────────────────────────────────
+
   test("POST /api/auth/resend-verification enforces rate limits", async () => {
-    const registerRes = await request(app).post("/api/auth/register").send({
-      name: "Resend User",
-      email: "resend-user@example.com",
-      password: "StrongPass123!",
-    });
+    // Create unverified user directly so emailVerificationSentAt is set
+    const { token: access } = await createUnverifiedUser(
+      "resend-user@example.com",
+      "Resend User",
+    );
 
-    const access = getCookieValue(registerRes, "accessToken");
-
-    // Try to resend immediately (fails because it's sent on registration, i.e. within 60s)
+    // Immediately requesting a resend should be rate-limited (sent < 60s ago)
     const resendRes1 = await request(app)
       .post("/api/auth/resend-verification")
       .set("Cookie", `accessToken=${access}`);
 
     expect(resendRes1.status).toBe(429);
     expect(resendRes1.body.success).toBe(false);
-    expect(resendRes1.body.error).toContain("seconds before requesting a new verification link");
+    expect(resendRes1.body.error).toContain(
+      "seconds before requesting a new verification link",
+    );
 
-    // Bypass cooldown by shifting timestamp in DB back by 61 seconds
+    // Bypass cooldown: shift timestamp back 65s
     const dbUser = await User.findOne({ email: "resend-user@example.com" });
     if (dbUser) {
       dbUser.emailVerificationSentAt = new Date(Date.now() - 65000);
       await dbUser.save();
     }
 
-    // Resend now succeeds
+    // Now resend should succeed
     const resendRes2 = await request(app)
       .post("/api/auth/resend-verification")
       .set("Cookie", `accessToken=${access}`);
@@ -150,18 +188,17 @@ describe("Email Verification Integration Tests", () => {
     expect(resendRes2.body.success).toBe(true);
   });
 
+  // ── Test 6 ────────────────────────────────────────────────────────────────
+
   test("Admin can manually verify a user's email via PATCH /api/admin/accounts/:id", async () => {
-    // 1. Create user
-    await request(app).post("/api/auth/register").send({
-      name: "Admin Target User",
-      email: "admin-target@example.com",
-      password: "StrongPass123!",
-    });
+    // 1. Create unverified target user
+    const { user: targetUser } = await createUnverifiedUser(
+      "admin-target@example.com",
+      "Admin Target User",
+    );
+    expect(targetUser.isEmailVerified).toBe(false);
 
-    const targetUser = await User.findOne({ email: "admin-target@example.com" });
-    expect(targetUser?.isEmailVerified).toBe(false);
-
-    // 2. Create admin
+    // 2. Create admin user (verified)
     const admin = new User({
       name: "Admin User",
       email: "admin@example.com",
@@ -180,9 +217,9 @@ describe("Email Verification Integration Tests", () => {
 
     const adminAccess = getCookieValue(loginRes, "accessToken");
 
-    // 3. Admin updates email verification
+    // 3. Admin patches isEmailVerified
     const updateRes = await request(app)
-      .patch(`/api/admin/accounts/${targetUser?._id}`)
+      .patch(`/api/admin/accounts/${targetUser._id}`)
       .set("Cookie", `accessToken=${adminAccess}`)
       .send({ isEmailVerified: true });
 
@@ -190,7 +227,7 @@ describe("Email Verification Integration Tests", () => {
     expect(updateRes.body.success).toBe(true);
     expect(updateRes.body.data.isEmailVerified).toBe(true);
 
-    const verifiedUser = await User.findById(targetUser?._id);
+    const verifiedUser = await User.findById(targetUser._id);
     expect(verifiedUser?.isEmailVerified).toBe(true);
   });
 });
