@@ -17,7 +17,10 @@
 import { Router } from "express";
 import express from "express";
 import { paymentController } from "../controllers/payment.controller.js";
-import { authenticateJwt, requireEmailVerified } from "../middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  requireEmailVerified,
+} from "../middlewares/auth.middleware.js";
 
 const router = Router();
 

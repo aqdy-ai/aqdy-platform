@@ -220,13 +220,13 @@ export const me = async (
   } catch (error) {
     next(
       error instanceof AppError
-          ? error
-          : new AppError(
-              500,
-              `Failed to load user information: ${
-                error instanceof Error ? error.message : "Unknown error"
-              }`,
-            ),
+        ? error
+        : new AppError(
+            500,
+            `Failed to load user information: ${
+              error instanceof Error ? error.message : "Unknown error"
+            }`,
+          ),
     );
   }
 };
@@ -286,7 +286,8 @@ export const resendVerification = async (
       Date.now() - user.emailVerificationSentAt.getTime() < cooldownMs
     ) {
       const remainingSecs = Math.ceil(
-        (cooldownMs - (Date.now() - user.emailVerificationSentAt.getTime())) / 1000,
+        (cooldownMs - (Date.now() - user.emailVerificationSentAt.getTime())) /
+          1000,
       );
       throw new AppError(
         429,
@@ -296,7 +297,9 @@ export const resendVerification = async (
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
     user.emailVerificationToken = verificationToken;
-    user.emailVerificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    user.emailVerificationExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    ); // 24 hours
     user.emailVerificationSentAt = new Date();
     await user.save();
 

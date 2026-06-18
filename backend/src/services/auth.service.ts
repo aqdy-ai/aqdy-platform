@@ -86,7 +86,11 @@ export const registerUser = async (
   await user.save();
 
   try {
-    await emailService.sendVerificationEmail(user.email, user.name, verificationToken);
+    await emailService.sendVerificationEmail(
+      user.email,
+      user.name,
+      verificationToken,
+    );
   } catch (error) {
     logger.error(
       `Failed to send verification email during registration for ${user.email}:`,

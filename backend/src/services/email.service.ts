@@ -24,11 +24,17 @@ class EmailService {
       });
       logger.info("✓ SMTP mail transporter initialized successfully.");
     } else {
-      logger.info("ℹ No SMTP credentials found. Email service running in console/logging mode.");
+      logger.info(
+        "ℹ No SMTP credentials found. Email service running in console/logging mode.",
+      );
     }
   }
 
-  async sendVerificationEmail(to: string, name: string, token: string): Promise<void> {
+  async sendVerificationEmail(
+    to: string,
+    name: string,
+    token: string,
+  ): Promise<void> {
     const verificationUrl = `${env.FRONTEND_URL}/verify?token=${token}`;
     const fromAddress = process.env.SMTP_FROM || "no-reply@aqdy.eg";
 

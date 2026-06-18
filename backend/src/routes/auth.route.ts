@@ -21,6 +21,11 @@ router.post("/logout", logout);
 router.post("/refresh", refresh);
 router.get("/me", authenticateJwt, requireAuth, me);
 router.post("/verify-email", verifyEmail);
-router.post("/resend-verification", authenticateJwt, requireAuth, resendVerification);
+router.post(
+  "/resend-verification",
+  authenticateJwt,
+  requireAuth,
+  resendVerification,
+);
 
 export default router;
