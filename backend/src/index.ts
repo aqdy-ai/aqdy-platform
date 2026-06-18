@@ -31,6 +31,7 @@ import adminStatsRouter from "./routes/admin.stats.route.js";
 import adminDashboardRouter from "./routes/admin.dashboard.route.js";
 import adminPaymentsRouter from "./routes/admin.payments.route.js";
 import adminContractsRouter from "./routes/admin.contracts.route.js";
+import { requireEmailVerified } from "./middlewares/auth.middleware.js";
 
 // Initialize Langfuse observability
 initializeLangfuse();
@@ -64,11 +65,11 @@ app.use(httpLogger);
 
 // ── Routes ───────────────────────────────────────
 app.use("/api", healthRouter);
-app.use("/api/upload", uploadRouter);
+app.use("/api/upload", requireEmailVerified, uploadRouter);
 app.use("/api/auth", authRouter);
-app.use("/api/account", accountRouter);
-app.use("/api/contracts", contractRouter);
-app.use("/api/analysis", analysisRouter);
+app.use("/api/account", requireEmailVerified, accountRouter);
+app.use("/api/contracts", requireEmailVerified, contractRouter);
+app.use("/api/analysis", requireEmailVerified, analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/admin/audit-logs", auditLogsRouter);

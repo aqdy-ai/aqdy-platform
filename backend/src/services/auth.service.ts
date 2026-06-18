@@ -6,6 +6,7 @@ import { User, IUser } from "../models/user.model.js";
 import { subscriptionService } from "./subscription.service.js";
 import { creditsService } from "./credits.service.js";
 import { logger } from "../utils/logger.js";
+import { emailService } from "./email.service.js";
 import {
   RegisterInput,
   LoginInput,
@@ -67,16 +68,31 @@ export const registerUser = async (
     throw new AppError(409, "Email already in use.");
   }
 
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+
   const user = new User({
     name: userData.name.trim(),
     email: normalizedEmail,
     role: "user",
     plan: "free",
     status: "active",
+    isEmailVerified: false,
+    emailVerificationToken: verificationToken,
+    emailVerificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+    emailVerificationSentAt: new Date(),
   });
 
   user.password = userData.password;
   await user.save();
+
+  try {
+    await emailService.sendVerificationEmail(user.email, user.name, verificationToken);
+  } catch (error) {
+    logger.error(
+      `Failed to send verification email during registration for ${user.email}:`,
+      error,
+    );
+  }
 
   try {
     await subscriptionService.createFreeSubscription(String(user._id));

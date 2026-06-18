@@ -21,6 +21,7 @@ export interface User {
   name: string
   email: string
   role: string
+  isEmailVerified?: boolean
 }
 
 /** Detailed password validation breakdown for real-time UI feedback */

@@ -246,7 +246,18 @@
       "lowercase": "حرف صغير واحد على الأقل",
       "number": "رقم واحد على الأقل",
       "special": "رمز خاص واحد على الأقل (@$!%*?&)"
-    }
+    },
+    "verifyPromptTitle": "تأكيد الحساب مطلوب",
+    "verifyPromptSubtitle": "لقد أرسلنا رابط التحقق إلى {{email}}. يرجى الضغط على الرابط لتأكيد حسابك وتفعيله.",
+    "resendBtn": "إعادة إرسال رابط التأكيد",
+    "resendCooldown": "إعادة الإرسال متاحة خلال {{seconds}} ثانية",
+    "resendSuccess": "تم إرسال رابط التأكيد بنجاح!",
+    "verifySuccessTitle": "تم تأكيد الحساب بنجاح",
+    "verifySuccessSubtitle": "شكراً لك! تم تأكيد بريدك الإلكتروني بنجاح. يمكنك الآن استخدام كافة مميزات المنصة.",
+    "verifyErrorTitle": "فشل تأكيد الحساب",
+    "verifyErrorSubtitle": "رابط التأكيد غير صالح، منتهي الصلاحية، أو تم استخدامه بالفعل.",
+    "gotoDashboard": "الانتقال إلى لوحة التحكم",
+    "backToLogin": "العودة لتسجيل الدخول"
   },
   "account": {
     "settingsTitle": "إعدادات الحساب",
@@ -392,7 +403,12 @@
     "payment_succeeded": "ناجحة",
     "payment_failed": "فاشلة",
     "payment_pending": "معلقة",
-    "payment_refunded": "مستردة"
+    "payment_refunded": "مستردة",
+    "verify_email": "تأكيد البريد",
+    "unverify_email": "إلغاء تأكيد البريد",
+    "verified": "مؤكد",
+    "unverified": "غير مؤكد",
+    "email_verified_updated": "تم تحديث حالة تأكيد البريد بنجاح"
   },
   "history": {
     "title": "سجل العقود",

@@ -35,6 +35,8 @@ import AdminRoute from './components/AdminRoute'
 const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
+const VerifyPrompt = lazy(() => import('./pages/VerifyPrompt'))
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'))
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
@@ -55,12 +57,29 @@ const GuestRoute = ({ children }: { children: ReactNode }) => {
  * ProtectedRoute: يحمي الصفحات الداخلية وبيرجع المستخدم لصفحة الـ Login لو مش مسجل
  */
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated, isInitialLoading } = useAuth()
+  const { isAuthenticated, isInitialLoading, user } = useAuth()
 
   if (isInitialLoading) {
     return null
   }
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+  if (user && !user.isEmailVerified && user.role !== 'admin') {
+    return <Navigate to="/verify-email" replace />
+  }
+  return <>{children}</>
+}
+
+/**
+ * VerifyEmailRoute: Only accessible if authenticated AND unverified
+ */
+const VerifyEmailRoute = () => {
+  const { isAuthenticated, isInitialLoading, user } = useAuth()
+  if (isInitialLoading) return null
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (user?.isEmailVerified || user?.role === 'admin') return <Navigate to="/" replace />
+  return <VerifyPrompt />
 }
 
 /**
@@ -224,6 +243,14 @@ function AppContent() {
                 <PaymentSuccess />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/verify-email"
+            element={<VerifyEmailRoute />}
+          />
+          <Route
+            path="/verify"
+            element={<VerifyEmail />}
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

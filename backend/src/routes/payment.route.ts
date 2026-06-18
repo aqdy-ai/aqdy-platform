@@ -17,7 +17,7 @@
 import { Router } from "express";
 import express from "express";
 import { paymentController } from "../controllers/payment.controller.js";
-import { authenticateJwt } from "../middlewares/auth.middleware.js";
+import { authenticateJwt, requireEmailVerified } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -65,6 +65,7 @@ router.get("/cancel", paymentController.cancelSession.bind(paymentController));
 router.post(
   "/checkout",
   authenticateJwt,
+  requireEmailVerified,
   paymentController.createCheckoutSession.bind(paymentController),
 );
 
