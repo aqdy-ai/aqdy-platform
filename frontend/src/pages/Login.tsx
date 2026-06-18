@@ -111,8 +111,8 @@ export default function Login() {
             className="text-primary font-semibold hover:underline"
           >
             {t('auth.termsLink')}
-          </a>
-          {' '}{t('auth.and')}{' '}
+          </a>{' '}
+          {t('auth.and')}{' '}
           <a
             href="/privacy"
             target="_blank"
