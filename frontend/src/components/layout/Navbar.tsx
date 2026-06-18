@@ -83,7 +83,10 @@ const Navbar = () => {
             </Link>
 
             <a
-              href="/how-it-works"
+              href="https://github.com/aqdy-ai/aqdy-platform/blob/main/docs/README.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              id="nav-how-it-works-link"
               className="hover:text-primary focus-visible:ring-primary flex items-center gap-1 transition-colors focus-visible:ring-2"
               aria-label={t('nav.how_it_works')}
             >

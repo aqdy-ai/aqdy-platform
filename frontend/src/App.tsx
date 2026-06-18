@@ -35,6 +35,8 @@ import AdminRoute from './components/AdminRoute'
 const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
@@ -225,6 +227,10 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          {/* 🔓 Public Legal Pages — no auth required */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
