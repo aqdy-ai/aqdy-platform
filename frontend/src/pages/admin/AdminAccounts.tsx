@@ -115,7 +115,10 @@ const AdminAccounts = () => {
     }
   }
 
-  const handleVerifyToggle = async (userId: string, currentVerified: boolean) => {
+  const handleVerifyToggle = async (
+    userId: string,
+    currentVerified: boolean
+  ) => {
     try {
       setUpdatingId(userId)
       const res = await adminApi.updateAccount(userId, {
@@ -297,7 +300,7 @@ const AdminAccounts = () => {
 
                       {/* Status */}
                       <td className="px-6 py-4.5">
-                        <div className="flex flex-col gap-1.5 items-start">
+                        <div className="flex flex-col items-start gap-1.5">
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-bold ${statusBadgeColor}`}
                           >
@@ -398,7 +401,10 @@ const AdminAccounts = () => {
                           <button
                             disabled={updatingId === account._id}
                             onClick={() =>
-                              handleVerifyToggle(account._id, !!account.isEmailVerified)
+                              handleVerifyToggle(
+                                account._id,
+                                !!account.isEmailVerified
+                              )
                             }
                             className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all disabled:opacity-50 ${
                               account.isEmailVerified

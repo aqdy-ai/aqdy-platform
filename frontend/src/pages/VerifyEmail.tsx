@@ -3,7 +3,13 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { authApi } from '../services/authApi'
 import { useAuth } from '../hooks/useAuth'
-import { CheckCircle2, XCircle, Loader2, ArrowRight, ArrowLeft } from 'lucide-react'
+import {
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  ArrowRight,
+  ArrowLeft,
+} from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 
 export default function VerifyEmail() {
@@ -14,7 +20,9 @@ export default function VerifyEmail() {
   const token = searchParams.get('token')
   const isRtl = i18n.language === 'ar'
 
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
+    'loading'
+  )
 
   useEffect(() => {
     const performVerification = async () => {
@@ -26,7 +34,7 @@ export default function VerifyEmail() {
       try {
         await authApi.verifyEmail(token)
         setStatus('success')
-        
+
         // Fetch fresh user data so that isEmailVerified becomes true in app state
         try {
           const res = await authApi.getMe()
@@ -35,7 +43,10 @@ export default function VerifyEmail() {
             localStorage.setItem('isLoggedIn', 'true')
           }
         } catch (err) {
-          console.error('Failed to refresh user profile post-verification:', err)
+          console.error(
+            'Failed to refresh user profile post-verification:',
+            err
+          )
         }
       } catch (err) {
         console.error('Email verification error:', err)
@@ -64,7 +75,7 @@ export default function VerifyEmail() {
 
         {status === 'success' && (
           <div className="space-y-6 text-center">
-            <div className="bg-emerald-500/10 text-emerald-500 mx-auto flex h-16 w-16 items-center justify-center rounded-2xl">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
               <CheckCircle2 className="h-10 w-10 animate-pulse" />
             </div>
 
@@ -72,7 +83,7 @@ export default function VerifyEmail() {
               <h2 className="text-foreground text-2xl font-black">
                 {t('auth.verifySuccessTitle')}
               </h2>
-              <p className="text-muted-foreground text-sm font-semibold leading-relaxed">
+              <p className="text-muted-foreground text-sm leading-relaxed font-semibold">
                 {t('auth.verifySuccessSubtitle')}
               </p>
             </div>
@@ -93,7 +104,7 @@ export default function VerifyEmail() {
 
         {status === 'error' && (
           <div className="space-y-6 text-center">
-            <div className="bg-rose-500/10 text-rose-500 mx-auto flex h-16 w-16 items-center justify-center rounded-2xl">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500">
               <XCircle className="h-10 w-10" />
             </div>
 
@@ -101,7 +112,7 @@ export default function VerifyEmail() {
               <h2 className="text-foreground text-2xl font-black">
                 {t('auth.verifyErrorTitle')}
               </h2>
-              <p className="text-muted-foreground text-sm font-semibold leading-relaxed">
+              <p className="text-muted-foreground text-sm leading-relaxed font-semibold">
                 {t('auth.verifyErrorSubtitle')}
               </p>
             </div>

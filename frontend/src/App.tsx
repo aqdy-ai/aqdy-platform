@@ -78,7 +78,8 @@ const VerifyEmailRoute = () => {
   const { isAuthenticated, isInitialLoading, user } = useAuth()
   if (isInitialLoading) return null
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  if (user?.isEmailVerified || user?.role === 'admin') return <Navigate to="/" replace />
+  if (user?.isEmailVerified || user?.role === 'admin')
+    return <Navigate to="/" replace />
   return <VerifyPrompt />
 }
 
@@ -244,14 +245,8 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/verify-email"
-            element={<VerifyEmailRoute />}
-          />
-          <Route
-            path="/verify"
-            element={<VerifyEmail />}
-          />
+          <Route path="/verify-email" element={<VerifyEmailRoute />} />
+          <Route path="/verify" element={<VerifyEmail />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
