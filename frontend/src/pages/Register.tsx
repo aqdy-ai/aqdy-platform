@@ -138,6 +138,29 @@ export default function Register() {
             {t('auth.loginNow')}
           </Link>
         </p>
+
+        <p className="text-muted-foreground mt-4 text-center text-xs leading-relaxed">
+          {t('auth.agreeToTerms')}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            id="register-terms-link"
+            className="text-primary font-semibold hover:underline"
+          >
+            {t('auth.termsLink')}
+          </a>{' '}
+          {t('auth.and')}{' '}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            id="register-privacy-link"
+            className="text-primary font-semibold hover:underline"
+          >
+            {t('auth.privacyLink')}
+          </a>
+        </p>
       </div>
     </div>
   )

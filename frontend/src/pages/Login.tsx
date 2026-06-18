@@ -100,6 +100,29 @@ export default function Login() {
             {t('auth.registerNow')}
           </Link>
         </p>
+
+        <p className="text-muted-foreground mt-4 text-center text-xs leading-relaxed">
+          {t('auth.agreeToTerms')}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            id="login-terms-link"
+            className="text-primary font-semibold hover:underline"
+          >
+            {t('auth.termsLink')}
+          </a>{' '}
+          {t('auth.and')}{' '}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            id="login-privacy-link"
+            className="text-primary font-semibold hover:underline"
+          >
+            {t('auth.privacyLink')}
+          </a>
+        </p>
       </div>
     </div>
   )

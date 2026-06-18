@@ -257,7 +257,11 @@
     "verifyErrorTitle": "فشل تأكيد الحساب",
     "verifyErrorSubtitle": "رابط التأكيد غير صالح، منتهي الصلاحية، أو تم استخدامه بالفعل.",
     "gotoDashboard": "الانتقال إلى لوحة التحكم",
-    "backToLogin": "العودة لتسجيل الدخول"
+    "backToLogin": "العودة لتسجيل الدخول",
+    "agreeToTerms": "بالمتابعة، أنت توافق على ",
+    "termsLink": "شروط الخدمة",
+    "privacyLink": "سياسة الخصوصية",
+    "and": "و"
   },
   "account": {
     "settingsTitle": "إعدادات الحساب",

@@ -37,6 +37,8 @@ const ContractHistory = lazy(() => import('./pages/ContractHistory'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 const VerifyPrompt = lazy(() => import('./pages/VerifyPrompt'))
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
@@ -247,6 +249,9 @@ function AppContent() {
           />
           <Route path="/verify-email" element={<VerifyEmailRoute />} />
           <Route path="/verify" element={<VerifyEmail />} />
+          {/* 🔓 Public Legal Pages — no auth required */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
