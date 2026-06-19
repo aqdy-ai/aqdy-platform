@@ -382,11 +382,11 @@ export const resetPassword = async (
     // Set new password via virtual field
     user.password = newPassword;
     // Invalidate password reset token and refresh tokens
-    delete user.passwordResetToken;
-    delete user.passwordResetExpiresAt;
-    delete user.refreshToken;
-    delete user.refreshTokenExpiresAt;
-    await user.save({ validateBeforeSave: false });
+    user.passwordResetToken = undefined;
+    user.passwordResetExpiresAt = undefined;
+    user.refreshToken = undefined;
+    user.refreshTokenExpiresAt = undefined;
+    await user.save();
 
     res.status(200).json({
       success: true,
