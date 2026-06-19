@@ -1,4 +1,6 @@
 // backend/tests/auth.integration.test.ts
+// Updated to guard mongoose.connect with readyState check
+
 import request from 'supertest';
 import { jest } from '@jest/globals';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -21,7 +23,9 @@ beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
   const uri = mongo.getUri();
   process.env.MONGODB_URI = uri;
-  await mongoose.connect(uri);
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(uri);
+  }
 });
 
 afterAll(async () => {
