@@ -13,4 +13,6 @@ export const authApi = {
   getMe: () => authClient.get('/me'),
   logout: () => authClient.post('/logout'),
   refresh: () => authClient.post('/refresh'),
+  verifyEmail: (token: string) => authClient.post('/verify-email', { token }),
+  resendVerification: () => authClient.post('/resend-verification'),
 }

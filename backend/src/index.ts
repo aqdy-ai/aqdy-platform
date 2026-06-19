@@ -31,6 +31,10 @@ import adminStatsRouter from "./routes/admin.stats.route.js";
 import adminDashboardRouter from "./routes/admin.dashboard.route.js";
 import adminPaymentsRouter from "./routes/admin.payments.route.js";
 import adminContractsRouter from "./routes/admin.contracts.route.js";
+import {
+  authenticateJwt,
+  requireEmailVerified,
+} from "./middlewares/auth.middleware.js";
 
 // Initialize Langfuse observability
 initializeLangfuse();
@@ -52,10 +56,7 @@ app.use(
 app.use(cookieParser());
 
 // ── Stripe webhook needs raw body BEFORE express.json() ──────────
-app.use(
-  "/api/payments/webhook",
-  express.raw({ type: "application/json" }),
-);
+app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -64,11 +65,11 @@ app.use(httpLogger);
 
 // ── Routes ───────────────────────────────────────
 app.use("/api", healthRouter);
-app.use("/api/upload", uploadRouter);
+app.use("/api/upload", authenticateJwt, requireEmailVerified, uploadRouter);
 app.use("/api/auth", authRouter);
-app.use("/api/account", accountRouter);
-app.use("/api/contracts", contractRouter);
-app.use("/api/analysis", analysisRouter);
+app.use("/api/account", authenticateJwt, requireEmailVerified, accountRouter);
+app.use("/api/contracts", authenticateJwt, requireEmailVerified, contractRouter);
+app.use("/api/analysis", authenticateJwt, requireEmailVerified, analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/admin/audit-logs", auditLogsRouter);

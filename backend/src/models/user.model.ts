@@ -48,6 +48,10 @@ export interface IUser extends Document {
   lastLogin?: Date;
   refreshToken?: string;
   refreshTokenExpiresAt?: Date;
+  isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpiresAt?: Date;
+  emailVerificationSentAt?: Date;
   verifyPassword(password: string): Promise<boolean>;
 }
 
@@ -82,6 +86,10 @@ const UserSchema = new Schema<IUser>(
     lastLogin: { type: Date },
     refreshToken: { type: String, select: false },
     refreshTokenExpiresAt: { type: Date, select: false },
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, select: false },
+    emailVerificationExpiresAt: { type: Date },
+    emailVerificationSentAt: { type: Date },
   },
   {
     timestamps: true,
@@ -91,6 +99,9 @@ const UserSchema = new Schema<IUser>(
         delete ret.passwordHash;
         delete ret.refreshToken;
         delete ret.refreshTokenExpiresAt;
+        delete ret.emailVerificationToken;
+        delete ret.emailVerificationExpiresAt;
+        delete ret.emailVerificationSentAt;
         delete ret.__v;
         return ret;
       },
@@ -101,6 +112,9 @@ const UserSchema = new Schema<IUser>(
         delete ret.passwordHash;
         delete ret.refreshToken;
         delete ret.refreshTokenExpiresAt;
+        delete ret.emailVerificationToken;
+        delete ret.emailVerificationExpiresAt;
+        delete ret.emailVerificationSentAt;
         delete ret.__v;
         return ret;
       },

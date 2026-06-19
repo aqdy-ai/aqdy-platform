@@ -78,6 +78,7 @@ export interface UserAccount {
   createdAt: string
   updatedAt: string
   lastLogin?: string
+  isEmailVerified?: boolean
 }
 
 export interface AccountsResponse {
@@ -190,7 +191,6 @@ export const adminApi = {
   getDashboard: () =>
     adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard'),
   getStats: () => adminClient.get<AdminStats>('/stats'),
-  getStats: () => adminClient.get<AdminStats>('/stats'),
   getPayments: (params?: {
     page?: number
     pageSize?: number
@@ -216,7 +216,10 @@ export const adminApi = {
     status?: string
     search?: string
   }) => adminClient.get<AccountsResponse>('/accounts', { params }),
-  updateAccount: (id: string, data: { planSlug?: string; status?: string }) =>
+  updateAccount: (
+    id: string,
+    data: { planSlug?: string; status?: string; isEmailVerified?: boolean }
+  ) =>
     adminClient.patch<{ success: boolean; data: UserAccount }>(
       `/accounts/${id}`,
       data

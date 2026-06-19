@@ -242,6 +242,17 @@
       "number": "One number",
       "special": "One special character (@$!%*?&)"
     },
+    "verifyPromptTitle": "Email Verification Required",
+    "verifyPromptSubtitle": "We sent a verification link to {{email}}. Please click the link in your email to verify your account.",
+    "resendBtn": "Resend Verification Link",
+    "resendCooldown": "Resend available in {{seconds}}s",
+    "resendSuccess": "Verification link sent successfully!",
+    "verifySuccessTitle": "Verification Successful",
+    "verifySuccessSubtitle": "Thank you! Your email has been verified. You can now access all features of the platform.",
+    "verifyErrorTitle": "Verification Failed",
+    "verifyErrorSubtitle": "The verification link is invalid, expired, or has already been used.",
+    "gotoDashboard": "Go to Dashboard",
+    "backToLogin": "Back to Login",
     "agreeToTerms": "By continuing, you agree to our ",
     "termsLink": "Terms of Service",
     "privacyLink": "Privacy Policy",
@@ -391,7 +402,12 @@
     "payment_succeeded": "Succeeded",
     "payment_failed": "Failed",
     "payment_pending": "Pending",
-    "payment_refunded": "Refunded"
+    "payment_refunded": "Refunded",
+    "verify_email": "Verify Email",
+    "unverify_email": "Unverify Email",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "email_verified_updated": "Email verification status updated successfully"
   },
   "history": {
     "title": "Contract History",

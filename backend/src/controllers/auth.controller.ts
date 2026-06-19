@@ -1,8 +1,9 @@
+import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { ApiResponse } from "../types/index.js";
 import { AppError } from "../middlewares/errorHandler.js";
-import { UserZodSchema } from "../models/user.model.js";
+import { User, UserZodSchema } from "../models/user.model.js";
 import {
   loginUser,
   registerUser,
@@ -10,6 +11,7 @@ import {
   refreshTokens,
 } from "../services/auth.service.js";
 import { AuthenticatedRequest } from "../types/auth.js";
+import { emailService } from "../services/email.service.js";
 
 const registerSchema = UserZodSchema;
 
@@ -62,6 +64,7 @@ export const register = async (
           name: user.name,
           role: user.role,
           plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
         },
         token,
       },
@@ -105,6 +108,7 @@ export const login = async (
           name: user.name,
           role: user.role,
           plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
         },
         token,
       },
@@ -195,6 +199,7 @@ export const me = async (
         name: string;
         role: string;
         plan: string;
+        isEmailVerified: boolean;
       };
     }> = {
       success: true,
@@ -205,6 +210,7 @@ export const me = async (
           name: user.name,
           role: user.role,
           plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
         },
       },
       message: "Authenticated user information.",
@@ -222,5 +228,92 @@ export const me = async (
             }`,
           ),
     );
+  }
+};
+
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { token } = req.body;
+    if (!token || typeof token !== "string") {
+      throw new AppError(400, "Verification token is required.");
+    }
+
+    const user = await User.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpiresAt: { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new AppError(400, "Verification token is invalid or has expired.");
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpiresAt = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Email verification successful.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendVerification = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AppError(401, "Authentication required.");
+    }
+
+    if (user.isEmailVerified) {
+      throw new AppError(400, "Email is already verified.");
+    }
+
+    const cooldownMs = 60000;
+    if (
+      user.emailVerificationSentAt &&
+      Date.now() - user.emailVerificationSentAt.getTime() < cooldownMs
+    ) {
+      const remainingSecs = Math.ceil(
+        (cooldownMs - (Date.now() - user.emailVerificationSentAt.getTime())) /
+          1000,
+      );
+      throw new AppError(
+        429,
+        `Please wait ${remainingSecs} seconds before requesting a new verification link.`,
+      );
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    user.emailVerificationToken = verificationToken;
+    user.emailVerificationExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    ); // 24 hours
+    user.emailVerificationSentAt = new Date();
+    await user.save();
+
+    await emailService.sendVerificationEmail(
+      user.email,
+      user.name,
+      verificationToken,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Verification email resent successfully.",
+    });
+  } catch (error) {
+    next(error);
   }
 };

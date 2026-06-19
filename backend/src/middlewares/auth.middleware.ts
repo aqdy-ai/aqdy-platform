@@ -112,3 +112,21 @@ export const requireAdmin = (
 
   next();
 };
+
+export const requireEmailVerified = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): void => {
+  if (!req.user) {
+    next(new AppError(401, "Authentication required."));
+    return;
+  }
+
+  if (!req.user.isEmailVerified && req.user.role !== "admin") {
+    next(new AppError(403, "Email verification required."));
+    return;
+  }
+
+  next();
+};

@@ -161,7 +161,7 @@ router.patch(
     try {
       const id = req.params.id as string; // Ensure id is a string
       const userId = new mongoose.Types.ObjectId(id);
-      const { plan, planSlug, status, role } = req.body;
+      const { plan, planSlug, status, role, isEmailVerified } = req.body;
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
         return res
@@ -201,6 +201,15 @@ router.patch(
 
       if (role !== undefined) {
         user.role = role;
+      }
+
+      if (isEmailVerified !== undefined) {
+        user.isEmailVerified = Boolean(isEmailVerified);
+        if (user.isEmailVerified) {
+          // Clear token fields if verified
+          user.emailVerificationToken = undefined;
+          user.emailVerificationExpiresAt = undefined;
+        }
       }
 
       if (incomingPlanSlug && incomingPlanSlug !== originalPlanSlug) {

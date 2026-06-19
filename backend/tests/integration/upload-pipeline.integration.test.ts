@@ -16,13 +16,14 @@ import { Readable } from "stream";
 
 // ── 1. Mock LLM ───────────────────────────────────────────────────────────────
 
-// استخدام unknown بدل any لتجنب ESLint وضبط الـ Generics لـ jest.Mock
 const mockInvoke = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 
-jest.unstable_mockModule("@langchain/google-genai", () => ({
-  ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => ({
-    invoke: mockInvoke,
-  })),
+jest.unstable_mockModule("../../src/services/llm.service.js", () => ({
+  llmService: {
+    call: mockInvoke,
+    callPrimary: mockInvoke,
+    callFallback: mockInvoke,
+  },
 }));
 
 // ── 2. Mock MongoDB models ─────────────────────────────────────────────────────
@@ -282,9 +283,8 @@ describe("Upload → Extract → Store Pipeline", () => {
       );
 
       expect(mockInvoke).toHaveBeenCalledTimes(1);
-      const calledMessages = mockInvoke.mock.calls[0][0] as unknown[];
-      const lastMsg = calledMessages[calledMessages.length - 1];
-      expect(JSON.stringify(lastMsg)).toContain("employment contract");
+      const prompt = mockInvoke.mock.calls[0][0] as string;
+      expect(prompt).toContain("employment contract");
     });
 
     test("triggerAnalysis() persists all extracted clauses to RiskAnalysis", async () => {
