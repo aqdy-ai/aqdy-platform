@@ -204,38 +204,57 @@ export class PaymentService {
           { new: true },
         );
         if (subDoc) {
-          const freePlan = await Plan.findOne({ slug: "free" });
-          if (freePlan) {
-            await User.findByIdAndUpdate(subDoc.userId, {
-              plan: freePlan.slug,
-              planSlug: freePlan.slug,
-              creditBalance: 0,
-            });
-            if (freePlan.creditAllowance > 0) {
-              await creditsService.topup(
-                String(subDoc.userId),
-                freePlan.creditAllowance,
-                "plan_topup",
-              );
+          // Only downgrade to free if the user hasn't already switched to a
+          // newer active subscription (prevents race when Stripe deletes the
+          // old subscription milliseconds after a new checkout.session.completed).
+          const newerSub = await Subscription.findOne({
+            userId: subDoc.userId,
+            status: "active",
+          });
+          if (!newerSub) {
+            const freePlan = await Plan.findOne({ slug: "free" });
+            if (freePlan) {
+              await User.findByIdAndUpdate(subDoc.userId, {
+                plan: freePlan.slug,
+                planSlug: freePlan.slug,
+                creditBalance: 0,
+              });
+              if (freePlan.creditAllowance > 0) {
+                await creditsService.topup(
+                  String(subDoc.userId),
+                  freePlan.creditAllowance,
+                  "plan_topup",
+                );
+              }
+            } else {
+              await User.findByIdAndUpdate(subDoc.userId, {
+                plan: "free",
+                planSlug: "free",
+              });
             }
           } else {
-            await User.findByIdAndUpdate(subDoc.userId, {
-              plan: "free",
-              planSlug: "free",
-            });
+            logger.info(
+              `customer.subscription.deleted: user ${subDoc.userId} already has a newer active subscription — skipping downgrade`,
+            );
           }
         }
         break;
       }
       case "customer.subscription.updated": {
         const sub = event.data.object as unknown as StripeSubWithPeriod;
-        await Subscription.findOneAndUpdate(
+        const updatedSub = await Subscription.findOneAndUpdate(
           { stripeSubscriptionId: sub.id },
           {
             status: sub.status === "active" ? "active" : "past_due",
             endDate: new Date(sub.current_period_end * 1000),
           },
+          { new: true },
         );
+        // If a past_due subscription transitions back to active (e.g. Stripe
+        // retry succeeded), restore the user's status so they can use the platform.
+        if (updatedSub && sub.status === "active") {
+          await User.findByIdAndUpdate(updatedSub.userId, { status: "active" });
+        }
         break;
       }
     }
@@ -300,17 +319,29 @@ export class PaymentService {
       { status: "expired" },
     );
 
-    // 1. Create subscription record
-    const subscription = await Subscription.create({
-      userId: new mongoose.Types.ObjectId(userId),
-      planId: plan._id,
-      status: "active",
-      stripeCustomerId: session.customer as string,
-      stripeSubscriptionId,
-      startDate: new Date(stripeSub.current_period_start * 1000),
-      endDate: new Date(stripeSub.current_period_end * 1000),
-      renewalDate: new Date(stripeSub.current_period_end * 1000),
-    });
+    // 1. Create subscription record (duplicate-key-safe — webhook + success callback may race)
+    let subscription: ISubscription;
+    try {
+      subscription = await Subscription.create({
+        userId: new mongoose.Types.ObjectId(userId),
+        planId: plan._id,
+        status: "active",
+        stripeCustomerId: session.customer as string,
+        stripeSubscriptionId,
+        startDate: new Date(stripeSub.current_period_start * 1000),
+        endDate: new Date(stripeSub.current_period_end * 1000),
+        renewalDate: new Date(stripeSub.current_period_end * 1000),
+      });
+    } catch (err: unknown) {
+      // E11000 = duplicate key — another caller already created this subscription
+      if ((err as any)?.code === 11000) {
+        logger.info(
+          `fulfillSubscription: subscription ${stripeSubscriptionId} already exists (race winner)`,
+        );
+        return;
+      }
+      throw err;
+    }
 
     // 2. Update user's plan (do NOT touch creditBalance here — creditsService handles it)
     await User.findByIdAndUpdate(userId, {
@@ -422,6 +453,9 @@ export class PaymentService {
       );
       return;
     }
+
+    // Restore user to active if they were suspended due to prior payment failure
+    await User.findByIdAndUpdate(subDoc.userId, { status: "active" });
 
     const plan = await Plan.findById(subDoc.planId);
     if (plan && plan.creditAllowance && plan.creditAllowance > 0) {
