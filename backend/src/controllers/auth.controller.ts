@@ -330,7 +330,7 @@ export const forgotPassword = async (
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (user) {
-      const token = crypto.randomBytes(32).toString('hex');
+      const token = crypto.randomBytes(32).toString("hex");
       user.passwordResetToken = token;
       user.passwordResetExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
       await user.save();
@@ -339,7 +339,8 @@ export const forgotPassword = async (
     // Always respond with generic message to prevent enumeration.
     res.status(200).json({
       success: true,
-      message: 'If an account with that email exists, a password reset link has been sent.',
+      message:
+        "If an account with that email exists, a password reset link has been sent.",
     });
   } catch (error) {
     next(error);
@@ -359,7 +360,7 @@ export const resetPassword = async (
         .min(8)
         .regex(
           /(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]/,
-          'Password must include uppercase, lowercase, number, and special character',
+          "Password must include uppercase, lowercase, number, and special character",
         ),
     });
     const { token, newPassword } = schema.parse(req.body);
@@ -369,7 +370,7 @@ export const resetPassword = async (
       passwordResetExpiresAt: { $gt: new Date() },
     });
     if (!user) {
-      throw new AppError(400, 'Invalid or expired password reset token.');
+      throw new AppError(400, "Invalid or expired password reset token.");
     }
     // Set new password via virtual field
     user.password = newPassword;
@@ -382,7 +383,7 @@ export const resetPassword = async (
 
     res.status(200).json({
       success: true,
-      message: 'Password has been reset successfully.',
+      message: "Password has been reset successfully.",
     });
   } catch (error) {
     next(error);

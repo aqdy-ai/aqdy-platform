@@ -172,7 +172,6 @@ export const forgotPasswordRateLimit = () => {
   };
 };
 
-
 export const resetRateLimitStores = (): void => {
   userDailyLimits.clear();
   anonymousIpLimits.clear();

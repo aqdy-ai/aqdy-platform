@@ -105,7 +105,9 @@ class EmailService {
         throw error;
       }
     } else {
-      logger.info(`\n=========================================\n[DEV MAILBOX] verification email sent to ${to}\nSubject: ${subject}\nName: ${name}\nVerification URL: ${verificationUrl}\n=========================================`);
+      logger.info(
+        `\n=========================================\n[DEV MAILBOX] verification email sent to ${to}\nSubject: ${subject}\nName: ${name}\nVerification URL: ${verificationUrl}\n=========================================`,
+      );
     }
   }
 
@@ -186,7 +188,9 @@ class EmailService {
         throw error;
       }
     } else {
-      logger.info(`\n=========================================\n[DEV MAILBOX] password reset email sent to ${to}\nSubject: ${subject}\nName: ${name}\nReset URL: ${resetUrl}\n=========================================`);
+      logger.info(
+        `\n=========================================\n[DEV MAILBOX] password reset email sent to ${to}\nSubject: ${subject}\nName: ${name}\nReset URL: ${resetUrl}\n=========================================`,
+      );
     }
   }
 }
