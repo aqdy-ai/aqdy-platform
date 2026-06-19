@@ -359,7 +359,7 @@ export const resetPassword = async (
         .string()
         .min(8)
         .regex(
-          /(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]/,
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
           "Password must include uppercase, lowercase, number, and special character",
         ),
     });
@@ -382,10 +382,10 @@ export const resetPassword = async (
     // Set new password via virtual field
     user.password = newPassword;
     // Invalidate password reset token and refresh tokens
-    user.passwordResetToken = undefined;
-    user.passwordResetExpiresAt = undefined;
-    user.refreshToken = undefined;
-    user.refreshTokenExpiresAt = undefined;
+    delete user.passwordResetToken;
+    delete user.passwordResetExpiresAt;
+    delete user.refreshToken;
+    delete user.refreshTokenExpiresAt;
     await user.save({ validateBeforeSave: false });
 
     res.status(200).json({
