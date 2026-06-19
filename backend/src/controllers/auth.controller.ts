@@ -386,7 +386,7 @@ export const resetPassword = async (
       message: "Password has been reset successfully.",
     });
   } catch (error) {
-    console.error(error);
+    console.error("RESET_PASSWORD_ERROR:", error);
     next(error);
   }
 };

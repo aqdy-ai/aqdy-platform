@@ -18,7 +18,7 @@ jest.mock('../src/services/email.service.js', () => ({
 
 const emailMock = (await import('../src/services/email.service.js')).emailService;
 
-let mongo: MongoMemoryServer;
+let mongo: any;
 
 beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
