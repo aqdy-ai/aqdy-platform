@@ -12,6 +12,7 @@ import { User } from '../src/models/user.model.js';
 jest.mock('../src/services/email.service.js', () => ({
   emailService: {
     sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+    sendVerificationEmail: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
