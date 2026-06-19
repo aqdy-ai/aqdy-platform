@@ -108,12 +108,11 @@ describe('Login Page', () => {
     })
   })
 
-  it('should call forgotPassword when the link is clicked', () => {
+  it('should navigate to forgot password page when the link is clicked', () => {
     renderComponent()
     const forgotBtn = screen.getByRole('link', {
       name: /auth.forgotPassword/i,
     })
-    fireEvent.click(forgotBtn)
-    expect(mockForgotPassword).toHaveBeenCalled()
+    expect(forgotBtn).toHaveAttribute('href', '/forgot-password')
   })
 })
