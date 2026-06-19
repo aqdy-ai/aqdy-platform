@@ -110,7 +110,7 @@ describe('Login Page', () => {
 
   it('should call forgotPassword when the link is clicked', () => {
     renderComponent()
-    const forgotBtn = screen.getByRole('button', {
+    const forgotBtn = screen.getByRole('link', {
       name: /auth.forgotPassword/i,
     })
     fireEvent.click(forgotBtn)

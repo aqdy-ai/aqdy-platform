@@ -185,7 +185,7 @@ describe('useAuth', () => {
       result.current.forgotPassword()
     })
 
-    expect(toast.info).toHaveBeenCalledWith('auth.forgotPasswordComingSoon')
+    expect(toast.success).toHaveBeenCalledWith('auth.forgotPasswordSuccess')
   })
 
   it('should reject invalid registration data', async () => {
