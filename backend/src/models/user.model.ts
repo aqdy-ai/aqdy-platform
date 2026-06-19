@@ -24,6 +24,8 @@ export const UserZodSchema = z.object({
     ),
   role: z.enum(["user", "admin"]).default("user"),
   plan: z.enum(["free", "pro", "enterprise"]).default("free"),
+  passwordResetToken: z.string().optional(),
+  passwordResetExpiresAt: z.date().optional(),
   status: z.enum(["active", "suspended", "deleted"]).default("active"),
   lastLogin: z.date().optional(),
   refreshToken: z.string().optional(),
@@ -48,6 +50,8 @@ export interface IUser extends Document {
   lastLogin?: Date;
   refreshToken?: string;
   refreshTokenExpiresAt?: Date;
+  passwordResetToken?: string;
+  passwordResetExpiresAt?: Date;
   isEmailVerified: boolean;
   emailVerificationToken?: string;
   emailVerificationExpiresAt?: Date;
@@ -69,6 +73,8 @@ const UserSchema = new Schema<IUser>(
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     plan: { type: String, required: true, default: "free" },
+    passwordResetToken: { type: String },
+    passwordResetExpiresAt: { type: Date },
     planSlug: {
       type: String,
       enum: ["free", "pro", "enterprise"],
@@ -97,6 +103,8 @@ const UserSchema = new Schema<IUser>(
       virtuals: true,
       transform(_, ret) {
         delete ret.passwordHash;
+        delete ret.passwordResetToken;
+        delete ret.passwordResetExpiresAt;
         delete ret.refreshToken;
         delete ret.refreshTokenExpiresAt;
         delete ret.emailVerificationToken;
@@ -110,6 +118,8 @@ const UserSchema = new Schema<IUser>(
       virtuals: true,
       transform(_, ret) {
         delete ret.passwordHash;
+        delete ret.passwordResetToken;
+        delete ret.passwordResetExpiresAt;
         delete ret.refreshToken;
         delete ret.refreshTokenExpiresAt;
         delete ret.emailVerificationToken;

@@ -6,7 +6,8 @@ const authClient = axios.create({
   withCredentials: true,
 })
 
-export const authApi = {
+  forgotPassword: (email: string) => authClient.post('/forgot-password', { email }),
+  resetPassword: (token: string, newPassword: string) => authClient.post('/reset-password', { token, newPassword }),
   login: (credentials: LoginInput) => authClient.post('/login', credentials),
   register: (userData: RegisterApiData) =>
     authClient.post('/register', userData),

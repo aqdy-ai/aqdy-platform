@@ -73,13 +73,12 @@ export default function Login() {
           </div>
 
           <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={forgotPassword}
+            <Link
+              to="/forgot-password"
               className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
             >
               {t('auth.forgotPassword')}
-            </button>
+            </Link>
           </div>
 
           <button
