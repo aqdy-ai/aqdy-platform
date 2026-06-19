@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 
 const validUserId = new mongoose.Types.ObjectId().toString();
 const validPlanId = new mongoose.Types.ObjectId().toString();
-const validNewPlanId = new mongoose.Types.ObjectId().toString();
 
 // 1. تعريف توقيع دوال مفتوح وآمن للـ لنت والـ تايب سكريبت بدون استخدام any
 type MockGenericFunction = (...args: unknown[]) => Promise<unknown>;
@@ -135,67 +134,6 @@ describe('SubscriptionService - getUsageStats', () => {
       new Date('2026-01-01'),
     );
     expect(result).toBe(0);
-  });
-});
-
-describe('SubscriptionService - upgradeSubscription', () => {
-  let subscriptionService: InstanceType<typeof SubscriptionService>;
-
-  beforeEach(() => {
-    subscriptionService = new SubscriptionService();
-    jest.clearAllMocks();
-  });
-
-  test('should throw error if no active subscription', async () => {
-    const { Subscription } = await import('../../src/models/subscription.model.js');
-    const subscriptionMock = Subscription as unknown as MockModelWithFind;
-    subscriptionMock.findOne = jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
-      populate: jest.fn<MockGenericFunction>().mockResolvedValue(null),
-    });
-
-    await expect(
-      subscriptionService.upgradeSubscription(validUserId, validNewPlanId)
-    ).rejects.toThrow('No active subscription found.');
-  });
-
-  test('should throw error if plan not found', async () => {
-    const mockSubscription = {
-      _id: new mongoose.Types.ObjectId().toString(),
-      userId: validUserId,
-      status: 'active',
-      save: mockSave,
-    };
-
-    const { Subscription } = await import('../../src/models/subscription.model.js');
-    const subscriptionMock = Subscription as unknown as MockModelWithFind;
-    subscriptionMock.findOne = jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
-      populate: jest.fn<MockGenericFunction>().mockResolvedValue(mockSubscription),
-    });
-    mockFindById.mockResolvedValue(null);
-
-    await expect(
-      subscriptionService.upgradeSubscription(validUserId, validNewPlanId)
-    ).rejects.toThrow('Plan not found.');
-  });
-
-  test('should upgrade subscription successfully', async () => {
-    const mockSubscription = {
-      _id: new mongoose.Types.ObjectId().toString(),
-      userId: validUserId,
-      status: 'active',
-      planId: validPlanId,
-      save: mockSave,
-    };
-
-    const { Subscription } = await import('../../src/models/subscription.model.js');
-    const subscriptionMock = Subscription as unknown as MockModelWithFind;
-    subscriptionMock.findOne = jest.fn<(...args: unknown[]) => unknown>().mockReturnValue({
-      populate: jest.fn<MockGenericFunction>().mockResolvedValue(mockSubscription),
-    });
-    mockFindById.mockResolvedValue({ _id: validNewPlanId, name: 'Premium' });
-
-    await subscriptionService.upgradeSubscription(validUserId, validNewPlanId);
-    expect(mockSave).toHaveBeenCalled();
   });
 });
 

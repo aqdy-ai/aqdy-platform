@@ -486,4 +486,157 @@ describe("PaymentService.handleWebhook", () => {
 
     jest.restoreAllMocks();
   });
+
+  // ─── payment recovery — User.status restored after past_due ───────────
+
+  describe("handleSuccessfulRenewal — restores user after payment recovery", () => {
+    it("restores User.status to active when a past_due renewal succeeds", async () => {
+      const user = await createTestUser({ status: "suspended" });
+      const plan = await createTestPlan({ creditAllowance: 300 });
+      const subId = "sub_recovery_" + Date.now();
+
+      const sub = await Subscription.create({
+        userId: user._id,
+        planId: plan._id,
+        stripeSubscriptionId: subId,
+        status: "past_due",
+        startDate: new Date(Date.now() - 86400000 * 30),
+        endDate: new Date(Date.now() - 86400000),
+        renewalDate: new Date(Date.now() - 86400000),
+      });
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue({
+        id: "evt_recovery_" + Date.now(),
+        type: "invoice.paid",
+        data: {
+          object: {
+            id: "in_test_" + Date.now(),
+            subscription: subId,
+            customer: "cus_test",
+            amount_paid: 2900,
+            currency: "usd",
+          },
+        },
+      } as unknown as Stripe.Event);
+
+      jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(stripeResponse({
+        id: subId,
+        current_period_start: Math.floor(Date.now() / 1000),
+        current_period_end: Math.floor(Date.now() / 1000) + 2592000,
+      }));
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      const updatedSub = await Subscription.findById(sub._id);
+      expect(updatedSub?.status).toBe("active");
+
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser?.status).toBe("active");
+      expect(updatedUser?.creditBalance).toBe(300);
+
+      jest.restoreAllMocks();
+    });
+  });
+
+  // ─── downgrade race condition fix ─────────────────────────────────────
+
+  describe("customer.subscription.deleted — downgrade race protection", () => {
+    it("skips downgrade to free when user already has a newer active subscription", async () => {
+      const user = await createTestUser({ plan: "pro", planSlug: "pro" });
+      const freePlan = await Plan.create({
+        name: "Free",
+        slug: "free",
+        price: 0,
+        billingCycle: "monthly",
+        features: [],
+        analysisLimit: 3,
+        storageLimit: 50,
+        creditAllowance: 10,
+        stripePriceId: "price_free",
+        isActive: true,
+      });
+      const newPlan = await createTestPlan();
+
+      const oldSubId = "sub_old_" + Date.now();
+      await Subscription.create({
+        userId: user._id,
+        planId: freePlan._id,
+        stripeSubscriptionId: oldSubId,
+        status: "active",
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 86400000),
+        renewalDate: new Date(Date.now() + 86400000),
+      });
+
+      const newSubId = "sub_new_" + Date.now();
+      await Subscription.create({
+        userId: user._id,
+        planId: newPlan._id,
+        stripeSubscriptionId: newSubId,
+        status: "active",
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 2592000000),
+        renewalDate: new Date(Date.now() + 2592000000),
+      });
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue({
+        id: "evt_race_" + Date.now(),
+        type: "customer.subscription.deleted",
+        data: { object: { id: oldSubId } },
+      } as unknown as Stripe.Event);
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser?.plan).toBe("pro");
+
+      const oldSub = await Subscription.findOne({ stripeSubscriptionId: oldSubId });
+      expect(oldSub?.status).toBe("cancelled");
+
+      jest.restoreAllMocks();
+    });
+  });
+
+  // ─── customer.subscription.updated — User.status restoration ──────────
+
+  describe("customer.subscription.updated — past_due to active transition", () => {
+    it("restores User.status to active when subscription moves from past_due to active", async () => {
+      const user = await createTestUser({ status: "suspended" });
+      const plan = await createTestPlan();
+      const subId = "sub_update_" + Date.now();
+
+      await Subscription.create({
+        userId: user._id,
+        planId: plan._id,
+        stripeSubscriptionId: subId,
+        status: "past_due",
+        startDate: new Date(),
+        endDate: new Date(),
+        renewalDate: new Date(),
+      });
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue({
+        id: "evt_update_" + Date.now(),
+        type: "customer.subscription.updated",
+        data: {
+          object: {
+            id: subId,
+            status: "active",
+            current_period_start: Math.floor(Date.now() / 1000),
+            current_period_end: Math.floor(Date.now() / 1000) + 2592000,
+          },
+        },
+      } as unknown as Stripe.Event);
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser?.status).toBe("active");
+
+      const updatedSub = await Subscription.findOne({ stripeSubscriptionId: subId });
+      expect(updatedSub?.status).toBe("active");
+
+      jest.restoreAllMocks();
+    });
+  });
 });

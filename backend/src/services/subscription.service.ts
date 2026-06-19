@@ -52,43 +52,6 @@ export class SubscriptionService {
     });
   }
 
-  // Upgrade الـ subscription
-  async upgradeSubscription(
-    userId: string,
-    newPlanId: string,
-  ): Promise<ISubscription> {
-    const subscription = await Subscription.findOne({
-      userId: new mongoose.Types.ObjectId(userId),
-      status: "active",
-    }).populate("planId");
-
-    if (!subscription) {
-      throw new Error("No active subscription found.");
-    }
-
-    const newPlan = await Plan.findById(newPlanId);
-
-    if (!newPlan) {
-      throw new Error("Plan not found.");
-    }
-    const now = new Date();
-    const newEndDate = new Date(now);
-    newEndDate.setMonth(newEndDate.getMonth() + 1);
-
-    subscription.planId = new mongoose.Types.ObjectId(newPlanId);
-    subscription.status = "active";
-    subscription.startDate = now;
-    subscription.endDate = newEndDate;
-    subscription.renewalDate = newEndDate;
-    subscription.cancelledAt = undefined;
-
-    await subscription.save();
-    logger.info(
-      `✅ Subscription upgraded for user: ${userId} to plan: ${newPlan.name}`,
-    );
-    return subscription;
-  }
-
   // Cancel الـ subscription
   async cancelSubscription(userId: string): Promise<ISubscription> {
     const subscription = await Subscription.findOne({

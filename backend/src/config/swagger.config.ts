@@ -196,16 +196,6 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
-        UpgradeSubscriptionRequest: {
-          type: "object",
-          required: ["planId"],
-          properties: {
-            planId: {
-              type: "string",
-              example: "64abc123def456",
-            },
-          },
-        },
         ClauseAnalysis: {
           type: "object",
           properties: {
@@ -1108,41 +1098,6 @@ const options: swaggerJsdoc.Options = {
                   },
                 },
               },
-            },
-          },
-        },
-      },
-      "/api/account/subscription/upgrade": {
-        post: {
-          tags: ["Account"],
-          summary: "Upgrade user subscription (requires accessToken cookie)",
-          security: [{ cookieAuth: [] }],
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  $ref: "#/components/schemas/UpgradeSubscriptionRequest",
-                },
-              },
-            },
-          },
-          responses: {
-            200: {
-              description: "Subscription upgraded successfully",
-              content: {
-                "application/json": {
-                  schema: {
-                    $ref: "#/components/schemas/ApiResponse",
-                  },
-                },
-              },
-            },
-            400: {
-              description: "Invalid plan",
-            },
-            401: {
-              description: "Authentication required",
             },
           },
         },

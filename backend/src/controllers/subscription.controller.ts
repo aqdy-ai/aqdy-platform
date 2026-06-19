@@ -60,45 +60,6 @@ export const getSubscriptionHandler = async (
   }
 };
 
-// POST /api/account/subscription/upgrade
-export const upgradeSubscriptionHandler = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
-  try {
-    const userId = req.user._id.toString();
-    const { planId } = req.body;
-    if (!planId) {
-      throw new AppError(400, "planId is required.");
-    }
-
-    const subscription = await subscriptionService.upgradeSubscription(
-      userId,
-      planId,
-    );
-
-    logger.info("Subscription upgraded", { userId, planId });
-
-    const response: ApiResponse<object> = {
-      success: true,
-      data: { subscription },
-      message: "Subscription upgraded successfully",
-    };
-
-    res.status(200).json(response);
-  } catch (error) {
-    next(
-      error instanceof AppError
-        ? error
-        : new AppError(
-            500,
-            `Failed to upgrade subscription: ${error instanceof Error ? error.message : "Unknown error"}`,
-          ),
-    );
-  }
-};
-
 // POST /api/account/subscription/cancel
 export const cancelSubscriptionHandler = async (
   req: AuthRequest,
