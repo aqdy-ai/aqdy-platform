@@ -6,8 +6,11 @@ const authClient = axios.create({
   withCredentials: true,
 })
 
-  forgotPassword: (email: string) => authClient.post('/forgot-password', { email }),
-  resetPassword: (token: string, newPassword: string) => authClient.post('/reset-password', { token, newPassword }),
+const authApi = {
+  forgotPassword: (email: string) =>
+    authClient.post('/forgot-password', { email }),
+  resetPassword: (token: string, newPassword: string) =>
+    authClient.post('/reset-password', { token, newPassword }),
   login: (credentials: LoginInput) => authClient.post('/login', credentials),
   register: (userData: RegisterApiData) =>
     authClient.post('/register', userData),
@@ -17,3 +20,5 @@ const authClient = axios.create({
   verifyEmail: (token: string) => authClient.post('/verify-email', { token }),
   resendVerification: () => authClient.post('/resend-verification'),
 }
+
+export default authApi

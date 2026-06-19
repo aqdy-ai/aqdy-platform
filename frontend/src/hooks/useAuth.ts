@@ -156,18 +156,18 @@ export const useAuth = () => {
     }
   }
 
-    const forgotPassword = async (email: string) => {
-    setIsLoading(true);
+  const forgotPassword = async (email: string) => {
+    setIsLoading(true)
     try {
-      await authApi.forgotPassword(email);
+      await authApi.forgotPassword(email)
       // Always show generic success message to avoid enumeration
-      toast.success(t('auth.forgotPasswordSuccess'));
+      toast.success(t('auth.forgotPasswordSuccess'))
     } catch (error: unknown) {
       // Log error but still show generic message for security
-      console.error('Forgot password error:', error);
-      toast.success(t('auth.forgotPasswordSuccess'));
+      console.error('Forgot password error:', error)
+      toast.success(t('auth.forgotPasswordSuccess'))
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
@@ -180,26 +180,26 @@ export const useAuth = () => {
     setUser(null)
     localStorage.removeItem('isLoggedIn')
     navigate('/login')
-  };
+  }
 
   // Reset password function for handling password reset flow
   const resetPassword = async (token: string, newPassword: string) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await authApi.resetPassword(token, newPassword);
-      toast.success(t('auth.passwordResetSuccess'));
+      await authApi.resetPassword(token, newPassword)
+      toast.success(t('auth.passwordResetSuccess'))
       // After successful reset, redirect to login page
-      navigate('/login');
+      navigate('/login')
     } catch (error: unknown) {
-      console.error('Reset password error:', error);
-      toast.error(t('auth.passwordResetError'));
+      console.error('Reset password error:', error)
+      toast.error(t('auth.passwordResetError'))
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
   const getPasswordStrength = (password: string): PasswordValidationResult => {
-    const hasMinLength = password.length >= PASSWORD_RULES.minLength;
+    const hasMinLength = password.length >= PASSWORD_RULES.minLength
     return {
       hasMinLength,
       hasUppercase: PASSWORD_RULES.uppercase.test(password),
@@ -207,8 +207,8 @@ export const useAuth = () => {
       hasNumber: PASSWORD_RULES.number.test(password),
       hasSpecial: PASSWORD_RULES.special.test(password),
       allValid: registerSchema.shape.password.safeParse(password).success,
-    };
-  };
+    }
+  }
 
   return {
     login,
@@ -221,6 +221,6 @@ export const useAuth = () => {
     user,
     isInitialLoading,
     getPasswordStrength,
-  };
+  }
   // Note: order adjusted to include resetPassword
 }

@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Helmet } from 'react-helmet-async';
-import { toast } from 'sonner';
-import { authApi } from '../services/authApi';
-import { useAuth } from '../hooks/useAuth';
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Helmet } from 'react-helmet-async'
+import { toast } from 'sonner'
+import { authApi } from '../services/authApi'
+import { useAuth } from '../hooks/useAuth'
 
 export default function ForgotPassword() {
-  const { t } = useTranslation();
-  const { isLoading, forgotPassword } = useAuth();
-  const [email, setEmail] = useState('');
+  const { t } = useTranslation()
+  const { isLoading, forgotPassword } = useAuth()
+  const [email, setEmail] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await forgotPassword(email);
-  };
+    e.preventDefault()
+    await forgotPassword(email)
+  }
 
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <Helmet>
         <title>{t('auth.forgotPasswordTitle')} | Aqdy</title>
       </Helmet>
-      <div className="bg-card border-border/50 w-full max-w-md space-y-8 rounded-3xl border p-8 shadow-2xl backdrop-blur-sm bg-opacity-30">
+      <div className="bg-card border-border/50 bg-opacity-30 w-full max-w-md space-y-8 rounded-3xl border p-8 shadow-2xl backdrop-blur-sm">
         <div className="text-center">
           <h2 className="text-foreground text-3xl font-extrabold tracking-tight">
             {t('auth.forgotPasswordTitle')}
@@ -55,11 +55,14 @@ export default function ForgotPassword() {
         </form>
         <p className="text-muted-foreground mt-4 text-center text-xs leading-relaxed">
           {t('auth.remembered')}{' '}
-          <a href="/login" className="text-primary font-semibold hover:underline">
+          <a
+            href="/login"
+            className="text-primary font-semibold hover:underline"
+          >
             {t('auth.loginNow')}
           </a>
         </p>
       </div>
     </div>
-  );
+  )
 }

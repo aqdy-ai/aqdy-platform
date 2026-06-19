@@ -1,30 +1,30 @@
-import { useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Helmet } from 'react-helmet-async';
-import { toast } from 'sonner';
-import { useAuth } from '../hooks/useAuth';
-import { PasswordStrengthIndicator } from '../components/features/PasswordStrengthIndicator';
+import { useState } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { Helmet } from 'react-helmet-async'
+import { toast } from 'sonner'
+import { useAuth } from '../hooks/useAuth'
+import { PasswordStrengthIndicator } from '../components/features/PasswordStrengthIndicator'
 
 export default function ResetPassword() {
-  const { t } = useTranslation();
-  const { resetPassword, isLoading, getPasswordStrength } = useAuth();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') ?? '';
+  const { t } = useTranslation()
+  const { resetPassword, isLoading, getPasswordStrength } = useAuth()
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token') ?? ''
 
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
-  const passwordStrength = getPasswordStrength(password);
+  const passwordStrength = getPasswordStrength(password)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (password !== confirmPassword) {
-      toast.error(t('auth.passwordsMismatch'));
-      return;
+      toast.error(t('auth.passwordsMismatch'))
+      return
     }
-    await resetPassword(token, password);
-  };
+    await resetPassword(token, password)
+  }
 
   if (!token) {
     return (
@@ -32,19 +32,22 @@ export default function ResetPassword() {
         <Helmet>
           <title>{t('auth.resetPasswordInvalidTitle')} | Aqdy</title>
         </Helmet>
-        <div className="bg-card border-border/50 w-full max-w-md space-y-8 rounded-3xl border p-8 shadow-2xl backdrop-blur-sm bg-opacity-30">
-          <h2 className="text-foreground text-3xl font-extrabold text-center">
+        <div className="bg-card border-border/50 bg-opacity-30 w-full max-w-md space-y-8 rounded-3xl border p-8 shadow-2xl backdrop-blur-sm">
+          <h2 className="text-foreground text-center text-3xl font-extrabold">
             {t('auth.resetPasswordInvalid')}
           </h2>
-          <p className="text-muted-foreground text-center mt-4">
+          <p className="text-muted-foreground mt-4 text-center">
             {t('auth.resetPasswordInvalidMessage')}
           </p>
-          <Link to="/login" className="text-primary hover:underline mt-4 block text-center">
+          <Link
+            to="/login"
+            className="text-primary mt-4 block text-center hover:underline"
+          >
             {t('auth.backToLogin')}
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -52,7 +55,7 @@ export default function ResetPassword() {
       <Helmet>
         <title>{t('auth.resetPasswordTitle')} | Aqdy</title>
       </Helmet>
-      <div className="bg-card border-border/50 w-full max-w-md space-y-8 rounded-3xl border p-8 shadow-2xl backdrop-blur-sm bg-opacity-30">
+      <div className="bg-card border-border/50 bg-opacity-30 w-full max-w-md space-y-8 rounded-3xl border p-8 shadow-2xl backdrop-blur-sm">
         <div className="text-center">
           <h2 className="text-foreground text-3xl font-extrabold tracking-tight">
             {t('auth.resetPasswordTitle')}
@@ -75,7 +78,10 @@ export default function ResetPassword() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <PasswordStrengthIndicator result={passwordStrength} password={password} />
+              <PasswordStrengthIndicator
+                result={passwordStrength}
+                password={password}
+              />
             </div>
             <div>
               <label className="text-foreground mb-1 block text-start text-sm font-medium">
@@ -91,7 +97,7 @@ export default function ResetPassword() {
               />
             </div>
           </div>
-          <div className="text-sm text-muted-foreground mt-2">
+          <div className="text-muted-foreground mt-2 text-sm">
             {t('auth.passwordResetExpirationWarning')}
           </div>
           <button
@@ -104,11 +110,14 @@ export default function ResetPassword() {
         </form>
         <p className="text-muted-foreground mt-4 text-center text-xs leading-relaxed">
           {t('auth.remembered')}{' '}
-          <Link to="/login" className="text-primary font-semibold hover:underline">
+          <Link
+            to="/login"
+            className="text-primary font-semibold hover:underline"
+          >
             {t('auth.loginNow')}
           </Link>
         </p>
       </div>
     </div>
-  );
+  )
 }
