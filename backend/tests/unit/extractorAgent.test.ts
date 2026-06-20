@@ -355,8 +355,8 @@ describe("ExtractorAgent", () => {
   // ────────────────────────────────────────────────
 
   describe("extract() — OCR Artifacts & Meaning Preservation", () => {
-    test("should contain OCR handling instructions in the system prompt", () => {
-      const { EXTRACTOR_SYSTEM_PROMPT } = require("../../src/agents/extractor.prompts.js");
+    test("should contain OCR handling instructions in the system prompt", async () => {
+      const { EXTRACTOR_SYSTEM_PROMPT } = await import("../../src/agents/extractor.prompts.js");
       expect(EXTRACTOR_SYSTEM_PROMPT).toContain("OCR Artifact Handling");
       expect(EXTRACTOR_SYSTEM_PROMPT).toContain("HIGH CONFIDENCE RULE");
       expect(EXTRACTOR_SYSTEM_PROMPT).toContain("MEANING PRESERVATION RULE");
