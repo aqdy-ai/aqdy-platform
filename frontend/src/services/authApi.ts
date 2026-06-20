@@ -21,4 +21,4 @@ const authApi = {
   resendVerification: () => authClient.post('/resend-verification'),
 }
 
-export default authApi
+export { authApi }

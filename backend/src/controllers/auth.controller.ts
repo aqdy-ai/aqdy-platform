@@ -334,7 +334,7 @@ export const forgotPassword = async (
       user.passwordResetToken = token;
       user.passwordResetExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
       await user.save();
-      // Email sending is out of scope per requirements.
+      await emailService.sendPasswordResetEmail(user.email, user.name, token);
     }
     // Always respond with generic message to prevent enumeration.
     res.status(200).json({
