@@ -7,11 +7,14 @@ import {
   me,
   verifyEmail,
   resendVerification,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/auth.controller.js";
 import {
   authenticateJwt,
   requireAuth,
 } from "../middlewares/auth.middleware.js";
+import { forgotPasswordRateLimit } from "../middlewares/rateLimit.js";
 
 const router = Router();
 
@@ -27,5 +30,8 @@ router.post(
   requireAuth,
   resendVerification,
 );
+// Forgot password endpoints
+router.post("/forgot-password", forgotPasswordRateLimit(), forgotPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;
