@@ -156,9 +156,19 @@ export const useAuth = () => {
     }
   }
 
-  const forgotPassword = () => {
-    // Sprint 3 Placeholder
-    toast.info(t('auth.forgotPasswordComingSoon'))
+  const forgotPassword = async (email: string) => {
+    setIsLoading(true)
+    try {
+      await authApi.forgotPassword(email)
+      // Always show generic success message to avoid enumeration
+      toast.success(t('auth.forgotPasswordSuccess'))
+    } catch (error: unknown) {
+      // Log error but still show generic message for security
+      console.error('Forgot password error:', error)
+      toast.success(t('auth.forgotPasswordSuccess'))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const logout = async () => {
@@ -170,6 +180,22 @@ export const useAuth = () => {
     setUser(null)
     localStorage.removeItem('isLoggedIn')
     navigate('/login')
+  }
+
+  // Reset password function for handling password reset flow
+  const resetPassword = async (token: string, newPassword: string) => {
+    setIsLoading(true)
+    try {
+      await authApi.resetPassword(token, newPassword)
+      toast.success(t('auth.passwordResetSuccess'))
+      // After successful reset, redirect to login page
+      navigate('/login')
+    } catch (error: unknown) {
+      console.error('Reset password error:', error)
+      toast.error(t('auth.passwordResetError'))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const getPasswordStrength = (password: string): PasswordValidationResult => {
@@ -188,6 +214,7 @@ export const useAuth = () => {
     login,
     register,
     forgotPassword,
+    resetPassword,
     logout,
     isLoading,
     isAuthenticated,
@@ -195,4 +222,5 @@ export const useAuth = () => {
     isInitialLoading,
     getPasswordStrength,
   }
+  // Note: order adjusted to include resetPassword
 }

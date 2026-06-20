@@ -317,3 +317,83 @@ export const resendVerification = async (
     next(error);
   }
 };
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const schema = z.object({
+      email: z.string().email(),
+    });
+    const { email } = schema.parse(req.body);
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (user) {
+      const token = crypto.randomBytes(32).toString("hex");
+      user.passwordResetToken = token;
+      user.passwordResetExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      await user.save();
+      await emailService.sendPasswordResetEmail(user.email, user.name, token);
+    }
+    // Always respond with generic message to prevent enumeration.
+    res.status(200).json({
+      success: true,
+      message:
+        "If an account with that email exists, a password reset link has been sent.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const schema = z.object({
+      token: z.string(),
+      newPassword: z
+        .string()
+        .min(8)
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+          "Password must include uppercase, lowercase, number, and special character",
+        ),
+    });
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      const message = result.error.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+        .join("; ");
+      throw new AppError(400, `Validation failed: ${message}`);
+    }
+    const { token, newPassword } = result.data;
+
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetExpiresAt: { $gt: new Date() },
+    });
+    if (!user) {
+      throw new AppError(400, "Invalid or expired password reset token.");
+    }
+    // Set new password via virtual field
+    user.password = newPassword;
+    // Invalidate password reset token and refresh tokens
+    user.passwordResetToken = undefined;
+    user.passwordResetExpiresAt = undefined;
+    user.refreshToken = undefined;
+    user.refreshTokenExpiresAt = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password has been reset successfully.",
+    });
+  } catch (error) {
+    console.error("RESET_PASSWORD_ERROR:", error);
+    next(error);
+  }
+};

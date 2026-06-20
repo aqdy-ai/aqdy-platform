@@ -24,7 +24,8 @@ const RiskAnalysisDashboard = lazy(
   () => import('./pages/RiskAnalysisDashboard')
 )
 const Login = lazy(() => import('./pages/Login'))
-const Register = lazy(() => import('./pages/Register'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
@@ -32,6 +33,7 @@ const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
+import Register from './pages/Register'
 const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
@@ -228,6 +230,22 @@ function AppContent() {
             element={
               <GuestRoute>
                 <Register />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <GuestRoute>
+                <ForgotPassword />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <GuestRoute>
+                <ResetPassword />
               </GuestRoute>
             }
           />
