@@ -63,9 +63,12 @@ backend/src/
 - Role: "specialized contract clause extraction agent for the Aqdy legal AI platform"
 - Defines a **19-type clause taxonomy**: termination, payment, liability, confidentiality, non-compete, force-majeure, governing-law, indemnification, warranty, intellectual-property, dispute-resolution, employment-terms, probation, benefits, obligations, penalties, renewal, notice, other
 - Contains **2 few-shot examples**: one English employment contract, one Arabic employment contract (عقد عمل)
-- Instructs exact text preservation — no summarization or paraphrasing
+- Instructs exact text preservation — no summarization or paraphrasing for clean text
 - Detects Arabic clause markers (مادة، بند، فقرة، أولاً، ثانياً)
 - Output format: JSON array only, no markdown, no extra text
+- **OCR Resilience**: Instructions for context-aware correction of OCR artifacts (scattered letters, split words, line-break merges, garbled characters).
+- **High Confidence Rule**: Corrects OCR artifacts only when the intended text is clear from the surrounding context; does not invent or assume legal text.
+- **Meaning Preservation Rule**: Never rewrites, paraphrases, modernizes, or improves clean contract text.
 
 **Output schema**:
 ```json
