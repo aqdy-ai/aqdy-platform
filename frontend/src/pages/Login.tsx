@@ -61,7 +61,7 @@ export default function Login() {
     return () => {
       document.body.removeChild(script)
     }
-  }, [])
+  })
 
   return (
     <div
