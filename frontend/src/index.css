@@ -73,6 +73,11 @@
 
   html {
     @apply font-sans;
+    overflow-x: hidden;
+  }
+
+  body {
+    overflow-x: hidden;
   }
 
   :root[dir='rtl'] {
