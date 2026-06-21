@@ -112,6 +112,36 @@ export const useAuth = () => {
     }
   }
 
+  const loginWithGoogle = async (idToken: string) => {
+    setIsLoading(true)
+    try {
+      const response = await authApi.loginWithGoogle(idToken)
+      const loggedInUser = response.data.data.user
+      setUser(loggedInUser)
+
+      localStorage.setItem('isLoggedIn', 'true')
+      toast.success(t('auth.loginSuccess'))
+      if (loggedInUser?.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
+    } catch (error: unknown) {
+      let errorMessage = t('auth.errors.generic')
+      if (axios.isAxiosError(error)) {
+        errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          errorMessage
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const register = async (userData: RegisterInput) => {
     setIsLoading(true)
     try {
@@ -160,12 +190,20 @@ export const useAuth = () => {
     setIsLoading(true)
     try {
       await authApi.forgotPassword(email)
-      // Always show generic success message to avoid enumeration
       toast.success(t('auth.forgotPasswordSuccess'))
     } catch (error: unknown) {
-      // Log error but still show generic message for security
       console.error('Forgot password error:', error)
-      toast.success(t('auth.forgotPasswordSuccess'))
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.status === 400 &&
+        error.response?.data?.error?.includes('OAuth account detected')
+      ) {
+        toast.error(t('auth.errors.oauthOnly'))
+        navigate('/login')
+      } else {
+        // Always show generic success message to avoid enumeration
+        toast.success(t('auth.forgotPasswordSuccess'))
+      }
     } finally {
       setIsLoading(false)
     }
@@ -213,6 +251,7 @@ export const useAuth = () => {
   return {
     login,
     register,
+    loginWithGoogle,
     forgotPassword,
     resetPassword,
     logout,

@@ -10,32 +10,19 @@ import {
 import { creditsService } from "../services/credits.service.js";
 import { subscriptionService } from "../services/subscription.service.js";
 
-const updateProfileSchema = z
-  .object({
-    name: z.string().min(3).max(100).optional(),
-    email: z.string().email().optional(),
-    password: z
-      .string()
-      .min(8)
-      .regex(
-        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-        "Password must include uppercase, lowercase, number, and special character",
-      )
-      .optional(),
-    currentPassword: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.password && !data.currentPassword) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Current password is required to change password",
-      path: ["currentPassword"],
-    },
-  );
+const updateProfileSchema = z.object({
+  name: z.string().min(3).max(100).optional(),
+  email: z.string().email().optional(),
+  password: z
+    .string()
+    .min(8)
+    .regex(
+      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      "Password must include uppercase, lowercase, number, and special character",
+    )
+    .optional(),
+  currentPassword: z.string().optional(),
+});
 
 const parseRequestBody = <T>(schema: z.ZodSchema<T>, body: unknown): T => {
   const result = schema.safeParse(body);
@@ -89,6 +76,7 @@ export const updateProfileHandler = async (
     if (!user) {
       throw new AppError(401, "Authentication required.");
     }
+    console.log(req.body);
 
     const body = parseRequestBody(updateProfileSchema, req.body);
     const updatedUser = await updateProfile(String(user._id), body);

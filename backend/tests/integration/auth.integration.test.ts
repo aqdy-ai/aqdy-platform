@@ -256,4 +256,124 @@ describe("Authentication routes", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.user.email).toBe("profile.user@example.com");
   });
+
+  describe("Google OAuth flow integration", () => {
+    test("POST /api/auth/google registers a new user if one doesn't exist", async () => {
+      const res = await request(app)
+        .post("/api/auth/google")
+        .send({ idToken: "mock-google-token-newuser" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.email).toBe("newuser@example.com");
+      expect(res.body.data.user.isEmailVerified).toBe(true);
+
+      const user = await User.findOne({ email: "newuser@example.com" }).select("+passwordHash");
+      expect(user).toBeTruthy();
+      expect(user?.googleId).toBe("mock-google-id-newuser");
+      expect(user?.passwordHash).toBeUndefined(); // Should have no password initially
+    });
+
+    test("POST /api/auth/google links account if email matches existing local user", async () => {
+      // 1. Create a user locally
+      await request(app).post("/api/auth/register").send({
+        name: "Existing Local",
+        email: "existinglocal@example.com",
+        password: "StrongPass123!",
+      });
+
+      // Manually set isEmailVerified to false for the test to verify Google login auto-verifies it
+      const createdUserBefore = await User.findOne({ email: "existinglocal@example.com" });
+      if (createdUserBefore) {
+        createdUserBefore.isEmailVerified = false;
+        await createdUserBefore.save();
+      }
+
+      // 2. Login via Google with same email
+      const res = await request(app)
+        .post("/api/auth/google")
+        .send({ idToken: "mock-google-token-existinglocal" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      // 3. Verify user has googleId linked and is email verified now
+      const user = await User.findOne({ email: "existinglocal@example.com" }).select("+passwordHash");
+      expect(user).toBeTruthy();
+      expect(user?.googleId).toBe("mock-google-id-existinglocal");
+      expect(user?.passwordHash).toBeDefined(); // Keep original password
+      expect(user?.isEmailVerified).toBe(true); // Should be auto-verified
+    });
+
+    test("OAuth-only user (registered via Google) can set a password later without currentPassword from their account settings", async () => {
+      // 1. Register via Google (no password)
+      const registerRes = await request(app)
+        .post("/api/auth/google")
+        .send({ idToken: "mock-google-token-setpass" });
+
+      const getCookieValue = (res: request.Response, name: string) => {
+        const setCookies = res.headers["set-cookie"] || [];
+        for (const c of setCookies) {
+          const match = c.match(new RegExp(`${name}=([^;]+)`));
+          if (match) return match[1];
+        }
+        return undefined;
+      };
+
+      const access = getCookieValue(registerRes as any, "accessToken");
+
+      // 2. Try to update profile with a new password, but no currentPassword
+      const updateRes = await request(app)
+        .patch("/api/account/profile")
+        .set("Cookie", `accessToken=${access}`)
+        .send({
+          name: "Mock Google User setpass",
+          email: "setpass@example.com",
+          password: "NewStrongPass123!"
+        });
+
+      // It should succeed since OAuth-only account has no current password
+      expect(updateRes.status).toBe(200);
+      expect(updateRes.body.success).toBe(true);
+
+      // Verify the user now has a passwordHash
+      const user = await User.findOne({ email: "setpass@example.com" }).select("+passwordHash");
+      expect(user).toBeTruthy();
+      expect(user?.passwordHash).toBeDefined();
+    });
+
+    test("POST /api/auth/google returns success and does not duplicate if logging in again", async () => {
+      // 1. Register via Google first time
+      await request(app)
+        .post("/api/auth/google")
+        .send({ idToken: "mock-google-token-repeated" });
+
+      // 2. Login via Google second time
+      const res = await request(app)
+        .post("/api/auth/google")
+        .send({ idToken: "mock-google-token-repeated" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      const count = await User.countDocuments({ email: "repeated@example.com" });
+      expect(count).toBe(1);
+    });
+
+    test("POST /api/auth/forgot-password rejects OAuth-only accounts with 400", async () => {
+      // 1. Register via Google (no password)
+      await request(app)
+        .post("/api/auth/google")
+        .send({ idToken: "mock-google-token-oauthonly" });
+
+      // 2. Request password reset
+      const res = await request(app)
+        .post("/api/auth/forgot-password")
+        .send({ email: "oauthonly@example.com" });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain("OAuth account detected");
+    });
+  });
 });

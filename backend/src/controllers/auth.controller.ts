@@ -9,6 +9,7 @@ import {
   registerUser,
   logoutUser,
   refreshTokens,
+  loginWithGoogle,
 } from "../services/auth.service.js";
 import { AuthenticatedRequest } from "../types/auth.js";
 import { emailService } from "../services/email.service.js";
@@ -119,6 +120,53 @@ export const login = async (
   }
 };
 
+export const googleLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken || typeof idToken !== "string") {
+      throw new AppError(400, "Google ID token is required.");
+    }
+
+    const { user, token, refreshToken } = await loginWithGoogle(idToken);
+
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: String(user._id),
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
+        },
+        token,
+      },
+      message: "Login successful.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const logout = async (
   req: Request,
   res: Response,
@@ -192,6 +240,11 @@ export const me = async (
       throw new AppError(401, "Authentication required.");
     }
 
+    const userWithPasswordInfo = await User.findById(user._id).select(
+      "+passwordHash",
+    );
+    const hasPassword = !!userWithPasswordInfo?.passwordHash;
+
     const response: ApiResponse<{
       user: {
         id: string;
@@ -200,6 +253,7 @@ export const me = async (
         role: string;
         plan: string;
         isEmailVerified: boolean;
+        hasPassword: boolean;
       };
     }> = {
       success: true,
@@ -211,6 +265,7 @@ export const me = async (
           role: user.role,
           plan: user.plan,
           isEmailVerified: user.isEmailVerified,
+          hasPassword,
         },
       },
       message: "Authenticated user information.",
@@ -328,8 +383,16 @@ export const forgotPassword = async (
     });
     const { email } = schema.parse(req.body);
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+    }).select("+passwordHash");
     if (user) {
+      if (user.googleId && !user.passwordHash) {
+        throw new AppError(
+          400,
+          "OAuth account detected. Please login using Google and set a password from your Account Settings.",
+        );
+      }
       const token = crypto.randomBytes(32).toString("hex");
       user.passwordResetToken = token;
       user.passwordResetExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour

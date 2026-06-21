@@ -4,6 +4,7 @@ export interface AccountProfile {
   email: string
   status: 'active' | 'pending' | 'suspended' | string
   memberSince: string
+  hasPassword?: boolean
 }
 
 export interface SubscriptionInfo {
@@ -19,7 +20,7 @@ export interface UpdateProfilePayload {
   name: string
   email: string
   currentPassword?: string
-  newPassword?: string
+  password?: string
 }
 export interface SubscriptionPlan {
   _id: string

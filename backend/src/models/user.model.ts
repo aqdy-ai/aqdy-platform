@@ -40,7 +40,8 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  passwordHash: string;
+  passwordHash?: string;
+  googleId?: string;
   role: UserRole;
   plan: string;
   planSlug: string;
@@ -70,7 +71,8 @@ const UserSchema = new Schema<IUser>(
       lowercase: true,
       index: true,
     },
-    passwordHash: { type: String, required: true, select: false },
+    passwordHash: { type: String, select: false },
+    googleId: { type: String, unique: true, sparse: true, index: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     plan: { type: String, required: true, default: "free" },
     passwordResetToken: { type: String },
@@ -150,6 +152,9 @@ UserSchema.pre<IUser>("validate", async function () {
 });
 
 UserSchema.methods.verifyPassword = async function (password: string) {
+  if (!this.passwordHash) {
+    return false;
+  }
   return bcrypt.compare(password, this.passwordHash);
 };
 

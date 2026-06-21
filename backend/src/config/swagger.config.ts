@@ -80,6 +80,18 @@ const options: swaggerJsdoc.Options = {
             password: { type: "string", example: "StrongPass123!" },
           },
         },
+        GoogleLoginRequest: {
+          type: "object",
+          required: ["idToken"],
+          properties: {
+            idToken: {
+              type: "string",
+              description:
+                "The Google ID Token received after front-end authentication.",
+              example: "eyJhbGciOiJSUzI1NiIsImtpZCI6...",
+            },
+          },
+        },
         RefreshRequest: {
           type: "object",
           description:
@@ -101,6 +113,7 @@ const options: swaggerJsdoc.Options = {
                     name: { type: "string" },
                     role: { type: "string" },
                     plan: { type: "string" },
+                    hasPassword: { type: "boolean" },
                   },
                 },
               },
@@ -123,6 +136,7 @@ const options: swaggerJsdoc.Options = {
                     name: { type: "string" },
                     role: { type: "string" },
                     plan: { type: "string" },
+                    hasPassword: { type: "boolean" },
                   },
                 },
               },
@@ -142,6 +156,7 @@ const options: swaggerJsdoc.Options = {
                 plan: { type: "string" },
                 memberSince: { type: "string", format: "date-time" },
                 lastLogin: { type: "string", format: "date-time" },
+                hasPassword: { type: "boolean" },
               },
             },
             message: { type: "string" },
@@ -809,6 +824,55 @@ const options: swaggerJsdoc.Options = {
             },
             401: {
               description: "Invalid credentials",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/auth/google": {
+        post: {
+          tags: ["Authentication"],
+          summary: "Log in or register using Google account",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/GoogleLoginRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description:
+                "Authentication successful. Access and refresh tokens are set in httpOnly cookies.",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/AuthResponse" },
+                },
+              },
+            },
+            400: {
+              description: "Google ID token is required or invalid.",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Google authentication failed.",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/ErrorResponse" },

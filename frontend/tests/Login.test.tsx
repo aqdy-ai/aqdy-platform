@@ -22,7 +22,7 @@ vi.mock('react-i18next', () => ({
 
 const { default: Login } = await import('../src/pages/Login')
 const { useAuth } = await import('../src/hooks/useAuth')
-
+const mockLoginWithGoogle = vi.fn()
 describe('Login Page', () => {
   const mockLogin = vi.fn()
   const mockForgotPassword = vi.fn()
@@ -45,6 +45,17 @@ describe('Login Page', () => {
     //   success: true,
     //   data: {},
     // } as any)
+    vi.mocked(useAuth).mockReturnValue({
+      login: mockLogin,
+      loginWithGoogle: mockLoginWithGoogle,
+      forgotPassword: mockForgotPassword,
+      isLoading: false,
+      register: vi.fn(),
+      logout: vi.fn(),
+      isAuthenticated: false,
+      user: null,
+      isInitialLoading: false,
+    })
   })
 
   const renderComponent = () =>
@@ -115,4 +126,98 @@ describe('Login Page', () => {
     })
     expect(forgotBtn).toHaveAttribute('href', '/forgot-password')
   })
+
+  it('should render Google sign in container', () => {
+    renderComponent()
+
+    expect(
+      document.getElementById('google-signin-btn')
+    ).toBeInTheDocument()
+  })
+
+  it('should append Google script', () => {
+    renderComponent()
+
+    const script = document.querySelector(
+      'script[src="https://accounts.google.com/gsi/client"]'
+    )
+
+    expect(script).toBeInTheDocument()
+  })
+
+  it('should remove Google script on unmount', () => {
+    const { unmount } = renderComponent()
+
+    expect(
+      document.querySelector(
+        'script[src="https://accounts.google.com/gsi/client"]'
+      )
+    ).toBeInTheDocument()
+
+    unmount()
+
+    expect(
+      document.querySelector(
+        'script[src="https://accounts.google.com/gsi/client"]'
+      )
+    ).not.toBeInTheDocument()
+  })
+
+  it('should initialize Google sign in', () => {
+    const initialize = vi.fn()
+    const renderButton = vi.fn()
+
+    ;(window as any).google = {
+      accounts: {
+        id: {
+          initialize,
+          renderButton,
+        },
+      },
+    }
+
+    renderComponent()
+
+    const script = document.querySelector(
+      'script[src="https://accounts.google.com/gsi/client"]'
+    ) as HTMLScriptElement
+
+    script.onload?.(new Event('load'))
+
+    expect(initialize).toHaveBeenCalled()
+    expect(renderButton).toHaveBeenCalled()
+  })
+
+  it('should call loginWithGoogle when credential response is received', async () => {
+    let callback: any
+
+    ;(window as any).google = {
+      accounts: {
+        id: {
+          initialize: vi.fn((options) => {
+            callback = options.callback
+          }),
+          renderButton: vi.fn(),
+        },
+      },
+    }
+
+    renderComponent()
+
+    const script = document.querySelector(
+      'script[src="https://accounts.google.com/gsi/client"]'
+    ) as HTMLScriptElement
+
+    script.onload?.(new Event('load'))
+
+    await callback({
+      credential: 'google-token',
+    })
+
+    expect(mockLoginWithGoogle).toHaveBeenCalledWith(
+      'google-token'
+    )
+  })
+
+  
 })
