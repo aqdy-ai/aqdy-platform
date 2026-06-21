@@ -42,8 +42,8 @@ const Navbar = () => {
   }, [])
 
   return (
-    <nav className="border-border/40 bg-background/70 sticky top-0 z-[60] border-b backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+    <nav className="border-border/40 bg-background/70 sticky top-0 z-[60] overflow-x-clip border-b backdrop-blur-xl">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:h-20 sm:px-6">
         {/* قسم اللوجو والهوية البراندية */}
         <Link
           to="/"
@@ -55,23 +55,23 @@ const Navbar = () => {
             <img
               src="/AqdyLogo.png"
               alt="Aqdy Logo"
-              className="relative ms-[-12px] h-14 w-auto object-contain transition-transform duration-500 group-hover:rotate-3"
+              className="relative ms-[-8px] h-9 w-auto object-contain transition-transform duration-500 group-hover:rotate-3 sm:ms-[-12px] sm:h-14"
             />
           </div>
 
           <div className="flex flex-col">
-            <span className="text-primary text-3xl font-black tracking-tighter">
+            <span className="text-primary text-xl font-black tracking-tighter sm:text-3xl">
               {t('common.brand_name')}
             </span>
 
-            <span className="text-muted-foreground/60 group-hover:text-primary -mt-1 text-[10px] font-bold tracking-widest uppercase transition-colors">
+            <span className="text-muted-foreground/60 group-hover:text-primary -mt-1 hidden text-[10px] font-bold tracking-widest uppercase transition-colors sm:block">
               {t('common.tagline')}
             </span>
           </div>
         </Link>
 
         {/* قسم الروابط والأزرار التفاعلية */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 sm:gap-6">
           {/* روابط التنقل الأساسية */}
           <div className="text-muted-foreground hidden items-center gap-8 text-sm font-bold md:flex">
             <Link
@@ -108,15 +108,19 @@ const Navbar = () => {
           </div>
 
           {/* الخط الفاصل الجمالي */}
-          <div className="bg-border/60 mx-2 hidden h-6 w-[1px] md:block" />
+          <div className="bg-border/60 mx-1 hidden h-6 w-[1px] md:block" />
 
-          <div className="flex items-center gap-3">
-            {isAuthenticated && <CreditsBadge variant="compact" />}
+          <div className="flex items-center gap-1 sm:gap-3">
+            {isAuthenticated && (
+              <span className="hidden sm:block">
+                <CreditsBadge variant="compact" />
+              </span>
+            )}
 
             <button
               onClick={toggleTheme}
               aria-label={t('common.toggle_theme')}
-              className="bg-card/30 border-border/50 hover:bg-muted text-foreground/80 hover:text-primary focus-visible:ring-primary rounded-xl border p-3 transition-all focus-visible:ring-2 active:scale-90"
+              className="bg-card/30 border-border/50 hover:bg-muted text-foreground/80 hover:text-primary focus-visible:ring-primary rounded-xl border p-2 transition-all focus-visible:ring-2 active:scale-90 sm:p-3"
             >
               {theme === 'light' ? (
                 <Moon size={18} strokeWidth={2.5} aria-hidden="true" />
@@ -136,7 +140,7 @@ const Navbar = () => {
                   aria-expanded={dropdownOpen}
                   aria-haspopup="true"
                   aria-label={t('nav.settings') || 'User settings'}
-                  className="bg-card/30 border-border/50 hover:bg-muted text-foreground/80 hover:text-primary focus-visible:ring-primary flex items-center justify-center rounded-xl border p-3 transition-all focus-visible:ring-2 active:scale-90"
+                  className="bg-card/30 border-border/50 hover:bg-muted text-foreground/80 hover:text-primary focus-visible:ring-primary flex items-center justify-center rounded-xl border p-2 transition-all focus-visible:ring-2 active:scale-90 sm:p-3"
                   id="user-menu-button"
                 >
                   <User size={18} strokeWidth={2.5} aria-hidden="true" />
@@ -149,7 +153,7 @@ const Navbar = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className={`border-border/50 bg-card/95 absolute z-[70] mt-2 w-48 rounded-2xl border shadow-xl backdrop-blur-md focus:outline-none ${
+                      className={`border-border/50 bg-card/95 absolute z-[70] mt-2 w-48 max-w-[calc(100vw-1.5rem)] rounded-2xl border shadow-xl backdrop-blur-md focus:outline-none ${
                         isRtl ? 'left-0' : 'right-0'
                       }`}
                       role="menu"
