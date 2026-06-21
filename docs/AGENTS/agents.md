@@ -33,6 +33,8 @@ graph TD
   - Smart chunk merging to avoid clause splitting across boundaries.
   - Arabic text normalization (removing diacritics, unified alefs) and numeral conversion.
   - Fail-safe clause repair algorithm for raw model outputs.
+  - **OCR Resilience**: Context-aware detection and correction of OCR artifacts (scattered letters, split words, line-break merges, garbled characters) under a strict confidence threshold.
+  - **Meaning Preservation**: Strict requirement to preserve clean, correctly formatted clauses exactly as written without alterations or "improvements".
 
 ### 2. RiskClassifierAgent (`backend/src/agents/riskClassifier.agent.ts`)
 - **Responsibility**: Classifies the risk level of individual clauses (low, medium, high, critical) and provides a bilingual justification.
