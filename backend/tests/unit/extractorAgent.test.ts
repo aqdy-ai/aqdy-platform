@@ -349,4 +349,91 @@ describe("ExtractorAgent", () => {
       }
     });
   });
+
+  // ────────────────────────────────────────────────
+  // OCR Artifacts & Meaning Preservation
+  // ────────────────────────────────────────────────
+
+  describe("extract() — OCR Artifacts & Meaning Preservation", () => {
+    test("should contain OCR handling instructions in the system prompt", async () => {
+      const { EXTRACTOR_SYSTEM_PROMPT } = await import("../../src/agents/extractor.prompts.js");
+      expect(EXTRACTOR_SYSTEM_PROMPT).toContain("OCR Artifact Handling");
+      expect(EXTRACTOR_SYSTEM_PROMPT).toContain("HIGH CONFIDENCE RULE");
+      expect(EXTRACTOR_SYSTEM_PROMPT).toContain("MEANING PRESERVATION RULE");
+    });
+
+    test("should mock processing of English OCR-damaged contract text", async () => {
+      const ocrDamagedText = "T h e   E m p l o y e e shall be subject to a pro-bation period of three (3) months.";
+      const cleanedClauses = [
+        {
+          clauseNumber: 1,
+          clauseText: "The Employee shall be subject to a probation period of three (3) months.",
+          clauseType: "probation",
+        },
+      ];
+
+      mockInvoke.mockResolvedValueOnce({
+        content: makeLLMResponse(cleanedClauses),
+      });
+
+      const result = await agent.extract(ocrDamagedText, "en");
+      expect(result.clauses[0].clauseText).toBe("The Employee shall be subject to a probation period of three (3) months.");
+      expect(result.clauses[0].clauseType).toBe("probation");
+    });
+
+    test("should mock processing of Arabic OCR-damaged contract text", async () => {
+      const ocrDamagedText = "يخـ ضع ال موظف لفترة اخـ تبار مدتها ثلاثة أشهر من تاريـ خ مباشرة العمل.";
+      const cleanedClauses = [
+        {
+          clauseNumber: 1,
+          clauseText: "يخضع الموظف لفترة اختبار مدتها ثلاثة أشهر من تاريخ مباشرة العمل.",
+          clauseType: "probation",
+        },
+      ];
+
+      mockInvoke.mockResolvedValueOnce({
+        content: makeLLMResponse(cleanedClauses),
+      });
+
+      const result = await agent.extract(ocrDamagedText, "ar");
+      expect(result.clauses[0].clauseText).toBe("يخضع الموظف لفترة اختبار مدتها ثلاثة أشهر من تاريخ مباشرة العمل.");
+    });
+
+    test("should mock processing of Mixed Arabic/English OCR-damaged contract text", async () => {
+      const ocrDamagedText = "Article 1: P r e m i s e s / العين المؤجـ رة\nThe Landlord leases to the T e n a n t...";
+      const cleanedClauses = [
+        {
+          clauseNumber: 1,
+          clauseText: "The Landlord leases to the Tenant...",
+          clauseType: "other",
+        },
+      ];
+
+      mockInvoke.mockResolvedValueOnce({
+        content: makeLLMResponse(cleanedClauses),
+      });
+
+      const result = await agent.extract(ocrDamagedText, "ar");
+      expect(result.clauses[0].clauseText).toBe("The Landlord leases to the Tenant...");
+    });
+
+    test("should mock preservation of clean contract text exactly without improvements", async () => {
+      const cleanText = "The Employer shall pay the Employee a monthly salary of EGP 25,000.";
+      const preservedClauses = [
+        {
+          clauseNumber: 1,
+          clauseText: "The Employer shall pay the Employee a monthly salary of EGP 25,000.",
+          clauseType: "payment",
+        },
+      ];
+
+      mockInvoke.mockResolvedValueOnce({
+        content: makeLLMResponse(preservedClauses),
+      });
+
+      const result = await agent.extract(cleanText, "en");
+      expect(result.clauses[0].clauseText).toBe("The Employer shall pay the Employee a monthly salary of EGP 25,000.");
+    });
+  });
 });
+
