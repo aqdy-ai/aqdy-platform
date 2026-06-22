@@ -24,9 +24,8 @@ jest.unstable_mockModule("@pinecone-database/pinecone", () => {
 });
 
 // Import AFTER mocking
-const { RiskClassifierAgent } = await import(
-  "../../src/agents/riskClassifier.agent.js"
-);
+const { RiskClassifierAgent } =
+  await import("../../src/agents/riskClassifier.agent.js");
 
 jest.setTimeout(30000);
 
@@ -212,6 +211,8 @@ describe("RiskClassifierAgent — Integration Tests for Accuracy", () => {
 
   test("should handle invalid JSON response from LLM gracefully", async () => {
     mockInvoke.mockResolvedValueOnce({ content: "invalid json" });
-    await expect(agent.classify("some text", "some-type", "en")).rejects.toThrow("Failed to parse JSON from LLM response");
+    await expect(
+      agent.classify("some text", "some-type", "en"),
+    ).rejects.toThrow("Failed to parse JSON from LLM response");
   });
 });

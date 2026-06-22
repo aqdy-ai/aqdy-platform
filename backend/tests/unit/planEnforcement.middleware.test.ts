@@ -1,22 +1,21 @@
-import { describe, test, expect, jest } from '@jest/globals';
-import mongoose from 'mongoose';
+import { describe, test, expect, jest } from "@jest/globals";
+import mongoose from "mongoose";
 
 const validUserId = new mongoose.Types.ObjectId().toString();
 
 const mockFindOneSubscription = jest.fn();
 const mockCountDocumentsContract = jest.fn();
 
-jest.unstable_mockModule('../../src/models/subscription.model.js', () => ({
+jest.unstable_mockModule("../../src/models/subscription.model.js", () => ({
   Subscription: { findOne: mockFindOneSubscription },
 }));
 
-jest.unstable_mockModule('../../src/models/contract.model.js', () => ({
+jest.unstable_mockModule("../../src/models/contract.model.js", () => ({
   Contract: { countDocuments: mockCountDocumentsContract },
 }));
 
-const { enforceStorageLimit } = await import(
-  '../../src/middlewares/planEnforcement.middleware.js'
-);
+const { enforceStorageLimit } =
+  await import("../../src/middlewares/planEnforcement.middleware.js");
 
 // Helper: make a mock request and response
 const mockReq = (userId: string) =>
@@ -40,10 +39,10 @@ const mockNext = jest.fn();
 // handled by credits — see creditsEnforcement.middleware.test.ts.
 // ──────────────────────────────────────────────────────────────────────────
 
-describe('enforceStorageLimit - Edge Cases', () => {
+describe("enforceStorageLimit - Edge Cases", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test('should allow upload if under storage limit', async () => {
+  test("should allow upload if under storage limit", async () => {
     mockFindOneSubscription.mockReturnValue({
       populate: jest.fn().mockResolvedValue(null),
     });
@@ -56,7 +55,7 @@ describe('enforceStorageLimit - Edge Cases', () => {
     expect(mockNext).toHaveBeenCalled();
   });
 
-  test('should block upload if storage limit reached', async () => {
+  test("should block upload if storage limit reached", async () => {
     mockFindOneSubscription.mockReturnValue({
       populate: jest.fn().mockResolvedValue(null),
     });
@@ -71,19 +70,19 @@ describe('enforceStorageLimit - Edge Cases', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        error: 'Storage limit reached',
+        error: "Storage limit reached",
       }),
     );
     expect(mockNext).not.toHaveBeenCalled();
   });
 
-  test('should allow unlimited storage (-1)', async () => {
+  test("should allow unlimited storage (-1)", async () => {
     mockFindOneSubscription.mockReturnValue({
       populate: jest.fn().mockResolvedValue({
-        status: 'active',
+        status: "active",
         endDate: new Date(Date.now() + 100000),
         startDate: new Date(),
-        planId: { analysisLimit: -1, storageLimit: -1, name: 'Enterprise' },
+        planId: { analysisLimit: -1, storageLimit: -1, name: "Enterprise" },
       }),
     });
 
@@ -94,7 +93,7 @@ describe('enforceStorageLimit - Edge Cases', () => {
     expect(mockNext).toHaveBeenCalled();
   });
 
-  test('should call next if no userId', async () => {
+  test("should call next if no userId", async () => {
     const req = { user: null, body: {}, headers: {} } as any;
     const res = mockRes();
 
@@ -102,13 +101,13 @@ describe('enforceStorageLimit - Edge Cases', () => {
     expect(mockNext).toHaveBeenCalled();
   });
 
-  test('should treat expired subscription as Free tier defaults', async () => {
+  test("should treat expired subscription as Free tier defaults", async () => {
     mockFindOneSubscription.mockReturnValue({
       populate: jest.fn().mockResolvedValue({
-        status: 'active',
+        status: "active",
         endDate: new Date(Date.now() - 100000), // expired
         startDate: new Date(),
-        planId: { storageLimit: 100, name: 'Pro' },
+        planId: { storageLimit: 100, name: "Pro" },
       }),
     });
     mockCountDocumentsContract.mockResolvedValue(3); // under free default of 10
@@ -120,7 +119,7 @@ describe('enforceStorageLimit - Edge Cases', () => {
     expect(mockNext).toHaveBeenCalled();
   });
 
-  test('should include upgradeUrl in 403 response', async () => {
+  test("should include upgradeUrl in 403 response", async () => {
     mockFindOneSubscription.mockReturnValue({
       populate: jest.fn().mockResolvedValue(null),
     });
@@ -134,7 +133,7 @@ describe('enforceStorageLimit - Edge Cases', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         details: expect.objectContaining({
-          upgradeUrl: expect.stringContaining('pricing'),
+          upgradeUrl: expect.stringContaining("pricing"),
         }),
       }),
     );

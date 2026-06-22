@@ -32,9 +32,8 @@ jest.unstable_mockModule("../../src/config/langfuse.config.js", () => ({
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-const { OrchestratorService } = await import(
-  "../../src/pipeline/orchestrator.service.js"
-);
+const { OrchestratorService } =
+  await import("../../src/pipeline/orchestrator.service.js");
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
@@ -57,8 +56,16 @@ describe("OrchestratorService", () => {
     // 1. Mock Extractor returning 2 clauses
     mockExtract.mockResolvedValue({
       clauses: [
-        { clauseNumber: 1, clauseText: "Low risk clause text", clauseType: "general" },
-        { clauseNumber: 2, clauseText: "Risky clause text", clauseType: "liability" },
+        {
+          clauseNumber: 1,
+          clauseText: "Low risk clause text",
+          clauseType: "general",
+        },
+        {
+          clauseNumber: 2,
+          clauseText: "Risky clause text",
+          clauseType: "liability",
+        },
       ],
       language: "en",
       modelUsed: "gemini-3.5-flash",
@@ -90,7 +97,12 @@ describe("OrchestratorService", () => {
       confidence: 0.88,
     });
 
-    const result = await orchestrator.run("contract_123", "user_123", "Contract Text", "en");
+    const result = await orchestrator.run(
+      "contract_123",
+      "user_123",
+      "Contract Text",
+      "en",
+    );
 
     // 4. Assertions
     expect(mockExtract).toHaveBeenCalledTimes(1);
@@ -112,7 +124,9 @@ describe("OrchestratorService", () => {
     expect(result.clauseAnalysis[0].riskLevel).toBe("low");
     expect(result.clauseAnalysis[0].redlineSuggestion).toBeUndefined();
     expect(result.clauseAnalysis[1].riskLevel).toBe("high");
-    expect(result.clauseAnalysis[1].redlineSuggestion).toBe("Capped liability text");
+    expect(result.clauseAnalysis[1].redlineSuggestion).toBe(
+      "Capped liability text",
+    );
   });
 
   test("should isolate classifier failure and continue processing other clauses", async () => {
@@ -145,7 +159,12 @@ describe("OrchestratorService", () => {
       confidence: 0.9,
     });
 
-    const result = await orchestrator.run("contract_123", "user_123", "Contract Text", "en");
+    const result = await orchestrator.run(
+      "contract_123",
+      "user_123",
+      "Contract Text",
+      "en",
+    );
 
     expect(mockClassify).toHaveBeenCalledTimes(2);
     expect(mockGenerateRedline).toHaveBeenCalledTimes(1); // Called for Clause 2 (medium risk)
@@ -161,7 +180,9 @@ describe("OrchestratorService", () => {
 
   test("should isolate redliner failure and preserve classification for that clause", async () => {
     mockExtract.mockResolvedValue({
-      clauses: [{ clauseNumber: 1, clauseText: "Clause 1", clauseType: "liability" }],
+      clauses: [
+        { clauseNumber: 1, clauseText: "Clause 1", clauseType: "liability" },
+      ],
       language: "en",
       modelUsed: "gemini-3.5-flash",
       usedFallback: false,
@@ -179,7 +200,12 @@ describe("OrchestratorService", () => {
     // Redliner fails
     mockGenerateRedline.mockRejectedValueOnce(new Error("Redliner crashed!"));
 
-    const result = await orchestrator.run("contract_123", "user_123", "Contract Text", "en");
+    const result = await orchestrator.run(
+      "contract_123",
+      "user_123",
+      "Contract Text",
+      "en",
+    );
 
     expect(result.clauseAnalysis).toHaveLength(1);
     expect(result.clauseAnalysis[0].riskLevel).toBe("critical");
@@ -189,7 +215,13 @@ describe("OrchestratorService", () => {
 
   test("should pass RAG safer alternative to Redliner if available", async () => {
     mockExtract.mockResolvedValue({
-      clauses: [{ clauseNumber: 1, clauseText: "Risky clause", clauseType: "liability" }],
+      clauses: [
+        {
+          clauseNumber: 1,
+          clauseText: "Risky clause",
+          clauseType: "liability",
+        },
+      ],
       language: "en",
       modelUsed: "gemini-3.5-flash",
       usedFallback: false,
@@ -245,7 +277,7 @@ describe("OrchestratorService", () => {
     mockExtract.mockRejectedValue(new Error("Extractor crashed completely!"));
 
     await expect(
-      orchestrator.run("contract_123", "user_123", "Contract Text", "en")
+      orchestrator.run("contract_123", "user_123", "Contract Text", "en"),
     ).rejects.toThrow("Extractor crashed completely!");
 
     expect(mockClassify).not.toHaveBeenCalled();

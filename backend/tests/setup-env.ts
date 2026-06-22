@@ -5,10 +5,7 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 // Retry creating the in-memory MongoDB server to avoid flakey startup timeouts
 const MONGO_STARTUP_ATTEMPTS = 5;
 const MONGO_RETRY_DELAY_MS = 5000;
-const downloadDir = path.join(
-  os.tmpdir(),
-  "mongodb-binaries-common",
-);
+const downloadDir = path.join(os.tmpdir(), "mongodb-binaries-common");
 
 let mongoServer: MongoMemoryServer | undefined;
 for (let attempt = 1; attempt <= MONGO_STARTUP_ATTEMPTS; attempt++) {

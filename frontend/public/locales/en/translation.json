@@ -387,6 +387,7 @@
   },
   "admin": {
     "dashboard_title": "Admin Dashboard",
+    "evaluations_title": "Evaluations",
     "accounts_title": "User Accounts Management",
     "total_users": "Total Users",
     "active_subscriptions": "Active Subscriptions",
@@ -475,5 +476,25 @@
     "preview_clauses_count": "Clauses analyzed: {{count}}",
     "preview_risky_clauses": "High risk clauses: {{count}}",
     "version": "Version"
+  },
+  "evaluations": {
+    "title": "LLM-as-a-Judge Evaluation Dashboard",
+    "faithfulness": "Faithfulness",
+    "relevancy": "Relevancy",
+    "precision": "Precision",
+    "recall": "Recall",
+    "daily_trends": "Daily Score Trends",
+    "low_scores": "Low-Score Analyses",
+    "analysis_id": "Analysis ID",
+    "lowest_metric": "Lowest Metric",
+    "score": "Score",
+    "reasoning": "Reasoning",
+    "action": "Action",
+    "view": "View",
+    "no_evaluations": "No evaluations yet. Evaluations are generated automatically after analysis completes.",
+    "error_stats": "Failed to load evaluation stats",
+    "error_low": "Failed to load low-score evaluations",
+    "error_generic": "Error loading evaluations",
+    "inspect": "Inspect analysis {{id}}"
   }
 }

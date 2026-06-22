@@ -6,6 +6,7 @@ import {
   Users,
   FileText,
   CreditCard,
+  BarChart3,
   LogOut,
   User,
   Sun,
@@ -66,6 +67,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: '/admin/payments',
       label: t('billing.payment_history'),
       icon: CreditCard,
+    },
+    {
+      path: '/admin/evaluations',
+      label: t('admin.evaluations_title'),
+      icon: BarChart3,
     },
   ]
 

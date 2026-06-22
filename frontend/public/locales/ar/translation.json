@@ -392,6 +392,7 @@
   },
   "admin": {
     "dashboard_title": "لوحة تحكم المسؤول",
+    "evaluations_title": "التقييمات",
     "accounts_title": "إدارة حسابات المستخدمين",
     "total_users": "إجمالي المستخدمين",
     "active_subscriptions": "الاشتراكات النشطة",
@@ -480,5 +481,25 @@
     "preview_clauses_count": "البنود المكتشفة: {{count}}",
     "preview_risky_clauses": "البنود عالية المخاطر: {{count}}",
     "version": "الإصدار"
+  },
+  "evaluations": {
+    "title": "لوحة تحكم تقييم LLM كحكم",
+    "faithfulness": "الدقة",
+    "relevancy": "الملاءمة",
+    "precision": "الدقة السياقية",
+    "recall": "الاستدعاء",
+    "daily_trends": "اتجاهات النتائج اليومية",
+    "low_scores": "التحليلات منخفضة النتائج",
+    "analysis_id": "معرف التحليل",
+    "lowest_metric": "أدنى مقياس",
+    "score": "النتيجة",
+    "reasoning": "التبرير",
+    "action": "إجراء",
+    "view": "عرض",
+    "no_evaluations": "لا توجد تقييمات بعد. يتم إنشاء التقييمات تلقائياً بعد اكتمال التحليل.",
+    "error_stats": "فشل تحميل إحصائيات التقييم",
+    "error_low": "فشل تحميل التقييمات منخفضة النتائج",
+    "error_generic": "خطأ في تحميل التقييمات",
+    "inspect": "فحص التحليل {{id}}"
   }
 }

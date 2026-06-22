@@ -1,4 +1,11 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from "@jest/globals";
 import mongoose from "mongoose";
 import request from "supertest";
 import express from "express";
@@ -28,7 +35,8 @@ testApp.use((req: any, res, next) => {
 testApp.use("/api/admin/audit-logs", auditLogsRouter);
 
 beforeAll(async () => {
-  const mongoURI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aqdy-audit-test";
+  const mongoURI =
+    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aqdy-audit-test";
   // Safe connection setup
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(mongoURI);
@@ -120,7 +128,11 @@ describe("Test Group 2 — logAuth", () => {
 
   test("loginFailed saves outcome: 'failure', correct email and failReason in metadata", async () => {
     const req = { headers: {} };
-    const log = await auditService.logAuth.loginFailed(req, "failed@test.com", "wrong_password");
+    const log = await auditService.logAuth.loginFailed(
+      req,
+      "failed@test.com",
+      "wrong_password",
+    );
     expect(log).toBeDefined();
     expect(log!.action).toBe("AUTH_LOGIN_FAILED");
     expect(log!.outcome).toBe("failure");
@@ -151,11 +163,21 @@ describe("Test Group 2 — logAuth", () => {
 describe("Test Group 3 — logContract", () => {
   test("upload saves CONTRACT_UPLOAD with correct fileName, fileSizeBytes, contractId in metadata", async () => {
     const req = { headers: {} };
-    const file = { originalname: "contract.pdf", size: 5000, mimetype: "application/pdf" };
+    const file = {
+      originalname: "contract.pdf",
+      size: 5000,
+      mimetype: "application/pdf",
+    };
     const contractId = new mongoose.Types.ObjectId();
     const contract = { _id: contractId };
 
-    const log = await auditService.logContract.upload(req, file, contract, "en", "success");
+    const log = await auditService.logContract.upload(
+      req,
+      file,
+      contract,
+      "en",
+      "success",
+    );
     expect(log).toBeDefined();
     expect(log!.action).toBe("CONTRACT_UPLOAD");
     expect(log!.metadata!.fileName).toBe("contract.pdf");
@@ -166,7 +188,14 @@ describe("Test Group 3 — logContract", () => {
   test("upload with outcome: 'failure' saves failure outcome and errorMessage", async () => {
     const req = { headers: {} };
     const error = new Error("S3 Upload Failed");
-    const log = await auditService.logContract.upload(req, null, null, "en", "failure", error);
+    const log = await auditService.logContract.upload(
+      req,
+      null,
+      null,
+      "en",
+      "failure",
+      error,
+    );
     expect(log).toBeDefined();
     expect(log!.outcome).toBe("failure");
     expect(log!.errorMessage).toBe("S3 Upload Failed");
@@ -174,7 +203,11 @@ describe("Test Group 3 — logContract", () => {
 
   test("delete saves CONTRACT_DELETE with contractId", async () => {
     const req = { headers: {} };
-    const log = await auditService.logContract.delete(req, "contract_123", "success");
+    const log = await auditService.logContract.delete(
+      req,
+      "contract_123",
+      "success",
+    );
     expect(log).toBeDefined();
     expect(log!.action).toBe("CONTRACT_DELETE");
     expect(log!.metadata!.contractId).toBe("contract_123");
@@ -185,15 +218,27 @@ describe("Test Group 3 — logContract", () => {
 describe("Test Group 4 — logAgent", () => {
   test("run with agentName variations saves the correct action", async () => {
     const req = { headers: {} };
-    const dataExtractor = { agentName: "extractor", contractId: "123", durationMs: 100 };
+    const dataExtractor = {
+      agentName: "extractor",
+      contractId: "123",
+      durationMs: 100,
+    };
     const logExtractor = await auditService.logAgent.run(req, dataExtractor);
     expect(logExtractor!.action).toBe("AGENT_EXTRACTOR");
 
-    const dataClassifier = { agentName: "risk_classifier", contractId: "123", durationMs: 200 };
+    const dataClassifier = {
+      agentName: "risk_classifier",
+      contractId: "123",
+      durationMs: 200,
+    };
     const logClassifier = await auditService.logAgent.run(req, dataClassifier);
     expect(logClassifier!.action).toBe("AGENT_RISK_CLASSIFIER");
 
-    const dataRedline = { agentName: "redline", contractId: "123", durationMs: 300 };
+    const dataRedline = {
+      agentName: "redline",
+      contractId: "123",
+      durationMs: 300,
+    };
     const logRedline = await auditService.logAgent.run(req, dataRedline);
     expect(logRedline!.action).toBe("AGENT_REDLINE");
   });
@@ -210,7 +255,11 @@ describe("Test Group 4 — logAgent", () => {
     };
     const log = await auditService.logAgent.run(req, data);
     expect(log!.metadata!.durationMs).toBe(150);
-    expect(log!.metadata!.tokensUsed).toEqual({ prompt: 10, completion: 20, total: 30 });
+    expect(log!.metadata!.tokensUsed).toEqual({
+      prompt: 10,
+      completion: 20,
+      total: 30,
+    });
     expect(log!.metadata!.model).toBe("gpt-4");
   });
 
@@ -265,13 +314,31 @@ describe("Test Group 5 — logKB", () => {
 
 // --- Test Group 6 — Admin Route GET / ---
 describe("Test Group 6 — Admin Route GET /", () => {
-  const adminUser = { _id: new mongoose.Types.ObjectId().toString(), role: "admin", email: "admin@test.com" };
-  const regularUser = { _id: new mongoose.Types.ObjectId().toString(), role: "user", email: "user@test.com" };
+  const adminUser = {
+    _id: new mongoose.Types.ObjectId().toString(),
+    role: "admin",
+    email: "admin@test.com",
+  };
+  const regularUser = {
+    _id: new mongoose.Types.ObjectId().toString(),
+    role: "user",
+    email: "user@test.com",
+  };
 
   beforeEach(async () => {
     await AuditLog.create([
-      { action: "AUTH_LOGIN_SUCCESS", outcome: "success", userEmail: "target@test.com", timestamp: new Date("2026-05-01") },
-      { action: "AUTH_LOGIN_FAILED", outcome: "failure", userEmail: "other@test.com", timestamp: new Date("2026-05-15") },
+      {
+        action: "AUTH_LOGIN_SUCCESS",
+        outcome: "success",
+        userEmail: "target@test.com",
+        timestamp: new Date("2026-05-01"),
+      },
+      {
+        action: "AUTH_LOGIN_FAILED",
+        outcome: "failure",
+        userEmail: "other@test.com",
+        timestamp: new Date("2026-05-15"),
+      },
     ]);
   });
 
@@ -372,7 +439,11 @@ describe("Test Group 6 — Admin Route GET /", () => {
 
 // --- Test Group 7 — Admin Route GET /stats ---
 describe("Test Group 7 — Admin Route GET /stats", () => {
-  const adminUser = { _id: new mongoose.Types.ObjectId().toString(), role: "admin", email: "admin@test.com" };
+  const adminUser = {
+    _id: new mongoose.Types.ObjectId().toString(),
+    role: "admin",
+    email: "admin@test.com",
+  };
 
   beforeEach(async () => {
     const now = new Date();
@@ -414,13 +485,18 @@ describe("Test Group 8 — Edge Cases", () => {
   test("audit logging never crashes main code even if MongoDB is down (write fails silently)", async () => {
     // Force disconnect to simulate db failure
     await mongoose.connection.close();
-    
+
     // Logging should not throw
-    const log = await auditService.logAuth.loginFailed({}, "anonymous@test.com", "db_down");
+    const log = await auditService.logAuth.loginFailed(
+      {},
+      "anonymous@test.com",
+      "db_down",
+    );
     expect(log).toBeNull(); // Safe return value on error
 
     // Reconnect for remaining tests
-    const mongoURI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aqdy-audit-test";
+    const mongoURI =
+      process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aqdy-audit-test";
     await mongoose.connect(mongoURI);
   });
 
@@ -442,7 +518,11 @@ describe("Test Group 8 — Edge Cases", () => {
 
   test("requestId is saved correctly from req.requestId", async () => {
     const req = { requestId: "req_unique_abc", headers: {} };
-    const log = await auditService.logAuth.loginFailed(req, "user@test.com", "wrong");
+    const log = await auditService.logAuth.loginFailed(
+      req,
+      "user@test.com",
+      "wrong",
+    );
     expect(log!.requestId).toBe("req_unique_abc");
   });
 });

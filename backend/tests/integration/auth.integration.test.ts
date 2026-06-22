@@ -1,4 +1,12 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, jest } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  jest,
+} from "@jest/globals";
 import mongoose from "mongoose";
 import request from "supertest";
 import jwt from "jsonwebtoken";
@@ -45,8 +53,12 @@ describe("Authentication routes", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.user.email).toBe("auth-test@example.com");
     const setCookies = res.headers["set-cookie"] || [];
-    expect(setCookies.some((c: string) => c.startsWith("accessToken="))).toBe(true);
-    expect(setCookies.some((c: string) => c.startsWith("refreshToken="))).toBe(true);
+    expect(setCookies.some((c: string) => c.startsWith("accessToken="))).toBe(
+      true,
+    );
+    expect(setCookies.some((c: string) => c.startsWith("refreshToken="))).toBe(
+      true,
+    );
 
     const user = await User.findOne({ email: "auth-test@example.com" }).select(
       "+passwordHash",
@@ -71,8 +83,12 @@ describe("Authentication routes", () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     const loginCookies = res.headers["set-cookie"] || [];
-    expect(loginCookies.some((c: string) => c.startsWith("accessToken="))).toBe(true);
-    expect(loginCookies.some((c: string) => c.startsWith("refreshToken="))).toBe(true);
+    expect(loginCookies.some((c: string) => c.startsWith("accessToken="))).toBe(
+      true,
+    );
+    expect(
+      loginCookies.some((c: string) => c.startsWith("refreshToken=")),
+    ).toBe(true);
     expect(res.body.data.user.email).toBe("login-test@example.com");
   });
 
@@ -155,7 +171,12 @@ describe("Authentication routes", () => {
 
   test("GET /api/auth/me rejects expired token with 401", async () => {
     const expired = jwt.sign(
-      { sub: "000000000000000000000000", email: "expired@example.com", role: "user", plan: "free" },
+      {
+        sub: "000000000000000000000000",
+        email: "expired@example.com",
+        role: "user",
+        plan: "free",
+      },
       process.env.JWT_SECRET!,
       { expiresIn: -10 },
     );

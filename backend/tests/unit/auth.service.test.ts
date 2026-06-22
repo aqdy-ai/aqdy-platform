@@ -22,8 +22,14 @@ jest.unstable_mockModule("../../src/models/user.model.js", () => ({
   User: MockUser,
 }));
 
-const { registerUser, loginUser, logoutUser, refreshTokens, verifyAccessToken, loginWithGoogle } =
-  await import("../../src/services/auth.service.js");
+const {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshTokens,
+  verifyAccessToken,
+  loginWithGoogle,
+} = await import("../../src/services/auth.service.js");
 
 describe("Auth Service", () => {
   beforeEach(() => {
@@ -70,7 +76,9 @@ describe("Auth Service", () => {
       _id: "uid123",
     } as any;
 
-    mockFindOne.mockReturnValue({ select: jest.fn().mockResolvedValue(foundUser) });
+    mockFindOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(foundUser),
+    });
     mockSave.mockResolvedValue(undefined);
 
     const result = await loginUser({
@@ -95,10 +103,15 @@ describe("Auth Service", () => {
       _id: "uid123",
     } as any;
 
-    mockFindOne.mockReturnValue({ select: jest.fn().mockResolvedValue(foundUser) });
+    mockFindOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(foundUser),
+    });
 
     await expect(
-      loginUser({ email: "wrong.password@example.com", password: "BadPass987!" }),
+      loginUser({
+        email: "wrong.password@example.com",
+        password: "BadPass987!",
+      }),
     ).rejects.toThrow(AppError);
   });
 
@@ -110,7 +123,9 @@ describe("Auth Service", () => {
       save: mockSave,
     } as any;
 
-    mockFindOne.mockReturnValue({ select: jest.fn().mockResolvedValue(existingUser) });
+    mockFindOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(existingUser),
+    });
     mockSave.mockResolvedValue(undefined);
 
     await logoutUser("valid-refresh-token");
@@ -137,7 +152,9 @@ describe("Auth Service", () => {
       _id: "uid123",
     } as any;
 
-    mockFindOne.mockReturnValue({ select: jest.fn().mockResolvedValue(existingUser) });
+    mockFindOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(existingUser),
+    });
     mockSave.mockResolvedValue(undefined);
 
     const result = await refreshTokens("valid-refresh-token");
@@ -156,13 +173,22 @@ describe("Auth Service", () => {
       save: mockSave,
     } as any;
 
-    mockFindOne.mockReturnValue({ select: jest.fn().mockResolvedValue(expiredUser) });
+    mockFindOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(expiredUser),
+    });
 
-    await expect(refreshTokens("expired-refresh-token")).rejects.toThrow(AppError);
+    await expect(refreshTokens("expired-refresh-token")).rejects.toThrow(
+      AppError,
+    );
   });
 
   test("verifyAccessToken accepts a valid JWT and rejects an invalid JWT", () => {
-    const payload = { sub: "uid123", email: "token.user@example.com", role: "user", plan: "free" };
+    const payload = {
+      sub: "uid123",
+      email: "token.user@example.com",
+      role: "user",
+      plan: "free",
+    };
     const token = jwt.sign(payload, env.JWT_SECRET, { algorithm: "HS256" });
 
     expect(verifyAccessToken(token)).toMatchObject(payload);

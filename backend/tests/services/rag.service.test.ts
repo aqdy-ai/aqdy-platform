@@ -25,34 +25,48 @@ jest.unstable_mockModule("../../src/services/llm.service.js", () => {
 });
 
 // Import after mocking
-const { ragService, RAGService } = await import("../../src/services/rag.service.js");
+const { ragService, RAGService } =
+  await import("../../src/services/rag.service.js");
 
 // ── Helpers ──────────────────────────────────────
 
-const createMatch = (overrides: Partial<{
-  id: string;
-  score: number;
-  category: string;
-  riskLevel: string;
-  clausePattern: string;
-  explanation: { ar: string; en: string };
-  whyRisky: { ar: string; en: string };
-  saferAlternative: { ar: string; en: string };
-  relatedLaw: string;
-}> = {}) => ({
+const createMatch = (
+  overrides: Partial<{
+    id: string;
+    score: number;
+    category: string;
+    riskLevel: string;
+    clausePattern: string;
+    explanation: { ar: string; en: string };
+    whyRisky: { ar: string; en: string };
+    saferAlternative: { ar: string; en: string };
+    relatedLaw: string;
+  }> = {},
+) => ({
   id: overrides.id ?? "clause_001",
   score: overrides.score ?? 0.85,
   category: overrides.category ?? "liability",
-  riskLevel: (overrides.riskLevel ?? "high") as "low" | "medium" | "high" | "critical",
+  riskLevel: (overrides.riskLevel ?? "high") as
+    | "low"
+    | "medium"
+    | "high"
+    | "critical",
   clausePattern: overrides.clausePattern ?? "Unlimited liability clause",
   explanation: overrides.explanation ?? { ar: "شرح", en: "Explanation" },
   whyRisky: overrides.whyRisky ?? { ar: "خطير", en: "Risky" },
-  saferAlternative: overrides.saferAlternative ?? { ar: "بديل", en: "Alternative" },
+  saferAlternative: overrides.saferAlternative ?? {
+    ar: "بديل",
+    en: "Alternative",
+  },
   relatedLaw: overrides.relatedLaw ?? "Article 224",
 });
 
 /** Creates a Pinecone hit in the searchRecords response format */
-const createPineconeHit = (id: string, score: number, fields: Record<string, unknown> = {}) => ({
+const createPineconeHit = (
+  id: string,
+  score: number,
+  fields: Record<string, unknown> = {},
+) => ({
   _id: id,
   _score: score,
   fields: {
@@ -84,7 +98,9 @@ describe("RAG Service — expandQuery()", () => {
 
     const result = await ragService.expandQuery("salary decrease");
 
-    expect(result).toBe("salary decrease unilateral modification adjustment alter change");
+    expect(result).toBe(
+      "salary decrease unilateral modification adjustment alter change",
+    );
     expect(mockCallFallback).toHaveBeenCalledTimes(1);
   });
 
@@ -113,7 +129,7 @@ describe("RAG Service — applyMMR() Vector Mode", () => {
     const hits = [
       { id: "A", _score: 0.9, values: [1.0, 0.0] },
       { id: "B", _score: 0.8, values: [0.95, 0.05] }, // Highly similar to A
-      { id: "C", _score: 0.65, values: [0.1, 0.9] },   // Distinct from A (diverse)
+      { id: "C", _score: 0.65, values: [0.1, 0.9] }, // Distinct from A (diverse)
     ];
 
     const result = ragService.applyMMR(hits, 2, 0.5);
@@ -144,9 +160,24 @@ describe("RAGService — MMR Reranking Category Mode", () => {
   });
 
   const mockMatches = [
-    createMatch({ id: "clause_001", score: 0.95, category: "liability", riskLevel: "critical" }),
-    createMatch({ id: "clause_002", score: 0.85, category: "liability", riskLevel: "high" }),
-    createMatch({ id: "clause_003", score: 0.75, category: "confidentiality", riskLevel: "medium" }),
+    createMatch({
+      id: "clause_001",
+      score: 0.95,
+      category: "liability",
+      riskLevel: "critical",
+    }),
+    createMatch({
+      id: "clause_002",
+      score: 0.85,
+      category: "liability",
+      riskLevel: "high",
+    }),
+    createMatch({
+      id: "clause_003",
+      score: 0.75,
+      category: "confidentiality",
+      riskLevel: "medium",
+    }),
   ];
 
   test("should return single match without modification", () => {
@@ -187,23 +218,33 @@ describe("RAGService — Confidence Scoring", () => {
   });
 
   test("should return 0.95 for score >= 0.9", () => {
-    expect(service.calculateConfidence([createMatch({ score: 0.95 })])).toBe(0.95);
+    expect(service.calculateConfidence([createMatch({ score: 0.95 })])).toBe(
+      0.95,
+    );
   });
 
   test("should return 0.85 for score >= 0.8", () => {
-    expect(service.calculateConfidence([createMatch({ score: 0.82 })])).toBe(0.85);
+    expect(service.calculateConfidence([createMatch({ score: 0.82 })])).toBe(
+      0.85,
+    );
   });
 
   test("should return 0.75 for score >= 0.7", () => {
-    expect(service.calculateConfidence([createMatch({ score: 0.72 })])).toBe(0.75);
+    expect(service.calculateConfidence([createMatch({ score: 0.72 })])).toBe(
+      0.75,
+    );
   });
 
   test("should return 0.60 for score >= 0.6", () => {
-    expect(service.calculateConfidence([createMatch({ score: 0.62 })])).toBe(0.6);
+    expect(service.calculateConfidence([createMatch({ score: 0.62 })])).toBe(
+      0.6,
+    );
   });
 
   test("should return 0.40 for score < 0.6", () => {
-    expect(service.calculateConfidence([createMatch({ score: 0.55 })])).toBe(0.4);
+    expect(service.calculateConfidence([createMatch({ score: 0.55 })])).toBe(
+      0.4,
+    );
   });
 });
 
@@ -317,10 +358,12 @@ describe("RAG Service — search()", () => {
 
   test("should handle search errors and log them", async () => {
     mockCallFallback.mockResolvedValueOnce({ content: "" });
-    mockSearchRecords.mockRejectedValueOnce(new Error("Pinecone connection lost"));
+    mockSearchRecords.mockRejectedValueOnce(
+      new Error("Pinecone connection lost"),
+    );
 
     await expect(
-      ragService.search("test", { enableQueryExpansion: false })
+      ragService.search("test", { enableQueryExpansion: false }),
     ).rejects.toThrow("RAG search operation failed");
   });
 });
@@ -351,7 +394,10 @@ describe("RAGService — searchKB", () => {
       result: {
         hits: [
           createPineconeHit("clause_001", 0.95),
-          createPineconeHit("clause_010", 0.72, { category: "payment", riskLevel: "medium" }),
+          createPineconeHit("clause_010", 0.72, {
+            category: "payment",
+            riskLevel: "medium",
+          }),
         ],
       },
     });
@@ -438,9 +484,7 @@ describe("RAGService — searchKB", () => {
   test("should handle missing relatedLaw gracefully", async () => {
     mockSearchRecords.mockResolvedValueOnce({
       result: {
-        hits: [
-          createPineconeHit("clause_099", 0.8, { relatedLaw: "" }),
-        ],
+        hits: [createPineconeHit("clause_099", 0.8, { relatedLaw: "" })],
       },
     });
 

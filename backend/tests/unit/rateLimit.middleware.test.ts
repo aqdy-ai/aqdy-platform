@@ -75,7 +75,9 @@ describe("Rate Limit Middleware", () => {
     expect(mockJson).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        error: expect.stringContaining("Free tier daily analysis limit exceeded"),
+        error: expect.stringContaining(
+          "Free tier daily analysis limit exceeded",
+        ),
       }),
     );
   });
@@ -100,7 +102,9 @@ describe("Rate Limit Middleware", () => {
     expect(mockJson).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        error: expect.stringContaining("Too many requests from this IP address"),
+        error: expect.stringContaining(
+          "Too many requests from this IP address",
+        ),
       }),
     );
   });
@@ -128,7 +132,7 @@ describe("Rate Limit Middleware", () => {
     // Travel 24.5 hours in the future to Day 2
     jest.setSystemTime(initialTime + 24.5 * 60 * 60 * 1000);
     mockStatus.mockClear();
-    
+
     // Day 2: Request should bypass blocks and proceed successfully
     middleware(mockRequest as Request, mockResponse as Response, mockNext);
     expect(mockNext).toHaveBeenCalledTimes(11);

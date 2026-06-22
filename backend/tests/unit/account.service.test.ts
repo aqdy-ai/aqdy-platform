@@ -2,8 +2,9 @@ import { describe, test, expect, beforeEach, jest } from "@jest/globals";
 import bcrypt from "bcryptjs";
 import { AppError } from "../../src/middlewares/errorHandler.js";
 
-const mockFindById = jest.fn<(...args: [string]) => any>();
-const mockFindOne = jest.fn<(...args: [Record<string, unknown>]) => Promise<any>>();
+const mockFindById = jest.fn<(...args: [string]) => Promise<any>>();
+const mockFindOne =
+  jest.fn<(...args: [Record<string, unknown>]) => Promise<any>>();
 const mockSave = jest.fn<() => Promise<void>>();
 
 class MockQuery {
@@ -36,9 +37,8 @@ jest.unstable_mockModule("../../src/models/user.model.js", () => ({
   User: MockUser,
 }));
 
-const { getProfile, updateProfile, deleteAccount } = await import(
-  "../../src/services/account.service.js",
-);
+const { getProfile, updateProfile, deleteAccount } =
+  await import("../../src/services/account.service.js");
 
 const createUser = async (overrides: Record<string, any> = {}) => {
   const passwordHash = await bcrypt.hash("StrongPass123!", 12);
@@ -51,12 +51,16 @@ const createUser = async (overrides: Record<string, any> = {}) => {
     createdAt: new Date("2025-01-01T00:00:00Z"),
     lastLogin: new Date("2025-02-01T00:00:00Z"),
     passwordHash,
-    verifyPassword: jest.fn<(...args: [string]) => Promise<boolean>>().mockResolvedValue(true),
+    verifyPassword: jest
+      .fn<(...args: [string]) => Promise<boolean>>()
+      .mockResolvedValue(true),
     save: mockSave,
     ...overrides,
   };
 
-  user.select = jest.fn<(...args: [string]) => Promise<any>>().mockResolvedValue(user);
+  user.select = jest
+    .fn<(...args: [string]) => Promise<any>>()
+    .mockResolvedValue(user);
   return user;
 };
 
@@ -89,7 +93,10 @@ describe("Account Service", () => {
   });
 
   test("updateProfile updates name and email", async () => {
-    const user = await createUser({ email: "old@example.com", name: "Old Name" });
+    const user = await createUser({
+      email: "old@example.com",
+      name: "Old Name",
+    });
     mockFindById.mockReturnValue(user);
     mockFindOne.mockResolvedValue(null);
     mockSave.mockResolvedValue(undefined);
@@ -113,12 +120,16 @@ describe("Account Service", () => {
     await expect(
       updateProfile("uid123", { email: "duplicate@example.com" }),
     ).rejects.toThrow(AppError);
-    expect(mockFindOne).toHaveBeenCalledWith({ email: "duplicate@example.com" });
+    expect(mockFindOne).toHaveBeenCalledWith({
+      email: "duplicate@example.com",
+    });
   });
 
   test("updateProfile changes password with valid current password", async () => {
     const user = await createUser();
-    user.verifyPassword = jest.fn<(...args: [string]) => Promise<boolean>>().mockResolvedValue(true);
+    user.verifyPassword = jest
+      .fn<(...args: [string]) => Promise<boolean>>()
+      .mockResolvedValue(true);
     mockFindById.mockReturnValue(user);
     mockFindOne.mockResolvedValue(null);
     mockSave.mockResolvedValue(undefined);
@@ -152,7 +163,9 @@ describe("Account Service", () => {
 
   test("updateProfile rejects incorrect current password", async () => {
     const user = await createUser();
-    user.verifyPassword = jest.fn<(...args: [string]) => Promise<boolean>>().mockResolvedValue(false);
+    user.verifyPassword = jest
+      .fn<(...args: [string]) => Promise<boolean>>()
+      .mockResolvedValue(false);
     mockFindById.mockReturnValue(user);
 
     await expect(
