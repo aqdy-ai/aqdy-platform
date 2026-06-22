@@ -1,7 +1,7 @@
 /* src/components/features/ClauseChat.tsx */
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MessageSquare, Send, AlertCircle, RefreshCw } from 'lucide-react'
+import { MessageSquare, Send, AlertCircle, RefreshCw, Mic, MicOff, Volume2, VolumeX } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export interface Message {
@@ -34,6 +34,16 @@ export default function ClauseChat({
   const [prevIndex, setPrevIndex] = useState(clauseIndex)
   const [prevContract, setPrevContract] = useState(contractId)
 
+  // Speech-to-Text states
+  const [isSpeechSupported, setIsSpeechSupported] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [speechError, setSpeechError] = useState<string | null>(null)
+
+  // Text-to-Speech states
+  const [activePlayingIndex, setActivePlayingIndex] = useState<number | null>(null)
+
+  const recognitionRef = useRef<any>(null)
+
   if (clauseIndex !== prevIndex || contractId !== prevContract) {
     setPrevIndex(clauseIndex)
     setPrevContract(contractId)
@@ -56,6 +66,113 @@ export default function ClauseChat({
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages])
+
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (SpeechRecognition) {
+      setIsSpeechSupported(true)
+      const rec = new SpeechRecognition()
+      rec.continuous = false
+      rec.interimResults = false
+
+      rec.onstart = () => {
+        setIsListening(true)
+        setSpeechError(null)
+      }
+
+      rec.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript
+        if (transcript) {
+          setInput((prev) => (prev ? `${prev} ${transcript}` : transcript))
+        }
+      }
+
+      rec.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error)
+        if (event.error === 'not-allowed') {
+          setSpeechError(t('chat.mic_blocked', 'Microphone access blocked.'))
+        } else if (event.error !== 'aborted') {
+          setSpeechError(t('chat.speech_error', 'Speech transcription failed.'))
+        }
+      }
+
+      rec.onend = () => {
+        setIsListening(false)
+      }
+
+      recognitionRef.current = rec
+    } else {
+      setIsSpeechSupported(false)
+    }
+
+    return () => {
+      // Cleanup on unmount
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort()
+        } catch (e) {
+          console.warn('Failed to abort speech recognition on unmount:', e)
+        }
+      }
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        try {
+          window.speechSynthesis.cancel()
+        } catch (e) {
+          console.warn('Failed to cancel speech synthesis on unmount:', e)
+        }
+      }
+    }
+  }, [t])
+
+  const startListening = () => {
+    if (!recognitionRef.current) return
+    setSpeechError(null)
+    recognitionRef.current.lang = isRtl ? 'ar-EG' : 'en-US'
+    try {
+      recognitionRef.current.start()
+    } catch (err) {
+      console.error('Failed to start recognition:', err)
+    }
+  }
+
+  const stopListening = () => {
+    if (!recognitionRef.current) return
+    try {
+      recognitionRef.current.stop()
+    } catch (err) {
+      console.error('Failed to stop recognition:', err)
+    }
+  }
+
+  const handleSpeak = (text: string, index: number) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return
+
+    // If currently playing this index, stop it
+    if (activePlayingIndex === index) {
+      window.speechSynthesis.cancel()
+      setActivePlayingIndex(null)
+      return
+    }
+
+    // Cancel any current playback first
+    window.speechSynthesis.cancel()
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = isRtl ? 'ar-EG' : 'en-US'
+
+    utterance.onend = () => {
+      setActivePlayingIndex(null)
+    }
+
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event)
+      setActivePlayingIndex(null)
+    }
+
+    setActivePlayingIndex(index)
+    window.speechSynthesis.speak(utterance)
+  }
 
   // Cleanup active streams and requests
   const cleanupStream = () => {
@@ -288,14 +405,35 @@ export default function ClauseChat({
           return (
             <div
               key={index}
-              className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
+              className={`flex w-full items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}
             >
+              {!isUser && !msg.isStreaming && typeof window !== 'undefined' && window.speechSynthesis && (
+                <button
+                  onClick={() => handleSpeak(msg.content, index)}
+                  aria-label={
+                    activePlayingIndex === index
+                      ? t('chat.stop_reading', 'Stop reading response')
+                      : t('chat.read_aloud', 'Read response aloud')
+                  }
+                  title={
+                    activePlayingIndex === index
+                      ? t('chat.stop_reading', 'Stop reading response')
+                      : t('chat.read_aloud', 'Read response aloud')
+                  }
+                  className="text-muted-foreground hover:text-foreground flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full hover:bg-muted/80 transition-all focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  {activePlayingIndex === index ? (
+                    <VolumeX size={14} className="animate-pulse text-destructive" />
+                  ) : (
+                    <Volume2 size={14} />
+                  )}
+                </button>
+              )}
               <div
-                className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed font-medium shadow-sm select-text ${
-                  isUser
+                className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed font-medium shadow-sm select-text ${isUser
                     ? 'bg-primary text-primary-foreground rounded-tr-none'
                     : 'bg-secondary text-secondary-foreground rounded-tl-none'
-                }`}
+                  }`}
               >
                 {msg.content}
                 {msg.isStreaming && (
@@ -329,6 +467,25 @@ export default function ClauseChat({
                 {t('chat.upgrade_cta', 'Upgrade Plan')}
               </Link>
             )}
+          </div>
+        )}
+
+        {speechError && (
+          <div
+            className="border-destructive/20 bg-destructive/10 text-destructive flex items-center justify-between rounded-xl border p-3 text-xs leading-normal font-bold"
+            role="alert"
+          >
+            <div className="flex items-center gap-2">
+              <AlertCircle size={14} className="shrink-0" />
+              <span>{speechError}</span>
+            </div>
+            <button
+              onClick={() => setSpeechError(null)}
+              className="text-destructive hover:text-destructive/80 font-bold px-1"
+              aria-label="Clear speech error"
+            >
+              ×
+            </button>
           </div>
         )}
 
@@ -371,20 +528,60 @@ export default function ClauseChat({
           />
         </div>
 
-        <div className="flex shrink-0 flex-col items-center gap-1">
-          <span className="text-muted-foreground text-[9px] leading-none font-bold">
-            {t('chat.credits_cost', '~5 credits')}
-          </span>
-          <button
-            onClick={() => void handleSend()}
-            disabled={isStreaming || !input.trim()}
-            aria-label={t('chat.send', 'Send')}
-            className="bg-primary hover:bg-primary/95 text-primary-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl shadow-md transition-all active:scale-95 disabled:pointer-events-none disabled:opacity-50"
-          >
-            <Send size={14} className={isRtl ? 'rotate-180' : ''} />
-          </button>
+        <div className="flex shrink-0 items-end gap-2">
+          {isSpeechSupported ? (
+            <button
+              onClick={isListening ? stopListening : startListening}
+              disabled={isStreaming}
+              aria-label={
+                isListening
+                  ? t('chat.stop_listening', 'Stop voice input')
+                  : t('chat.start_listening', 'Start voice input')
+              }
+              title={
+                isListening
+                  ? t('chat.stop_listening', 'Stop voice input')
+                  : t('chat.start_listening', 'Start voice input')
+              }
+              className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl shadow-md transition-all active:scale-95 focus:outline-none focus:ring-1 focus:ring-primary disabled:pointer-events-none disabled:opacity-50 ${
+                isListening
+                  ? 'bg-destructive text-destructive-foreground animate-pulse'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/90'
+              }`}
+            >
+              {isListening ? <MicOff size={14} /> : <Mic size={14} />}
+            </button>
+          ) : (
+            <button
+              disabled
+              aria-label={t('chat.speech_unsupported', 'Voice input is not supported in this browser.')}
+              title={t('chat.speech_unsupported', 'Voice input is not supported in this browser.')}
+              className="bg-muted text-muted-foreground flex h-9 w-9 items-center justify-center rounded-xl opacity-50 cursor-not-allowed border border-border/40"
+            >
+              <MicOff size={14} />
+            </button>
+          )}
+
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-muted-foreground text-[9px] leading-none font-bold">
+              {t('chat.credits_cost', '~5 credits')}
+            </span>
+            <button
+              onClick={() => void handleSend()}
+              disabled={isStreaming || (!input.trim() && !isListening)}
+              aria-label={t('chat.send', 'Send')}
+              className="bg-primary hover:bg-primary/95 text-primary-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl shadow-md transition-all active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+            >
+              <Send size={14} className={isRtl ? 'rotate-180' : ''} />
+            </button>
+          </div>
         </div>
       </div>
+      {!isSpeechSupported && (
+        <div className="text-muted-foreground mt-1 text-[10px] font-medium" style={{ direction: isRtl ? 'rtl' : 'ltr' }}>
+          {t('chat.speech_unsupported', 'Voice input is not supported in this browser.')}
+        </div>
+      )}
     </div>
   )
 }

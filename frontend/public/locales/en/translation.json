@@ -151,12 +151,12 @@
     "monthly_billing": "Monthly billing",
     "annual_billing": "Annual billing",
     "save_percent": "Save {{percent}}%",
-    "comparePlans":"Compare Plans",
+    "comparePlans": "Compare Plans",
     "choosePlan": "Choose Plan"
   },
   "billing": {
     "upgrade_plan": "Upgrade Plan",
-    "upgrade":"Upgrade",
+    "upgrade": "Upgrade",
     "invoice": "Invoice",
     "payment_history": "Payment History",
     "download": "Download",
@@ -164,7 +164,7 @@
     "plans": {
       "Free": "Free",
       "Pro": "Pro",
-      "Enterprise": "Enterprise" 
+      "Enterprise": "Enterprise"
     },
     "date": "Date",
     "description": "Description",
@@ -341,7 +341,14 @@
       "q2": "Is this standard in MENA contracts?",
       "q3": "How should I negotiate this?",
       "q4": "What is the worst-case risk here?"
-    }
+    },
+    "speech_unsupported": "Voice input is not supported in this browser.",
+    "mic_blocked": "Microphone access blocked.",
+    "speech_error": "Speech transcription failed.",
+    "start_listening": "Start voice input",
+    "stop_listening": "Stop voice input",
+    "read_aloud": "Read response aloud",
+    "stop_reading": "Stop reading response"
   },
   "upgrade": {
     "title": "Upgrade Your Contract Management Today",

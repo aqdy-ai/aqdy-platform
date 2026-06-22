@@ -65,15 +65,27 @@ The following multimodal capabilities were considered for Aqdy but **explicitly 
 - Table extraction from PDFs is a distinct, complex problem (spanning columns, merged cells) better addressed by dedicated document intelligence services.
 - No user demand signal for this feature in the initial market research.
 
-### 3. Audio/Voice Input
+### 3. Audio/Voice Input (Speech-to-Text & Text-to-Speech)
 
-**Description**: Allow users to upload or record audio (e.g., verbal contract negotiations) for transcription and analysis.
+**Description**: Allow users to interact with the Clause Chat using voice. Speech-to-Text allows users to dictate questions, and Text-to-Speech allows listening to AI-synthesized responses read aloud.
 
-**Rationale for deferral**:
+**Implementation Details (v1.1)**:
+- **Speech-to-Text**: Implemented using the browser-native `SpeechRecognition` API. When the user clicks the microphone button next to the chat text area, it records voice and appends transcribed text to the chat input area.
+- **Text-to-Speech**: Implemented using browser-native `speechSynthesis` API. A speaker icon is shown next to AI assistant responses. Clicking it reads the response aloud.
+- **Language Configurations**:
+  - Arabic: Configured to Egyptian Arabic (`ar-EG`) for both recognition and synthesis.
+  - English: Configured to US English (`en-US`).
+- **Safety and Reliability**:
+  - **Browser Support Detection**: Checks if `window.SpeechRecognition || window.webkitSpeechRecognition` is defined. If unsupported, the microphone feature is disabled, displaying a clear user-facing fallback message: *"Voice input is not supported in this browser."*
+  - **Graceful Degradation**: Text chat remains completely functional even if speech synthesis or recognition features are unsupported or permission is denied.
+  - **Cleanup**: Stopping recognition (`recognition.abort()`) and cancelling speech playback (`speechSynthesis.cancel()`) are handled immediately on component unmount to prevent resource/audio leaks.
+  - **Concurrent Audio Playback Prevention**: Before any message starts playing, `speechSynthesis.cancel()` is invoked to prevent overlapping audio playback. Only one assistant response can play at a time.
 
-- Outside the core value proposition of written contract analysis.
-- Transcription services (Whisper, Google Speech-to-Text) are mature but add an orthogonal integration layer.
-- Can be added later as a preprocessing step that feeds transcribed text into the existing pipeline.
+- **Browser Compatibility & Limitations**:
+  - *Google Chrome / Microsoft Edge*: Full support for both Speech Recognition and Speech Synthesis. Offers very high accuracy for Arabic legal dictation utilizing cloud-based processing.
+  - *Apple Safari*: Supported on both macOS and iOS. Speech synthesis requires direct user interaction to trigger playback (which aligns with our speaker button model).
+  - *Mozilla Firefox*: Speech synthesis is fully supported. Speech recognition is disabled by default behind the `media.webspeech.recognition.enable` preference flag in Firefox configuration. If disabled, the interface gracefully degrades and presents the unsupported message.
+  - *Internet Requirement*: Dictation transcription requires an active internet connection on most browsers, as recognition is typically processed online.
 
 ---
 
@@ -85,7 +97,8 @@ The following multimodal capabilities were considered for Aqdy but **explicitly 
 | Text extraction from DOCX files | ✅ Implemented | v1.0 |
 | OCR for scanned PDFs | ❌ Deferred | v2.0 (planned) |
 | Image/table extraction | ❌ Deferred | TBD |
-| Audio/voice input | ❌ Deferred | TBD |
+| Speech-to-Text (STT) Clause Chat | ✅ Implemented | v1.1 |
+| Text-to-Speech (TTS) Clause Chat | ✅ Implemented | v1.1 |
 
 > [!IMPORTANT]
 > When scanned PDF support is added in v2.0, the OCR step should be implemented as a **pre-processing service** that outputs plain text, keeping the three-agent pipeline unchanged. The `pdf.service.ts` can be extended with a `hasTextLayer()` check to route scanned documents to the OCR path automatically.

@@ -307,7 +307,7 @@ describe('ClauseChat Component', () => {
   it('aborts active streaming reader on unmount or on clause/contract changes', async () => {
     const cancelMock = vi.fn()
     const mockReader = {
-      read: async () => new Promise(() => {}), // hangs/never completes
+      read: async () => new Promise(() => { }), // hangs/never completes
       cancel: cancelMock,
     }
     const mockBody = {
