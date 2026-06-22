@@ -1,22 +1,23 @@
 // backend/tests/auth.integration.test.ts
 // Updated to guard mongoose.connect with readyState check
 
-import request from 'supertest';
-import { jest } from '@jest/globals';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose from 'mongoose';
-import app from '../src/index.js'; // app export without listening
-import { User } from '../src/models/user.model.js';
+import request from "supertest";
+import { jest } from "@jest/globals";
+import { MongoMemoryServer } from "mongodb-memory-server";
+import mongoose from "mongoose";
+import app from "../src/index.js"; // app export without listening
+import { User } from "../src/models/user.model.js";
 
 // Mock email service to capture token
-jest.mock('../src/services/email.service.js', () => ({
+jest.mock("../src/services/email.service.js", () => ({
   emailService: {
     sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
     sendVerificationEmail: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
-const emailMock = (await import('../src/services/email.service.js')).emailService;
+const emailMock = (await import("../src/services/email.service.js"))
+  .emailService;
 
 let mongo: any;
 
@@ -39,20 +40,20 @@ afterEach(async () => {
   await User.deleteMany({});
 });
 
-describe('Password reset flow', () => {
+describe("Password reset flow", () => {
   const userData = {
-    email: 'test@example.com',
-    password: 'Password1!',
-    name: 'Test User',
+    email: "test@example.com",
+    password: "Password1!",
+    name: "Test User",
   };
 
-  it('Happy path: request reset, reset password, old sessions cleared', async () => {
+  it("Happy path: request reset, reset password, old sessions cleared", async () => {
     // Register user
-    await request(app).post('/api/auth/register').send(userData).expect(201);
+    await request(app).post("/api/auth/register").send(userData).expect(201);
 
     // Request password reset
     const forgotRes = await request(app)
-      .post('/api/auth/forgot-password')
+      .post("/api/auth/forgot-password")
       .send({ email: userData.email })
       .expect(200);
     expect(forgotRes.body.success).toBe(true);
@@ -63,9 +64,9 @@ describe('Password reset flow', () => {
     const token = user?.passwordResetToken as string;
 
     // Reset password
-    const newPassword = 'NewPass2@';
+    const newPassword = "NewPass2@";
     const resetRes = await request(app)
-      .post('/api/auth/reset-password')
+      .post("/api/auth/reset-password")
       .send({ token, newPassword })
       .expect(200);
     expect(resetRes.body.success).toBe(true);
@@ -77,39 +78,45 @@ describe('Password reset flow', () => {
 
     // Login with new password should succeed
     const loginRes = await request(app)
-      .post('/api/auth/login')
+      .post("/api/auth/login")
       .send({ email: userData.email, password: newPassword })
       .expect(200);
     expect(loginRes.body.success).toBe(true);
   });
 
-  it('Expired token should be rejected', async () => {
-    await request(app).post('/api/auth/register').send(userData).expect(201);
-    await request(app).post('/api/auth/forgot-password').send({ email: userData.email }).expect(200);
+  it("Expired token should be rejected", async () => {
+    await request(app).post("/api/auth/register").send(userData).expect(201);
+    await request(app)
+      .post("/api/auth/forgot-password")
+      .send({ email: userData.email })
+      .expect(200);
     const user = await User.findOne({ email: userData.email });
     const token = user?.passwordResetToken as string;
     // Expire token manually
     user!.passwordResetExpiresAt = new Date(Date.now() - 60 * 1000);
     await user!.save();
     await request(app)
-      .post('/api/auth/reset-password')
-      .send({ token, newPassword: 'Another1!' })
+      .post("/api/auth/reset-password")
+      .send({ token, newPassword: "Another1!" })
       .expect(400);
   });
 
-  it('Reuse of token should be rejected', async () => {
-    await request(app).post('/api/auth/register').send(userData).expect(201);
-    await request(app).post('/api/auth/forgot-password').send({ email: userData.email }).expect(200);
+  it("Reuse of token should be rejected", async () => {
+    await request(app).post("/api/auth/register").send(userData).expect(201);
+    await request(app)
+      .post("/api/auth/forgot-password")
+      .send({ email: userData.email })
+      .expect(200);
     const user = await User.findOne({ email: userData.email });
     const token = user?.passwordResetToken as string;
     await request(app)
-      .post('/api/auth/reset-password')
-      .send({ token, newPassword: 'NewPass2@' })
+      .post("/api/auth/reset-password")
+      .send({ token, newPassword: "NewPass2@" })
       .expect(200);
     // Second attempt with same token
     await request(app)
-      .post('/api/auth/reset-password')
-      .send({ token, newPassword: 'Another1!' })
+      .post("/api/auth/reset-password")
+      .send({ token, newPassword: "Another1!" })
       .expect(400);
   });
 });

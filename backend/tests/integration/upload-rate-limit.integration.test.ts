@@ -56,7 +56,8 @@ jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-const { resetRateLimitStores } = await import("../../src/middlewares/rateLimit.js");
+const { resetRateLimitStores } =
+  await import("../../src/middlewares/rateLimit.js");
 const { default: app } = await import("../../src/index.js");
 
 const mockParsedPdf = {
@@ -91,7 +92,11 @@ describe("Anonymous IP Rate Limit Integration", () => {
       const res = await request(app)
         .post("/api/upload")
         .set("x-forwarded-for", ipAddress)
-        .attach("contract", Buffer.from("%PDF-1.4 dummy pdf data"), "contract.pdf");
+        .attach(
+          "contract",
+          Buffer.from("%PDF-1.4 dummy pdf data"),
+          "contract.pdf",
+        );
 
       expect(res.status).toBe(201);
       expect(res.body.status).toBe("processing");
@@ -102,11 +107,17 @@ describe("Anonymous IP Rate Limit Integration", () => {
     const blocked = await request(app)
       .post("/api/upload")
       .set("x-forwarded-for", ipAddress)
-      .attach("contract", Buffer.from("%PDF-1.4 dummy pdf data"), "contract.pdf");
+      .attach(
+        "contract",
+        Buffer.from("%PDF-1.4 dummy pdf data"),
+        "contract.pdf",
+      );
 
     expect(blocked.status).toBe(429);
     expect(blocked.body.success).toBe(false);
-    expect(blocked.body.error).toContain("Too many requests from this IP address");
+    expect(blocked.body.error).toContain(
+      "Too many requests from this IP address",
+    );
     expect(blocked.headers["retry-after"]).toBeDefined();
   });
 });

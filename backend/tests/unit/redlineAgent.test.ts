@@ -14,9 +14,7 @@ jest.unstable_mockModule("@langchain/google-genai", () => {
 });
 
 // Import after mocking for ESM hoisting
-const { RedlineAgent } = await import(
-  "../../src/agents/redline.agent.js"
-);
+const { RedlineAgent } = await import("../../src/agents/redline.agent.js");
 
 // ── Helpers ──────────────────────────────────────
 
@@ -41,11 +39,11 @@ describe("RedlineAgent", () => {
 
   test("should throw an error for empty clause text", async () => {
     await expect(
-      agent.generate("", "high", "limitation-of-liability", "en")
+      agent.generate("", "high", "limitation-of-liability", "en"),
     ).rejects.toThrow("Clause text is empty");
 
     await expect(
-      agent.generate("   ", "high", "limitation-of-liability", "en")
+      agent.generate("   ", "high", "limitation-of-liability", "en"),
     ).rejects.toThrow("Clause text is empty");
   });
 
@@ -70,15 +68,19 @@ describe("RedlineAgent", () => {
       "Liability shall be unlimited.",
       "high",
       "limitation-of-liability",
-      "en"
+      "en",
     );
 
     // 2. Assertions
     expect(mockInvoke).toHaveBeenCalledTimes(1);
-    expect(result.suggestedText).toBe("Liability shall be capped at 12 months fees.");
+    expect(result.suggestedText).toBe(
+      "Liability shall be capped at 12 months fees.",
+    );
     expect(result.explanation.en).toContain("minimize high risk exposure");
-    expect(result.talkingPoints.ar[0]).toBe("الحد من المسؤولية معيار تجاري عادل.");
-    
+    expect(result.talkingPoints.ar[0]).toBe(
+      "الحد من المسؤولية معيار تجاري عادل.",
+    );
+
     // Confidence calibration: 0.9 * 0.95 = 0.86
     expect(result.confidence).toBe(0.86);
   });
@@ -105,13 +107,13 @@ describe("RedlineAgent", () => {
       "critical",
       "limitation-of-liability",
       "en",
-      "Liability capped at 100k USD."
+      "Liability capped at 100k USD.",
     );
 
     // 2. Assertions
     expect(mockInvoke).toHaveBeenCalledTimes(1);
     expect(result.suggestedText).toBe("Capped liability at 100k USD.");
-    
+
     // Confidence calibration: 0.8 * 1.05 = 0.84
     expect(result.confidence).toBe(0.84);
   });
@@ -120,7 +122,7 @@ describe("RedlineAgent", () => {
     mockInvoke.mockResolvedValueOnce({ content: "Malicious non-JSON content" });
 
     await expect(
-      agent.generate("Clause text", "medium", "confidentiality", "en")
+      agent.generate("Clause text", "medium", "confidentiality", "en"),
     ).rejects.toThrow();
   });
 
@@ -134,7 +136,7 @@ describe("RedlineAgent", () => {
     });
 
     await expect(
-      agent.generate("Clause text", "medium", "confidentiality", "en")
+      agent.generate("Clause text", "medium", "confidentiality", "en"),
     ).rejects.toThrow();
   });
 });

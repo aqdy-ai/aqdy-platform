@@ -78,14 +78,19 @@ describe("Upload Route Security Integration", () => {
     // 2. Perform multipart upload
     const response = await request(app)
       .post("/api/upload")
-      .attach("contract", Buffer.from("dummy pdf content"), "malicious_contract.pdf")
+      .attach(
+        "contract",
+        Buffer.from("dummy pdf content"),
+        "malicious_contract.pdf",
+      )
       .set("x-user-id", "user_123");
 
     // 3. Verify security rejection
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
       error: "Security validation failed",
-      message: "Suspicious instruction patterns detected in document text. Upload rejected.",
+      message:
+        "Suspicious instruction patterns detected in document text. Upload rejected.",
     });
 
     // 4. Verify downstream operations were aborted
@@ -113,7 +118,11 @@ describe("Upload Route Security Integration", () => {
     // 2. Perform multipart upload
     const response = await request(app)
       .post("/api/upload")
-      .attach("contract", Buffer.from("dummy pdf content"), "clean_contract.pdf")
+      .attach(
+        "contract",
+        Buffer.from("dummy pdf content"),
+        "clean_contract.pdf",
+      )
       .set("x-user-id", "user_123");
 
     // 3. Verify success (201 Created)
@@ -124,7 +133,7 @@ describe("Upload Route Security Integration", () => {
     expect(mockSaveContract).toHaveBeenCalledWith(
       expect.objectContaining({
         text: "This contract binds both parties.", // HTML and script tag stripped
-      })
+      }),
     );
   });
 });

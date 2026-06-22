@@ -9,13 +9,14 @@ jest.unstable_mockModule("../../src/models/contract.model.js", () => ({
   Contract: jest.fn().mockImplementation(() => ({ save: mockSave })),
   ContractZodSchema: {
     parse: jest.fn().mockImplementation((data: any) => {
-      if (!data.filename) throw new Error('Validation failed');
+      if (!data.filename) throw new Error("Validation failed");
       return data;
     }),
   },
 }));
 
-const { ContractService } = await import("../../src/services/contract.service.js");
+const { ContractService } =
+  await import("../../src/services/contract.service.js");
 const { Contract } = await import("../../src/models/contract.model.js");
 
 (Contract as any).findById = mockFindById;
@@ -57,7 +58,9 @@ describe("ContractService", () => {
 
   test("should get contracts by user", async () => {
     const mockContracts = [{ _id: "1" }, { _id: "2" }];
-    mockFind.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockContracts) });
+    mockFind.mockReturnValue({
+      sort: jest.fn().mockResolvedValue(mockContracts),
+    });
 
     const result = await contractService.getContractsByUser("user_123");
     expect(result).toHaveLength(2);
@@ -71,7 +74,7 @@ describe("ContractService", () => {
         text: "text",
         userId: "user_123",
         fileSize: 1024,
-      })
+      }),
     ).rejects.toThrow();
   });
 });

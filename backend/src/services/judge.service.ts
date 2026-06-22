@@ -90,7 +90,9 @@ export const judgeService = {
         comment,
       });
 
-      langfuse.score(scoreOpts("faithfulness", faithfulness, reasoning.faithfulness));
+      langfuse.score(
+        scoreOpts("faithfulness", faithfulness, reasoning.faithfulness),
+      );
       langfuse.score(scoreOpts("relevancy", relevancy, reasoning.relevancy));
       langfuse.score(scoreOpts("precision", precision, reasoning.precision));
       langfuse.score(scoreOpts("recall", recall, reasoning.recall));

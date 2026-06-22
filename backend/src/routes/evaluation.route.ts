@@ -38,7 +38,7 @@ router.get(
             count: { $sum: 1 },
           },
         },
-        { $sort: { "_id": 1 } },
+        { $sort: { _id: 1 } },
         {
           $project: {
             date: "$_id",
@@ -55,7 +55,10 @@ router.get(
       return res.status(200).json({ success: true, data: stats });
     } catch (error: unknown) {
       console.error("Error in GET /api/admin/evaluations/stats:", error);
-      return res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   },
 );
@@ -91,7 +94,10 @@ router.get(
       return res.status(200).json({ success: true, data: lowScores });
     } catch (error: unknown) {
       console.error("Error in GET /api/admin/evaluations/low-scores:", error);
-      return res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   },
 );

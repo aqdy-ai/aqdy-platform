@@ -27,7 +27,8 @@ jest.unstable_mockModule("../../src/config/langfuse.config.js", () => ({
 let orchestratorService: any;
 
 beforeAll(async () => {
-  const orchestratorModule = await import("../../src/pipeline/orchestrator.service.js");
+  const orchestratorModule =
+    await import("../../src/pipeline/orchestrator.service.js");
   orchestratorService = orchestratorModule.orchestratorService;
   // Silence logger to reduce I/O overhead during performance measurement
   logger.level = "error";
@@ -60,7 +61,9 @@ function setupMocks({ clauseCount }: { clauseCount: number }) {
       explanation: { ar: "شرح", en: "Explanation" },
       sourceFromKB: null,
       durationMs: 30,
-      saferAlternative: clauseText.includes("1") ? "Alternative text" : undefined,
+      saferAlternative: clauseText.includes("1")
+        ? "Alternative text"
+        : undefined,
     };
   });
 

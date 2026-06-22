@@ -26,9 +26,8 @@ jest.unstable_mockModule("@pinecone-database/pinecone", () => {
 });
 
 // Import after mocking for ESM hoisting
-const { RiskClassifierAgent } = await import(
-  "../../src/agents/riskClassifier.agent.js"
-);
+const { RiskClassifierAgent } =
+  await import("../../src/agents/riskClassifier.agent.js");
 
 // ── Helpers ──────────────────────────────────────
 
@@ -52,10 +51,10 @@ describe("RiskClassifierAgent", () => {
 
   test("should throw an error for empty clause text", async () => {
     await expect(agent.classify("", "probation", "en")).rejects.toThrow(
-      "Clause text is empty"
+      "Clause text is empty",
     );
     await expect(agent.classify("   ", "probation", "en")).rejects.toThrow(
-      "Clause text is empty"
+      "Clause text is empty",
     );
   });
 
@@ -99,7 +98,7 @@ describe("RiskClassifierAgent", () => {
     const result = await agent.classify(
       "The probation period is six months.",
       "probation",
-      "en"
+      "en",
     );
 
     // 3. Assertions
@@ -109,7 +108,7 @@ describe("RiskClassifierAgent", () => {
     // Verify properties
     expect(result.riskLevel).toBe("critical");
     expect(result.sourceFromKB).toBe("kb_match_001");
-    
+
     // Confidence calibration: 0.5 * 0.9 (similarity) + 0.5 * 0.8 (llm) = 0.85
     expect(result.confidence).toBe(0.85);
     expect(result.explanation.en).toContain("probation exceeds 3 months");
@@ -148,13 +147,13 @@ describe("RiskClassifierAgent", () => {
     const result = await agent.classify(
       "The salary will be paid late.",
       "payment",
-      "en"
+      "en",
     );
 
     // 3. Assertions
     expect(result.riskLevel).toBe("medium");
     expect(result.sourceFromKB).toBeNull(); // below threshold, ignored
-    
+
     // Calibrated confidence: 0.9 (llm) * 0.9 = 0.81
     expect(result.confidence).toBe(0.81);
   });
@@ -182,7 +181,7 @@ describe("RiskClassifierAgent", () => {
     const result = await agent.classify(
       "Standard clause text here.",
       "general",
-      "en"
+      "en",
     );
 
     // 3. Assertions
@@ -194,7 +193,9 @@ describe("RiskClassifierAgent", () => {
 
   test("should degrade gracefully and classify without RAG if Pinecone throws an error", async () => {
     // 1. Mock Pinecone client failure
-    mockSearchRecords.mockRejectedValueOnce(new Error("Pinecone connection lost"));
+    mockSearchRecords.mockRejectedValueOnce(
+      new Error("Pinecone connection lost"),
+    );
 
     // 2. Mock LLM response
     mockInvoke.mockResolvedValueOnce({
@@ -211,7 +212,7 @@ describe("RiskClassifierAgent", () => {
     const result = await agent.classify(
       "The employee shall work 80 hours a week without overtime.",
       "overtime",
-      "en"
+      "en",
     );
 
     // 3. Assertions
@@ -226,7 +227,7 @@ describe("RiskClassifierAgent", () => {
     mockInvoke.mockResolvedValueOnce({ content: "Not a JSON structure" });
 
     await expect(
-      agent.classify("Some clause", "general", "en")
+      agent.classify("Some clause", "general", "en"),
     ).rejects.toThrow();
   });
 });

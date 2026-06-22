@@ -1,13 +1,13 @@
 // backend/tests/judge.service.test.ts
 // Jest unit test for judgeService.evaluateAnalysis
 
-import { judgeService } from '../src/services/judge.service.js';
-import { Evaluation } from '../src/models/evaluation.model.js';
-import { IRiskAnalysis } from '../src/models/riskAnalysis.model.js';
-import langfuse from '../src/utils/langfuseClient.js';
+import { judgeService } from "../src/services/judge.service.js";
+import { Evaluation } from "../src/models/evaluation.model.js";
+import { IRiskAnalysis } from "../src/models/riskAnalysis.model.js";
+import langfuse from "../src/utils/langfuseClient.js";
 // Cast to any for test compatibility
 const langfuseMock = langfuse;
-import { llmService } from '../src/services/llm.service.js';
+import { llmService } from "../src/services/llm.service.js";
 
 // Mock the LLM response – static JSON fixture
 const mockLlmResponse = JSON.stringify({
@@ -16,35 +16,35 @@ const mockLlmResponse = JSON.stringify({
   precision: 3,
   recall: 2,
   reasoning: {
-    faithfulness: 'Perfect factual match',
-    relevancy: 'Mostly on topic',
-    precision: 'Some extra context',
-    recall: 'Missing a few clauses',
-    overall: 'Good overall evaluation',
+    faithfulness: "Perfect factual match",
+    relevancy: "Mostly on topic",
+    precision: "Some extra context",
+    recall: "Missing a few clauses",
+    overall: "Good overall evaluation",
   },
 });
 
-jest.mock('../src/services/llm.service', () => ({
+jest.mock("../src/services/llm.service", () => ({
   llmService: {
     callPrimary: jest.fn().mockResolvedValue({
       content: mockLlmResponse,
-      model: 'gpt-4o',
+      model: "gpt-4o",
       usedFallback: false,
     }),
   },
 }));
 
-jest.mock('../src/utils/langfuseClient', () => ({
+jest.mock("../src/utils/langfuseClient", () => ({
   __esModule: true,
   default: {
-    trace: jest.fn().mockReturnValue({ id: 'mock-trace-id' }),
+    trace: jest.fn().mockReturnValue({ id: "mock-trace-id" }),
     score: jest.fn(),
   },
 }));
 
 // Use in‑memory MongoDB for isolation
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose from 'mongoose';
+import { MongoMemoryServer } from "mongodb-memory-server";
+import mongoose from "mongoose";
 
 let mongoServer;
 
@@ -64,12 +64,12 @@ afterEach(async () => {
   jest.clearAllMocks();
 });
 
-describe('judgeService.evaluateAnalysis', () => {
-  it('processes LLM output, stores Evaluation, and logs Langfuse scores', async () => {
+describe("judgeService.evaluateAnalysis", () => {
+  it("processes LLM output, stores Evaluation, and logs Langfuse scores", async () => {
     const fakeAnalysis: IRiskAnalysis = {
       _id: new mongoose.Types.ObjectId(),
-      userId: 'user-123',
-      executiveSummary: { summary: { en: 'Sample answer' } },
+      userId: "user-123",
+      executiveSummary: { summary: { en: "Sample answer" } },
       // other required fields are omitted for brevity – they are not accessed in the service
     } as unknown as IRiskAnalysis;
 
@@ -82,17 +82,35 @@ describe('judgeService.evaluateAnalysis', () => {
     expect(evalDoc?.relevancy).toBe(4);
     expect(evalDoc?.precision).toBe(3);
     expect(evalDoc?.recall).toBe(2);
-    expect(evalDoc?.traceId).toBe('mock-trace-id');
+    expect(evalDoc?.traceId).toBe("mock-trace-id");
 
     // Verify Langfuse scoring calls
-    expect((langfuseMock.score as jest.Mock)).toHaveBeenCalledTimes(4);
-    const scoreCalls = (langfuseMock.score as jest.Mock).mock.calls.map(c => c[0]);
+    expect(langfuseMock.score as jest.Mock).toHaveBeenCalledTimes(4);
+    const scoreCalls = (langfuseMock.score as jest.Mock).mock.calls.map(
+      (c) => c[0],
+    );
     expect(scoreCalls).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ name: 'faithfulness', value: 5, traceId: 'mock-trace-id' }),
-        expect.objectContaining({ name: 'relevancy', value: 4, traceId: 'mock-trace-id' }),
-        expect.objectContaining({ name: 'precision', value: 3, traceId: 'mock-trace-id' }),
-        expect.objectContaining({ name: 'recall', value: 2, traceId: 'mock-trace-id' }),
+        expect.objectContaining({
+          name: "faithfulness",
+          value: 5,
+          traceId: "mock-trace-id",
+        }),
+        expect.objectContaining({
+          name: "relevancy",
+          value: 4,
+          traceId: "mock-trace-id",
+        }),
+        expect.objectContaining({
+          name: "precision",
+          value: 3,
+          traceId: "mock-trace-id",
+        }),
+        expect.objectContaining({
+          name: "recall",
+          value: 2,
+          traceId: "mock-trace-id",
+        }),
       ]),
     );
   });

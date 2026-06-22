@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 /**
  * Evaluation scores for a completed analysis.
@@ -34,7 +34,7 @@ const EvaluationSchema = new Schema<IEvaluation>(
   {
     analysisId: {
       type: Schema.Types.ObjectId,
-      ref: 'RiskAnalysis',
+      ref: "RiskAnalysis",
       required: true,
       index: true,
     },
@@ -62,4 +62,7 @@ const EvaluationSchema = new Schema<IEvaluation>(
 // Ensure a unique evaluation per analysis (one‑to‑one relationship)
 EvaluationSchema.index({ analysisId: 1 }, { unique: true });
 
-export const Evaluation = mongoose.model<IEvaluation>('Evaluation', EvaluationSchema);
+export const Evaluation = mongoose.model<IEvaluation>(
+  "Evaluation",
+  EvaluationSchema,
+);

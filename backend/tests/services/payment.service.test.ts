@@ -4,10 +4,10 @@ import { IPopulatedPayment } from "../../src/services/payment.service.js";
 
 // 1. 🛡️ Define mocks BEFORE importing any modules (Required for ESM)
 jest.unstable_mockModule("../../src/models/user.model.js", () => ({
-  User: { findById: jest.fn(), findByIdAndUpdate: jest.fn() }
+  User: { findById: jest.fn(), findByIdAndUpdate: jest.fn() },
 }));
 jest.unstable_mockModule("../../src/models/plan.model.js", () => ({
-  Plan: { findOne: jest.fn(), findById: jest.fn() }
+  Plan: { findOne: jest.fn(), findById: jest.fn() },
 }));
 jest.unstable_mockModule("../../src/models/subscription.model.js", () => {
   const mockSubscription = {
@@ -43,10 +43,14 @@ jest.unstable_mockModule("../../src/models/payment.model.js", () => {
   return { default: mockPayment };
 });
 jest.unstable_mockModule("../../src/models/auditLog.model.js", () => ({
-  AuditLog: { findOne: jest.fn(), create: jest.fn() }
+  AuditLog: { findOne: jest.fn(), create: jest.fn() },
 }));
 jest.unstable_mockModule("../../src/services/credits.service.js", () => ({
-  creditsService: { getBalance: jest.fn(), topup: jest.fn(), topupForPlanAllowance: jest.fn() }
+  creditsService: {
+    getBalance: jest.fn(),
+    topup: jest.fn(),
+    topupForPlanAllowance: jest.fn(),
+  },
 }));
 
 // 2. 📦 Dynamically import models and service AFTER mocks are established
@@ -55,11 +59,15 @@ const { Plan } = await import("../../src/models/plan.model.js");
 const { Subscription } = await import("../../src/models/subscription.model.js");
 const { default: Payment } = await import("../../src/models/payment.model.js");
 const { AuditLog } = await import("../../src/models/auditLog.model.js");
-const { creditsService } = await import("../../src/services/credits.service.js");
-const { paymentService, stripe } = await import("../../src/services/payment.service.js");
+const { creditsService } =
+  await import("../../src/services/credits.service.js");
+const { paymentService, stripe } =
+  await import("../../src/services/payment.service.js");
 
 // ✅ Fixes 'never' assignments, type arguments and ESLint 'any' rule cleanly
-type GenericMock = jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>;
+type GenericMock = jest.MockedFunction<
+  (...args: unknown[]) => Promise<unknown>
+>;
 
 describe("PaymentService Unit Tests", () => {
   beforeEach(() => {
@@ -69,13 +77,17 @@ describe("PaymentService Unit Tests", () => {
   describe("verifyConnection", () => {
     it("should return true when Stripe connection is successful", async () => {
       const mockProducts = { data: [{}, {}] };
-      jest.spyOn(stripe.products, "list").mockResolvedValue(mockProducts as never);
+      jest
+        .spyOn(stripe.products, "list")
+        .mockResolvedValue(mockProducts as never);
       const result = await paymentService.verifyConnection();
       expect(result).toBe(true);
     });
 
     it("should return false and log error when Stripe connection fails", async () => {
-      jest.spyOn(stripe.products, "list").mockRejectedValue(new Error("Connection failed") as never);
+      jest
+        .spyOn(stripe.products, "list")
+        .mockRejectedValue(new Error("Connection failed") as never);
       const result = await paymentService.verifyConnection();
       expect(result).toBe(false);
     });
@@ -87,41 +99,68 @@ describe("PaymentService Unit Tests", () => {
 
     it("should throw 404 error if user is not found", async () => {
       (User.findById as unknown as GenericMock).mockResolvedValue(null);
-      await expect(paymentService.createCheckoutSession(userId, planSlug)).rejects.toMatchObject({ statusCode: 404 });
+      await expect(
+        paymentService.createCheckoutSession(userId, planSlug),
+      ).rejects.toMatchObject({ statusCode: 404 });
     });
 
     it("should throw 400 error if plan is inactive or does not exist", async () => {
-      (User.findById as unknown as GenericMock).mockResolvedValue({ _id: userId });
+      (User.findById as unknown as GenericMock).mockResolvedValue({
+        _id: userId,
+      });
       (Plan.findOne as unknown as GenericMock).mockResolvedValue(null);
-      await expect(paymentService.createCheckoutSession(userId, planSlug)).rejects.toMatchObject({ statusCode: 400 });
+      await expect(
+        paymentService.createCheckoutSession(userId, planSlug),
+      ).rejects.toMatchObject({ statusCode: 400 });
     });
 
     it("should create a Stripe customer if one does not exist for the user", async () => {
       const mockUser = { _id: userId, email: "test@aqdy.com", name: "Tester" };
-      const mockPlan = { _id: "p1", slug: "premium", isActive: true, stripePriceId: "price_123" };
+      const mockPlan = {
+        _id: "p1",
+        slug: "premium",
+        isActive: true,
+        stripePriceId: "price_123",
+      };
 
       (User.findById as unknown as GenericMock).mockResolvedValue(mockUser);
       (Plan.findOne as unknown as GenericMock).mockResolvedValue(mockPlan);
       (User.findByIdAndUpdate as unknown as GenericMock).mockResolvedValue({});
 
-      jest.spyOn(stripe.customers, "create").mockResolvedValue({ id: "cus_new" } as never);
-      jest.spyOn(stripe.checkout.sessions, "create").mockResolvedValue({ url: "https://stripe.com/session" } as never);
+      jest
+        .spyOn(stripe.customers, "create")
+        .mockResolvedValue({ id: "cus_new" } as never);
+      jest
+        .spyOn(stripe.checkout.sessions, "create")
+        .mockResolvedValue({ url: "https://stripe.com/session" } as never);
 
       await paymentService.createCheckoutSession(userId, planSlug);
 
       expect(stripe.customers.create).toHaveBeenCalled();
-      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(userId, { stripeCustomerId: "cus_new" });
+      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(userId, {
+        stripeCustomerId: "cus_new",
+      });
     });
 
     it("should return checkout URL when session creation succeeds", async () => {
       const mockUser = { _id: userId, stripeCustomerId: "cus_old" };
-      const mockPlan = { _id: "p1", slug: "premium", isActive: true, stripePriceId: "price_123" };
+      const mockPlan = {
+        _id: "p1",
+        slug: "premium",
+        isActive: true,
+        stripePriceId: "price_123",
+      };
 
       (User.findById as unknown as GenericMock).mockResolvedValue(mockUser);
       (Plan.findOne as unknown as GenericMock).mockResolvedValue(mockPlan);
-      jest.spyOn(stripe.checkout.sessions, "create").mockResolvedValue({ url: "https://stripe.com/session" } as never);
+      jest
+        .spyOn(stripe.checkout.sessions, "create")
+        .mockResolvedValue({ url: "https://stripe.com/session" } as never);
 
-      const result = await paymentService.createCheckoutSession(userId, planSlug);
+      const result = await paymentService.createCheckoutSession(
+        userId,
+        planSlug,
+      );
       expect(result.url).toBe("https://stripe.com/session");
     });
   });
@@ -136,21 +175,34 @@ describe("PaymentService Unit Tests", () => {
         subscription: "sub_stripe_1",
         amount_total: 2900,
         currency: "usd",
-        id: "sess_1"
+        id: "sess_1",
       };
 
-      jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue(mockSession as never);
+      jest
+        .spyOn(stripe.checkout.sessions, "retrieve")
+        .mockResolvedValue(mockSession as never);
       (Subscription.findOne as unknown as GenericMock).mockResolvedValue(null);
-      (Plan.findById as unknown as GenericMock).mockResolvedValue({ _id: "p123", name: "Pro", creditAllowance: 10, slug: "pro" });
+      (Plan.findById as unknown as GenericMock).mockResolvedValue({
+        _id: "p123",
+        name: "Pro",
+        creditAllowance: 10,
+        slug: "pro",
+      });
 
       const mockSubDetails = {
         id: "sub_stripe_1",
         current_period_start: 1000,
-        current_period_end: 2000
+        current_period_end: 2000,
       };
-      jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(mockSubDetails as never);
-      (Subscription.create as unknown as GenericMock).mockResolvedValue({ _id: "sub_local_1" });
-      (creditsService.getBalance as unknown as GenericMock).mockResolvedValue(100);
+      jest
+        .spyOn(stripe.subscriptions, "retrieve")
+        .mockResolvedValue(mockSubDetails as never);
+      (Subscription.create as unknown as GenericMock).mockResolvedValue({
+        _id: "sub_local_1",
+      });
+      (creditsService.getBalance as unknown as GenericMock).mockResolvedValue(
+        100,
+      );
       (Payment.create as unknown as GenericMock).mockResolvedValue({});
       (User.findByIdAndUpdate as unknown as GenericMock).mockResolvedValue({});
 
@@ -164,7 +216,9 @@ describe("PaymentService Unit Tests", () => {
     });
 
     it("should return pending status if payment is not paid", async () => {
-      jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue({ payment_status: "unpaid" } as never);
+      jest
+        .spyOn(stripe.checkout.sessions, "retrieve")
+        .mockResolvedValue({ payment_status: "unpaid" } as never);
       const result = await paymentService.confirmSession("cs_123");
       expect(result.status).toBe("pending");
     });
@@ -173,8 +227,12 @@ describe("PaymentService Unit Tests", () => {
   describe("handleWebhook", () => {
     it("should skip already processed events to ensure idempotency", async () => {
       const event = { id: "evt_1" };
-      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue(event as never);
-      (AuditLog.findOne as unknown as GenericMock).mockResolvedValue({ id: "log_1" });
+      jest
+        .spyOn(stripe.webhooks, "constructEvent")
+        .mockReturnValue(event as never);
+      (AuditLog.findOne as unknown as GenericMock).mockResolvedValue({
+        id: "log_1",
+      });
 
       await paymentService.handleWebhook(Buffer.from(""), "sig");
       expect(AuditLog.findOne).toHaveBeenCalled();
@@ -185,30 +243,44 @@ describe("PaymentService Unit Tests", () => {
       const event = {
         id: "evt_del",
         type: "customer.subscription.deleted",
-        data: { object: { id: "sub_stripe_1" } }
+        data: { object: { id: "sub_stripe_1" } },
       };
 
-      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue(event as never);
+      jest
+        .spyOn(stripe.webhooks, "constructEvent")
+        .mockReturnValue(event as never);
       (AuditLog.findOne as unknown as GenericMock).mockResolvedValue(null);
-      (Subscription.findOneAndUpdate as unknown as GenericMock).mockResolvedValue({ userId: "user_1" });
-      (Plan.findOne as unknown as GenericMock).mockResolvedValue({ slug: "free", creditAllowance: 10 });
+      (
+        Subscription.findOneAndUpdate as unknown as GenericMock
+      ).mockResolvedValue({ userId: "user_1" });
+      (Plan.findOne as unknown as GenericMock).mockResolvedValue({
+        slug: "free",
+        creditAllowance: 10,
+      });
       (User.findByIdAndUpdate as unknown as GenericMock).mockResolvedValue({});
       (AuditLog.create as unknown as GenericMock).mockResolvedValue({});
 
       await paymentService.handleWebhook(Buffer.from(""), "sig");
       expect(Subscription.findOneAndUpdate).toHaveBeenCalledWith(
         { stripeSubscriptionId: "sub_stripe_1" },
-        expect.objectContaining({ status: "cancelled", cancelledAt: expect.any(Date) }),
-        { new: true }
+        expect.objectContaining({
+          status: "cancelled",
+          cancelledAt: expect.any(Date),
+        }),
+        { new: true },
       );
-      
+
       // ✅ Fixed: Added creditBalance: 0 to perfectly match service logic
-      expect(User.findByIdAndUpdate).toHaveBeenCalledWith("user_1", { 
-        plan: "free", 
+      expect(User.findByIdAndUpdate).toHaveBeenCalledWith("user_1", {
+        plan: "free",
         planSlug: "free",
-        creditBalance: 0 
+        creditBalance: 0,
       });
-      expect(creditsService.topup).toHaveBeenCalledWith("user_1", 10, "plan_topup");
+      expect(creditsService.topup).toHaveBeenCalledWith(
+        "user_1",
+        10,
+        "plan_topup",
+      );
     });
 
     it("should throw 400 if signature verification fails", async () => {
@@ -216,9 +288,11 @@ describe("PaymentService Unit Tests", () => {
         throw new Error("Invalid signature");
       });
 
-      await expect(paymentService.handleWebhook(Buffer.from(""), "invalid")).rejects.toMatchObject({
+      await expect(
+        paymentService.handleWebhook(Buffer.from(""), "invalid"),
+      ).rejects.toMatchObject({
         statusCode: 400,
-        message: "Webhook signature verification failed"
+        message: "Webhook signature verification failed",
       });
     });
 
@@ -241,7 +315,9 @@ describe("PaymentService Unit Tests", () => {
         },
       };
 
-      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue(event as never);
+      jest
+        .spyOn(stripe.webhooks, "constructEvent")
+        .mockReturnValue(event as never);
 
       (AuditLog.findOne as unknown as GenericMock).mockResolvedValue(null);
       (Subscription.findOne as unknown as GenericMock).mockResolvedValue(null);
@@ -256,9 +332,13 @@ describe("PaymentService Unit Tests", () => {
         current_period_start: 1000,
         current_period_end: 2000,
       };
-      jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(mockSubDetails as never);
+      jest
+        .spyOn(stripe.subscriptions, "retrieve")
+        .mockResolvedValue(mockSubDetails as never);
 
-      (Subscription.create as unknown as GenericMock).mockResolvedValue({ _id: "sub_local" });
+      (Subscription.create as unknown as GenericMock).mockResolvedValue({
+        _id: "sub_local",
+      });
       (User.findByIdAndUpdate as unknown as GenericMock).mockResolvedValue({});
       (Payment.create as unknown as GenericMock).mockResolvedValue({});
       (AuditLog.create as unknown as GenericMock).mockResolvedValue({});
@@ -287,28 +367,40 @@ describe("PaymentService Unit Tests", () => {
         },
       };
 
-      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue(event as never);
+      jest
+        .spyOn(stripe.webhooks, "constructEvent")
+        .mockReturnValue(event as never);
 
       (AuditLog.findOne as unknown as GenericMock).mockResolvedValue(null);
 
       const mockSubDetails = {
         current_period_end: 3000,
       };
-      jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(mockSubDetails as never);
+      jest
+        .spyOn(stripe.subscriptions, "retrieve")
+        .mockResolvedValue(mockSubDetails as never);
 
-      (Subscription.findOneAndUpdate as unknown as GenericMock).mockResolvedValue({
+      (
+        Subscription.findOneAndUpdate as unknown as GenericMock
+      ).mockResolvedValue({
         _id: "sub_local",
         userId: "user_1",
         planId: "plan_1",
       });
 
-      (Plan.findById as unknown as GenericMock).mockResolvedValue({ creditAllowance: 50 });
+      (Plan.findById as unknown as GenericMock).mockResolvedValue({
+        creditAllowance: 50,
+      });
       (Payment.create as unknown as GenericMock).mockResolvedValue({});
       (AuditLog.create as unknown as GenericMock).mockResolvedValue({});
 
       await paymentService.handleWebhook(Buffer.from(""), "sig");
 
-      expect(creditsService.topup).toHaveBeenCalledWith("user_1", 50, "plan_topup");
+      expect(creditsService.topup).toHaveBeenCalledWith(
+        "user_1",
+        50,
+        "plan_topup",
+      );
       expect(Payment.create).toHaveBeenCalledWith(
         expect.objectContaining({
           status: "succeeded",
@@ -331,10 +423,14 @@ describe("PaymentService Unit Tests", () => {
         },
       };
 
-      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue(event as never);
+      jest
+        .spyOn(stripe.webhooks, "constructEvent")
+        .mockReturnValue(event as never);
 
       (AuditLog.findOne as unknown as GenericMock).mockResolvedValue(null);
-      (Subscription.findOneAndUpdate as unknown as GenericMock).mockResolvedValue({
+      (
+        Subscription.findOneAndUpdate as unknown as GenericMock
+      ).mockResolvedValue({
         _id: "sub_local",
         userId: "user_1",
       });
@@ -344,7 +440,9 @@ describe("PaymentService Unit Tests", () => {
 
       await paymentService.handleWebhook(Buffer.from(""), "sig");
 
-      expect(User.findByIdAndUpdate).toHaveBeenCalledWith("user_1", { status: "suspended" });
+      expect(User.findByIdAndUpdate).toHaveBeenCalledWith("user_1", {
+        status: "suspended",
+      });
       expect(Payment.create).toHaveBeenCalledWith(
         expect.objectContaining({
           status: "failed",
@@ -357,34 +455,36 @@ describe("PaymentService Unit Tests", () => {
   describe("getUserPayments", () => {
     it("should return paginated payments for a user", async () => {
       const userId = new mongoose.Types.ObjectId().toString();
-      const mockPaymentsData = [{
-        _id: new mongoose.Types.ObjectId(),
-        userId: new mongoose.Types.ObjectId(userId),
-        subscriptionId: {
+      const mockPaymentsData = [
+        {
           _id: new mongoose.Types.ObjectId(),
-          userId: new mongoose.Types.ObjectId(),
-          planId: {
+          userId: new mongoose.Types.ObjectId(userId),
+          subscriptionId: {
             _id: new mongoose.Types.ObjectId(),
-            name: "Pro Plan",
-            slug: "pro",
-            isActive: true,
-            price: 29,
-            billingCycle: "monthly",
-            features: [],
-            credits: 100,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
+            userId: new mongoose.Types.ObjectId(),
+            planId: {
+              _id: new mongoose.Types.ObjectId(),
+              name: "Pro Plan",
+              slug: "pro",
+              isActive: true,
+              price: 29,
+              billingCycle: "monthly",
+              features: [],
+              credits: 100,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          },
+          amount: 10,
+          status: "succeeded" as const,
+          currency: "usd",
+          createdAt: new Date(),
+          provider: "stripe",
+          providerTxId: "tx_1",
+          description: "Test Payment",
+          updatedAt: new Date(),
         },
-        amount: 10,
-        status: "succeeded" as const,
-        currency: "usd",
-        createdAt: new Date(),
-        provider: "stripe",
-        providerTxId: "tx_1",
-        description: "Test Payment",
-        updatedAt: new Date()
-      }];
+      ];
       const mockTotal = 1;
 
       (Payment.find as unknown as GenericMock).mockImplementationOnce(() => ({
@@ -393,7 +493,9 @@ describe("PaymentService Unit Tests", () => {
         limit: jest.fn().mockReturnThis(),
         populate: jest.fn().mockResolvedValue(mockPaymentsData),
       }));
-      (Payment.countDocuments as unknown as GenericMock).mockResolvedValue(mockTotal);
+      (Payment.countDocuments as unknown as GenericMock).mockResolvedValue(
+        mockTotal,
+      );
 
       const result = await paymentService.getUserPayments(userId);
       expect(result.payments).toHaveLength(1);
@@ -423,30 +525,39 @@ describe("PaymentService Unit Tests", () => {
             features: [],
             credits: 100,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         },
         amount: 100,
         provider: "stripe",
         providerTxId: "tx_1",
         description: "Test Payment",
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
-      (Payment.findOne as unknown as GenericMock).mockImplementationOnce(() => ({
-        populate: jest.fn().mockResolvedValue(mockPayment),
-      }));
+      (Payment.findOne as unknown as GenericMock).mockImplementationOnce(
+        () => ({
+          populate: jest.fn().mockResolvedValue(mockPayment),
+        }),
+      );
 
-      const result = await paymentService.getPaymentById(mockPayment._id.toString(), userId);
+      const result = await paymentService.getPaymentById(
+        mockPayment._id.toString(),
+        userId,
+      );
       expect(result).toEqual(mockPayment);
     });
 
     it("should throw 404 if payment not found or not owned by user", async () => {
-      (Payment.findOne as unknown as GenericMock).mockImplementationOnce(() => ({
-        populate: jest.fn().mockResolvedValue(null),
-      }));
+      (Payment.findOne as unknown as GenericMock).mockImplementationOnce(
+        () => ({
+          populate: jest.fn().mockResolvedValue(null),
+        }),
+      );
 
-      await expect(paymentService.getPaymentById("pay_1", "user_1")).rejects.toMatchObject({
+      await expect(
+        paymentService.getPaymentById("pay_1", "user_1"),
+      ).rejects.toMatchObject({
         statusCode: 404,
       });
     });
@@ -471,8 +582,8 @@ describe("PaymentService Unit Tests", () => {
             features: [],
             credits: 100,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         },
         amount: 29,
         currency: "usd",
@@ -484,7 +595,9 @@ describe("PaymentService Unit Tests", () => {
         updatedAt: new Date(),
       };
 
-      jest.spyOn(paymentService, "getPaymentById").mockResolvedValue(mockPayment as unknown as IPopulatedPayment);
+      jest
+        .spyOn(paymentService, "getPaymentById")
+        .mockResolvedValue(mockPayment as unknown as IPopulatedPayment);
 
       const buffer = await paymentService.generateInvoicePdf("pay_1", userId);
       expect(buffer).toBeInstanceOf(Buffer);

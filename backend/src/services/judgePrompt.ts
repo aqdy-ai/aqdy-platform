@@ -18,5 +18,9 @@ Return ONLY a JSON object matching the schema:
 Do not include any additional text, markdown, or explanations outside the JSON.
 `;
 
-export const JUDGE_USER_PROMPT = (question: string, answer: string, context: string) => `
+export const JUDGE_USER_PROMPT = (
+  question: string,
+  answer: string,
+  context: string,
+) => `
 **Question**\n${question}\n\n**Answer**\n${answer}\n\n**Context**\n${context}\n\nEvaluate the answer against the context using the four metrics described in the system prompt. Respond with the JSON object as instructed.`;
