@@ -66,7 +66,7 @@ export class RiskClassifierAgent {
     clauseText: string,
     clauseType: string,
     language: "ar" | "en",
-    options?: { callbacks?: any[] },
+    options?: { callbacks?: unknown[] },
   ): Promise<ClassificationResult> {
     const startTime = Date.now();
 

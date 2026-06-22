@@ -151,12 +151,12 @@
     "monthly_billing": "Monthly billing",
     "annual_billing": "Annual billing",
     "save_percent": "Save {{percent}}%",
-    "comparePlans":"Compare Plans",
+    "comparePlans": "Compare Plans",
     "choosePlan": "Choose Plan"
   },
   "billing": {
     "upgrade_plan": "Upgrade Plan",
-    "upgrade":"Upgrade",
+    "upgrade": "Upgrade",
     "invoice": "Invoice",
     "payment_history": "Payment History",
     "download": "Download",
@@ -164,7 +164,7 @@
     "plans": {
       "Free": "Free",
       "Pro": "Pro",
-      "Enterprise": "Enterprise" 
+      "Enterprise": "Enterprise"
     },
     "date": "Date",
     "description": "Description",
@@ -220,7 +220,10 @@
     "haveAccount": "Already have an account?",
     "loginNow": "Login now",
     "forgotPasswordComingSoon": "Sorry, this feature is not available yet. Please try again later",
+    "orContinueWith": "Or continue with",
+    "continueWithGoogle": "Continue with Google",
     "errors": {
+      "oauthOnly": "This account is linked with Google. Please log in using Google, then you can set a password in your settings.",
       "invalidEmail": "Email address is invalid",
       "passwordTooShort": "Password must be at least 8 characters long",
       "passwordWeak": "Password is too weak",
@@ -238,14 +241,15 @@
       "passwordRequired": "Please check password requirements",
       "invalidCredentials": "Invalid credentials",
       "generic": "Something went wrong, please try again later",
-      "emailInUse": "Email address is already in use"
+      "emailInUse": "Email address is already in use",
+      "passwordInvalidCharacters": "Password contains invalid characters. Only @ $ ! % * ? & # _ - are allowed as special characters."
     },
     "passwordRules": {
       "minLength": "At least {{count}} characters",
       "uppercase": "One uppercase letter",
       "lowercase": "One lowercase letter",
       "number": "One number",
-      "special": "One special character (@$!%*?&)"
+      "special": "One special character (@$!%*?&#_-)"
     },
     "verifyPromptTitle": "Email Verification Required",
     "verifyPromptSubtitle": "We sent a verification link to {{email}}. Please click the link in your email to verify your account.",
@@ -292,6 +296,7 @@
     "errorLoadingProfile": "Unable to load account details. Please refresh.",
     "errorLoadingSubscription": "Unable to load subscription details. Please refresh.",
     "upgradeNotAvailable": "Upgrade is coming soon.",
+    "noPasswordGoogle": "You registered via Google and do not have a password set. You can set a password below to allow email/password login in the future.",
     "profile": "Profile",
     "settings": "Settings",
     "subscriptionStatus": "Subscription status",
@@ -341,7 +346,14 @@
       "q2": "Is this standard in MENA contracts?",
       "q3": "How should I negotiate this?",
       "q4": "What is the worst-case risk here?"
-    }
+    },
+    "speech_unsupported": "Voice input is not supported in this browser.",
+    "mic_blocked": "Microphone access blocked.",
+    "speech_error": "Speech transcription failed.",
+    "start_listening": "Start voice input",
+    "stop_listening": "Stop voice input",
+    "read_aloud": "Read response aloud",
+    "stop_reading": "Stop reading response"
   },
   "upgrade": {
     "title": "Upgrade Your Contract Management Today",
@@ -375,6 +387,7 @@
   },
   "admin": {
     "dashboard_title": "Admin Dashboard",
+    "evaluations_title": "Evaluations",
     "accounts_title": "User Accounts Management",
     "total_users": "Total Users",
     "active_subscriptions": "Active Subscriptions",
@@ -463,5 +476,25 @@
     "preview_clauses_count": "Clauses analyzed: {{count}}",
     "preview_risky_clauses": "High risk clauses: {{count}}",
     "version": "Version"
+  },
+  "evaluations": {
+    "title": "LLM-as-a-Judge Evaluation Dashboard",
+    "faithfulness": "Faithfulness",
+    "relevancy": "Relevancy",
+    "precision": "Precision",
+    "recall": "Recall",
+    "daily_trends": "Daily Score Trends",
+    "low_scores": "Low-Score Analyses",
+    "analysis_id": "Analysis ID",
+    "lowest_metric": "Lowest Metric",
+    "score": "Score",
+    "reasoning": "Reasoning",
+    "action": "Action",
+    "view": "View",
+    "no_evaluations": "No evaluations yet. Evaluations are generated automatically after analysis completes.",
+    "error_stats": "Failed to load evaluation stats",
+    "error_low": "Failed to load low-score evaluations",
+    "error_generic": "Error loading evaluations",
+    "inspect": "Inspect analysis {{id}}"
   }
 }

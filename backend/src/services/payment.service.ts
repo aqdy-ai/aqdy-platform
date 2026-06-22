@@ -334,7 +334,7 @@ export class PaymentService {
       });
     } catch (err: unknown) {
       // E11000 = duplicate key — another caller already created this subscription
-      if ((err as any)?.code === 11000) {
+      if ((err as Record<string, unknown>)?.code === 11000) {
         logger.info(
           `fulfillSubscription: subscription ${stripeSubscriptionId} already exists (race winner)`,
         );
@@ -381,7 +381,7 @@ export class PaymentService {
       logger.info(`✅ Payment recorded for providerTxId ${session.id}`);
     } catch (err) {
       // If duplicate key error, treat as already recorded
-      if ((err as any).code === 11000) {
+      if ((err as Record<string, unknown>).code === 11000) {
         logger.info(
           `✅ Payment already exists for providerTxId ${session.id}, skipping creation`,
         );

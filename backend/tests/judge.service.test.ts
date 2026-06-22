@@ -4,14 +4,12 @@ import { IRiskAnalysis } from "../src/models/riskAnalysis.model.js";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 
-// 3. Clean static imports
 import { judgeService } from "../src/services/judge.service.js";
 import langfuse from "../src/utils/langfuseClient.js";
 import { llmService } from "../src/services/llm.service.js";
 
 const langfuseMock = langfuse as any;
 
-// 1. Define static response
 const mockLlmResponse = JSON.stringify({
   faithfulness: 5,
   relevancy: 4,
@@ -26,8 +24,7 @@ const mockLlmResponse = JSON.stringify({
   },
 });
 
-// 2. Standard Spies (Safe for Native ESM with static imports)
-jest.spyOn(llmService, 'callPrimary').mockResolvedValue({
+jest.spyOn(llmService, 'call').mockResolvedValue({
   content: mockLlmResponse,
   model: "gpt-4o",
   usedFallback: false,
@@ -59,12 +56,29 @@ describe("judgeService.evaluateAnalysis", () => {
     const fakeAnalysis = {
       _id: new mongoose.Types.ObjectId(),
       userId: "user-123",
-      executiveSummary: { summary: { en: "Sample answer" } },
+      executiveSummary: {
+        overallRisk: "medium",
+        totalClauses: 14,
+        riskyClausesCount: 5,
+        summary: { en: "Sample answer", ar: "ملخص" },
+      },
+      clauseAnalysis: [
+        {
+          clauseText: "This is a sample clause",
+          clauseType: "employment-terms",
+          riskLevel: "low",
+          confidence: 0.95,
+          lowConfidenceWarning: false,
+          kbCitationMissing: false,
+          explanation: { ar: "شرح", en: "explanation" },
+          sourceFromKB: "clause_001_test",
+          redlineSuggestion: "Consider adding...",
+        },
+      ],
     } as unknown as IRiskAnalysis;
 
     await judgeService.evaluateAnalysis(fakeAnalysis);
 
-    // Verify Evaluation document persisted
     const evalDoc = await Evaluation.findOne({ analysisId: fakeAnalysis._id });
     expect(evalDoc).toBeTruthy();
     expect(evalDoc?.faithfulness).toBe(5);
@@ -73,7 +87,6 @@ describe("judgeService.evaluateAnalysis", () => {
     expect(evalDoc?.recall).toBe(2);
     expect(evalDoc?.traceId).toBe("mock-trace-id");
 
-    // Verify Langfuse scoring calls
     expect(langfuseMock.score).toHaveBeenCalledTimes(4);
     const scoreCalls = langfuseMock.score.mock.calls.map((c: any) => c[0]);
     expect(scoreCalls).toEqual(
@@ -84,5 +97,23 @@ describe("judgeService.evaluateAnalysis", () => {
         expect.objectContaining({ name: "recall", value: 2, traceId: "mock-trace-id" }),
       ])
     );
+  });
+
+  it("handles analyses without clauseAnalysis gracefully", async () => {
+    const fakeAnalysis = {
+      _id: new mongoose.Types.ObjectId(),
+      userId: "user-456",
+      executiveSummary: {
+        overallRisk: "low",
+        totalClauses: 0,
+        riskyClausesCount: 0,
+        summary: { en: "No clauses", ar: "لا يوجد" },
+      },
+    } as unknown as IRiskAnalysis;
+
+    await judgeService.evaluateAnalysis(fakeAnalysis);
+
+    const evalDoc = await Evaluation.findOne({ analysisId: fakeAnalysis._id });
+    expect(evalDoc).toBeTruthy();
   });
 });

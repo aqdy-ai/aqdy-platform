@@ -2,7 +2,6 @@ import { Router, Request, Response } from "express";
 import { authenticateJwt } from "../middlewares/auth.middleware.js";
 import { requireAdmin } from "../middlewares/auth.middleware.js";
 import { User } from "../models/user.model.js";
-import { Contract } from "../models/contract.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { CreditLedger } from "../models/creditLedger.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
@@ -36,9 +35,6 @@ router.get(
       const { start: monthStart, end: monthEnd } = monthRange(y, m);
       const { start: lastMonthStart, end: lastMonthEnd } = monthRange(y, m - 1);
       const weekAgo = new Date(now.getTime() - 7 * 86400000);
-
-      const sixMonthAgo = new Date(y, m - 5, 1);
-      const eightWeekAgo = new Date(now.getTime() - 56 * 86400000);
 
       const [
         totalAccounts,
@@ -200,7 +196,7 @@ router.get(
       // ── Weekly signups last 8 weeks ──
       const weeklySignups: { week: string; count: number }[] = [];
       for (let i = 7; i >= 0; i--) {
-        const { start, end } = weekRange(now, i);
+        const { start } = weekRange(now, i);
         // adjust start to monday
         const weekStart = new Date(start);
         weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);

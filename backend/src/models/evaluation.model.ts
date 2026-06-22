@@ -36,7 +36,6 @@ const EvaluationSchema = new Schema<IEvaluation>(
       type: Schema.Types.ObjectId,
       ref: "RiskAnalysis",
       required: true,
-      index: true,
     },
     traceId: { type: String, required: true },
     faithfulness: { type: Number, min: 1, max: 5, required: true },

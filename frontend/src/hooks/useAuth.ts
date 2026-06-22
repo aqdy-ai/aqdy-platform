@@ -14,6 +14,13 @@ import type {
 import { AuthContext } from './context/AuthContext'
 
 /**
+ * Backend-aligned password regex: must include uppercase, lowercase, number, and special char (@$!%*?&#_-)
+ * and only allows A-Za-z\d@$!%*?&#_- characters.
+ */
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]+$/
+
+/**
  * Password validation constants and rules
  */
 export const PASSWORD_RULES = {
@@ -21,7 +28,7 @@ export const PASSWORD_RULES = {
   uppercase: /[A-Z]/,
   lowercase: /[a-z]/,
   number: /[0-9]/,
-  special: /[@$!%*?&]/,
+  special: /[@$!%*?&#_-]/,
 }
 
 /**
@@ -48,7 +55,8 @@ export const registerSchema = z
       .regex(PASSWORD_RULES.uppercase, 'auth.errors.passwordNoUppercase')
       .regex(PASSWORD_RULES.lowercase, 'auth.errors.passwordNoLowercase')
       .regex(PASSWORD_RULES.number, 'auth.errors.passwordNoNumber')
-      .regex(PASSWORD_RULES.special, 'auth.errors.passwordNoSpecial'),
+      .regex(PASSWORD_RULES.special, 'auth.errors.passwordNoSpecial')
+      .regex(PASSWORD_REGEX, 'auth.errors.passwordInvalidCharacters'),
     confirmPassword: z.string().min(1, 'auth.errors.confirmPasswordRequired'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -112,6 +120,36 @@ export const useAuth = () => {
     }
   }
 
+  const loginWithGoogle = async (idToken: string) => {
+    setIsLoading(true)
+    try {
+      const response = await authApi.loginWithGoogle(idToken)
+      const loggedInUser = response.data.data.user
+      setUser(loggedInUser)
+
+      localStorage.setItem('isLoggedIn', 'true')
+      toast.success(t('auth.loginSuccess'))
+      if (loggedInUser?.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
+    } catch (error: unknown) {
+      let errorMessage = t('auth.errors.generic')
+      if (axios.isAxiosError(error)) {
+        errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          errorMessage
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const register = async (userData: RegisterInput) => {
     setIsLoading(true)
     try {
@@ -160,12 +198,20 @@ export const useAuth = () => {
     setIsLoading(true)
     try {
       await authApi.forgotPassword(email)
-      // Always show generic success message to avoid enumeration
       toast.success(t('auth.forgotPasswordSuccess'))
     } catch (error: unknown) {
-      // Log error but still show generic message for security
       console.error('Forgot password error:', error)
-      toast.success(t('auth.forgotPasswordSuccess'))
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.status === 400 &&
+        error.response?.data?.error?.includes('OAuth account detected')
+      ) {
+        toast.error(t('auth.errors.oauthOnly'))
+        navigate('/login')
+      } else {
+        // Always show generic success message to avoid enumeration
+        toast.success(t('auth.forgotPasswordSuccess'))
+      }
     } finally {
       setIsLoading(false)
     }
@@ -206,13 +252,14 @@ export const useAuth = () => {
       hasLowercase: PASSWORD_RULES.lowercase.test(password),
       hasNumber: PASSWORD_RULES.number.test(password),
       hasSpecial: PASSWORD_RULES.special.test(password),
-      allValid: registerSchema.shape.password.safeParse(password).success,
+      allValid: PASSWORD_REGEX.test(password) && hasMinLength,
     }
   }
 
   return {
     login,
     register,
+    loginWithGoogle,
     forgotPassword,
     resetPassword,
     logout,

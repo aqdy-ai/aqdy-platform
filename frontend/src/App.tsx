@@ -31,6 +31,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
+const AdminEvaluations = lazy(() => import('./pages/admin/evaluations'))
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
 import Register from './pages/Register'
@@ -161,6 +162,16 @@ function AppContent() {
             <AdminRoute>
               <AdminLayout>
                 <AdminPayments />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/evaluations"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <AdminEvaluations />
               </AdminLayout>
             </AdminRoute>
           }

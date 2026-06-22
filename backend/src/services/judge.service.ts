@@ -5,45 +5,60 @@ import langfuse from "../utils/langfuseClient.js";
 import { logger } from "../utils/logger.js";
 import type { IRiskAnalysis } from "../models/riskAnalysis.model.js";
 
-/**
- * Calls the LLM judge (GPT‑4o) to evaluate a completed analysis, saves the scores
- * into the `Evaluation` collection, and logs each metric as a Langfuse score.
- */
+function buildClauseContext(analysis: IRiskAnalysis): string {
+  if (!analysis.clauseAnalysis || analysis.clauseAnalysis.length === 0) {
+    return "";
+  }
+  return analysis.clauseAnalysis
+    .map(
+      (clause, i) =>
+        `[Clause ${i + 1}]
+Type: ${clause.clauseType}
+Risk Level: ${clause.riskLevel}
+Confidence: ${(clause.confidence * 100).toFixed(0)}%
+KB Source: ${clause.sourceFromKB ?? "none"}
+Text: ${clause.clauseText}
+Redline Suggestion: ${clause.redlineSuggestion ?? "not generated"}`,
+    )
+    .join("\n\n");
+}
+
+function buildAnalysisAnswer(analysis: IRiskAnalysis): string {
+  const summary = analysis.executiveSummary;
+  const lines: string[] = [
+    `Overall Risk: ${summary.overallRisk}`,
+    `Total Clauses: ${summary.totalClauses}`,
+    `Risky Clauses: ${summary.riskyClausesCount}`,
+    `Summary (EN): ${summary.summary.en ?? ""}`,
+    `Summary (AR): ${summary.summary.ar ?? ""}`,
+  ];
+  return lines.join("\n");
+}
+
 export const judgeService = {
   async evaluateAnalysis(analysis: IRiskAnalysis): Promise<void> {
     try {
-      // ---------------------------------------------------------------------
-      // 1️⃣ Create a Langfuse trace – this will group the scores under a single run.
-      // ---------------------------------------------------------------------
       const trace = langfuse.trace({
         name: `Analysis Evaluation ${analysis._id}`,
         userId: analysis.userId,
-        metadata: { analysisId: analysis._id.toString() },
+        metadata: {
+          analysisId: analysis._id.toString(),
+          overallRisk: analysis.executiveSummary.overallRisk,
+          totalClauses: analysis.executiveSummary.totalClauses,
+        },
       });
 
-      // ---------------------------------------------------------------------
-      // 2️⃣ Build the prompt.  For now we supply a minimal context – the
-      // executive summary (English) as the answer and an empty context string.
-      // This can be expanded later to include the original contract text.
-      // ---------------------------------------------------------------------
-      const question = "[Evaluation]"; // placeholder – no specific question needed.
-      const answer = analysis.executiveSummary.summary.en ?? "";
-      const context = ""; // could be concatenated clause texts if required.
+      const question = "Evaluate the quality of this contract analysis.";
+      const answer = buildAnalysisAnswer(analysis);
+      const context = buildClauseContext(analysis);
       const userPrompt = JUDGE_USER_PROMPT(question, answer, context);
 
-      // ---------------------------------------------------------------------
-      // 3️⃣ Invoke the LLM with the system prompt that defines the rubric.
-      // ---------------------------------------------------------------------
-      const { content } = await llmService.callPrimary(userPrompt, {
+      const { content } = await llmService.call(userPrompt, {
         systemPrompt: JUDGE_SYSTEM_PROMPT,
         temperature: 0,
         maxTokens: 1024,
       });
 
-      // ---------------------------------------------------------------------
-      // 4️⃣ Parse the JSON output.  If parsing fails we log and abort – we do
-      //    not want malformed data entering the DB.
-      // ---------------------------------------------------------------------
       let parsed: any;
       try {
         parsed = JSON.parse(content.trim());
@@ -64,9 +79,6 @@ export const judgeService = {
         reasoning = {},
       } = parsed;
 
-      // ---------------------------------------------------------------------
-      // 5️⃣ Persist the evaluation document.
-      // ---------------------------------------------------------------------
       const evaluation = new Evaluation({
         analysisId: analysis._id,
         traceId: trace.id,
@@ -79,10 +91,6 @@ export const judgeService = {
       });
       await evaluation.save();
 
-      // ---------------------------------------------------------------------
-      // 6️⃣ Log each metric as a Langfuse score, attaching the reasoning as a
-      //    comment where appropriate.
-      // ---------------------------------------------------------------------
       const scoreOpts = (name: string, value: number, comment?: string) => ({
         name,
         value,
@@ -101,6 +109,7 @@ export const judgeService = {
         analysisId: analysis._id.toString(),
         evaluationId: evaluation._id.toString(),
         traceId: trace.id,
+        scores: { faithfulness, relevancy, precision, recall },
       });
     } catch (err) {
       logger.error("JudgeService – unexpected error", {

@@ -32,7 +32,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await mongoose.disconnect();
-  await mongo.stop();
+  if (mongo) {
+    await mongo.stop();
+  }
 });
 
 afterEach(async () => {

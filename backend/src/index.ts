@@ -83,6 +83,7 @@ app.use("/api/admin/accounts", accountsRouter);
 app.use("/api/admin/stats", adminStatsRouter);
 app.use("/api/admin/dashboard", adminDashboardRouter);
 app.use("/api/admin/payments", adminPaymentsRouter);
+app.use("/api/admin/contracts", adminContractsRouter);
 app.use("/api/admin/evaluations", evaluationRouter);
 app.use("/api/plans", plansRouter);
 

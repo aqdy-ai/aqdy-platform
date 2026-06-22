@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next'
 import {
   LineChart as ReLineChart,
   Line,
@@ -12,9 +13,8 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { adminApi } from '../../services/adminApi'
-import { Loader2 } from 'lucide-react'
+import { Loader2, BarChart3 } from 'lucide-react'
 
-// Types
 interface DailyStat {
   date: string
   avgFaithfulness: number
@@ -41,7 +41,6 @@ interface Evaluation {
   createdAt: string
 }
 
-// Tiny reusable card component (styled like the premium dashboard)
 function MetricCard({
   title,
   value,
@@ -60,9 +59,7 @@ function MetricCard({
         <span className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
           {title}
         </span>
-        <div className="from-primary/20 to-primary/20 text-primary rounded-xl bg-gradient-to-br p-2.5">
-          {/* placeholder icon */}
-        </div>
+        <div className="from-primary/20 to-primary/20 text-primary rounded-xl bg-gradient-to-br p-2.5"></div>
       </div>
       <div className="mt-3">
         <h3 className="text-foreground text-3xl font-black tracking-tight">
@@ -74,6 +71,7 @@ function MetricCard({
 }
 
 export default function AdminEvaluations() {
+  const { t } = useTranslation()
   const [stats, setStats] = useState<DailyStat[]>([])
   const [lowScores, setLowScores] = useState<Evaluation[]>([])
   const [loadingStats, setLoadingStats] = useState(true)
@@ -84,9 +82,9 @@ export default function AdminEvaluations() {
       try {
         const res = await adminApi.getEvaluationStats()
         if (res.data.success) setStats(res.data.data)
-        else toast.error('Failed to load evaluation stats')
-      } catch (e) {
-        toast.error('Error loading evaluation stats')
+        else toast.error(t('evaluations.error_stats'))
+      } catch {
+        toast.error(t('evaluations.error_generic'))
       } finally {
         setLoadingStats(false)
       }
@@ -95,18 +93,18 @@ export default function AdminEvaluations() {
       try {
         const res = await adminApi.getLowScores()
         if (res.data.success) setLowScores(res.data.data)
-        else toast.error('Failed to load low‑score evaluations')
-      } catch (e) {
-        toast.error('Error loading low‑score evaluations')
+        else toast.error(t('evaluations.error_low'))
+      } catch {
+        toast.error(t('evaluations.error_generic'))
       } finally {
         setLoadingLow(false)
       }
     }
     fetchStats()
     fetchLow()
-  }, [])
+  }, [t])
 
-  // Derive latest daily averages for the metric cards
+  const hasData = stats.length > 0
   const latest = stats[stats.length - 1] ?? {
     avgFaithfulness: 0,
     avgRelevancy: 0,
@@ -114,7 +112,6 @@ export default function AdminEvaluations() {
     avgRecall: 0,
   }
 
-  // Helper to find the lowest metric for a given evaluation
   const getLowestMetric = (e: Evaluation) => {
     const scores = {
       faithfulness: e.faithfulness,
@@ -129,32 +126,57 @@ export default function AdminEvaluations() {
     return { metric, value }
   }
 
+  const metricLabel = (key: string) => {
+    const map: Record<string, string> = {
+      faithfulness: t('evaluations.faithfulness'),
+      relevancy: t('evaluations.relevancy'),
+      precision: t('evaluations.precision'),
+      recall: t('evaluations.recall'),
+    }
+    return map[key] ?? key
+  }
+
   return (
     <div className="space-y-8 p-6">
-      {/* Header */}
       <h1 className="text-foreground text-2xl font-bold">
-        LLM‑as‑a‑Judge Evaluation Dashboard
+        {t('evaluations.title')}
       </h1>
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="Faithfulness"
-          value={latest.avgFaithfulness.toFixed(2)}
+          title={t('evaluations.faithfulness')}
+          value={hasData ? latest.avgFaithfulness.toFixed(2) : '—'}
         />
-        <MetricCard title="Relevancy" value={latest.avgRelevancy.toFixed(2)} />
-        <MetricCard title="Precision" value={latest.avgPrecision.toFixed(2)} />
-        <MetricCard title="Recall" value={latest.avgRecall.toFixed(2)} />
+        <MetricCard
+          title={t('evaluations.relevancy')}
+          value={hasData ? latest.avgRelevancy.toFixed(2) : '—'}
+        />
+        <MetricCard
+          title={t('evaluations.precision')}
+          value={hasData ? latest.avgPrecision.toFixed(2) : '—'}
+        />
+        <MetricCard
+          title={t('evaluations.recall')}
+          value={hasData ? latest.avgRecall.toFixed(2) : '—'}
+        />
       </div>
 
       {/* Trends Line Chart */}
       <section className="border-border/40 bg-card/30 rounded-2xl border p-6 shadow-sm">
         <h2 className="text-muted-foreground mb-4 font-semibold uppercase">
-          Daily Score Trends
+          {t('evaluations.daily_trends')}
         </h2>
         {loadingStats ? (
           <div className="flex h-48 items-center justify-center">
             <Loader2 className="text-primary h-8 w-8 animate-spin" />
+          </div>
+        ) : !hasData ? (
+          <div className="flex h-48 flex-col items-center justify-center gap-3 text-center">
+            <BarChart3 className="text-muted-foreground h-10 w-10 opacity-40" />
+            <p className="text-muted-foreground max-w-md text-sm">
+              {t('evaluations.no_evaluations')}
+            </p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
@@ -170,28 +192,28 @@ export default function AdminEvaluations() {
               <Line
                 type="monotone"
                 dataKey="avgFaithfulness"
-                name="Faithfulness"
+                name={t('evaluations.faithfulness')}
                 stroke="#6366f1"
                 dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="avgRelevancy"
-                name="Relevancy"
+                name={t('evaluations.relevancy')}
                 stroke="#22c55e"
                 dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="avgPrecision"
-                name="Precision"
+                name={t('evaluations.precision')}
                 stroke="#f59e0b"
                 dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="avgRecall"
-                name="Recall"
+                name={t('evaluations.recall')}
                 stroke="#ef4444"
                 dot={false}
               />
@@ -200,14 +222,20 @@ export default function AdminEvaluations() {
         )}
       </section>
 
-      {/* Low‑Score Table */}
+      {/* Low-Score Table */}
       <section className="border-border/40 bg-card/30 rounded-2xl border p-6 shadow-sm">
         <h2 className="text-muted-foreground mb-4 font-semibold uppercase">
-          Low‑Score Analyses
+          {t('evaluations.low_scores')}
         </h2>
         {loadingLow ? (
           <div className="flex h-48 items-center justify-center">
             <Loader2 className="text-primary h-8 w-8 animate-spin" />
+          </div>
+        ) : lowScores.length === 0 ? (
+          <div className="flex h-32 flex-col items-center justify-center gap-2 text-center">
+            <p className="text-muted-foreground text-sm">
+              {t('evaluations.no_evaluations')}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -215,19 +243,19 @@ export default function AdminEvaluations() {
               <thead>
                 <tr className="bg-muted">
                   <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    Analysis ID
+                    {t('evaluations.analysis_id')}
                   </th>
                   <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    Lowest Metric
+                    {t('evaluations.lowest_metric')}
                   </th>
                   <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    Score
+                    {t('evaluations.score')}
                   </th>
                   <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    Reasoning
+                    {t('evaluations.reasoning')}
                   </th>
                   <th className="text-muted-foreground px-4 py-2 text-center text-xs font-medium">
-                    Action
+                    {t('evaluations.action')}
                   </th>
                 </tr>
               </thead>
@@ -242,7 +270,7 @@ export default function AdminEvaluations() {
                         {e.analysisId?.toString().slice(0, 12)}…
                       </td>
                       <td className="text-foreground px-4 py-2 text-sm capitalize">
-                        {metric}
+                        {metricLabel(metric)}
                       </td>
                       <td className="text-foreground px-4 py-2 text-sm">
                         {value}
@@ -257,11 +285,12 @@ export default function AdminEvaluations() {
                         <button
                           className="bg-primary text-primary-foreground hover:bg-primary/90 rounded px-3 py-1 text-xs font-medium transition-colors"
                           onClick={() => {
-                            // Placeholder – could open a modal or navigate to a detail page
-                            toast.info(`Inspect analysis ${e.analysisId}`)
+                            toast.info(
+                              t('evaluations.inspect', { id: e.analysisId })
+                            )
                           }}
                         >
-                          View
+                          {t('evaluations.view')}
                         </button>
                       </td>
                     </tr>
