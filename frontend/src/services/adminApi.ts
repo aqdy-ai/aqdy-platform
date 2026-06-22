@@ -35,12 +35,37 @@ export interface AdminStats {
   }
 }
 
+export interface DailyStat {
+  date: string;
+  avgFaithfulness: number;
+  avgRelevancy: number;
+  avgPrecision: number;
+  avgRecall: number;
+  count: number;
+}
 export interface PaymentUser {
-  _id: string
-  name: string
-  email: string
-  planSlug: string
-  status: string
+  _id: string;
+  name: string;
+  email: string;
+  planSlug: string;
+  status: string;
+}
+
+export interface Evaluation {
+  _id: string;
+  analysisId: string;
+  faithfulness: number;
+  relevancy: number;
+  precision: number;
+  recall: number;
+  reasoning: {
+    faithfulness?: string;
+    relevancy?: string;
+    precision?: string;
+    recall?: string;
+    overall?: string;
+  };
+  createdAt: string;
 }
 
 export interface PaymentRecord {
@@ -191,6 +216,11 @@ export const adminApi = {
   getDashboard: () =>
     adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard'),
   getStats: () => adminClient.get<AdminStats>('/stats'),
+  // Evaluation endpoints
+  getEvaluationStats: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get<{ success: boolean; data: DailyStat[] }>('/evaluations/stats', { params }),
+  getLowScores: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get<{ success: boolean; data: Evaluation[] }>('/evaluations/low-scores', { params }),
   getPayments: (params?: {
     page?: number
     pageSize?: number
