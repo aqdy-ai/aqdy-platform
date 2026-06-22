@@ -1,15 +1,17 @@
-// backend/tests/judge.service.test.ts
-// Jest unit test for judgeService.evaluateAnalysis
-
-import { judgeService } from "../src/services/judge.service.js";
+import { jest } from '@jest/globals';
 import { Evaluation } from "../src/models/evaluation.model.js";
 import { IRiskAnalysis } from "../src/models/riskAnalysis.model.js";
+import { MongoMemoryServer } from "mongodb-memory-server";
+import mongoose from "mongoose";
+
+// 3. Clean static imports
+import { judgeService } from "../src/services/judge.service.js";
 import langfuse from "../src/utils/langfuseClient.js";
-// Cast to any for test compatibility
-const langfuseMock = langfuse;
 import { llmService } from "../src/services/llm.service.js";
 
-// Mock the LLM response – static JSON fixture
+const langfuseMock = langfuse as any;
+
+// 1. Define static response
 const mockLlmResponse = JSON.stringify({
   faithfulness: 5,
   relevancy: 4,
@@ -24,29 +26,17 @@ const mockLlmResponse = JSON.stringify({
   },
 });
 
-jest.mock("../src/services/llm.service", () => ({
-  llmService: {
-    callPrimary: jest.fn().mockResolvedValue({
-      content: mockLlmResponse,
-      model: "gpt-4o",
-      usedFallback: false,
-    }),
-  },
-}));
+// 2. Standard Spies (Safe for Native ESM with static imports)
+jest.spyOn(llmService, 'callPrimary').mockResolvedValue({
+  content: mockLlmResponse,
+  model: "gpt-4o",
+  usedFallback: false,
+});
 
-jest.mock("../src/utils/langfuseClient", () => ({
-  __esModule: true,
-  default: {
-    trace: jest.fn().mockReturnValue({ id: "mock-trace-id" }),
-    score: jest.fn(),
-  },
-}));
+jest.spyOn(langfuseMock, 'trace').mockReturnValue({ id: "mock-trace-id" });
+jest.spyOn(langfuseMock, 'score').mockImplementation(() => {});
 
-// Use in‑memory MongoDB for isolation
-import { MongoMemoryServer } from "mongodb-memory-server";
-import mongoose from "mongoose";
-
-let mongoServer;
+let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
@@ -66,11 +56,10 @@ afterEach(async () => {
 
 describe("judgeService.evaluateAnalysis", () => {
   it("processes LLM output, stores Evaluation, and logs Langfuse scores", async () => {
-    const fakeAnalysis: IRiskAnalysis = {
+    const fakeAnalysis = {
       _id: new mongoose.Types.ObjectId(),
       userId: "user-123",
       executiveSummary: { summary: { en: "Sample answer" } },
-      // other required fields are omitted for brevity – they are not accessed in the service
     } as unknown as IRiskAnalysis;
 
     await judgeService.evaluateAnalysis(fakeAnalysis);
@@ -85,33 +74,15 @@ describe("judgeService.evaluateAnalysis", () => {
     expect(evalDoc?.traceId).toBe("mock-trace-id");
 
     // Verify Langfuse scoring calls
-    expect(langfuseMock.score as jest.Mock).toHaveBeenCalledTimes(4);
-    const scoreCalls = (langfuseMock.score as jest.Mock).mock.calls.map(
-      (c) => c[0],
-    );
+    expect(langfuseMock.score).toHaveBeenCalledTimes(4);
+    const scoreCalls = langfuseMock.score.mock.calls.map((c: any) => c[0]);
     expect(scoreCalls).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          name: "faithfulness",
-          value: 5,
-          traceId: "mock-trace-id",
-        }),
-        expect.objectContaining({
-          name: "relevancy",
-          value: 4,
-          traceId: "mock-trace-id",
-        }),
-        expect.objectContaining({
-          name: "precision",
-          value: 3,
-          traceId: "mock-trace-id",
-        }),
-        expect.objectContaining({
-          name: "recall",
-          value: 2,
-          traceId: "mock-trace-id",
-        }),
-      ]),
+        expect.objectContaining({ name: "faithfulness", value: 5, traceId: "mock-trace-id" }),
+        expect.objectContaining({ name: "relevancy", value: 4, traceId: "mock-trace-id" }),
+        expect.objectContaining({ name: "precision", value: 3, traceId: "mock-trace-id" }),
+        expect.objectContaining({ name: "recall", value: 2, traceId: "mock-trace-id" }),
+      ])
     );
   });
 });

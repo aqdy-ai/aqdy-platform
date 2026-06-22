@@ -11,6 +11,7 @@ import { jest } from "@jest/globals";
 
 export const Langfuse = jest.fn().mockImplementation(() => ({
   trace: jest.fn(),
+  score: jest.fn(),
   flush: jest.fn().mockResolvedValue(undefined),
   shutdown: jest.fn().mockResolvedValue(undefined),
 }));
