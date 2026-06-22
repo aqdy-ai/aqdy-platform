@@ -225,7 +225,7 @@ router.patch(
               "plan_topup",
             );
             // Attach topup info to be returned in the response later
-            (user as any)._creditTopup = {
+            (user as Record<string, unknown>)._creditTopup = {
               amount: allowance,
               newBalance: allowance,
             };
@@ -245,9 +245,14 @@ router.patch(
 
       const updatedUser = await User.findById(userId);
       // If a topup was performed, include it in the response
-      const responsePayload: any = { success: true, data: updatedUser };
-      if ((user as any)._creditTopup) {
-        responsePayload.creditTopup = (user as any)._creditTopup;
+      const responsePayload: Record<string, unknown> = {
+        success: true,
+        data: updatedUser,
+      };
+      if ((user as Record<string, unknown>)._creditTopup) {
+        responsePayload.creditTopup = (
+          user as Record<string, unknown>
+        )._creditTopup;
       }
       return res.status(200).json(responsePayload);
     } catch (error: unknown) {

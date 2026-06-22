@@ -22,7 +22,7 @@ export interface LLMRequestOptions {
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
-  callbacks?: any[];
+  callbacks?: unknown[];
 }
 
 export interface LLMResponse {
@@ -94,7 +94,7 @@ const callWithRetry = async (
         : createPrimaryClient(options);
 
       const response = await client.invoke(messages, {
-        callbacks: options.callbacks,
+        callbacks: options.callbacks as never,
       });
       const content = response.content;
 

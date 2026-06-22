@@ -241,14 +241,15 @@
       "passwordRequired": "Please check password requirements",
       "invalidCredentials": "Invalid credentials",
       "generic": "Something went wrong, please try again later",
-      "emailInUse": "Email address is already in use"
+      "emailInUse": "Email address is already in use",
+      "passwordInvalidCharacters": "Password contains invalid characters. Only @ $ ! % * ? & # _ - are allowed as special characters."
     },
     "passwordRules": {
       "minLength": "At least {{count}} characters",
       "uppercase": "One uppercase letter",
       "lowercase": "One lowercase letter",
       "number": "One number",
-      "special": "One special character (@$!%*?&)"
+      "special": "One special character (@$!%*?&#_-)"
     },
     "verifyPromptTitle": "Email Verification Required",
     "verifyPromptSubtitle": "We sent a verification link to {{email}}. Please click the link in your email to verify your account.",

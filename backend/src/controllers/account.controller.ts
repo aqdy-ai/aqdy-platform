@@ -17,7 +17,7 @@ const updateProfileSchema = z.object({
     .string()
     .min(8)
     .regex(
-      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]/,
       "Password must include uppercase, lowercase, number, and special character",
     )
     .optional(),

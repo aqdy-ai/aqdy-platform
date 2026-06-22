@@ -14,6 +14,13 @@ import type {
 import { AuthContext } from './context/AuthContext'
 
 /**
+ * Backend-aligned password regex: must include uppercase, lowercase, number, and special char (@$!%*?&#_-)
+ * and only allows A-Za-z\d@$!%*?&#_- characters.
+ */
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]+$/
+
+/**
  * Password validation constants and rules
  */
 export const PASSWORD_RULES = {
@@ -21,7 +28,7 @@ export const PASSWORD_RULES = {
   uppercase: /[A-Z]/,
   lowercase: /[a-z]/,
   number: /[0-9]/,
-  special: /[@$!%*?&]/,
+  special: /[@$!%*?&#_-]/,
 }
 
 /**
@@ -48,7 +55,8 @@ export const registerSchema = z
       .regex(PASSWORD_RULES.uppercase, 'auth.errors.passwordNoUppercase')
       .regex(PASSWORD_RULES.lowercase, 'auth.errors.passwordNoLowercase')
       .regex(PASSWORD_RULES.number, 'auth.errors.passwordNoNumber')
-      .regex(PASSWORD_RULES.special, 'auth.errors.passwordNoSpecial'),
+      .regex(PASSWORD_RULES.special, 'auth.errors.passwordNoSpecial')
+      .regex(PASSWORD_REGEX, 'auth.errors.passwordInvalidCharacters'),
     confirmPassword: z.string().min(1, 'auth.errors.confirmPasswordRequired'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -244,7 +252,7 @@ export const useAuth = () => {
       hasLowercase: PASSWORD_RULES.lowercase.test(password),
       hasNumber: PASSWORD_RULES.number.test(password),
       hasSpecial: PASSWORD_RULES.special.test(password),
-      allValid: registerSchema.shape.password.safeParse(password).success,
+      allValid: PASSWORD_REGEX.test(password) && hasMinLength,
     }
   }
 

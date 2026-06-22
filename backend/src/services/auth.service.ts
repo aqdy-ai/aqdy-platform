@@ -228,11 +228,9 @@ export const loginWithGoogle = async (
       googleId = payload.sub;
       email = payload.email.toLowerCase().trim();
       name = payload.name || email.split("@")[0];
-    } catch (error: any) {
-      throw new AppError(
-        401,
-        `Google authentication failed: ${error.message || "Invalid token"}`,
-      );
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : "Invalid token";
+      throw new AppError(401, `Google authentication failed: ${errMsg}`);
     }
   }
 
