@@ -9,10 +9,8 @@ import {
 import { auditLogService } from "./auditLog.service.js";
 import { orchestratorService } from "../pipeline/orchestrator.service.js";
 import { logger } from "../utils/logger.js";
-import {
-  AgentExecutionService,
-  AgentJobPayload,
-} from "../pipeline/agentExecution.service.js";
+import { AgentExecutionService, AgentJobPayload } from "../pipeline/agentExecution.service.js";
+import { judgeService } from "../services/judge.service.js";
 import { metrics } from "../utils/metrics.js";
 import { creditsService } from "./credits.service.js";
 
@@ -222,13 +220,20 @@ export class AnalysisService {
     // record analysis metrics
     metrics.increment("analyses_completed");
     metrics.observe("analysis_duration_ms", duration);
-    await this.saveAnalysis({
+    const analysis = await this.saveAnalysis({
       contractId: job.contractId,
       userId: job.userId,
       executiveSummary: result.executiveSummary,
       clauseAnalysis: result.clauseAnalysis,
       analysisDuration: duration,
     });
+    // Trigger background evaluation – fire‑and‑forget
+    judgeService.evaluateAnalysis(analysis).catch(err =>
+      logger.error('Judge evaluation failed', {
+        error: err instanceof Error ? err.message : String(err),
+        analysisId: analysis._id?.toString(),
+      })
+    );
 
     // ── Credits deduction ────────────────────────────────────────────────
     // Deduct the actual cost based on real token usage from the pipeline.
