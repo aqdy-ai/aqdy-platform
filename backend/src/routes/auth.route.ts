@@ -9,6 +9,7 @@ import {
   resendVerification,
   forgotPassword,
   resetPassword,
+  googleLogin,
 } from "../controllers/auth.controller.js";
 import {
   authenticateJwt,
@@ -20,6 +21,7 @@ const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/google", googleLogin);
 router.post("/logout", logout);
 router.post("/refresh", refresh);
 router.get("/me", authenticateJwt, requireAuth, me);

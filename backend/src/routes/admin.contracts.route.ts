@@ -129,13 +129,17 @@ router.get(
           fileSize: contract.fileSize,
           owner: owner
             ? {
-                _id: (owner as any)._id,
-                name: (owner as any).name,
-                email: (owner as any).email,
+                _id: (owner as Record<string, unknown>)._id,
+                name: (owner as Record<string, unknown>).name,
+                email: (owner as Record<string, unknown>).email,
               }
             : null,
-          status: analysis ? (analysis as any).status || "analyzed" : "pending",
-          riskLevel: analysis ? (analysis as any).overallRisk || null : null,
+          status: analysis
+            ? (analysis as Record<string, unknown>).status || "analyzed"
+            : "pending",
+          riskLevel: analysis
+            ? (analysis as Record<string, unknown>).overallRisk || null
+            : null,
         };
       });
 

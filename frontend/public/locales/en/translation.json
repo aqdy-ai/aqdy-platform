@@ -220,7 +220,10 @@
     "haveAccount": "Already have an account?",
     "loginNow": "Login now",
     "forgotPasswordComingSoon": "Sorry, this feature is not available yet. Please try again later",
+    "orContinueWith": "Or continue with",
+    "continueWithGoogle": "Continue with Google",
     "errors": {
+      "oauthOnly": "This account is linked with Google. Please log in using Google, then you can set a password in your settings.",
       "invalidEmail": "Email address is invalid",
       "passwordTooShort": "Password must be at least 8 characters long",
       "passwordWeak": "Password is too weak",
@@ -238,14 +241,15 @@
       "passwordRequired": "Please check password requirements",
       "invalidCredentials": "Invalid credentials",
       "generic": "Something went wrong, please try again later",
-      "emailInUse": "Email address is already in use"
+      "emailInUse": "Email address is already in use",
+      "passwordInvalidCharacters": "Password contains invalid characters. Only @ $ ! % * ? & # _ - are allowed as special characters."
     },
     "passwordRules": {
       "minLength": "At least {{count}} characters",
       "uppercase": "One uppercase letter",
       "lowercase": "One lowercase letter",
       "number": "One number",
-      "special": "One special character (@$!%*?&)"
+      "special": "One special character (@$!%*?&#_-)"
     },
     "verifyPromptTitle": "Email Verification Required",
     "verifyPromptSubtitle": "We sent a verification link to {{email}}. Please click the link in your email to verify your account.",
@@ -292,6 +296,7 @@
     "errorLoadingProfile": "Unable to load account details. Please refresh.",
     "errorLoadingSubscription": "Unable to load subscription details. Please refresh.",
     "upgradeNotAvailable": "Upgrade is coming soon.",
+    "noPasswordGoogle": "You registered via Google and do not have a password set. You can set a password below to allow email/password login in the future.",
     "profile": "Profile",
     "settings": "Settings",
     "subscriptionStatus": "Subscription status",

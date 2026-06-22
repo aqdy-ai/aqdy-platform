@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { cleanup, render, screen, waitFor, fireEvent } from '@testing-library/react'
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -22,7 +28,8 @@ const translations: Record<string, Record<string, string>> = {
   en: {
     'common.loading': 'Loading',
     'account.settingsTitle': 'Account Settings',
-    'account.settingsDescription': 'Update your profile and subscription details.',
+    'account.settingsDescription':
+      'Update your profile and subscription details.',
     'auth.nameLabel': 'Name',
     'auth.emailLabel': 'Email',
     'auth.namePlaceholder': 'John Doe',
@@ -184,7 +191,7 @@ describe('AccountSettings page', () => {
       name: '',
       email: 'bad-email',
       currentPassword: '',
-      newPassword: 'short',
+      password: 'short',
       confirmPassword: 'mismatch',
     }
 
@@ -192,54 +199,72 @@ describe('AccountSettings page', () => {
     expect(result.valid).toBe(false)
     expect(result.errors.email).toBe('auth.errors.invalidEmail')
     expect(result.errors.name).toBe('auth.errors.nameTooShort')
-    expect(result.errors.newPassword).toBe('account.errors.passwordTooShort')
+    expect(result.errors.password).toBe('account.errors.passwordTooShort')
     expect(result.errors.confirmPassword).toBe('auth.errors.passwordsMismatch')
   })
 
   it('should render loading state on initial fetch', async () => {
     vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(
+      subscriptionData as any
+    )
 
     renderWithProviders(<AccountSettings />)
     expect(screen.getByText('Loading')).toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Account Settings' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: 'Account Settings' })
+      ).toBeInTheDocument()
     })
   })
 
   it('should render bilingual layout for English and Arabic modes', async () => {
     vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(
+      subscriptionData as any
+    )
 
     currentTestLanguage = 'ar'
     renderWithProviders(<AccountSettings />)
 
     await screen.findByLabelText('الاسم')
     expect(screen.getByLabelText('الاسم')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'إعدادات الحساب' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'إعدادات الحساب' })
+    ).toBeInTheDocument()
     expect(document.querySelector('div[dir="rtl"]')).toBeInTheDocument()
 
     cleanup()
     currentTestLanguage = 'en'
     renderWithProviders(<AccountSettings />)
     await screen.findByLabelText('Name')
-    expect(screen.getByRole('heading', { name: 'Account Settings' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Account Settings' })
+    ).toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toBeInTheDocument()
   })
 
   it('should display profile and subscription data after successful fetch', async () => {
     vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(
+      subscriptionData as any
+    )
 
     renderWithProviders(<AccountSettings />)
 
-    await waitFor(() => {
-      expect(screen.queryByText('Loading')).not.toBeInTheDocument()
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(screen.queryByText('Loading')).not.toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument()
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
     expect(screen.getByDisplayValue('john.doe@example.com')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Free' })).toBeInTheDocument()
@@ -247,13 +272,17 @@ describe('AccountSettings page', () => {
       expect(screen.getByText('7')).toBeInTheDocument()
       expect(screen.getByText('10')).toBeInTheDocument()
     })
-    expect(screen.getByRole('button', { name: 'Upgrade plan' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Upgrade plan' })
+    ).toBeInTheDocument()
   })
 
   it('should handle form submission and show success toast', async () => {
     vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
-    
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(
+      subscriptionData as any
+    )
+
     vi.mocked(accountApi.updateProfile).mockResolvedValue({
       data: {
         success: true,
@@ -274,37 +303,194 @@ describe('AccountSettings page', () => {
 
     renderWithProviders(<AccountSettings />)
 
-    await waitFor(() => {
-      expect(screen.queryByText('Loading')).not.toBeInTheDocument()
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(screen.queryByText('Loading')).not.toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument()
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument()
+      },
+      { timeout: 3000 }
+    )
 
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Jane Doe' } })
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jane.doe@example.com' } })
-    fireEvent.change(screen.getByLabelText('Current password'), { target: { value: 'CurrentPass123' } })
-    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'NewPassword123' } })
-    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'NewPassword123' } })
-
+    fireEvent.change(screen.getByLabelText('Name'), {
+      target: { value: 'Jane Doe' },
+    })
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'jane.doe@example.com' },
+    })
+    fireEvent.change(screen.getByLabelText('Current password'), {
+      target: { value: 'CurrentPass123' },
+    })
+    fireEvent.change(screen.getByLabelText('New password'), {
+      target: { value: 'NewPassword123' },
+    })
+    fireEvent.change(screen.getByLabelText('Confirm password'), {
+      target: { value: 'NewPassword123' },
+    })
 
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
 
-    await waitFor(() => {
-      expect(mockedToast.success).toHaveBeenCalledWith(
-        translations.en['account.profileUpdatedSuccess']
-      )
-    }, { timeout: 3000 })
+    await waitFor(
+      () => {
+        expect(mockedToast.success).toHaveBeenCalledWith(
+          translations.en['account.profileUpdatedSuccess']
+        )
+      },
+      { timeout: 3000 }
+    )
   })
 
   it('should render an error message when profile fetch fails', async () => {
     vi.mocked(accountApi.getProfile).mockRejectedValue(new Error('Fail'))
-    vi.mocked(accountApi.getSubscription).mockResolvedValue(subscriptionData as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(
+      subscriptionData as any
+    )
 
     renderWithProviders(<AccountSettings />)
 
     await screen.findByText('Unable to load your profile')
     expect(screen.getByText('Unable to load your profile')).toBeInTheDocument()
+  })
+  it('should hide current password field for Google users without password', async () => {
+    vi.mocked(accountApi.getProfile).mockResolvedValue(
+      createMockResponse({
+        data: {
+          id: 'user-1',
+          name: 'Google User',
+          email: 'google@example.com',
+          status: 'active',
+          memberSince: '2024-01-15T00:00:00.000Z',
+          hasPassword: false,
+        },
+      }) as any
+    )
+
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(
+      subscriptionData as any
+    )
+
+    renderWithProviders(<AccountSettings />)
+
+    await screen.findByDisplayValue('Google User')
+
+    expect(screen.queryByLabelText('Current password')).not.toBeInTheDocument()
+  })
+  it('should allow Google users to set password without current password', async () => {
+    vi.mocked(accountApi.getProfile).mockResolvedValue(
+      createMockResponse({
+        data: {
+          id: 'user-1',
+          name: 'Google User',
+          email: 'google@example.com',
+          status: 'active',
+          memberSince: '2024-01-15T00:00:00.000Z',
+          hasPassword: false,
+        },
+      }) as any
+    )
+
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(
+      subscriptionData as any
+    )
+
+    vi.mocked(accountApi.updateProfile).mockResolvedValue({
+      data: {
+        success: true,
+        data: {},
+      },
+    } as any)
+
+    renderWithProviders(<AccountSettings />)
+
+    await screen.findByDisplayValue('Google User')
+
+    fireEvent.change(screen.getByLabelText('New password'), {
+      target: { value: 'NewPassword123' },
+    })
+
+    fireEvent.change(screen.getByLabelText('Confirm password'), {
+      target: { value: 'NewPassword123' },
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Save changes',
+      })
+    )
+
+    await waitFor(() => {
+      expect(accountApi.updateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          password: 'NewPassword123',
+        })
+      )
+    })
+
+    expect(accountApi.updateProfile).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentPassword: expect.anything(),
+      })
+    )
+  })
+  it('should not require current password for Google users', () => {
+    const form: AccountSettingsForm = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      currentPassword: '',
+      password: 'Password123',
+      confirmPassword: 'Password123',
+    }
+
+    const result = validateAccountSettingsForm(form, false)
+
+    expect(result.errors.currentPassword).toBeUndefined()
+    expect(result.valid).toBe(true)
+  })
+  it('should require current password when user has a password', () => {
+    const form: AccountSettingsForm = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      currentPassword: '',
+      password: 'Password123',
+      confirmPassword: 'Password123',
+    }
+
+    const result = validateAccountSettingsForm(form, true)
+
+    expect(result.valid).toBe(false)
+    expect(result.errors.currentPassword).toBe(
+      'account.errors.currentPasswordRequired'
+    )
+  })
+  it('should show error toast when update fails', async () => {
+    vi.mocked(accountApi.getProfile).mockResolvedValue(profileResponse as any)
+    vi.mocked(accountApi.getSubscription).mockResolvedValue(
+      subscriptionData as any
+    )
+
+    vi.mocked(accountApi.updateProfile).mockRejectedValue(
+      new Error('Server error')
+    )
+
+    renderWithProviders(<AccountSettings />)
+
+    await screen.findByDisplayValue('John Doe')
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Save changes',
+      })
+    )
+
+    await waitFor(() => {
+      expect(mockedToast.error).toHaveBeenCalledWith(
+        translations.en['account.updateFailed']
+      )
+    })
   })
 })

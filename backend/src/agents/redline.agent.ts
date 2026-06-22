@@ -61,7 +61,7 @@ export class RedlineAgent {
     clauseType: string,
     language: "ar" | "en",
     saferAlternative?: string,
-    options?: { callbacks?: any[] },
+    options?: { callbacks?: unknown[] },
   ): Promise<RedlineResult> {
     const startTime = Date.now();
 

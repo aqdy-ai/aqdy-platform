@@ -2,12 +2,27 @@ import { describe, test, expect, beforeEach, jest } from "@jest/globals";
 import bcrypt from "bcryptjs";
 import { AppError } from "../../src/middlewares/errorHandler.js";
 
-const mockFindById = jest.fn<(...args: [string]) => Promise<any>>();
+const mockFindById = jest.fn<(...args: [string]) => any>();
 const mockFindOne = jest.fn<(...args: [Record<string, unknown>]) => Promise<any>>();
 const mockSave = jest.fn<() => Promise<void>>();
 
+class MockQuery {
+  constructor(private result: any) {}
+
+  select(path: string) {
+    return this;
+  }
+
+  then(onfulfilled?: (value: any) => any, onrejected?: (reason: any) => any) {
+    return Promise.resolve(this.result).then(onfulfilled, onrejected);
+  }
+}
+
 class MockUser {
-  static findById = mockFindById;
+  static findById = (id: string) => {
+    const val = mockFindById(id);
+    return new MockQuery(val);
+  };
   static findOne = mockFindOne;
   [key: string]: any;
 
@@ -62,6 +77,7 @@ describe("Account Service", () => {
       plan: "free",
       memberSince: user.createdAt,
       lastLogin: user.lastLogin,
+      hasPassword: true,
     });
     expect(mockFindById).toHaveBeenCalledWith("uid123");
   });
@@ -113,7 +129,14 @@ describe("Account Service", () => {
     });
 
     expect(user.verifyPassword).toHaveBeenCalledWith("StrongPass123!");
-    expect(updated.password).toBe("NewStrongPass123!");
+    expect(updated.passwordHash).not.toBeUndefined();
+
+    const matches = await bcrypt.compare(
+      "NewStrongPass123!",
+      updated.passwordHash
+    );
+
+    expect(matches).toBe(true);
     expect(mockSave).toHaveBeenCalled();
   });
 

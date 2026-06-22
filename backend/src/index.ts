@@ -68,7 +68,12 @@ app.use("/api", healthRouter);
 app.use("/api/upload", authenticateJwt, requireEmailVerified, uploadRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/account", authenticateJwt, requireEmailVerified, accountRouter);
-app.use("/api/contracts", authenticateJwt, requireEmailVerified, contractRouter);
+app.use(
+  "/api/contracts",
+  authenticateJwt,
+  requireEmailVerified,
+  contractRouter,
+);
 app.use("/api/analysis", authenticateJwt, requireEmailVerified, analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/payments", paymentRouter);
