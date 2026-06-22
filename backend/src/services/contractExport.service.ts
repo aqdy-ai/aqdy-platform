@@ -57,7 +57,8 @@ export class ContractExportService {
         filename: contract.filename,
         uploadDate: contract.uploadedAt.toISOString(),
         analysisDate: analysis
-          ? ((analysis as any).createdAt?.toISOString() ?? "")
+          ? ((analysis as Record<string, unknown>).createdAt?.toISOString() ??
+            "")
           : "",
         overallRisk: analysis?.executiveSummary?.overallRisk ?? "pending",
         criticalClauses: clauses.filter((c) => c.riskLevel === "critical")

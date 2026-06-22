@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Helmet } from 'react-helmet-async'
-import { toast } from 'sonner'
-import { authApi } from '../services/authApi'
 import { useAuth } from '../hooks/useAuth'
 
 export default function ForgotPassword() {

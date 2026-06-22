@@ -6,11 +6,15 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ./backend/.env
+      - .env  # Point to the root .env file
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # This bakes the Google Client ID into the Vite static build
+        - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+        - VITE_API_URL=http://localhost:3000/api
     ports:
       - "8080:80"

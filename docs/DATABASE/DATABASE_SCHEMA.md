@@ -70,7 +70,8 @@ Aqdy uses MongoDB with Mongoose ODM. The database contains 3 main collections.
 | `_id` | ObjectId | Auto | Unique identifier |
 | `name` | String | ✅ | Full name |
 | `email` | String | ✅ | Unique email address (indexed, lowercase) |
-| `passwordHash` | String | ✅ | Hashed password |
+| `passwordHash` | String | ❌ | Hashed password (optional for Google OAuth accounts) |
+| `googleId` | String | ❌ | Unique Google identifier (indexed, sparse) |
 | `role` | String | ✅ | `user` or `admin` |
 | `plan` | String | ✅ | `free`, `pro`, or `enterprise` |
 | `planSlug` | String | ✅ | `free`, `pro`, or `enterprise` (indexed) |
