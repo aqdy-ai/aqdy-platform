@@ -6,8 +6,11 @@ import {
   Mail,
   KeyRound,
   CreditCard,
+  CheckCircle2,
+  XCircle,
+  Clock,
 } from 'lucide-react'
-import { adminApi } from '../../services/adminApi'
+import { adminApi, type PaymentRecord } from '../../services/adminApi'
 import { toast } from 'sonner'
 
 interface UserResult {
@@ -34,6 +37,7 @@ export default function SupportDashboard() {
   const [users, setUsers] = useState<UserResult[]>([])
   const [selectedUser, setSelectedUser] = useState<UserResult | null>(null)
   const [analysisHistory, setAnalysisHistory] = useState<Contract[]>([])
+  const [payments, setPayments] = useState<PaymentRecord[]>([])
   const [creditAmount, setCreditAmount] = useState(0)
   const [creditReason, setCreditReason] = useState('')
   const [loading, setLoading] = useState(false)
@@ -55,10 +59,17 @@ export default function SupportDashboard() {
     setSelectedUser(u)
     try {
       const res = await adminApi.getSupportUser(u._id)
-      const d = res.data as { data: { analysisHistory: Contract[] } }
+      const d = res.data as {
+        data: {
+          analysisHistory: Contract[]
+          payments: PaymentRecord[]
+        }
+      }
       setAnalysisHistory(d.data.analysisHistory)
+      setPayments(d.data.payments ?? [])
     } catch {
       setAnalysisHistory([])
+      setPayments([])
     }
   }
 
@@ -264,6 +275,61 @@ export default function SupportDashboard() {
                     {t('admin.apply')}
                   </button>
                 </div>
+              </div>
+
+              {/* Payment History */}
+              <div className="border-border/40 overflow-hidden rounded-2xl border">
+                <div className="border-border/30 border-b px-4 py-3">
+                  <h3 className="text-sm font-bold">
+                    {t('billing.payment_history', { defaultValue: 'Payment History' })}
+                  </h3>
+                </div>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
+                      <th className="px-4 py-2 text-start">{t('admin.date')}</th>
+                      <th className="px-4 py-2 text-end">{t('admin.amount')}</th>
+                      <th className="px-4 py-2 text-center">{t('admin.currency')}</th>
+                      <th className="px-4 py-2 text-end">{t('admin.status')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.map((p) => (
+                      <tr key={p._id} className="border-border/20 border-b">
+                        <td className="text-muted-foreground px-4 py-2 text-xs">
+                          {new Date(p.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-2 text-end font-mono font-bold">
+                          {p.amount.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-2 text-center text-xs font-semibold">
+                          {p.currency}
+                        </td>
+                        <td className="px-4 py-2 text-end">
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold">
+                            {p.status === 'succeeded' ? (
+                              <><CheckCircle2 size={12} className="text-emerald-500" /> Paid</>
+                            ) : p.status === 'failed' ? (
+                              <><XCircle size={12} className="text-rose-500" /> Failed</>
+                            ) : (
+                              <><Clock size={12} className="text-amber-500" /> Pending</>
+                            )}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {payments.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="text-muted-foreground px-4 py-6 text-center"
+                        >
+                          {t('admin.no_data')}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
 
               {/* Analysis History (Read-Only) */}

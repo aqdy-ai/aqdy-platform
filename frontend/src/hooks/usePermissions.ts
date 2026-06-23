@@ -46,7 +46,6 @@ const PERMISSION_MATRIX: Record<
   financial_admin: {
     dashboard: ['read'],
     billing: ['read', 'write'],
-    report_export: ['read', 'write'],
   },
   support_admin: {
     accounts: ['read', 'write'],

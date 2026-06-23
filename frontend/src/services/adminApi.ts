@@ -338,4 +338,16 @@ export const adminApi = {
     page?: number
   }) => adminClient.get('/operations/langfuse-traces', { params }),
   getAlerts: () => adminClient.get('/operations/alerts'),
+
+  // ── Audit Logs ──────────────────────────────────────
+  getAuditLogs: (params?: {
+    page?: number
+    pageSize?: number
+    action?: string
+    outcome?: string
+    email?: string
+    userId?: string
+    dateFrom?: string
+    dateTo?: string
+  }) => adminClient.get('/audit-logs', { params }),
 }

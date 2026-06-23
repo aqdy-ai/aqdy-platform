@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DollarSign, TrendingUp, CreditCard, RefreshCw } from 'lucide-react'
+import {
+  DollarSign,
+  TrendingUp,
+  CreditCard,
+  RefreshCw,
+  XCircle,
+  CheckCircle2,
+  AlertTriangle,
+} from 'lucide-react'
 import { adminApi } from '../../services/adminApi'
 import { usePermissions } from '../../hooks/usePermissions'
 import { toast } from 'sonner'
@@ -27,6 +35,8 @@ export default function FinancialDashboard() {
   const [overview, setOverview] = useState<OverviewData | null>(null)
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [loading, setLoading] = useState(true)
+  const [planChangeMap, setPlanChangeMap] = useState<Record<string, string>>({})
+  const [modifyingId, setModifyingId] = useState<string | null>(null)
   const { canWrite } = usePermissions()
   const canModify = canWrite('billing')
 
@@ -70,6 +80,44 @@ export default function FinancialDashboard() {
     } catch {
       toast.error(t('common.error'))
     }
+  }
+
+  const handlePlanChange = async (subscriptionId: string, newPlan: string) => {
+    try {
+      setModifyingId(subscriptionId)
+      await adminApi.changeSubscription(subscriptionId, 'change', newPlan)
+      toast.success(t('admin.plan_updated'))
+      setSubscriptions((prev) =>
+        prev.map((s) =>
+          s._id === subscriptionId ? { ...s, planSlug: newPlan } : s
+        )
+      )
+      setPlanChangeMap((prev) => {
+        const next = { ...prev }
+        delete next[subscriptionId]
+        return next
+      })
+    } catch {
+      toast.error(t('common.error'))
+    }
+    setModifyingId(null)
+  }
+
+  const handleCancelSubscription = async (subscriptionId: string) => {
+    if (!window.confirm(t('admin.confirm_cancel', { defaultValue: 'Cancel this subscription?' }))) return
+    try {
+      setModifyingId(subscriptionId)
+      await adminApi.changeSubscription(subscriptionId, 'cancel')
+      toast.success(t('common.success'))
+      setSubscriptions((prev) =>
+        prev.map((s) =>
+          s._id === subscriptionId ? { ...s, planSlug: 'free', status: 'cancelled' } : s
+        )
+      )
+    } catch {
+      toast.error(t('common.error'))
+    }
+    setModifyingId(null)
   }
 
   if (loading)
@@ -200,8 +248,55 @@ export default function FinancialDashboard() {
                   </span>
                 </td>
                 {canModify && (
-                  <td className="text-muted-foreground px-4 py-3 text-end text-xs">
-                    —
+                  <td className="px-4 py-3 text-end">
+                    {s.status === 'active' ? (
+                      <div className="flex items-center justify-end gap-1.5">
+                        <select
+                          value={planChangeMap[s._id] ?? s.planSlug}
+                          onChange={(e) =>
+                            setPlanChangeMap((prev) => ({
+                              ...prev,
+                              [s._id]: e.target.value,
+                            }))
+                          }
+                          className="bg-background border-border w-24 rounded-lg border px-2 py-1 text-[11px] font-semibold"
+                        >
+                          <option value="free">Free</option>
+                          <option value="starter">Starter</option>
+                          <option value="pro">Pro</option>
+                          <option value="enterprise">Enterprise</option>
+                        </select>
+                        {(planChangeMap[s._id] && planChangeMap[s._id] !== s.planSlug) ? (
+                          <button
+                            onClick={() =>
+                              handlePlanChange(s._id, planChangeMap[s._id]!)
+                            }
+                            disabled={modifyingId === s._id}
+                            className="bg-primary text-primary-foreground rounded-lg px-2 py-1 text-[11px] font-bold transition-colors hover:opacity-90 disabled:opacity-50"
+                          >
+                            {modifyingId === s._id ? '...' : 'Apply'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleCancelSubscription(s._id)}
+                            disabled={modifyingId === s._id}
+                            className="flex items-center gap-1 rounded-lg bg-red-500/10 px-2 py-1 text-[11px] font-bold text-red-500 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                          >
+                            <XCircle size={10} />
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handlePlanChange(s._id, 'pro')}
+                        disabled={modifyingId === s._id}
+                        className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2 py-1 text-[11px] font-bold text-emerald-500 transition-colors hover:bg-emerald-500/20 disabled:opacity-50"
+                      >
+                        <CheckCircle2 size={10} />
+                        Reactivate
+                      </button>
+                    )}
                   </td>
                 )}
               </tr>

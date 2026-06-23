@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { User } from "../models/user.model.js";
 import { Contract } from "../models/contract.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
+import Payment from "../models/payment.model.js";
 import {
   authenticateJwt,
   requirePermission,
@@ -87,6 +88,12 @@ router.get("/users/:id", async (req, res: Response) => {
       .limit(50)
       .select("filename uploadedAt language fileSize status");
 
+    // Get payment history
+    const payments = await Payment.find({ userId: id })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .select("amount currency status createdAt planSlug");
+
     // Get recent audit activity
     const recentActivity = await AuditLog.find({
       $or: [
@@ -102,6 +109,7 @@ router.get("/users/:id", async (req, res: Response) => {
       data: {
         user,
         analysisHistory: contracts,
+        payments,
         recentActivity,
       },
     });

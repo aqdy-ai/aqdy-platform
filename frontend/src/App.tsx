@@ -47,6 +47,7 @@ const OperationsDashboard = lazy(
 const AnalyticsDashboard = lazy(
   () => import('./pages/admin/AnalyticsDashboard')
 )
+const AuditLogs = lazy(() => import('./pages/admin/AuditLogs'))
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
 import Register from './pages/Register'
@@ -157,6 +158,7 @@ function AppContent() {
           { path: '/admin/content', element: <ContentDashboard />, allowedRoles: ['super_admin', 'content_admin'] as AdminRole[] },
           { path: '/admin/operations', element: <OperationsDashboard />, allowedRoles: ['super_admin', 'operations_admin'] as AdminRole[] },
           { path: '/admin/analytics', element: <AnalyticsDashboard />, allowedRoles: ['super_admin', 'analytics_admin'] as AdminRole[] },
+          { path: '/admin/audit-logs', element: <AuditLogs />, allowedRoles: undefined },
         ] satisfies { path: string; element: ReactNode; allowedRoles: AdminRole[] | undefined }[]).map((route) => (
           <Route
             key={route.path}

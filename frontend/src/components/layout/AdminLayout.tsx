@@ -18,6 +18,7 @@ import {
   Eye,
   DollarSign,
   HeadphonesIcon,
+  History,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
@@ -122,6 +123,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       label: t('admin.analytics'),
       icon: Eye,
       section: 'report_export',
+    },
+    {
+      path: '/admin/audit-logs',
+      label: t('admin.audit_log', { defaultValue: 'Audit Log' }),
+      icon: History,
+      section: 'audit_log',
     },
     {
       path: '/admin/roles',

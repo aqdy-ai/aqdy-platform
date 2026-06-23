@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePermissions } from '../../hooks/usePermissions'
 import { motion } from 'framer-motion'
 import {
   Users,
@@ -130,6 +131,8 @@ function timeAgo(dateStr: string, lang: string) {
 export default function AdminDashboard() {
   const { t, i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
+  const { hasPermission } = usePermissions()
+  const canViewUserData = hasPermission('accounts', 'read')
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -640,6 +643,7 @@ export default function AdminDashboard() {
         title={isRtl ? 'المستخدمين والنشاط' : 'USERS & ACTIVITY'}
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {canViewUserData && (
         <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
           <h4 className="text-foreground mb-4 text-sm font-bold">
             {isRtl
@@ -679,6 +683,7 @@ export default function AdminDashboard() {
             )}
           </div>
         </div>
+        )}
         <div className="flex flex-col gap-6">
           <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
             <h4 className="text-foreground mb-4 text-sm font-bold">
@@ -821,6 +826,7 @@ export default function AdminDashboard() {
         }
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {canViewUserData && (
         <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
           <h4 className="text-foreground mb-4 text-sm font-bold">
             {isRtl ? 'آخر المدفوعات' : 'Recent Payments'}
@@ -877,6 +883,7 @@ export default function AdminDashboard() {
             )}
           </div>
         </div>
+        )}
         <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
           <h4 className="text-foreground mb-4 text-sm font-bold">
             {isRtl ? 'حالة النظام' : 'System Status'}

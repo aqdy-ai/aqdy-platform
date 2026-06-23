@@ -70,7 +70,6 @@ export const PERMISSION_MATRIX: PermissionMap = {
   financial_admin: {
     dashboard: ["read"],
     billing: ["read", "write"],
-    report_export: ["read", "write"],
   },
 
   support_admin: {
