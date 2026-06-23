@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import crypto from "crypto";
-import { env } from "../config/env.js";
 import { AppError } from "./errorHandler.js";
 import { verifyAccessToken } from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
-import { AuthenticatedRequest, JwtPayload } from "../types/auth.js";
+import { AuthenticatedRequest } from "../types/auth.js";
 import {
   isAdminRole,
   hasPermission,
@@ -12,31 +10,6 @@ import {
   type Section,
   type Action,
 } from "../config/roles.js";
-
-export function verifyJWT(token: string): JwtPayload | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const [headerB64, payloadB64, signatureB64] = parts;
-
-    // Verify signature
-    const jwtSecret = process.env.JWT_SECRET || env.JWT_SECRET;
-    const hmac = crypto.createHmac("sha256", jwtSecret);
-    hmac.update(`${headerB64}.${payloadB64}`);
-    const expectedSignature = hmac.digest("base64url");
-
-    if (signatureB64 !== expectedSignature) {
-      return null;
-    }
-
-    const payload = JSON.parse(
-      Buffer.from(payloadB64, "base64url").toString("utf8"),
-    );
-    return payload as JwtPayload;
-  } catch {
-    return null;
-  }
-}
 
 export const authenticateJwt = async (
   req: Request,
@@ -88,29 +61,16 @@ export const requireAuth = (
 };
 
 /**
- * Legacy admin check — updated to accept any of the 6 admin roles.
- * Kept for backward compatibility. Prefer requireRole() for new code.
+ * Legacy admin check — accepts any admin role.
+ * @deprecated Use requireRole() or requirePermission() instead.
+ *             requireAdmin bypasses the permission matrix and allows
+ *             any admin role through. This will be removed in a future release.
  */
 export const requireAdmin = (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ): void => {
-  if (!req.user) {
-    const token = req.cookies?.accessToken;
-    if (token) {
-      const decoded = verifyJWT(token);
-      if (decoded) {
-        req.user = {
-          _id: decoded.sub,
-          email: decoded.email,
-          role: decoded.role,
-          plan: decoded.plan,
-        } as AuthenticatedRequest["user"];
-      }
-    }
-  }
-
   if (!req.user) {
     next(new AppError(401, "Authentication required."));
     return;

@@ -5,7 +5,7 @@ import { Contract } from "../models/contract.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
 import {
   authenticateJwt,
-  requireAdmin,
+  requirePermission,
 } from "../middlewares/auth.middleware.js";
 import { Plan } from "../models/plan.model.js";
 import { Subscription } from "../models/subscription.model.js";
@@ -17,7 +17,7 @@ const router = Router();
 router.get(
   "/",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("accounts", "read"),
   async (req: Request, res: Response) => {
     try {
       const {
@@ -92,7 +92,7 @@ router.get(
 router.get(
   "/:id",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("accounts", "read"),
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params as { id: string };
@@ -156,7 +156,7 @@ router.get(
 router.patch(
   "/:id",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("accounts", "write"),
   async (req: Request, res: Response) => {
     try {
       const id = req.params.id as string; // Ensure id is a string
@@ -269,7 +269,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("accounts", "write"),
   async (req: Request, res: Response) => {
     try {
       const id = req.params.id as string; // Ensure id is a string

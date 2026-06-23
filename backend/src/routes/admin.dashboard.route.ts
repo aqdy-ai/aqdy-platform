@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
-import { authenticateJwt } from "../middlewares/auth.middleware.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import { authenticateJwt, requirePermission } from "../middlewares/auth.middleware.js";
 import { User } from "../models/user.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { CreditLedger } from "../models/creditLedger.model.js";
@@ -25,7 +24,7 @@ function weekRange(date: Date, weeksAgo: number) {
 router.get(
   "/",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("dashboard", "read"),
   async (_req: Request, res: Response) => {
     try {
       const now = new Date();

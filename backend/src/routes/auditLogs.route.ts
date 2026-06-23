@@ -8,12 +8,12 @@ import {
   OUTCOMES,
 } from "../models/auditLog.model.js";
 import { logAdmin } from "../services/auditLog.service.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import { authenticateJwt, requirePermission } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 // GET /api/admin/audit-logs
-router.get("/", requireAdmin, async (req: Request, res: Response) => {
+router.get("/", authenticateJwt, requirePermission("audit_log", "read"), async (req: Request, res: Response) => {
   try {
     const {
       userId,
@@ -146,7 +146,7 @@ router.get("/", requireAdmin, async (req: Request, res: Response) => {
 });
 
 // GET /api/admin/audit-logs/actions
-router.get("/actions", requireAdmin, async (req: Request, res: Response) => {
+router.get("/actions", authenticateJwt, requirePermission("audit_log", "read"), async (req: Request, res: Response) => {
   try {
     return res.status(200).json({
       success: true,
@@ -162,7 +162,7 @@ router.get("/actions", requireAdmin, async (req: Request, res: Response) => {
 });
 
 // GET /api/admin/audit-logs/stats
-router.get("/stats", requireAdmin, async (req: Request, res: Response) => {
+router.get("/stats", authenticateJwt, requirePermission("audit_log", "read"), async (req: Request, res: Response) => {
   try {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 

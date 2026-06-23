@@ -17,6 +17,7 @@ import { getDirection } from './lib/i18n'
 import type { SupportedLocale } from './types'
 import { ADMIN_ROLES } from './types/auth'
 import type { AdminRole } from './types/auth'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // 🌟 Lazy Loading للمكونات والـ Pages الخاصة بمنصة عقدي
 const Home = lazy(() => import('./pages/Home'))
@@ -144,119 +145,36 @@ function AppContent() {
 
       <Routes>
         {/* 👑 Admin Routes - بدون MainLayout (بدون Navbar عادية) */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminDashboard />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
+        {([
+          { path: '/admin', element: <AdminDashboard />, allowedRoles: undefined },
+          { path: '/admin/accounts', element: <AdminAccounts />, allowedRoles: undefined },
+          { path: '/admin/contracts', element: <AdminContracts />, allowedRoles: undefined },
+          { path: '/admin/payments', element: <AdminPayments />, allowedRoles: undefined },
+          { path: '/admin/evaluations', element: <AdminEvaluations />, allowedRoles: undefined },
+          { path: '/admin/roles', element: <RoleManagement />, allowedRoles: ['super_admin'] as AdminRole[] },
+          { path: '/admin/financial', element: <FinancialDashboard />, allowedRoles: ['super_admin', 'financial_admin'] as AdminRole[] },
+          { path: '/admin/support', element: <SupportDashboard />, allowedRoles: ['super_admin', 'support_admin'] as AdminRole[] },
+          { path: '/admin/content', element: <ContentDashboard />, allowedRoles: ['super_admin', 'content_admin'] as AdminRole[] },
+          { path: '/admin/operations', element: <OperationsDashboard />, allowedRoles: ['super_admin', 'operations_admin'] as AdminRole[] },
+          { path: '/admin/analytics', element: <AnalyticsDashboard />, allowedRoles: ['super_admin', 'analytics_admin'] as AdminRole[] },
+        ] satisfies { path: string; element: ReactNode; allowedRoles: AdminRole[] | undefined }[]).map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={
+              <AdminRoute allowedRoles={route.allowedRoles}>
+                <AdminLayout>
+                  <ErrorBoundary key={route.path}>
+                    {route.element}
+                  </ErrorBoundary>
+                </AdminLayout>
+              </AdminRoute>
+            }
+          />
+        ))}
         <Route
           path="/admin/dashboard"
           element={<Navigate to="/admin" replace />}
-        />
-        <Route
-          path="/admin/accounts"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminAccounts />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/contracts"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminContracts />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/payments"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminPayments />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/evaluations"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminEvaluations />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/roles"
-          element={
-            <AdminRoute allowedRoles={['super_admin']}>
-              <AdminLayout>
-                <RoleManagement />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/financial"
-          element={
-            <AdminRoute allowedRoles={['super_admin', 'financial_admin']}>
-              <AdminLayout>
-                <FinancialDashboard />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/support"
-          element={
-            <AdminRoute allowedRoles={['super_admin', 'support_admin']}>
-              <AdminLayout>
-                <SupportDashboard />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/content"
-          element={
-            <AdminRoute allowedRoles={['super_admin', 'content_admin']}>
-              <AdminLayout>
-                <ContentDashboard />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/operations"
-          element={
-            <AdminRoute allowedRoles={['super_admin', 'operations_admin']}>
-              <AdminLayout>
-                <OperationsDashboard />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/analytics"
-          element={
-            <AdminRoute allowedRoles={['super_admin', 'analytics_admin']}>
-              <AdminLayout>
-                <AnalyticsDashboard />
-              </AdminLayout>
-            </AdminRoute>
-          }
         />
 
         {/* 🏠 Normal Routes - داخل MainLayout */}

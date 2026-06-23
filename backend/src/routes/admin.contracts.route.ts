@@ -1,8 +1,7 @@
 import { Router, Request, Response } from "express";
 import { Contract } from "../models/contract.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
-import { authenticateJwt } from "../middlewares/auth.middleware.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import { authenticateJwt, requirePermission } from "../middlewares/auth.middleware.js";
 import { User } from "../models/user.model.js";
 
 const router = Router();
@@ -30,7 +29,7 @@ const VALID_RISK_LEVELS = ["critical", "high", "medium", "low"] as const;
 router.get(
   "/",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("contracts", "read"),
   async (req: Request, res: Response) => {
     try {
       const {
