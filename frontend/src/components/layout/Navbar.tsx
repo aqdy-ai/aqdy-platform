@@ -16,6 +16,7 @@ import LanguageSwitcher from '../LanguageSwitcher'
 import { motion, AnimatePresence } from 'framer-motion'
 import CreditsBadge from '../CreditsBadge'
 import { useAuth } from '../../hooks/useAuth'
+import { ADMIN_ROLES, getDefaultAdminRoute } from '../../types/auth'
 import { Link } from 'react-router-dom'
 
 const Navbar = () => {
@@ -166,9 +167,12 @@ const Navbar = () => {
                             {user.name}
                           </div>
                         )}
-                        {user?.role === 'admin' && (
+                        {(user?.role === 'admin' ||
+                          ADMIN_ROLES.includes(
+                            user?.role as (typeof ADMIN_ROLES)[number]
+                          )) && (
                           <Link
-                            to="/admin"
+                            to={getDefaultAdminRoute(user?.role ?? '')}
                             onClick={() => setDropdownOpen(false)}
                             className="hover:bg-primary/10 hover:text-primary text-foreground flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
                             role="menuitem"

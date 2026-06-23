@@ -12,7 +12,7 @@ import type {
   User,
   AdminRole,
 } from '../types/auth'
-import { ADMIN_ROLES } from '../types/auth'
+import { ADMIN_ROLES, getDefaultAdminRoute } from '../types/auth'
 import { AuthContext } from './context/AuthContext'
 
 /**
@@ -102,7 +102,9 @@ export const useAuth = () => {
         loggedInUser?.role === 'admin' ||
         ADMIN_ROLES.includes(loggedInUser?.role as AdminRole)
       if (isAdmin) {
-        navigate('/admin', { replace: true })
+        navigate(getDefaultAdminRoute(loggedInUser?.role ?? ''), {
+          replace: true,
+        })
       } else {
         navigate('/', { replace: true })
       }
@@ -138,7 +140,9 @@ export const useAuth = () => {
         loggedInUser?.role === 'admin' ||
         ADMIN_ROLES.includes(loggedInUser?.role as AdminRole)
       if (isAdmin) {
-        navigate('/admin', { replace: true })
+        navigate(getDefaultAdminRoute(loggedInUser?.role ?? ''), {
+          replace: true,
+        })
       } else {
         navigate('/', { replace: true })
       }
@@ -177,7 +181,9 @@ export const useAuth = () => {
         registeredUser?.role === 'admin' ||
         ADMIN_ROLES.includes(registeredUser?.role as AdminRole)
       if (isAdmin) {
-        navigate('/admin', { replace: true })
+        navigate(getDefaultAdminRoute(registeredUser?.role ?? ''), {
+          replace: true,
+        })
       } else {
         navigate('/', { replace: true })
       }

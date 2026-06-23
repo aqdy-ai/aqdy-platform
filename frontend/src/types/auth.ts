@@ -50,3 +50,17 @@ export interface PasswordValidationResult {
   hasSpecial: boolean
   allValid: boolean
 }
+
+const ADMIN_ROLE_DEFAULT_ROUTES: Record<string, string> = {
+  super_admin: '/admin/analytics',
+  financial_admin: '/admin/financial',
+  support_admin: '/admin/support',
+  content_admin: '/admin/content',
+  operations_admin: '/admin/operations',
+  analytics_admin: '/admin/analytics',
+}
+
+export function getDefaultAdminRoute(role: string): string {
+  if (role === 'admin') return '/admin/analytics'
+  return ADMIN_ROLE_DEFAULT_ROUTES[role] || '/admin/analytics'
+}

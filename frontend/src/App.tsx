@@ -15,7 +15,7 @@ import { useAuth } from './hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { getDirection } from './lib/i18n'
 import type { SupportedLocale } from './types'
-import { ADMIN_ROLES } from './types/auth'
+import { ADMIN_ROLES, getDefaultAdminRoute } from './types/auth'
 import type { AdminRole } from './types/auth'
 import ErrorBoundary from './components/ErrorBoundary'
 
@@ -30,7 +30,7 @@ const Login = lazy(() => import('./pages/Login'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
@@ -60,6 +60,15 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 
 /**
+ * AdminRootRedirect: يوجه المسؤول إلى أول صفحة يملك صلاحية الوصول إليها
+ */
+const AdminRootRedirect = () => {
+  const { user } = useAuth()
+  const role = user?.role ?? 'user'
+  return <Navigate to={getDefaultAdminRoute(role)} replace />
+}
+
+/**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
  */
 const GuestRoute = ({ children }: { children: ReactNode }) => {
@@ -71,7 +80,7 @@ const GuestRoute = ({ children }: { children: ReactNode }) => {
   if (isAuthenticated) {
     const role = user?.role ?? 'user'
     const isAdmin = role === 'admin' || ADMIN_ROLES.includes(role as AdminRole)
-    return <Navigate to={isAdmin ? '/admin' : '/'} replace />
+    return <Navigate to={isAdmin ? getDefaultAdminRoute(role) : '/'} replace />
   }
   return <>{children}</>
 }
@@ -146,20 +155,74 @@ function AppContent() {
 
       <Routes>
         {/* 👑 Admin Routes - بدون MainLayout (بدون Navbar عادية) */}
-        {([
-          { path: '/admin', element: <AdminDashboard />, allowedRoles: undefined },
-          { path: '/admin/accounts', element: <AdminAccounts />, allowedRoles: undefined },
-          { path: '/admin/contracts', element: <AdminContracts />, allowedRoles: undefined },
-          { path: '/admin/payments', element: <AdminPayments />, allowedRoles: undefined },
-          { path: '/admin/evaluations', element: <AdminEvaluations />, allowedRoles: undefined },
-          { path: '/admin/roles', element: <RoleManagement />, allowedRoles: ['super_admin'] as AdminRole[] },
-          { path: '/admin/financial', element: <FinancialDashboard />, allowedRoles: ['super_admin', 'financial_admin'] as AdminRole[] },
-          { path: '/admin/support', element: <SupportDashboard />, allowedRoles: ['super_admin', 'support_admin'] as AdminRole[] },
-          { path: '/admin/content', element: <ContentDashboard />, allowedRoles: ['super_admin', 'content_admin'] as AdminRole[] },
-          { path: '/admin/operations', element: <OperationsDashboard />, allowedRoles: ['super_admin', 'operations_admin'] as AdminRole[] },
-          { path: '/admin/analytics', element: <AnalyticsDashboard />, allowedRoles: ['super_admin', 'analytics_admin'] as AdminRole[] },
-          { path: '/admin/audit-logs', element: <AuditLogs />, allowedRoles: undefined },
-        ] satisfies { path: string; element: ReactNode; allowedRoles: AdminRole[] | undefined }[]).map((route) => (
+        {(
+          [
+            {
+              path: '/admin',
+              element: <AdminRootRedirect />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/accounts',
+              element: <AdminAccounts />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/contracts',
+              element: <AdminContracts />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/payments',
+              element: <AdminPayments />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/evaluations',
+              element: <AdminEvaluations />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/roles',
+              element: <RoleManagement />,
+              allowedRoles: ['super_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/financial',
+              element: <FinancialDashboard />,
+              allowedRoles: ['super_admin', 'financial_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/support',
+              element: <SupportDashboard />,
+              allowedRoles: ['super_admin', 'support_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/content',
+              element: <ContentDashboard />,
+              allowedRoles: ['super_admin', 'content_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/operations',
+              element: <OperationsDashboard />,
+              allowedRoles: ['super_admin', 'operations_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/analytics',
+              element: <AnalyticsDashboard />,
+              allowedRoles: ['super_admin', 'analytics_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/audit-logs',
+              element: <AuditLogs />,
+              allowedRoles: undefined,
+            },
+          ] satisfies {
+            path: string
+            element: ReactNode
+            allowedRoles: AdminRole[] | undefined
+          }[]
+        ).map((route) => (
           <Route
             key={route.path}
             path={route.path}

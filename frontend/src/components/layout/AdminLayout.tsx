@@ -2,7 +2,6 @@ import { ReactNode, useEffect, useState, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  Shield,
   Users,
   FileText,
   CreditCard,
@@ -15,7 +14,6 @@ import {
   Settings,
   BookOpen,
   Activity,
-  Eye,
   DollarSign,
   HeadphonesIcon,
   History,
@@ -65,10 +63,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     section: Section
   }[] = [
     {
-      path: '/admin',
-      label: t('admin.dashboard_title'),
-      icon: Shield,
-      section: 'dashboard',
+      path: '/admin/analytics',
+      label: t('admin.analytics'),
+      icon: BarChart3,
+      section: 'report_export',
     },
     {
       path: '/admin/accounts',
@@ -117,12 +115,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       label: t('admin.operations'),
       icon: Activity,
       section: 'system_health',
-    },
-    {
-      path: '/admin/analytics',
-      label: t('admin.analytics'),
-      icon: Eye,
-      section: 'report_export',
     },
     {
       path: '/admin/audit-logs',
