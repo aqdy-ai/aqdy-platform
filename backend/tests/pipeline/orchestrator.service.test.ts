@@ -283,4 +283,217 @@ describe("OrchestratorService", () => {
     expect(mockClassify).not.toHaveBeenCalled();
     expect(mockGenerateRedline).not.toHaveBeenCalled();
   });
+
+  // ── Regression: Task 5.30 — Risk Score Aggregation ───────────────────────
+  // These tests guard against overallRisk being hardcoded or miscalculated.
+
+  describe("Task 5.30 regression: overallRisk aggregation", () => {
+    /**
+     * LOW-RISK FIXTURE
+     * All clauses are classified as 'low'. The orchestrator's max-weight
+     * aggregation must produce overallRisk = 'low'.
+     */
+    test("low-risk contract fixture: all low clauses → overallRisk 'low'", async () => {
+      mockExtract.mockResolvedValue({
+        clauses: [
+          { clauseNumber: 1, clauseText: "Standard confidentiality clause.", clauseType: "confidentiality" },
+          { clauseNumber: 2, clauseText: "Routine governing law clause.", clauseType: "governing_law" },
+          { clauseNumber: 3, clauseText: "Standard payment terms of net-30.", clauseType: "payment" },
+          { clauseNumber: 4, clauseText: "Usual intellectual property assignment.", clauseType: "ip" },
+          { clauseNumber: 5, clauseText: "Boilerplate force majeure clause.", clauseType: "force_majeure" },
+        ],
+        language: "en",
+        modelUsed: "gemini-flash",
+        usedFallback: false,
+        chunkCount: 1,
+        durationMs: 50,
+      });
+
+      // Every clause comes back as 'low'
+      mockClassify.mockResolvedValue({
+        riskLevel: "low",
+        confidence: 0.92,
+        explanation: { ar: "منخفض المخاطر", en: "Low risk standard clause" },
+        sourceFromKB: null,
+        durationMs: 30,
+      });
+
+      // Redline is NOT called for low-risk clauses (orchestrator guard: riskLevel !== 'low')
+      mockGenerateRedline.mockResolvedValue({ suggestedText: "N/A", durationMs: 0 });
+
+      const result = await orchestrator.run(
+        "low_risk_contract",
+        "user_low",
+        "Low risk contract text",
+        "en",
+      );
+
+      // Core assertion: low-risk contract must produce overallRisk = 'low'
+      expect(result.executiveSummary.overallRisk).toBe("low");
+
+      // No risky clauses should be counted
+      expect(result.executiveSummary.riskyClausesCount).toBe(0);
+      expect(result.executiveSummary.totalClauses).toBe(5);
+
+      // Redline should not have been called for any low-risk clause
+      expect(mockGenerateRedline).not.toHaveBeenCalled();
+    });
+
+    /**
+     * HIGH-RISK FIXTURE
+     * Clauses include critical and high risk levels. The orchestrator must
+     * produce overallRisk = 'critical' (max weight wins).
+     */
+    test("high-risk contract fixture: critical/high clauses → overallRisk 'critical'", async () => {
+      mockExtract.mockResolvedValue({
+        clauses: [
+          { clauseNumber: 1, clauseText: "Unlimited liability clause with no cap.", clauseType: "liability" },
+          { clauseNumber: 2, clauseText: "Unilateral termination without cause.", clauseType: "termination" },
+          { clauseNumber: 3, clauseText: "Automatic renewal with 90-day lock-in.", clauseType: "renewal" },
+          { clauseNumber: 4, clauseText: "Arbitration in foreign jurisdiction with no appeal.", clauseType: "dispute_resolution" },
+          { clauseNumber: 5, clauseText: "Penalty clause with no ceiling.", clauseType: "penalty" },
+        ],
+        language: "en",
+        modelUsed: "gemini-flash",
+        usedFallback: false,
+        chunkCount: 1,
+        durationMs: 50,
+      });
+
+      // Mix of critical and high to exercise max-weight logic
+      mockClassify
+        .mockResolvedValueOnce({
+          riskLevel: "critical",
+          confidence: 0.97,
+          explanation: { ar: "بالغ الخطورة", en: "Critical: unlimited liability" },
+          sourceFromKB: "kb_unlimited_liability",
+          durationMs: 35,
+        })
+        .mockResolvedValueOnce({
+          riskLevel: "high",
+          confidence: 0.93,
+          explanation: { ar: "عالي الخطورة", en: "High: unilateral termination" },
+          sourceFromKB: "kb_termination",
+          durationMs: 30,
+        })
+        .mockResolvedValueOnce({
+          riskLevel: "high",
+          confidence: 0.88,
+          explanation: { ar: "عالي الخطورة", en: "High: auto-renewal lock-in" },
+          sourceFromKB: null,
+          durationMs: 28,
+        })
+        .mockResolvedValueOnce({
+          riskLevel: "critical",
+          confidence: 0.95,
+          explanation: { ar: "بالغ الخطورة", en: "Critical: foreign arbitration" },
+          sourceFromKB: "kb_arbitration",
+          durationMs: 32,
+        })
+        .mockResolvedValueOnce({
+          riskLevel: "high",
+          confidence: 0.9,
+          explanation: { ar: "عالي الخطورة", en: "High: unlimited penalty" },
+          sourceFromKB: "kb_penalty",
+          durationMs: 29,
+        });
+
+      mockGenerateRedline.mockResolvedValue({
+        suggestedText: "Revised safer clause text",
+        durationMs: 20,
+      });
+
+      const result = await orchestrator.run(
+        "high_risk_contract",
+        "user_high",
+        "High risk contract text",
+        "en",
+      );
+
+      // Core assertion: high-risk contract must produce overallRisk = 'critical'
+      expect(result.executiveSummary.overallRisk).toBe("critical");
+
+      // All 5 clauses must be counted as risky (none are 'low' or 'unknown')
+      expect(result.executiveSummary.riskyClausesCount).toBe(5);
+      expect(result.executiveSummary.totalClauses).toBe(5);
+
+      // Redline must be called for every non-low clause
+      expect(mockGenerateRedline).toHaveBeenCalledTimes(5);
+    });
+
+    /**
+     * ORDERING INVARIANT
+     * The high-risk contract must produce a numerically higher RISK_WEIGHT
+     * than the low-risk contract. This guards against any future regression
+     * that could collapse all contracts to the same score.
+     */
+    test("high-risk overallRisk weight must exceed low-risk overallRisk weight", async () => {
+      const RISK_WEIGHTS: Record<string, number> = {
+        unknown: 0, low: 1, medium: 2, high: 3, critical: 4,
+      };
+
+      // ── Low-risk run ─────────────────────────────────────────────────────
+      mockExtract.mockResolvedValue({
+        clauses: [
+          { clauseNumber: 1, clauseText: "Simple NDA clause.", clauseType: "confidentiality" },
+          { clauseNumber: 2, clauseText: "Standard payment terms.", clauseType: "payment" },
+        ],
+        language: "en",
+        modelUsed: "gemini-flash",
+        usedFallback: false,
+        chunkCount: 1,
+        durationMs: 30,
+      });
+      mockClassify.mockResolvedValue({
+        riskLevel: "low",
+        confidence: 0.9,
+        explanation: { ar: "منخفض", en: "Low risk" },
+        sourceFromKB: null,
+        durationMs: 20,
+      });
+
+      const lowResult = await orchestrator.run(
+        "low_contract", "user_test", "Low text", "en",
+      );
+
+      jest.clearAllMocks();
+      // Reset RAG default mock after clearAllMocks
+      mockSearchKB.mockResolvedValue({ matches: [], confidence: 0, hasMatch: false });
+
+      // ── High-risk run ─────────────────────────────────────────────────────
+      mockExtract.mockResolvedValue({
+        clauses: [
+          { clauseNumber: 1, clauseText: "Unlimited liability clause.", clauseType: "liability" },
+          { clauseNumber: 2, clauseText: "Penalty with no ceiling.", clauseType: "penalty" },
+        ],
+        language: "en",
+        modelUsed: "gemini-flash",
+        usedFallback: false,
+        chunkCount: 1,
+        durationMs: 30,
+      });
+      mockClassify.mockResolvedValue({
+        riskLevel: "critical",
+        confidence: 0.96,
+        explanation: { ar: "حرج", en: "Critical risk" },
+        sourceFromKB: "kb_critical",
+        durationMs: 25,
+      });
+      mockGenerateRedline.mockResolvedValue({ suggestedText: "Safer version", durationMs: 15 });
+
+      const highResult = await orchestrator.run(
+        "high_contract", "user_test", "High text", "en",
+      );
+
+      const lowWeight = RISK_WEIGHTS[lowResult.executiveSummary.overallRisk] ?? 0;
+      const highWeight = RISK_WEIGHTS[highResult.executiveSummary.overallRisk] ?? 0;
+
+      // The high-risk contract must produce a strictly higher weight than the low-risk one
+      expect(highWeight).toBeGreaterThan(lowWeight);
+
+      // And the high-risk result must exceed the minimum threshold for 'high'
+      expect(highWeight).toBeGreaterThanOrEqual(RISK_WEIGHTS["high"]);
+    });
+  });
 });
+
