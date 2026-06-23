@@ -15,6 +15,8 @@ import { useAuth } from './hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { getDirection } from './lib/i18n'
 import type { SupportedLocale } from './types'
+import { ADMIN_ROLES } from './types/auth'
+import type { AdminRole } from './types/auth'
 
 // 🌟 Lazy Loading للمكونات والـ Pages الخاصة بمنصة عقدي
 const Home = lazy(() => import('./pages/Home'))
@@ -32,6 +34,18 @@ const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
 const AdminEvaluations = lazy(() => import('./pages/admin/evaluations'))
+const RoleManagement = lazy(() => import('./pages/admin/RoleManagement'))
+const FinancialDashboard = lazy(
+  () => import('./pages/admin/FinancialDashboard')
+)
+const SupportDashboard = lazy(() => import('./pages/admin/SupportDashboard'))
+const ContentDashboard = lazy(() => import('./pages/admin/ContentDashboard'))
+const OperationsDashboard = lazy(
+  () => import('./pages/admin/OperationsDashboard')
+)
+const AnalyticsDashboard = lazy(
+  () => import('./pages/admin/AnalyticsDashboard')
+)
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
 import Register from './pages/Register'
@@ -53,7 +67,9 @@ const GuestRoute = ({ children }: { children: ReactNode }) => {
     return null
   }
   if (isAuthenticated) {
-    return <Navigate to={user?.role === 'admin' ? '/admin' : '/'} replace />
+    const role = user?.role ?? 'user'
+    const isAdmin = role === 'admin' || ADMIN_ROLES.includes(role as AdminRole)
+    return <Navigate to={isAdmin ? '/admin' : '/'} replace />
   }
   return <>{children}</>
 }
@@ -70,7 +86,9 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
-  if (user && !user.isEmailVerified && user.role !== 'admin') {
+  const role = user?.role ?? 'user'
+  const isAdmin = role === 'admin' || ADMIN_ROLES.includes(role as AdminRole)
+  if (user && !user.isEmailVerified && !isAdmin) {
     return <Navigate to="/verify-email" replace />
   }
   return <>{children}</>
@@ -83,7 +101,11 @@ const VerifyEmailRoute = () => {
   const { isAuthenticated, isInitialLoading, user } = useAuth()
   if (isInitialLoading) return null
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  if (user?.isEmailVerified || user?.role === 'admin')
+  if (
+    user?.isEmailVerified ||
+    (user?.role &&
+      (user.role === 'admin' || ADMIN_ROLES.includes(user.role as AdminRole)))
+  )
     return <Navigate to="/" replace />
   return <VerifyPrompt />
 }
@@ -172,6 +194,66 @@ function AppContent() {
             <AdminRoute>
               <AdminLayout>
                 <AdminEvaluations />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/roles"
+          element={
+            <AdminRoute allowedRoles={['super_admin']}>
+              <AdminLayout>
+                <RoleManagement />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/financial"
+          element={
+            <AdminRoute allowedRoles={['super_admin', 'financial_admin']}>
+              <AdminLayout>
+                <FinancialDashboard />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/support"
+          element={
+            <AdminRoute allowedRoles={['super_admin', 'support_admin']}>
+              <AdminLayout>
+                <SupportDashboard />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/content"
+          element={
+            <AdminRoute allowedRoles={['super_admin', 'content_admin']}>
+              <AdminLayout>
+                <ContentDashboard />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/operations"
+          element={
+            <AdminRoute allowedRoles={['super_admin', 'operations_admin']}>
+              <AdminLayout>
+                <OperationsDashboard />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/analytics"
+          element={
+            <AdminRoute allowedRoles={['super_admin', 'analytics_admin']}>
+              <AdminLayout>
+                <AnalyticsDashboard />
               </AdminLayout>
             </AdminRoute>
           }

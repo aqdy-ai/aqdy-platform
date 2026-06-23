@@ -260,4 +260,82 @@ export const adminApi = {
       `/accounts/${id}`,
       data
     ),
+
+  // ── Role Management (Super Admin only) ──────────────
+  getRoleUsers: () => adminClient.get('/roles'),
+  assignRole: (userId: string, role: string) =>
+    adminClient.post('/roles/assign', { userId, role }),
+  revokeRole: (userId: string) => adminClient.post('/roles/revoke', { userId }),
+  getRoleAuditLog: (params?: {
+    page?: number
+    pageSize?: number
+    action?: string
+  }) => adminClient.get('/roles/audit-log', { params }),
+
+  // ── Support Admin ───────────────────────────────────
+  searchUsers: (q: string, page?: number) =>
+    adminClient.get('/support/users/search', { params: { q, page } }),
+  getSupportUser: (id: string) => adminClient.get(`/support/users/${id}`),
+  verifyUserEmail: (id: string) =>
+    adminClient.post(`/support/users/${id}/verify-email`),
+  triggerPasswordReset: (id: string) =>
+    adminClient.post(`/support/users/${id}/reset-password`),
+  supportCreditAdjustment: (id: string, amount: number, reason: string) =>
+    adminClient.post(`/support/users/${id}/credit-adjustment`, {
+      amount,
+      reason,
+    }),
+
+  // ── Financial Admin ─────────────────────────────────
+  getFinancialOverview: () => adminClient.get('/financial/overview'),
+  getSubscriptions: (params?: {
+    page?: number
+    planSlug?: string
+    search?: string
+  }) => adminClient.get('/financial/subscriptions', { params }),
+  changeSubscription: (id: string, action: string, planSlug?: string) =>
+    adminClient.post(`/financial/subscriptions/${id}/change`, {
+      action,
+      planSlug,
+    }),
+  issueRefund: (userId: string, amount: number, reason: string) =>
+    adminClient.post('/financial/refunds', { userId, amount, reason }),
+  financialCreditAdjustment: (userId: string, amount: number, reason: string) =>
+    adminClient.post('/financial/credits', { userId, amount, reason }),
+  getStripeWebhooks: (params?: {
+    page?: number
+    eventType?: string
+    status?: string
+  }) => adminClient.get('/financial/stripe-webhooks', { params }),
+  getFinancialExport: (dateFrom?: string, dateTo?: string) =>
+    adminClient.get('/financial/export', { params: { dateFrom, dateTo } }),
+
+  // ── Content Admin ───────────────────────────────────
+  getKnowledgeBase: (params?: {
+    contractType?: string
+    category?: string
+    jurisdiction?: string
+    riskLevel?: string
+  }) => adminClient.get('/content/knowledge-base', { params }),
+  createKBEntry: (data: Record<string, string>) =>
+    adminClient.post('/content/knowledge-base', data),
+  updateKBEntry: (id: string, data: Record<string, string>) =>
+    adminClient.put(`/content/knowledge-base/${id}`, data),
+  deleteKBEntry: (id: string) =>
+    adminClient.delete(`/content/knowledge-base/${id}`),
+  getPrompts: () => adminClient.get('/content/prompts'),
+  updatePrompt: (agentName: string, prompt: string) =>
+    adminClient.put(`/content/prompts/${agentName}`, { prompt }),
+  getLangfuseMetrics: () => adminClient.get('/content/langfuse-metrics'),
+
+  // ── Operations Admin ────────────────────────────────
+  getSystemHealth: () => adminClient.get('/operations/system-health'),
+  getPipelineMetrics: () => adminClient.get('/operations/pipeline-metrics'),
+  getInfrastructure: () => adminClient.get('/operations/infrastructure'),
+  getLangfuseTraces: (params?: {
+    status?: string
+    agent?: string
+    page?: number
+  }) => adminClient.get('/operations/langfuse-traces', { params }),
+  getAlerts: () => adminClient.get('/operations/alerts'),
 }

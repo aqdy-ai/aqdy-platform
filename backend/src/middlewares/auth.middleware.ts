@@ -5,6 +5,13 @@ import { AppError } from "./errorHandler.js";
 import { verifyAccessToken } from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
 import { AuthenticatedRequest, JwtPayload } from "../types/auth.js";
+import {
+  isAdminRole,
+  hasPermission,
+  type AdminRole,
+  type Section,
+  type Action,
+} from "../config/roles.js";
 
 export function verifyJWT(token: string): JwtPayload | null {
   try {
@@ -80,6 +87,10 @@ export const requireAuth = (
   next();
 };
 
+/**
+ * Legacy admin check — updated to accept any of the 6 admin roles.
+ * Kept for backward compatibility. Prefer requireRole() for new code.
+ */
 export const requireAdmin = (
   req: AuthenticatedRequest,
   res: Response,
@@ -105,12 +116,76 @@ export const requireAdmin = (
     return;
   }
 
-  if (req.user.role !== "admin") {
+  if (!isAdminRole(req.user.role)) {
     next(new AppError(403, "Forbidden"));
     return;
   }
 
   next();
+};
+
+/**
+ * Middleware factory that restricts access to specific admin roles.
+ * Usage: requireRole("super_admin", "financial_admin")
+ */
+export const requireRole = (...roles: AdminRole[]) => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): void => {
+    if (!req.user) {
+      next(new AppError(401, "Authentication required."));
+      return;
+    }
+
+    const userRole = req.user.role;
+
+    if (!roles.includes(userRole as AdminRole)) {
+      next(
+        new AppError(
+          403,
+          "You do not have permission to access this resource.",
+        ),
+      );
+      return;
+    }
+
+    next();
+  };
+};
+
+/**
+ * Middleware factory that checks role-based permission for a section+action.
+ * Uses the central permission matrix from config/roles.ts.
+ * Usage: requirePermission("billing", "write")
+ */
+export const requirePermission = (
+  section: Section,
+  action: Action = "read",
+) => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): void => {
+    if (!req.user) {
+      next(new AppError(401, "Authentication required."));
+      return;
+    }
+
+    if (!hasPermission(req.user.role, section, action)) {
+      next(
+        new AppError(
+          403,
+          "You do not have permission to access this resource.",
+        ),
+      );
+      return;
+    }
+
+    next();
+  };
 };
 
 export const requireEmailVerified = (
@@ -123,7 +198,7 @@ export const requireEmailVerified = (
     return;
   }
 
-  if (!req.user.isEmailVerified && req.user.role !== "admin") {
+  if (!req.user.isEmailVerified && !isAdminRole(req.user.role)) {
     next(new AppError(403, "Email verification required."));
     return;
   }
