@@ -356,11 +356,16 @@ export const adminApi = {
 
   // ── Content Admin ───────────────────────────────────
   getKnowledgeBase: (params?: {
+    search?: string
     contractType?: string
     category?: string
     jurisdiction?: string
     riskLevel?: string
+    page?: number
+    pageSize?: number
   }) => adminClient.get('/content/knowledge-base', { params }),
+  getLangfuseMetrics: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get('/content/langfuse-metrics', { params }),
   createKBEntry: (data: Record<string, string>) =>
     adminClient.post('/content/knowledge-base', data),
   updateKBEntry: (id: string, data: Record<string, string>) =>
@@ -370,8 +375,6 @@ export const adminApi = {
   getPrompts: () => adminClient.get('/content/prompts'),
   updatePrompt: (agentName: string, prompt: string) =>
     adminClient.put(`/content/prompts/${agentName}`, { prompt }),
-  getLangfuseMetrics: () => adminClient.get('/content/langfuse-metrics'),
-
   // ── Operations Admin ────────────────────────────────
   getSystemHealth: () => adminClient.get('/operations/system-health'),
   getPipelineMetrics: () => adminClient.get('/operations/pipeline-metrics'),

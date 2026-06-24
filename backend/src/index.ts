@@ -42,7 +42,6 @@ import {
   authenticateJwt,
   requireEmailVerified,
 } from "./middlewares/auth.middleware.js";
-
 // Initialize Langfuse observability
 initializeLangfuse();
 

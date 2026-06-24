@@ -7,7 +7,6 @@ import {
   RefreshCw,
   XCircle,
   CheckCircle2,
-  AlertTriangle,
   Search,
   Undo2,
   History,
@@ -114,7 +113,10 @@ export default function FinancialDashboard() {
       const params: Record<string, string> = {}
       if (dateFrom) params.dateFrom = dateFrom
       if (dateTo) params.dateTo = dateTo
-      const res = await adminApi.getFinancialExport(dateFrom || undefined, dateTo || undefined)
+      const res = await adminApi.getFinancialExport(
+        dateFrom || undefined,
+        dateTo || undefined
+      )
       const data = (res.data as { data: { subscriptions: Subscription[] } })
         .data.subscriptions
       const csv = ['Name,Email,Plan,Credits,Status,Created']
@@ -141,13 +143,21 @@ export default function FinancialDashboard() {
   const handlePlanChange = async (subscriptionId: string, newPlan: string) => {
     try {
       setModifyingId(subscriptionId)
-      const res = await adminApi.changeSubscription(subscriptionId, 'change', newPlan)
+      const res = await adminApi.changeSubscription(
+        subscriptionId,
+        'change',
+        newPlan
+      )
       const updatedData = (res.data as { data: { creditBalance: number } }).data
       toast.success(t('admin.plan_updated'))
       setSubscriptions((prev) =>
         prev.map((s) =>
           s._id === subscriptionId
-            ? { ...s, planSlug: newPlan, creditBalance: updatedData.creditBalance }
+            ? {
+                ...s,
+                planSlug: newPlan,
+                creditBalance: updatedData.creditBalance,
+              }
             : s
         )
       )
@@ -189,8 +199,14 @@ export default function FinancialDashboard() {
   const handleRefund = async () => {
     if (!refundTarget || refundAmount <= 0 || !refundReason.trim()) return
     try {
-      await adminApi.issueRefund(refundTarget._id, refundAmount, refundReason.trim())
-      toast.success(`Refund of $${refundAmount} issued to ${refundTarget.email}`)
+      await adminApi.issueRefund(
+        refundTarget._id,
+        refundAmount,
+        refundReason.trim()
+      )
+      toast.success(
+        `Refund of $${refundAmount} issued to ${refundTarget.email}`
+      )
       setRefundTarget(null)
       setRefundAmount(0)
       setRefundReason('')
@@ -297,12 +313,12 @@ export default function FinancialDashboard() {
               <BarChart data={revenueChartData}>
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => `$${v}`}
@@ -312,12 +328,19 @@ export default function FinancialDashboard() {
                     borderRadius: '12px',
                     border: '1px solid var(--border)',
                     background: 'var(--card)',
+                    color: 'var(--foreground)',
                   }}
-                  formatter={(v: number) => [`$${v.toLocaleString()}`, 'Revenue']}
+                  formatter={(v: number) => [
+                    `$${v.toLocaleString()}`,
+                    'Revenue',
+                  ]}
                 />
                 <Bar dataKey="revenue" radius={[8, 8, 0, 0]}>
                   {revenueChartData.map((_, idx) => (
-                    <Cell key={idx} fill={PLAN_COLORS[idx % PLAN_COLORS.length]} />
+                    <Cell
+                      key={idx}
+                      fill={PLAN_COLORS[idx % PLAN_COLORS.length]}
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -329,10 +352,15 @@ export default function FinancialDashboard() {
               <div key={plan} className="flex items-center gap-2 text-sm">
                 <span
                   className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: PLAN_COLORS[idx % PLAN_COLORS.length] }}
+                  style={{
+                    backgroundColor: PLAN_COLORS[idx % PLAN_COLORS.length],
+                  }}
                 />
                 <span className="text-muted-foreground font-semibold">
-                  {t(`admin.plan_${plan.toLowerCase()}`, { defaultValue: plan })}:
+                  {t(`admin.plan_${plan.toLowerCase()}`, {
+                    defaultValue: plan,
+                  })}
+                  :
                 </span>
                 <span className="font-bold">${rev.toLocaleString()}</span>
               </div>
@@ -347,7 +375,10 @@ export default function FinancialDashboard() {
           <h2 className="text-lg font-bold">{t('admin.subscriptions')}</h2>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
-              <Search size={14} className="text-muted-foreground absolute start-2.5 top-1/2 -translate-y-1/2" />
+              <Search
+                size={14}
+                className="text-muted-foreground absolute start-2.5 top-1/2 -translate-y-1/2"
+              />
               <input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -392,102 +423,104 @@ export default function FinancialDashboard() {
                 )
               })
               .map((s) => (
-              <tr
-                key={s._id}
-                className="border-border/30 hover:bg-muted/30 border-b transition-colors"
-              >
-                <td className="px-4 py-3">
-                  <div className="font-semibold">{s.name}</div>
-                  <div className="text-muted-foreground text-xs">{s.email}</div>
-                </td>
-                <td className="px-4 py-3">
-                  <span className="bg-primary/15 text-primary rounded-lg px-2 py-1 text-xs font-bold uppercase">
-                    {t(`admin.plan_${s.planSlug.toLowerCase()}`, {
-                      defaultValue: s.planSlug,
-                    })}
-                  </span>
-                </td>
-                <td className="px-4 py-3 font-mono">{s.creditBalance}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded-lg px-2 py-1 text-xs font-bold ${s.status === 'active' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-red-500/15 text-red-500'}`}
-                  >
-                    {t(`admin.status_${s.status.toLowerCase()}`, {
-                      defaultValue: s.status,
-                    })}
-                  </span>
-                </td>
-                {canModify && (
-                  <td className="px-4 py-3 text-end">
-                    {s.status === 'active' ? (
-                      <div className="flex items-center justify-end gap-1.5">
-                        <select
-                          value={planChangeMap[s._id] ?? s.planSlug}
-                          onChange={(e) =>
-                            setPlanChangeMap((prev) => ({
-                              ...prev,
-                              [s._id]: e.target.value,
-                            }))
-                          }
-                          className="bg-background border-border w-24 rounded-lg border px-2 py-1 text-[11px] font-semibold"
-                        >
-                          {plans
-                            .filter((p) => p.isActive)
-                            .map((p) => (
-                              <option key={p.slug} value={p.slug}>
-                                {p.name}
-                              </option>
-                            ))}
-                        </select>
-                        {planChangeMap[s._id] &&
-                        planChangeMap[s._id] !== s.planSlug ? (
-                          <button
-                            onClick={() =>
-                              handlePlanChange(s._id, planChangeMap[s._id]!)
-                            }
-                            disabled={modifyingId === s._id}
-                            className="bg-primary text-primary-foreground rounded-lg px-2 py-1 text-[11px] font-bold transition-colors hover:opacity-90 disabled:opacity-50"
-                          >
-                            {modifyingId === s._id ? '...' : 'Apply'}
-                          </button>
-                        ) : (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                setRefundTarget(s)
-                                setRefundAmount(0)
-                                setRefundReason('')
-                              }}
-                              className="flex items-center gap-1 rounded-lg bg-amber-500/10 px-2 py-1 text-[11px] font-bold text-amber-600 transition-colors hover:bg-amber-500/20"
-                            >
-                              <Undo2 size={10} />
-                              Refund
-                            </button>
-                            <button
-                              onClick={() => handleCancelSubscription(s._id)}
-                              disabled={modifyingId === s._id}
-                              className="flex items-center gap-1 rounded-lg bg-red-500/10 px-2 py-1 text-[11px] font-bold text-red-500 transition-colors hover:bg-red-500/20 disabled:opacity-50"
-                            >
-                              <XCircle size={10} />
-                              Cancel
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => handlePlanChange(s._id, 'pro')}
-                        disabled={modifyingId === s._id}
-                        className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2 py-1 text-[11px] font-bold text-emerald-500 transition-colors hover:bg-emerald-500/20 disabled:opacity-50"
-                      >
-                        <CheckCircle2 size={10} />
-                        Reactivate
-                      </button>
-                    )}
+                <tr
+                  key={s._id}
+                  className="border-border/30 hover:bg-muted/30 border-b transition-colors"
+                >
+                  <td className="px-4 py-3">
+                    <div className="font-semibold">{s.name}</div>
+                    <div className="text-muted-foreground text-xs">
+                      {s.email}
+                    </div>
                   </td>
-                )}
-              </tr>
-            ))}
+                  <td className="px-4 py-3">
+                    <span className="bg-primary/15 text-primary rounded-lg px-2 py-1 text-xs font-bold uppercase">
+                      {t(`admin.plan_${s.planSlug.toLowerCase()}`, {
+                        defaultValue: s.planSlug,
+                      })}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 font-mono">{s.creditBalance}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-lg px-2 py-1 text-xs font-bold ${s.status === 'active' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-red-500/15 text-red-500'}`}
+                    >
+                      {t(`admin.status_${s.status.toLowerCase()}`, {
+                        defaultValue: s.status,
+                      })}
+                    </span>
+                  </td>
+                  {canModify && (
+                    <td className="px-4 py-3 text-end">
+                      {s.status === 'active' ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <select
+                            value={planChangeMap[s._id] ?? s.planSlug}
+                            onChange={(e) =>
+                              setPlanChangeMap((prev) => ({
+                                ...prev,
+                                [s._id]: e.target.value,
+                              }))
+                            }
+                            className="bg-background border-border w-24 rounded-lg border px-2 py-1 text-[11px] font-semibold"
+                          >
+                            {plans
+                              .filter((p) => p.isActive)
+                              .map((p) => (
+                                <option key={p.slug} value={p.slug}>
+                                  {p.name}
+                                </option>
+                              ))}
+                          </select>
+                          {planChangeMap[s._id] &&
+                          planChangeMap[s._id] !== s.planSlug ? (
+                            <button
+                              onClick={() =>
+                                handlePlanChange(s._id, planChangeMap[s._id]!)
+                              }
+                              disabled={modifyingId === s._id}
+                              className="bg-primary text-primary-foreground rounded-lg px-2 py-1 text-[11px] font-bold transition-colors hover:opacity-90 disabled:opacity-50"
+                            >
+                              {modifyingId === s._id ? '...' : 'Apply'}
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => {
+                                  setRefundTarget(s)
+                                  setRefundAmount(0)
+                                  setRefundReason('')
+                                }}
+                                className="flex items-center gap-1 rounded-lg bg-amber-500/10 px-2 py-1 text-[11px] font-bold text-amber-600 transition-colors hover:bg-amber-500/20"
+                              >
+                                <Undo2 size={10} />
+                                Refund
+                              </button>
+                              <button
+                                onClick={() => handleCancelSubscription(s._id)}
+                                disabled={modifyingId === s._id}
+                                className="flex items-center gap-1 rounded-lg bg-red-500/10 px-2 py-1 text-[11px] font-bold text-red-500 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+                              >
+                                <XCircle size={10} />
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handlePlanChange(s._id, 'pro')}
+                          disabled={modifyingId === s._id}
+                          className="flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2 py-1 text-[11px] font-bold text-emerald-500 transition-colors hover:bg-emerald-500/20 disabled:opacity-50"
+                        >
+                          <CheckCircle2 size={10} />
+                          Reactivate
+                        </button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -517,7 +550,10 @@ export default function FinancialDashboard() {
               {webhooks.map((w) => (
                 <tr key={String(w._id)} className="border-border/20 border-b">
                   <td className="px-4 py-2 font-mono text-xs">
-                    {String((w as { metadata?: { eventType?: string } }).metadata?.eventType ?? '—')}
+                    {String(
+                      (w as { metadata?: { eventType?: string } }).metadata
+                        ?.eventType ?? '—'
+                    )}
                   </td>
                   <td className="px-4 py-2">
                     <span
@@ -540,7 +576,10 @@ export default function FinancialDashboard() {
               ))}
               {webhooks.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="text-muted-foreground px-4 py-6 text-center">
+                  <td
+                    colSpan={4}
+                    className="text-muted-foreground px-4 py-6 text-center"
+                  >
                     No webhook events found
                   </td>
                 </tr>
@@ -555,7 +594,7 @@ export default function FinancialDashboard() {
                   fetchWebhooks(webhookPage - 1)
                 }}
                 disabled={webhookPage === 1}
-                className="text-muted-foreground hover:text-foreground disabled:opacity-30 text-xs font-bold"
+                className="text-muted-foreground hover:text-foreground text-xs font-bold disabled:opacity-30"
               >
                 Previous
               </button>
@@ -568,7 +607,7 @@ export default function FinancialDashboard() {
                   fetchWebhooks(webhookPage + 1)
                 }}
                 disabled={webhookPage >= webhookTotalPages}
-                className="text-muted-foreground hover:text-foreground disabled:opacity-30 text-xs font-bold"
+                className="text-muted-foreground hover:text-foreground text-xs font-bold disabled:opacity-30"
               >
                 Next
               </button>
@@ -612,7 +651,7 @@ export default function FinancialDashboard() {
               <button
                 onClick={handleRefund}
                 disabled={refundAmount <= 0 || !refundReason.trim()}
-                className="bg-amber-500 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                className="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
               >
                 Issue Refund
               </button>

@@ -4,6 +4,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import RoleManagement from '../src/pages/admin/RoleManagement'
 import { adminApi } from '../src/services/adminApi'
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
+}))
+
 vi.mock('../src/services/adminApi', () => ({
   adminApi: {
     getRoleUsers: vi.fn(),
@@ -63,14 +67,14 @@ describe('RoleManagement Component', () => {
     })
 
     // Expect warning banner since superAdminCount >= maxSuperAdmins (2 >= 2)
-    expect(screen.getByText(/Maximum Super Admin limit reached/i)).toBeInTheDocument()
+    expect(screen.getByText('admin.max_super_admin_warning')).toBeInTheDocument()
   })
 
   it('allows switching to audit log tab', async () => {
     render(<RoleManagement />)
 
     // Switch tab
-    const auditTabBtn = screen.getByRole('button', { name: /audit log/i })
+    const auditTabBtn = screen.getByRole('button', { name: /admin\.audit_log/i })
     fireEvent.click(auditTabBtn)
 
     await waitFor(() => {
@@ -94,7 +98,7 @@ describe('RoleManagement Component', () => {
     render(<RoleManagement />)
 
     // Enter email
-    const emailInput = screen.getByPlaceholderText(/user email.../i)
+    const emailInput = screen.getByPlaceholderText(/admin\.user_email/i)
     fireEvent.change(emailInput, { target: { value: 'newadmin@test.com' } })
 
     // Select role
@@ -102,7 +106,7 @@ describe('RoleManagement Component', () => {
     fireEvent.change(roleSelect, { target: { value: 'support_admin' } })
 
     // Click assign
-    const assignBtn = screen.getByRole('button', { name: /^assign$/i })
+    const assignBtn = screen.getByRole('button', { name: /admin\.assign/i })
     fireEvent.click(assignBtn)
 
     await waitFor(() => {

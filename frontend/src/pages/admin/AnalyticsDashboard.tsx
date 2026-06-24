@@ -437,24 +437,22 @@ export default function AnalyticsDashboard() {
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <ReLineChart data={data.mrrTrend}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
                 formatter={(value: number) => [formatUSD(value), 'MRR']}
               />
@@ -477,25 +475,23 @@ export default function AnalyticsDashboard() {
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data.weeklySignups}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="week"
-                tick={{ fontSize: 10 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 tickFormatter={(v) => v.slice(5)}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
               />
               <Bar dataKey="count" radius={[6, 6, 0, 0]} fill={COLORS.primary}>
@@ -547,25 +543,23 @@ export default function AnalyticsDashboard() {
           </p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={data.analysesPerDay}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 9 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 tickFormatter={(v) => v.slice(8)}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
                 labelFormatter={(v) => v}
               />
@@ -584,25 +578,23 @@ export default function AnalyticsDashboard() {
           </p>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={data.creditsPerDay}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 9 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 tickFormatter={(v) => v.slice(8)}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
                 labelFormatter={(v) => v}
               />
@@ -676,8 +668,9 @@ export default function AnalyticsDashboard() {
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
               />
               <Legend

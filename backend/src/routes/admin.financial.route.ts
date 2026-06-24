@@ -115,7 +115,10 @@ router.post(
         user.planSlug = planSlug;
         user.plan = planSlug;
         // Sync credit allowance to the new plan
-        const targetPlan = await Plan.findOne({ slug: planSlug, isActive: true });
+        const targetPlan = await Plan.findOne({
+          slug: planSlug,
+          isActive: true,
+        });
         if (targetPlan) {
           user.creditBalance = targetPlan.creditAllowance;
         }

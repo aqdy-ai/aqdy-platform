@@ -104,7 +104,9 @@ export default function SupportDashboard() {
       return toast.error(t('admin.reason'))
     }
     try {
-      const adjustedAmount = creditIsDeduction ? -Math.abs(creditAmount) : Math.abs(creditAmount)
+      const adjustedAmount = creditIsDeduction
+        ? -Math.abs(creditAmount)
+        : Math.abs(creditAmount)
       const res = await adminApi.supportCreditAdjustment(
         selectedUser._id,
         adjustedAmount,
@@ -416,45 +418,52 @@ export default function SupportDashboard() {
                   </thead>
                   <tbody>
                     {analysisHistory
-                      .slice((analysisPage - 1) * pageSize, analysisPage * pageSize)
+                      .slice(
+                        (analysisPage - 1) * pageSize,
+                        analysisPage * pageSize
+                      )
                       .map((c) => (
-                      <tr key={c._id} className="border-border/20 border-b">
-                        <td className="px-4 py-2 font-medium">{c.filename}</td>
-                        <td className="px-4 py-2 uppercase text-xs font-semibold">{c.language}</td>
-                        <td className="px-4 py-2">
-                          {c.status === 'analyzed' ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600">
-                              <CheckCircle2 size={10} />
-                              Analyzed
-                            </span>
-                          ) : c.status === 'failed' ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2.5 py-0.5 text-[11px] font-bold text-red-500">
-                              <XCircle size={10} />
-                              Failed
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-600">
-                              <Clock size={10} />
-                              Pending
-                            </span>
-                          )}
-                        </td>
-                        <td className="text-muted-foreground px-4 py-2 text-end text-xs">
-                          {new Date(c.uploadedAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-2 text-end">
-                          <a
-                            href={`/dashboard?contract=${c._id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-colors"
-                          >
-                            <ExternalLink size={10} />
-                            View
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
+                        <tr key={c._id} className="border-border/20 border-b">
+                          <td className="px-4 py-2 font-medium">
+                            {c.filename}
+                          </td>
+                          <td className="px-4 py-2 text-xs font-semibold uppercase">
+                            {c.language}
+                          </td>
+                          <td className="px-4 py-2">
+                            {c.status === 'analyzed' ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600">
+                                <CheckCircle2 size={10} />
+                                Analyzed
+                              </span>
+                            ) : c.status === 'failed' ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2.5 py-0.5 text-[11px] font-bold text-red-500">
+                                <XCircle size={10} />
+                                Failed
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-600">
+                                <Clock size={10} />
+                                Pending
+                              </span>
+                            )}
+                          </td>
+                          <td className="text-muted-foreground px-4 py-2 text-end text-xs">
+                            {new Date(c.uploadedAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2 text-end">
+                            <a
+                              href={`/dashboard?contract=${c._id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-colors"
+                            >
+                              <ExternalLink size={10} />
+                              View
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
                     {analysisHistory.length === 0 && (
                       <tr>
                         <td
@@ -472,17 +481,28 @@ export default function SupportDashboard() {
                     <button
                       onClick={() => setAnalysisPage((p) => Math.max(1, p - 1))}
                       disabled={analysisPage === 1}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 text-xs font-bold"
+                      className="text-muted-foreground hover:text-foreground text-xs font-bold disabled:opacity-30"
                     >
                       {t('common.previous_page')}
                     </button>
                     <span className="text-muted-foreground text-xs">
-                      {analysisPage} / {Math.ceil(analysisHistory.length / pageSize)}
+                      {analysisPage} /{' '}
+                      {Math.ceil(analysisHistory.length / pageSize)}
                     </span>
                     <button
-                      onClick={() => setAnalysisPage((p) => Math.min(Math.ceil(analysisHistory.length / pageSize), p + 1))}
-                      disabled={analysisPage >= Math.ceil(analysisHistory.length / pageSize)}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 text-xs font-bold"
+                      onClick={() =>
+                        setAnalysisPage((p) =>
+                          Math.min(
+                            Math.ceil(analysisHistory.length / pageSize),
+                            p + 1
+                          )
+                        )
+                      }
+                      disabled={
+                        analysisPage >=
+                        Math.ceil(analysisHistory.length / pageSize)
+                      }
+                      className="text-muted-foreground hover:text-foreground text-xs font-bold disabled:opacity-30"
                     >
                       {t('common.next_page')}
                     </button>

@@ -247,10 +247,10 @@ describe('useAuth', () => {
 
     expect(authApi.login).toHaveBeenCalled()
     expect(mockSetUser).toHaveBeenCalled()
-    expect(mockNavigate).toHaveBeenCalledWith('/admin', { replace: true })
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/analytics', { replace: true })
   })
 
-  it('should redirect admin to /admin on register', async () => {
+  it('should redirect admin to /admin/analytics on register', async () => {
     vi.mocked(authApi.register).mockResolvedValueOnce({
       data: {
         success: true,
@@ -280,7 +280,7 @@ describe('useAuth', () => {
 
     expect(authApi.register).toHaveBeenCalled()
     expect(mockSetUser).toHaveBeenCalled()
-    expect(mockNavigate).toHaveBeenCalledWith('/admin', { replace: true })
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/analytics', { replace: true })
   })
 
   it('should login with Google successfully', async () => {
@@ -338,7 +338,7 @@ describe('useAuth', () => {
     })
 
     expect(mockNavigate).toHaveBeenCalledWith(
-      '/admin',
+      '/admin/analytics',
       { replace: true }
     )
   })

@@ -13,7 +13,13 @@ router.use(authenticateJwt, requirePermission("billing", "read"));
 // GET / — list all plans
 router.get("/", async (_req: Request, res: Response) => {
   try {
-    const { page = "1", pageSize = "20", isActive, billingCycle, search } = _req.query;
+    const {
+      page = "1",
+      pageSize = "20",
+      isActive,
+      billingCycle,
+      search,
+    } = _req.query;
 
     const filter: Record<string, unknown> = {};
     if (isActive !== undefined) filter.isActive = isActive === "true";
@@ -26,7 +32,10 @@ router.get("/", async (_req: Request, res: Response) => {
     }
 
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
-    const limit = Math.max(1, Math.min(100, parseInt(pageSize as string, 10) || 20));
+    const limit = Math.max(
+      1,
+      Math.min(100, parseInt(pageSize as string, 10) || 20),
+    );
     const skip = (pageNum - 1) * limit;
 
     const [plans, total] = await Promise.all([
@@ -80,14 +89,19 @@ router.post(
       const parsed = PlanZodSchema.parse(req.body);
       const existing = await Plan.findOne({ slug: parsed.slug });
       if (existing) {
-        res.status(409).json({ success: false, error: "A plan with this slug already exists" });
+        res.status(409).json({
+          success: false,
+          error: "A plan with this slug already exists",
+        });
         return;
       }
       const plan = await Plan.create(parsed);
       res.status(201).json({ success: true, data: plan });
     } catch (error) {
       if (error instanceof Error && "issues" in error) {
-        res.status(400).json({ success: false, error: "Validation error", details: error });
+        res
+          .status(400)
+          .json({ success: false, error: "Validation error", details: error });
         return;
       }
       res.status(500).json({ success: false, error: "Failed to create plan" });
@@ -114,7 +128,10 @@ router.put(
           _id: { $ne: req.params.id },
         });
         if (duplicate) {
-          res.status(409).json({ success: false, error: "A plan with this slug already exists" });
+          res.status(409).json({
+            success: false,
+            error: "A plan with this slug already exists",
+          });
           return;
         }
       }
@@ -132,7 +149,9 @@ router.put(
       res.json({ success: true, data: plan });
     } catch (error) {
       if (error instanceof Error && "issues" in error) {
-        res.status(400).json({ success: false, error: "Validation error", details: error });
+        res
+          .status(400)
+          .json({ success: false, error: "Validation error", details: error });
         return;
       }
       res.status(500).json({ success: false, error: "Failed to update plan" });
@@ -162,9 +181,15 @@ router.delete(
         return;
       }
 
-      res.json({ success: true, message: "Plan deactivated successfully", data: plan });
+      res.json({
+        success: true,
+        message: "Plan deactivated successfully",
+        data: plan,
+      });
     } catch (error) {
-      res.status(500).json({ success: false, error: "Failed to deactivate plan" });
+      res
+        .status(500)
+        .json({ success: false, error: "Failed to deactivate plan" });
     }
   },
 );

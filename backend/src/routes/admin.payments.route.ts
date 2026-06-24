@@ -1,7 +1,10 @@
 import { Router, Request, Response } from "express";
 import mongoose from "mongoose";
 import Payment from "../models/payment.model.js";
-import { authenticateJwt, requirePermission } from "../middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  requirePermission,
+} from "../middlewares/auth.middleware.js";
 
 const router = Router();
 

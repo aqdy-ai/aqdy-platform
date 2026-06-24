@@ -5,10 +5,14 @@
   "main": "index.js",
   "scripts": {
     "migrate:userId": "cross-env tsx src/scripts/migrateContractUserId.ts",
-    "dev": "nodemon --watch src --ext ts --exec tsx --env-file .env src/index.ts",
-    "embed:kb": "tsx --env-file .env src/scripts/embedKB.ts",
-    "seed:plans": "tsx --env-file .env src/scripts/seedPlans.ts",
-    "backfill:plan-credits": "tsx --env-file .env src/scripts/backfillPlanCreditAllowances.ts",
+    "dev": "nodemon --watch src --ext ts --exec tsx --env-file ../.env src/index.ts",
+    "embed:kb": "tsx --env-file ../.env src/scripts/embedKB.ts",
+    "seed:kb": "tsx --env-file ../.env src/scripts/seedKnowledgeBase.ts",
+    "seed:agent-prompts": "tsx --env-file ../.env src/scripts/seedAgentPrompts.ts",
+    "seed:all": "tsx --env-file ../.env src/scripts/seedAll.ts",
+    "seed:plans": "tsx --env-file ../.env src/scripts/seedPlans.ts",
+    "seed:payments": "tsx --env-file ../.env src/scripts/seedPayments.ts",
+    "backfill:plan-credits": "tsx --env-file ../.env src/scripts/backfillPlanCreditAllowances.ts",
     "build": "rimraf dist && tsc --noEmitOnError false || true",
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",
@@ -19,7 +23,7 @@
     "test:performance": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --runInBand --testPathPattern=tests/performance",
     "coverage:check": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage --coverageThreshold='{\"global\":{\"lines\":60}}'",
     "prepare": "cd .. && husky install backend/.husky",
-    "verify:stripe": "tsx --env-file .env src/scripts/verifyStripe.ts"
+    "verify:stripe": "tsx --env-file ../.env src/scripts/verifyStripe.ts"
   },
   "keywords": [],
   "author": "",

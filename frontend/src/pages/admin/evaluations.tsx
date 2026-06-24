@@ -181,14 +181,23 @@ export default function AdminEvaluations() {
         ) : (
           <ResponsiveContainer width="100%" height={300}>
             <ReLineChart data={stats}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis
+                dataKey="date"
+                stroke="var(--muted-foreground)"
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
               />
-              <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-              <YAxis stroke="hsl(var(--muted-foreground))" domain={[0, 5]} />
+              <YAxis
+                stroke="var(--muted-foreground)"
+                domain={[0, 5]}
+                tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
+              />
               <Tooltip />
-              <Legend />
+              <Legend
+                formatter={(value: string) => (
+                  <span className="text-muted-foreground text-xs">{value}</span>
+                )}
+              />
               <Line
                 type="monotone"
                 dataKey="avgFaithfulness"

@@ -63,8 +63,20 @@ const AdminPlans = () => {
   }, [t])
 
   useEffect(() => {
-    fetchPlans()
-  }, [fetchPlans])
+    const load = async () => {
+      try {
+        const res = await adminApi.getPlans({ pageSize: 100 })
+        if (res.data.success) {
+          setPlans(res.data.data)
+        }
+      } catch {
+        toast.error(t('admin.error_updating'))
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [t])
 
   const openCreate = () => {
     setEditingPlan(null)
@@ -440,10 +452,14 @@ const AdminPlans = () => {
                 </label>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                <label
+                  htmlFor="stripe-price-id"
+                  className="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                >
                   Stripe Price ID
                 </label>
                 <input
+                  id="stripe-price-id"
                   value={form.stripePriceId}
                   onChange={(e) =>
                     setForm({ ...form, stripePriceId: e.target.value })
@@ -453,10 +469,14 @@ const AdminPlans = () => {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                <label
+                  htmlFor="stripe-annual-price-id"
+                  className="text-muted-foreground text-xs font-bold tracking-wider uppercase"
+                >
                   Stripe Annual Price ID
                 </label>
                 <input
+                  id="stripe-annual-price-id"
                   value={form.stripeAnnualPriceId}
                   onChange={(e) =>
                     setForm({ ...form, stripeAnnualPriceId: e.target.value })

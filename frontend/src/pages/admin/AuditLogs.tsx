@@ -84,8 +84,25 @@ export default function AuditLogs() {
   }, [page, actionFilter, outcomeFilter, emailFilter, t])
 
   useEffect(() => {
-    fetchLogs()
-  }, [fetchLogs])
+    const load = async () => {
+      try {
+        const res = await adminApi.getAuditLogs({
+          page,
+          pageSize: 20,
+          action: actionFilter || undefined,
+          outcome: outcomeFilter || undefined,
+          email: emailFilter || undefined,
+        })
+        const d = res.data as AuditResponse
+        setEntries(d.data)
+        setPagination(d.pagination)
+      } catch {
+        toast.error(t('common.error'))
+      }
+      setLoading(false)
+    }
+    load()
+  }, [page, actionFilter, outcomeFilter, emailFilter, t])
 
   const handleSearch = () => {
     setPage(1)

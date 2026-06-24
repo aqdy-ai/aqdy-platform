@@ -1,7 +1,10 @@
 import { Router, Request, Response } from "express";
 import { Contract } from "../models/contract.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
-import { authenticateJwt, requirePermission } from "../middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  requirePermission,
+} from "../middlewares/auth.middleware.js";
 import { User } from "../models/user.model.js";
 
 const router = Router();
