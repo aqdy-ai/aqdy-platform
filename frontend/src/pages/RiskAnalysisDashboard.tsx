@@ -308,23 +308,23 @@ export default function RiskAnalysisDashboard() {
 
   const getOverallRiskBadgeClass = (risk: string) => {
     if (risk === 'high' || risk === 'critical') {
-      return 'bg-red-500/10 text-red-500 border border-red-500/20'
+      return 'bg-red-500/10 text-red-500 dark:text-red-200 border border-red-500/20 dark:border-red-500/30'
     } else if (risk === 'medium') {
-      return 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+      return 'bg-orange-500/10 text-orange-500 dark:text-orange-200 border border-orange-500/20 dark:border-orange-500/30'
     } else {
-      return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+      return 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-200 border border-emerald-500/20 dark:border-emerald-500/30'
     }
   }
 
   const getSeverityBadgeClass = (sev: 'high' | 'medium' | 'low') => {
     switch (sev) {
       case 'high':
-        return 'bg-red-500/10 text-red-500 border border-red-500/20'
+        return 'bg-red-500/10 text-red-500 dark:text-red-200 border border-red-500/20 dark:border-red-500/30'
       case 'medium':
-        return 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+        return 'bg-orange-500/10 text-orange-500 dark:text-orange-200 border border-orange-500/20 dark:border-orange-500/30'
       case 'low':
       default:
-        return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+        return 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-200 border border-emerald-500/20 dark:border-emerald-500/30'
     }
   }
 
@@ -718,7 +718,7 @@ export default function RiskAnalysisDashboard() {
                               {item.title}
                             </span>
                             <span
-                              className={`w-24 shrink-0 rounded-full px-2.5 py-1 text-center text-[10px] font-extrabold tracking-wider uppercase ${getSeverityBadgeClass(item.severity)}`}
+                              className={`w-24 shrink-0 rounded-full px-2.5 py-1 text-center text-[10px] font-extrabold tracking-wider whitespace-nowrap uppercase ${getSeverityBadgeClass(item.severity)}`}
                             >
                               {getSeverityLabel(item.severity)}
                             </span>

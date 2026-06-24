@@ -316,7 +316,7 @@ describe("Test Group 5 — logKB", () => {
 describe("Test Group 6 — Admin Route GET /", () => {
   const adminUser = {
     _id: new mongoose.Types.ObjectId().toString(),
-    role: "admin",
+    role: "super_admin",
     email: "admin@test.com",
   };
   const regularUser = {
@@ -441,7 +441,7 @@ describe("Test Group 6 — Admin Route GET /", () => {
 describe("Test Group 7 — Admin Route GET /stats", () => {
   const adminUser = {
     _id: new mongoose.Types.ObjectId().toString(),
-    role: "admin",
+    role: "super_admin",
     email: "admin@test.com",
   };
 

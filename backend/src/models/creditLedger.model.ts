@@ -12,6 +12,7 @@ export interface CreditMetadata {
   tokensUsed?: number;
   hostingCost?: number;
   contractId?: string;
+  paymentTxId?: string;
   reason?: CreditLedgerReason;
 }
 
@@ -54,6 +55,7 @@ const CreditLedgerSchema = new Schema<ICreditLedger>(
       tokensUsed: { type: Number },
       hostingCost: { type: Number },
       contractId: { type: String, trim: true },
+      paymentTxId: { type: String, trim: true },
     },
   },
   {

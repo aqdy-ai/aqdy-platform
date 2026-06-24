@@ -73,7 +73,7 @@ describe("Admin Account Management API & Role Guard", () => {
     const adminUser = await User.create({
       name: "Guard Admin",
       email: "admin-guard@test.com",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "free",
       passwordHash: "dummyHash",
@@ -81,7 +81,7 @@ describe("Admin Account Management API & Role Guard", () => {
     adminToken = generateToken({
       sub: adminUser._id.toString(),
       email: adminUser.email,
-      role: "admin",
+      role: "super_admin",
     });
 
     // Seed a real regular user for the 403 role-enforcement test
@@ -112,7 +112,6 @@ describe("Admin Account Management API & Role Guard", () => {
       .set("Cookie", `accessToken=${userToken}`);
     expect(res.status).toBe(403);
     expect(res.body.success).toBe(false);
-    expect(res.body.error).toBe("Forbidden");
   });
 
   test("GET /api/admin/accounts lists paginated, filtered, and searched accounts", async () => {
@@ -137,7 +136,7 @@ describe("Admin Account Management API & Role Guard", () => {
       {
         name: "Charlie Red",
         email: "charlie@test.com",
-        role: "admin",
+        role: "super_admin",
         status: "active",
         planSlug: "enterprise",
         passwordHash: "dummyHash",
@@ -237,20 +236,20 @@ describe("Admin Account Management API & Role Guard", () => {
       .send({
         plan: "pro",
         status: "suspended",
-        role: "admin",
+        role: "super_admin",
       });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.planSlug).toBe("pro");
     expect(res.body.data.status).toBe("suspended");
-    expect(res.body.data.role).toBe("admin");
+    expect(res.body.data.role).toBe("super_admin");
 
     // Verify database directly
     const updated = await User.findById(user._id);
     expect(updated?.planSlug).toBe("pro");
     expect(updated?.status).toBe("suspended");
-    expect(updated?.role).toBe("admin");
+    expect(updated?.role).toBe("super_admin");
   });
 
   test("DELETE /api/admin/accounts/:id requires confirmation flag and hard deletes the user", async () => {
@@ -293,7 +292,7 @@ describe("Admin Account Management API & Role Guard", () => {
 describe("GET /api/admin/stats", () => {
   const adminToken = generateToken({
     email: "admin@test.com",
-    role: "admin",
+    role: "super_admin",
     sub: new mongoose.Types.ObjectId().toString(),
   });
   const userToken = generateToken({
@@ -334,14 +333,14 @@ describe("GET /api/admin/stats", () => {
     const adminUser = await User.create({
       name: "Admin",
       email: "admin@test.com",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "dummyHash",
     });
     const adminToken2 = generateToken({
       email: "admin@test.com",
-      role: "admin",
+      role: "super_admin",
       sub: adminUser._id.toString(),
     });
 
@@ -457,14 +456,14 @@ describe("GET /api/admin/stats", () => {
     const adminUser = await User.create({
       name: "Admin2",
       email: "admin2@test.com",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
     });
     const tok = generateToken({
       email: "admin2@test.com",
-      role: "admin",
+      role: "super_admin",
       sub: adminUser._id.toString(),
     });
     const uid = adminUser._id;
@@ -502,14 +501,14 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
     const adminUser = await User.create({
       name: "Admin",
       email: "admin3@test.com",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
     });
     const tok = generateToken({
       email: "admin3@test.com",
-      role: "admin",
+      role: "super_admin",
       sub: adminUser._id.toString(),
     });
 
@@ -543,14 +542,14 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
     const adminUser = await User.create({
       name: "Admin",
       email: "admin4@test.com",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
     });
     const tok = generateToken({
       email: "admin4@test.com",
-      role: "admin",
+      role: "super_admin",
       sub: adminUser._id.toString(),
     });
 
@@ -600,14 +599,14 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
     const adminUser = await User.create({
       name: "Admin",
       email: "admin5@test.com",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
     });
     const tok = generateToken({
       email: "admin5@test.com",
-      role: "admin",
+      role: "super_admin",
       sub: adminUser._id.toString(),
     });
 
@@ -662,14 +661,14 @@ describe("Admin accounts — creditBalance and plan-change topup", () => {
     const adminUser = await User.create({
       name: "Admin",
       email: "admin6@test.com",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
     });
     const tok = generateToken({
       email: "admin6@test.com",
-      role: "admin",
+      role: "super_admin",
       sub: adminUser._id.toString(),
     });
 

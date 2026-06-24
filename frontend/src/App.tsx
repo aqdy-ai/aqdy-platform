@@ -15,6 +15,9 @@ import { useAuth } from './hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { getDirection } from './lib/i18n'
 import type { SupportedLocale } from './types'
+import { ADMIN_ROLES, getDefaultAdminRoute } from './types/auth'
+import type { AdminRole } from './types/auth'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // 🌟 Lazy Loading للمكونات والـ Pages الخاصة بمنصة عقدي
 const Home = lazy(() => import('./pages/Home'))
@@ -27,11 +30,25 @@ const Login = lazy(() => import('./pages/Login'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
 const AdminEvaluations = lazy(() => import('./pages/admin/evaluations'))
+const RoleManagement = lazy(() => import('./pages/admin/RoleManagement'))
+const FinancialDashboard = lazy(
+  () => import('./pages/admin/FinancialDashboard')
+)
+const SupportDashboard = lazy(() => import('./pages/admin/SupportDashboard'))
+const ContentDashboard = lazy(() => import('./pages/admin/ContentDashboard'))
+const OperationsDashboard = lazy(
+  () => import('./pages/admin/OperationsDashboard')
+)
+const AnalyticsDashboard = lazy(
+  () => import('./pages/admin/AnalyticsDashboard')
+)
+const AuditLogs = lazy(() => import('./pages/admin/AuditLogs'))
+const AdminPlans = lazy(() => import('./pages/admin/AdminPlans'))
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
 import Register from './pages/Register'
@@ -44,6 +61,15 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 
 /**
+ * AdminRootRedirect: يوجه المسؤول إلى أول صفحة يملك صلاحية الوصول إليها
+ */
+const AdminRootRedirect = () => {
+  const { user } = useAuth()
+  const role = user?.role ?? 'user'
+  return <Navigate to={getDefaultAdminRoute(role)} replace />
+}
+
+/**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
  */
 const GuestRoute = ({ children }: { children: ReactNode }) => {
@@ -53,7 +79,9 @@ const GuestRoute = ({ children }: { children: ReactNode }) => {
     return null
   }
   if (isAuthenticated) {
-    return <Navigate to={user?.role === 'admin' ? '/admin' : '/'} replace />
+    const role = user?.role ?? 'user'
+    const isAdmin = role === 'admin' || ADMIN_ROLES.includes(role as AdminRole)
+    return <Navigate to={isAdmin ? getDefaultAdminRoute(role) : '/'} replace />
   }
   return <>{children}</>
 }
@@ -70,7 +98,9 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
-  if (user && !user.isEmailVerified && user.role !== 'admin') {
+  const role = user?.role ?? 'user'
+  const isAdmin = role === 'admin' || ADMIN_ROLES.includes(role as AdminRole)
+  if (user && !user.isEmailVerified && !isAdmin) {
     return <Navigate to="/verify-email" replace />
   }
   return <>{children}</>
@@ -83,7 +113,11 @@ const VerifyEmailRoute = () => {
   const { isAuthenticated, isInitialLoading, user } = useAuth()
   if (isInitialLoading) return null
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  if (user?.isEmailVerified || user?.role === 'admin')
+  if (
+    user?.isEmailVerified ||
+    (user?.role &&
+      (user.role === 'admin' || ADMIN_ROLES.includes(user.role as AdminRole)))
+  )
     return <Navigate to="/" replace />
   return <VerifyPrompt />
 }
@@ -122,59 +156,96 @@ function AppContent() {
 
       <Routes>
         {/* 👑 Admin Routes - بدون MainLayout (بدون Navbar عادية) */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminDashboard />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
+        {(
+          [
+            {
+              path: '/admin',
+              element: <AdminRootRedirect />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/accounts',
+              element: <AdminAccounts />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/contracts',
+              element: <AdminContracts />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/payments',
+              element: <AdminPayments />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/evaluations',
+              element: <AdminEvaluations />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/roles',
+              element: <RoleManagement />,
+              allowedRoles: ['super_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/plans',
+              element: <AdminPlans />,
+              allowedRoles: ['super_admin', 'financial_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/financial',
+              element: <FinancialDashboard />,
+              allowedRoles: ['super_admin', 'financial_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/support',
+              element: <SupportDashboard />,
+              allowedRoles: ['super_admin', 'support_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/content',
+              element: <ContentDashboard />,
+              allowedRoles: ['super_admin', 'content_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/operations',
+              element: <OperationsDashboard />,
+              allowedRoles: ['super_admin', 'operations_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/analytics',
+              element: <AnalyticsDashboard />,
+              allowedRoles: ['super_admin', 'analytics_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/audit-logs',
+              element: <AuditLogs />,
+              allowedRoles: undefined,
+            },
+          ] satisfies {
+            path: string
+            element: ReactNode
+            allowedRoles: AdminRole[] | undefined
+          }[]
+        ).map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={
+              <AdminRoute allowedRoles={route.allowedRoles}>
+                <AdminLayout>
+                  <ErrorBoundary key={route.path}>
+                    {route.element}
+                  </ErrorBoundary>
+                </AdminLayout>
+              </AdminRoute>
+            }
+          />
+        ))}
         <Route
           path="/admin/dashboard"
           element={<Navigate to="/admin" replace />}
-        />
-        <Route
-          path="/admin/accounts"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminAccounts />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/contracts"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminContracts />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/payments"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminPayments />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/evaluations"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminEvaluations />
-              </AdminLayout>
-            </AdminRoute>
-          }
         />
 
         {/* 🏠 Normal Routes - داخل MainLayout */}

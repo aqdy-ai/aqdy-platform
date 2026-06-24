@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { IUser } from "../models/user.model.js";
+import type { UserRole } from "../config/roles.js";
 
 export interface RegisterInput {
   name: string;
@@ -29,7 +30,7 @@ export interface AuthenticatedRequest extends Request {
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: string;
+  role: UserRole;
   plan: string;
   iat?: number;
   exp?: number;

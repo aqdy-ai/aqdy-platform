@@ -1,8 +1,11 @@
 import { Router, Request, Response } from "express";
-import { authenticateJwt } from "../middlewares/auth.middleware.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  requirePermission,
+} from "../middlewares/auth.middleware.js";
 import { User } from "../models/user.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
+import { Contract } from "../models/contract.model.js";
 import { CreditLedger } from "../models/creditLedger.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
 import Payment from "../models/payment.model.js";
@@ -25,7 +28,7 @@ function weekRange(date: Date, weeksAgo: number) {
 router.get(
   "/",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("dashboard", "read"),
   async (_req: Request, res: Response) => {
     try {
       const now = new Date();
@@ -116,7 +119,7 @@ router.get(
             },
           },
         ]),
-        RiskAnalysis.aggregate([
+        Contract.aggregate([
           { $group: { _id: "$language", count: { $sum: 1 } } },
         ]),
         RiskAnalysis.find()

@@ -2,7 +2,6 @@ import { ReactNode, useEffect, useState, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  Shield,
   Users,
   FileText,
   CreditCard,
@@ -12,10 +11,19 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  Settings,
+  BookOpen,
+  Activity,
+  DollarSign,
+  HeadphonesIcon,
+  History,
+  Package,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../hooks/useTheme'
+import { usePermissions } from '../../hooks/usePermissions'
+import type { Section } from '../../hooks/usePermissions'
 import { toast } from 'sonner'
 
 interface AdminLayoutProps {
@@ -26,6 +34,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { t, i18n } = useTranslation()
   const { theme, toggleTheme } = useTheme()
   const { user, logout } = useAuth()
+  const { hasPermission, roleLabel } = usePermissions()
   const location = useLocation()
   const navigate = useNavigate()
   const isRtl = i18n.language === 'ar'
@@ -47,33 +56,89 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     document.documentElement.lang = i18n.language
   }, [i18n.language, isRtl])
 
-  const menuItems = [
+  // All possible admin menu items with required section permission
+  const allMenuItems: {
+    path: string
+    label: string
+    icon: typeof Shield
+    section: Section
+  }[] = [
     {
-      path: '/admin',
-      label: t('admin.dashboard_title'),
-      icon: Shield,
+      path: '/admin/analytics',
+      label: t('admin.analytics'),
+      icon: BarChart3,
+      section: 'report_export',
     },
     {
       path: '/admin/accounts',
       label: t('admin.accounts_title'),
       icon: Users,
+      section: 'accounts',
     },
     {
       path: '/admin/contracts',
       label: t('history.title'),
       icon: FileText,
+      section: 'contracts',
     },
     {
       path: '/admin/payments',
       label: t('billing.payment_history'),
       icon: CreditCard,
+      section: 'billing',
     },
     {
       path: '/admin/evaluations',
       label: t('admin.evaluations_title'),
       icon: BarChart3,
+      section: 'evaluations',
+    },
+    {
+      path: '/admin/plans',
+      label: t('admin.plans_title'),
+      icon: Package,
+      section: 'billing',
+    },
+    {
+      path: '/admin/financial',
+      label: t('admin.financial'),
+      icon: DollarSign,
+      section: 'billing',
+    },
+    {
+      path: '/admin/support',
+      label: t('admin.support'),
+      icon: HeadphonesIcon,
+      section: 'accounts',
+    },
+    {
+      path: '/admin/content',
+      label: t('admin.content_kb'),
+      icon: BookOpen,
+      section: 'knowledge_base',
+    },
+    {
+      path: '/admin/operations',
+      label: t('admin.operations'),
+      icon: Activity,
+      section: 'system_health',
+    },
+    {
+      path: '/admin/audit-logs',
+      label: t('admin.audit_log', { defaultValue: 'Audit Log' }),
+      icon: History,
+      section: 'audit_log',
+    },
+    {
+      path: '/admin/roles',
+      label: t('admin.role_management'),
+      icon: Settings,
+      section: 'role_management',
     },
   ]
+
+  // Filter menu items based on user's permissions
+  const menuItems = allMenuItems.filter((item) => hasPermission(item.section))
 
   const handleLogout = () => {
     logout()
@@ -122,6 +187,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <p className="text-muted-foreground truncate text-xs">
                     {user?.email || ''}
                   </p>
+                  <span className="bg-primary/15 text-primary mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase">
+                    {t(`admin.role_${user?.role}`, { defaultValue: roleLabel })}
+                  </span>
                 </div>
                 <ChevronDown
                   size={14}

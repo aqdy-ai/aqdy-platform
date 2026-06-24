@@ -152,25 +152,25 @@ const AdminContracts = () => {
     switch (risk) {
       case 'critical':
         return {
-          color: 'bg-red-500/10 text-red-600',
+          color: 'bg-red-500/10 text-red-600 dark:text-red-200',
           icon: <ShieldAlert className="h-3 w-3" />,
           label: isRtl ? 'حرج' : 'Critical',
         }
       case 'high':
         return {
-          color: 'bg-rose-500/10 text-rose-500',
+          color: 'bg-rose-500/10 text-rose-500 dark:text-rose-200',
           icon: <AlertTriangle className="h-3 w-3" />,
           label: isRtl ? 'عالي' : 'High',
         }
       case 'medium':
         return {
-          color: 'bg-amber-500/10 text-amber-600',
+          color: 'bg-amber-500/10 text-amber-600 dark:text-amber-200',
           icon: <AlertTriangle className="h-3 w-3" />,
           label: isRtl ? 'متوسط' : 'Medium',
         }
       case 'low':
         return {
-          color: 'bg-emerald-500/10 text-emerald-500',
+          color: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-200',
           icon: <CheckCircle2 className="h-3 w-3" />,
           label: isRtl ? 'منخفض' : 'Low',
         }
@@ -436,7 +436,7 @@ const AdminContracts = () => {
                       {/* Risk Level */}
                       <td className="px-6 py-4.5">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${riskBadge.color}`}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap ${riskBadge.color}`}
                           data-testid="risk-badge"
                         >
                           {riskBadge.icon}

@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { authenticateJwt } from "../middlewares/auth.middleware.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  requirePermission,
+} from "../middlewares/auth.middleware.js";
 import {
   getEvaluationStats,
   getLowScores,
@@ -10,17 +12,32 @@ import {
 
 const router = Router();
 
-router.get("/stats", authenticateJwt, requireAdmin, getEvaluationStats);
+router.get(
+  "/stats",
+  authenticateJwt,
+  requirePermission("evaluations", "read"),
+  getEvaluationStats,
+);
 
-router.get("/low-scores", authenticateJwt, requireAdmin, getLowScores);
+router.get(
+  "/low-scores",
+  authenticateJwt,
+  requirePermission("evaluations", "read"),
+  getLowScores,
+);
 
 router.post(
   "/re-evaluate/:analysisId",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("evaluations", "write"),
   reEvaluateAnalysis,
 );
 
-router.post("/backfill", authenticateJwt, requireAdmin, backfillAllEvaluations);
+router.post(
+  "/backfill",
+  authenticateJwt,
+  requirePermission("evaluations", "write"),
+  backfillAllEvaluations,
+);
 
 export default router;

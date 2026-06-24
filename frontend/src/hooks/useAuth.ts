@@ -10,7 +10,9 @@ import type {
   PasswordValidationResult,
   RegisterInput,
   User,
+  AdminRole,
 } from '../types/auth'
+import { ADMIN_ROLES, getDefaultAdminRoute } from '../types/auth'
 import { AuthContext } from './context/AuthContext'
 
 /**
@@ -96,8 +98,13 @@ export const useAuth = () => {
 
       localStorage.setItem('isLoggedIn', 'true')
       toast.success(t('auth.loginSuccess'))
-      if (loggedInUser?.role === 'admin') {
-        navigate('/admin', { replace: true })
+      const isAdmin =
+        loggedInUser?.role === 'admin' ||
+        ADMIN_ROLES.includes(loggedInUser?.role as AdminRole)
+      if (isAdmin) {
+        navigate(getDefaultAdminRoute(loggedInUser?.role ?? ''), {
+          replace: true,
+        })
       } else {
         navigate('/', { replace: true })
       }
@@ -129,8 +136,13 @@ export const useAuth = () => {
 
       localStorage.setItem('isLoggedIn', 'true')
       toast.success(t('auth.loginSuccess'))
-      if (loggedInUser?.role === 'admin') {
-        navigate('/admin', { replace: true })
+      const isAdmin =
+        loggedInUser?.role === 'admin' ||
+        ADMIN_ROLES.includes(loggedInUser?.role as AdminRole)
+      if (isAdmin) {
+        navigate(getDefaultAdminRoute(loggedInUser?.role ?? ''), {
+          replace: true,
+        })
       } else {
         navigate('/', { replace: true })
       }
@@ -165,8 +177,13 @@ export const useAuth = () => {
       setUser(registeredUser)
 
       toast.success(t('auth.registerSuccess'))
-      if (registeredUser?.role === 'admin') {
-        navigate('/admin', { replace: true })
+      const isAdmin =
+        registeredUser?.role === 'admin' ||
+        ADMIN_ROLES.includes(registeredUser?.role as AdminRole)
+      if (isAdmin) {
+        navigate(getDefaultAdminRoute(registeredUser?.role ?? ''), {
+          replace: true,
+        })
       } else {
         navigate('/', { replace: true })
       }

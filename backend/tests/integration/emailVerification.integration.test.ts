@@ -202,7 +202,7 @@ describe("Email Verification Integration Tests", () => {
     const admin = new User({
       name: "Admin User",
       email: "admin@example.com",
-      role: "admin",
+      role: "super_admin",
       plan: "free",
       status: "active",
       isEmailVerified: true,

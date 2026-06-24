@@ -11,6 +11,12 @@ import { Readable } from "stream";
 // ── 1. Mock LLM ───────────────────────────────────────────────────────────────
 
 const mockInvoke = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+const mockGetPrompt = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: jest.fn(),
+}));
 
 jest.unstable_mockModule("../../src/services/llm.service.js", () => ({
   llmService: {
@@ -190,6 +196,7 @@ describe("Upload → Extract → Store Pipeline", () => {
     };
     analysis.executionQueue.retryDelayMs = 1;
 
+    mockGetPrompt.mockResolvedValue("Mock system prompt");
     mockClassify.mockResolvedValue({
       riskLevel: "low",
       confidence: 0.95,

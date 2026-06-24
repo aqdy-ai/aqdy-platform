@@ -113,7 +113,7 @@ describe("GET /api/admin/payments — paginated listing", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@payments.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -122,7 +122,7 @@ describe("GET /api/admin/payments — paginated listing", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
@@ -183,7 +183,7 @@ describe("GET /api/admin/payments — filter by status", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@filter.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -192,7 +192,7 @@ describe("GET /api/admin/payments — filter by status", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
@@ -242,7 +242,7 @@ describe("GET /api/admin/payments — filter by userId", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@userid.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -250,7 +250,7 @@ describe("GET /api/admin/payments — filter by userId", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
@@ -307,7 +307,7 @@ describe("GET /api/admin/payments — filter by date range", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@daterange.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -316,7 +316,7 @@ describe("GET /api/admin/payments — filter by date range", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
@@ -421,7 +421,7 @@ describe("GET /api/admin/payments — populated user in response", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@populate.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -429,7 +429,7 @@ describe("GET /api/admin/payments — populated user in response", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 

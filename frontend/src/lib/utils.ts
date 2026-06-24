@@ -7,24 +7,24 @@ export function cn(...inputs: ClassValue[]): string {
 
 export const riskColors = {
   critical: cn(
-    'bg-red-950 text-red-200 border-red-800',
-    'dark:bg-red-950/60 dark:text-red-300 dark:border-red-900'
+    'bg-red-950 text-red-200 border-red-800 whitespace-nowrap',
+    'dark:bg-red-950/60 dark:text-red-200 dark:border-red-900'
   ),
   high: cn(
-    'bg-orange-500/10 text-orange-600 border-orange-500/20',
-    'dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/30'
+    'bg-orange-500/10 text-orange-600 border-orange-500/20 whitespace-nowrap',
+    'dark:bg-orange-500/10 dark:text-orange-200 dark:border-orange-500/30'
   ),
   medium: cn(
-    'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    'dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30'
+    'bg-amber-500/10 text-amber-600 border-amber-500/20 whitespace-nowrap',
+    'dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/30'
   ),
   low: cn(
-    'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-    'dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30'
+    'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 whitespace-nowrap',
+    'dark:bg-emerald-500/10 dark:text-emerald-200 dark:border-emerald-500/30'
   ),
   unknown: cn(
-    'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    'dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+    'bg-gray-500/10 text-gray-600 border-gray-500/20 whitespace-nowrap',
+    'dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
   ),
 } as const
 

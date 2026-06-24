@@ -5,6 +5,14 @@ import { fileURLToPath } from "url";
 
 // ── Mock Setup ───────────────────────────────────
 
+const mockGetPrompt = jest.fn() as jest.Mock;
+const mockSetFallback = jest.fn() as jest.Mock;
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: mockSetFallback,
+}));
+
 const mockOpenAIInvoke = jest.fn() as jest.Mock;
 const mockGeminiInvoke = jest.fn() as jest.Mock;
 
@@ -519,6 +527,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetPrompt.mockResolvedValue('Mock system prompt for testing');
     agent = new ExtractorAgent();
   });
 

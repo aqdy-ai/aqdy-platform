@@ -1,10 +1,11 @@
 import { createContext } from 'react'
+import type { UserRole } from '../../types/auth'
 
 export interface User {
   id: string
   name: string
   email: string
-  role: string
+  role: UserRole
   isEmailVerified?: boolean
 }
 
