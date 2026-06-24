@@ -48,6 +48,7 @@ const AnalyticsDashboard = lazy(
   () => import('./pages/admin/AnalyticsDashboard')
 )
 const AuditLogs = lazy(() => import('./pages/admin/AuditLogs'))
+const AdminPlans = lazy(() => import('./pages/admin/AdminPlans'))
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
 import Register from './pages/Register'
@@ -186,6 +187,11 @@ function AppContent() {
               path: '/admin/roles',
               element: <RoleManagement />,
               allowedRoles: ['super_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/plans',
+              element: <AdminPlans />,
+              allowedRoles: ['super_admin', 'financial_admin'] as AdminRole[],
             },
             {
               path: '/admin/financial',

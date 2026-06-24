@@ -164,12 +164,16 @@ export default function SupportDashboard() {
                 <div className="text-muted-foreground text-xs">{u.email}</div>
                 <div className="mt-1 flex gap-2">
                   <span className="bg-muted rounded px-1.5 py-0.5 text-[10px] font-bold uppercase">
-                    {t(`admin.plan_${u.planSlug.toLowerCase()}`, { defaultValue: u.planSlug })}
+                    {t(`admin.plan_${u.planSlug.toLowerCase()}`, {
+                      defaultValue: u.planSlug,
+                    })}
                   </span>
                   <span
                     className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${u.isEmailVerified ? 'bg-emerald-500/15 text-emerald-600' : 'bg-amber-500/15 text-amber-600'}`}
                   >
-                    {u.isEmailVerified ? t('admin.verified') : t('admin.unverified')}
+                    {u.isEmailVerified
+                      ? t('admin.verified')
+                      : t('admin.unverified')}
                   </span>
                 </div>
               </button>
@@ -197,7 +201,9 @@ export default function SupportDashboard() {
                       {t('admin.plan')}
                     </div>
                     <div className="font-bold">
-                      {t(`admin.plan_${selectedUser.planSlug.toLowerCase()}`, { defaultValue: selectedUser.planSlug })}
+                      {t(`admin.plan_${selectedUser.planSlug.toLowerCase()}`, {
+                        defaultValue: selectedUser.planSlug,
+                      })}
                     </div>
                   </div>
                   <div className="bg-muted/50 rounded-xl px-3 py-2">
@@ -213,7 +219,9 @@ export default function SupportDashboard() {
                       {t('admin.status')}
                     </div>
                     <div className="font-bold">
-                      {t(`admin.status_${selectedUser.status.toLowerCase()}`, { defaultValue: selectedUser.status })}
+                      {t(`admin.status_${selectedUser.status.toLowerCase()}`, {
+                        defaultValue: selectedUser.status,
+                      })}
                     </div>
                   </div>
                   <div className="bg-muted/50 rounded-xl px-3 py-2">
@@ -281,16 +289,26 @@ export default function SupportDashboard() {
               <div className="border-border/40 overflow-hidden rounded-2xl border">
                 <div className="border-border/30 border-b px-4 py-3">
                   <h3 className="text-sm font-bold">
-                    {t('billing.payment_history', { defaultValue: 'Payment History' })}
+                    {t('billing.payment_history', {
+                      defaultValue: 'Payment History',
+                    })}
                   </h3>
                 </div>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
-                      <th className="px-4 py-2 text-start">{t('admin.date')}</th>
-                      <th className="px-4 py-2 text-end">{t('admin.amount')}</th>
-                      <th className="px-4 py-2 text-center">{t('admin.currency')}</th>
-                      <th className="px-4 py-2 text-end">{t('admin.status')}</th>
+                      <th className="px-4 py-2 text-start">
+                        {t('admin.date')}
+                      </th>
+                      <th className="px-4 py-2 text-end">
+                        {t('admin.amount')}
+                      </th>
+                      <th className="px-4 py-2 text-center">
+                        {t('admin.currency')}
+                      </th>
+                      <th className="px-4 py-2 text-end">
+                        {t('admin.status')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -308,11 +326,23 @@ export default function SupportDashboard() {
                         <td className="px-4 py-2 text-end">
                           <span className="inline-flex items-center gap-1 text-xs font-semibold">
                             {p.status === 'succeeded' ? (
-                              <><CheckCircle2 size={12} className="text-emerald-500" /> Paid</>
+                              <>
+                                <CheckCircle2
+                                  size={12}
+                                  className="text-emerald-500"
+                                />{' '}
+                                Paid
+                              </>
                             ) : p.status === 'failed' ? (
-                              <><XCircle size={12} className="text-rose-500" /> Failed</>
+                              <>
+                                <XCircle size={12} className="text-rose-500" />{' '}
+                                Failed
+                              </>
                             ) : (
-                              <><Clock size={12} className="text-amber-500" /> Pending</>
+                              <>
+                                <Clock size={12} className="text-amber-500" />{' '}
+                                Pending
+                              </>
                             )}
                           </span>
                         </td>
@@ -342,9 +372,15 @@ export default function SupportDashboard() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
-                      <th className="px-4 py-2 text-start">{t('admin.file')}</th>
-                      <th className="px-4 py-2 text-start">{t('admin.lang')}</th>
-                      <th className="px-4 py-2 text-start">{t('admin.status')}</th>
+                      <th className="px-4 py-2 text-start">
+                        {t('admin.file')}
+                      </th>
+                      <th className="px-4 py-2 text-start">
+                        {t('admin.lang')}
+                      </th>
+                      <th className="px-4 py-2 text-start">
+                        {t('admin.status')}
+                      </th>
                       <th className="px-4 py-2 text-end">{t('admin.date')}</th>
                     </tr>
                   </thead>

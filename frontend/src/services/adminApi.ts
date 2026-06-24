@@ -149,6 +149,50 @@ export interface ContractsResponse {
   data: AdminContract[]
 }
 
+export interface AdminPlan {
+  _id: string
+  name: string
+  slug: string
+  price: number | null
+  billingCycle: 'monthly' | 'annual'
+  features: string[]
+  analysisLimit: number
+  storageLimit: number
+  creditAllowance: number
+  stripePriceId?: string
+  stripeAnnualPriceId?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreatePlanInput {
+  name: string
+  slug: string
+  price?: number | null
+  billingCycle: 'monthly' | 'annual'
+  features: string[]
+  analysisLimit: number
+  storageLimit: number
+  creditAllowance?: number
+  stripePriceId?: string
+  stripeAnnualPriceId?: string
+  isActive?: boolean
+}
+
+export interface PlansResponse {
+  success: boolean
+  pagination: {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+  data: AdminPlan[]
+}
+
 export interface DashboardData {
   totalAccounts: number
   accountsThisWeek: number
@@ -338,6 +382,26 @@ export const adminApi = {
     page?: number
   }) => adminClient.get('/operations/langfuse-traces', { params }),
   getAlerts: () => adminClient.get('/operations/alerts'),
+
+  // ── Plan Management ────────────────────────────────
+  getPlans: (params?: {
+    page?: number
+    pageSize?: number
+    isActive?: string
+    billingCycle?: string
+    search?: string
+  }) => adminClient.get<PlansResponse>('/plans', { params }),
+  getPlan: (id: string) =>
+    adminClient.get<{ success: boolean; data: AdminPlan }>(`/plans/${id}`),
+  createPlan: (data: CreatePlanInput) =>
+    adminClient.post<{ success: boolean; data: AdminPlan }>('/plans', data),
+  updatePlan: (id: string, data: Partial<CreatePlanInput>) =>
+    adminClient.put<{ success: boolean; data: AdminPlan }>(
+      `/plans/${id}`,
+      data
+    ),
+  deletePlan: (id: string) =>
+    adminClient.delete<{ success: boolean; message: string }>(`/plans/${id}`),
 
   // ── Audit Logs ──────────────────────────────────────
   getAuditLogs: (params?: {

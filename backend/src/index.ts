@@ -37,6 +37,7 @@ import adminSupportRouter from "./routes/admin.support.route.js";
 import adminFinancialRouter from "./routes/admin.financial.route.js";
 import adminContentRouter from "./routes/admin.content.route.js";
 import adminOperationsRouter from "./routes/admin.operations.route.js";
+import adminPlansRouter from "./routes/admin.plans.route.js";
 import {
   authenticateJwt,
   requireEmailVerified,
@@ -95,6 +96,7 @@ app.use("/api/admin/support", adminSupportRouter);
 app.use("/api/admin/financial", adminFinancialRouter);
 app.use("/api/admin/content", adminContentRouter);
 app.use("/api/admin/operations", adminOperationsRouter);
+app.use("/api/admin/plans", adminPlansRouter);
 app.use("/api/plans", plansRouter);
 
 // Use Swagger UI

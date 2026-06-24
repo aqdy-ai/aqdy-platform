@@ -104,14 +104,21 @@ export default function FinancialDashboard() {
   }
 
   const handleCancelSubscription = async (subscriptionId: string) => {
-    if (!window.confirm(t('admin.confirm_cancel', { defaultValue: 'Cancel this subscription?' }))) return
+    if (
+      !window.confirm(
+        t('admin.confirm_cancel', { defaultValue: 'Cancel this subscription?' })
+      )
+    )
+      return
     try {
       setModifyingId(subscriptionId)
       await adminApi.changeSubscription(subscriptionId, 'cancel')
       toast.success(t('common.success'))
       setSubscriptions((prev) =>
         prev.map((s) =>
-          s._id === subscriptionId ? { ...s, planSlug: 'free', status: 'cancelled' } : s
+          s._id === subscriptionId
+            ? { ...s, planSlug: 'free', status: 'cancelled' }
+            : s
         )
       )
     } catch {
@@ -132,7 +139,9 @@ export default function FinancialDashboard() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <DollarSign className="text-primary" size={28} />
-          <h1 className="text-2xl font-bold">{t('admin.financial_dashboard')}</h1>
+          <h1 className="text-2xl font-bold">
+            {t('admin.financial_dashboard')}
+          </h1>
         </div>
         <button
           onClick={handleExport}
@@ -192,7 +201,9 @@ export default function FinancialDashboard() {
       {/* Revenue by Plan */}
       {overview && (
         <div className="border-border/40 rounded-2xl border p-5">
-          <h2 className="mb-3 text-lg font-bold">{t('admin.revenue_by_plan')}</h2>
+          <h2 className="mb-3 text-lg font-bold">
+            {t('admin.revenue_by_plan')}
+          </h2>
           <div className="flex gap-4">
             {Object.entries(overview.revenueByPlan).map(([plan, rev]) => (
               <div
@@ -200,7 +211,9 @@ export default function FinancialDashboard() {
                 className="bg-muted/50 rounded-xl px-4 py-3 text-center"
               >
                 <div className="text-muted-foreground text-xs font-semibold uppercase">
-                  {t(`admin.plan_${plan.toLowerCase()}`, { defaultValue: plan })}
+                  {t(`admin.plan_${plan.toLowerCase()}`, {
+                    defaultValue: plan,
+                  })}
                 </div>
                 <div className="text-xl font-bold">${rev.toLocaleString()}</div>
               </div>
@@ -221,7 +234,9 @@ export default function FinancialDashboard() {
               <th className="px-4 py-3 text-start">{t('admin.plan')}</th>
               <th className="px-4 py-3 text-start">{t('admin.credits')}</th>
               <th className="px-4 py-3 text-start">{t('admin.status')}</th>
-              {canModify && <th className="px-4 py-3 text-end">{t('admin.actions')}</th>}
+              {canModify && (
+                <th className="px-4 py-3 text-end">{t('admin.actions')}</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -236,7 +251,9 @@ export default function FinancialDashboard() {
                 </td>
                 <td className="px-4 py-3">
                   <span className="bg-primary/15 text-primary rounded-lg px-2 py-1 text-xs font-bold uppercase">
-                    {t(`admin.plan_${s.planSlug.toLowerCase()}`, { defaultValue: s.planSlug })}
+                    {t(`admin.plan_${s.planSlug.toLowerCase()}`, {
+                      defaultValue: s.planSlug,
+                    })}
                   </span>
                 </td>
                 <td className="px-4 py-3 font-mono">{s.creditBalance}</td>
@@ -244,7 +261,9 @@ export default function FinancialDashboard() {
                   <span
                     className={`rounded-lg px-2 py-1 text-xs font-bold ${s.status === 'active' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-red-500/15 text-red-500'}`}
                   >
-                    {t(`admin.status_${s.status.toLowerCase()}`, { defaultValue: s.status })}
+                    {t(`admin.status_${s.status.toLowerCase()}`, {
+                      defaultValue: s.status,
+                    })}
                   </span>
                 </td>
                 {canModify && (
@@ -266,7 +285,8 @@ export default function FinancialDashboard() {
                           <option value="pro">Pro</option>
                           <option value="enterprise">Enterprise</option>
                         </select>
-                        {(planChangeMap[s._id] && planChangeMap[s._id] !== s.planSlug) ? (
+                        {planChangeMap[s._id] &&
+                        planChangeMap[s._id] !== s.planSlug ? (
                           <button
                             onClick={() =>
                               handlePlanChange(s._id, planChangeMap[s._id]!)

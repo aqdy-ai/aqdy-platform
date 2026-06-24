@@ -644,45 +644,45 @@ export default function AdminDashboard() {
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {canViewUserData && (
-        <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
-          <h4 className="text-foreground mb-4 text-sm font-bold">
-            {isRtl
-              ? 'أفضل المستخدمين استهلاكاً للاعتمادات'
-              : 'Top Users by Credits Consumed'}
-          </h4>
-          <div className="divide-border/40 divide-y">
-            {data.topCreditConsumers.length === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm font-semibold">
-                {t('admin.no_data')}
-              </p>
-            ) : (
-              data.topCreditConsumers.map((u, i) => (
-                <div key={u._id} className="flex items-center gap-3 py-3">
-                  <span className="text-muted-foreground w-5 text-center text-xs font-bold">
-                    {i + 1}
-                  </span>
-                  <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
-                    {u.name.charAt(0).toUpperCase()}
+          <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
+            <h4 className="text-foreground mb-4 text-sm font-bold">
+              {isRtl
+                ? 'أفضل المستخدمين استهلاكاً للاعتمادات'
+                : 'Top Users by Credits Consumed'}
+            </h4>
+            <div className="divide-border/40 divide-y">
+              {data.topCreditConsumers.length === 0 ? (
+                <p className="text-muted-foreground py-6 text-center text-sm font-semibold">
+                  {t('admin.no_data')}
+                </p>
+              ) : (
+                data.topCreditConsumers.map((u, i) => (
+                  <div key={u._id} className="flex items-center gap-3 py-3">
+                    <span className="text-muted-foreground w-5 text-center text-xs font-bold">
+                      {i + 1}
+                    </span>
+                    <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
+                      {u.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-foreground truncate text-sm font-bold">
+                        {u.name}
+                      </p>
+                      <p className="text-muted-foreground truncate text-xs">
+                        {u.email}
+                      </p>
+                    </div>
+                    <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-bold capitalize">
+                      {u.planSlug}
+                    </span>
+                    <span className="text-foreground text-sm font-black">
+                      {formatNumber(u.credits)}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-foreground truncate text-sm font-bold">
-                      {u.name}
-                    </p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {u.email}
-                    </p>
-                  </div>
-                  <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-bold capitalize">
-                    {u.planSlug}
-                  </span>
-                  <span className="text-foreground text-sm font-black">
-                    {formatNumber(u.credits)}
-                  </span>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
-        </div>
         )}
         <div className="flex flex-col gap-6">
           <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
@@ -827,62 +827,62 @@ export default function AdminDashboard() {
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {canViewUserData && (
-        <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
-          <h4 className="text-foreground mb-4 text-sm font-bold">
-            {isRtl ? 'آخر المدفوعات' : 'Recent Payments'}
-          </h4>
-          <div className="divide-border/40 divide-y">
-            {data.recentPayments.length === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm font-semibold">
-                {t('admin.no_data')}
-              </p>
-            ) : (
-              data.recentPayments.map((p) => (
-                <div key={p._id} className="flex items-center gap-3 py-3">
-                  <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
-                    {p.user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-foreground truncate text-sm font-bold">
-                      {p.user.name}
-                    </p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {p.user.planSlug || ''}
-                    </p>
-                  </div>
-                  <span className="text-foreground text-sm font-black">
-                    {p.amount.toLocaleString()} {p.currency}
-                  </span>
-                  {p.status === 'succeeded' ? (
-                    <CheckCircle2
-                      size={16}
-                      className="shrink-0 text-emerald-500"
-                    />
-                  ) : p.status === 'failed' ? (
-                    <XCircle size={16} className="shrink-0 text-rose-500" />
-                  ) : (
-                    <Clock size={16} className="shrink-0 text-amber-500" />
-                  )}
-                  <span
-                    className={`text-xs font-bold ${p.status === 'succeeded' ? 'text-emerald-500' : p.status === 'failed' ? 'text-rose-500' : 'text-amber-500'}`}
-                  >
-                    {p.status === 'succeeded'
-                      ? isRtl
-                        ? 'مدفوع'
-                        : 'Paid'
-                      : p.status === 'failed'
+          <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
+            <h4 className="text-foreground mb-4 text-sm font-bold">
+              {isRtl ? 'آخر المدفوعات' : 'Recent Payments'}
+            </h4>
+            <div className="divide-border/40 divide-y">
+              {data.recentPayments.length === 0 ? (
+                <p className="text-muted-foreground py-6 text-center text-sm font-semibold">
+                  {t('admin.no_data')}
+                </p>
+              ) : (
+                data.recentPayments.map((p) => (
+                  <div key={p._id} className="flex items-center gap-3 py-3">
+                    <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
+                      {p.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-foreground truncate text-sm font-bold">
+                        {p.user.name}
+                      </p>
+                      <p className="text-muted-foreground truncate text-xs">
+                        {p.user.planSlug || ''}
+                      </p>
+                    </div>
+                    <span className="text-foreground text-sm font-black">
+                      {p.amount.toLocaleString()} {p.currency}
+                    </span>
+                    {p.status === 'succeeded' ? (
+                      <CheckCircle2
+                        size={16}
+                        className="shrink-0 text-emerald-500"
+                      />
+                    ) : p.status === 'failed' ? (
+                      <XCircle size={16} className="shrink-0 text-rose-500" />
+                    ) : (
+                      <Clock size={16} className="shrink-0 text-amber-500" />
+                    )}
+                    <span
+                      className={`text-xs font-bold ${p.status === 'succeeded' ? 'text-emerald-500' : p.status === 'failed' ? 'text-rose-500' : 'text-amber-500'}`}
+                    >
+                      {p.status === 'succeeded'
                         ? isRtl
-                          ? 'فاشل'
-                          : 'Failed'
-                        : isRtl
-                          ? 'معلق'
-                          : 'Pending'}
-                  </span>
-                </div>
-              ))
-            )}
+                          ? 'مدفوع'
+                          : 'Paid'
+                        : p.status === 'failed'
+                          ? isRtl
+                            ? 'فاشل'
+                            : 'Failed'
+                          : isRtl
+                            ? 'معلق'
+                            : 'Pending'}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
         )}
         <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
           <h4 className="text-foreground mb-4 text-sm font-bold">

@@ -54,7 +54,9 @@ function outcomeColor(outcome: string) {
 export default function AuditLogs() {
   const { t } = useTranslation()
   const [entries, setEntries] = useState<AuditEntry[]>([])
-  const [pagination, setPagination] = useState<AuditResponse['pagination'] | null>(null)
+  const [pagination, setPagination] = useState<
+    AuditResponse['pagination'] | null
+  >(null)
   const [loading, setLoading] = useState(true)
 
   const [actionFilter, setActionFilter] = useState('')
@@ -94,17 +96,24 @@ export default function AuditLogs() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <History className="text-primary" size={28} />
-        <h1 className="text-2xl font-bold">{t('admin.audit_log', { defaultValue: 'Audit Log' })}</h1>
+        <h1 className="text-2xl font-bold">
+          {t('admin.audit_log', { defaultValue: 'Audit Log' })}
+        </h1>
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <select
           value={actionFilter}
-          onChange={(e) => { setActionFilter(e.target.value); setPage(1) }}
+          onChange={(e) => {
+            setActionFilter(e.target.value)
+            setPage(1)
+          }}
           className="bg-background border-border rounded-xl border px-3 py-2 text-sm"
         >
-          <option value="">{t('admin.all_actions', { defaultValue: 'All Actions' })}</option>
+          <option value="">
+            {t('admin.all_actions', { defaultValue: 'All Actions' })}
+          </option>
           <option value="AUTH_LOGIN_SUCCESS">Login Success</option>
           <option value="AUTH_LOGIN_FAILED">Login Failed</option>
           <option value="ROLE_ASSIGNED">Role Assigned</option>
@@ -121,22 +130,32 @@ export default function AuditLogs() {
         </select>
         <select
           value={outcomeFilter}
-          onChange={(e) => { setOutcomeFilter(e.target.value); setPage(1) }}
+          onChange={(e) => {
+            setOutcomeFilter(e.target.value)
+            setPage(1)
+          }}
           className="bg-background border-border rounded-xl border px-3 py-2 text-sm"
         >
-          <option value="">{t('admin.all_outcomes', { defaultValue: 'All Outcomes' })}</option>
+          <option value="">
+            {t('admin.all_outcomes', { defaultValue: 'All Outcomes' })}
+          </option>
           <option value="success">Success</option>
           <option value="failure">Failure</option>
           <option value="partial">Partial</option>
           <option value="blocked">Blocked</option>
         </select>
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
+        <div className="relative min-w-[200px] flex-1">
+          <Search
+            size={14}
+            className="text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2"
+          />
           <input
             value={emailFilter}
             onChange={(e) => setEmailFilter(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder={t('admin.search_email', { defaultValue: 'Search by email...' })}
+            placeholder={t('admin.search_email', {
+              defaultValue: 'Search by email...',
+            })}
             className="bg-background border-border w-full rounded-xl border py-2 ps-9 pe-3 text-sm"
           />
         </div>
@@ -147,7 +166,9 @@ export default function AuditLogs() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
-              <th className="px-4 py-3 text-start">{t('admin.timestamp', { defaultValue: 'Time' })}</th>
+              <th className="px-4 py-3 text-start">
+                {t('admin.timestamp', { defaultValue: 'Time' })}
+              </th>
               <th className="px-4 py-3 text-start">{t('admin.action')}</th>
               <th className="px-4 py-3 text-start">{t('admin.user')}</th>
               <th className="px-4 py-3 text-center">{t('admin.outcome')}</th>
@@ -157,19 +178,28 @@ export default function AuditLogs() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="text-muted-foreground px-4 py-8 text-center">
+                <td
+                  colSpan={5}
+                  className="text-muted-foreground px-4 py-8 text-center"
+                >
                   {t('common.loading')}
                 </td>
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-muted-foreground px-4 py-8 text-center">
+                <td
+                  colSpan={5}
+                  className="text-muted-foreground px-4 py-8 text-center"
+                >
                   {t('admin.no_data')}
                 </td>
               </tr>
             ) : (
               entries.map((e) => (
-                <tr key={e._id} className="border-border/20 hover:bg-muted/30 border-b transition-colors">
+                <tr
+                  key={e._id}
+                  className="border-border/20 hover:bg-muted/30 border-b transition-colors"
+                >
                   <td className="text-muted-foreground px-4 py-3 text-xs whitespace-nowrap">
                     {new Date(e.timestamp).toLocaleString()}
                   </td>
@@ -184,13 +214,18 @@ export default function AuditLogs() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase ${outcomeColor(e.outcome)}`}>
+                    <span
+                      className={`rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase ${outcomeColor(e.outcome)}`}
+                    >
                       {e.outcome}
                     </span>
                   </td>
-                  <td className="text-muted-foreground px-4 py-3 text-xs max-w-[200px]">
-                    <span className="truncate block">
-                      {e.errorMessage || (e.metadata ? JSON.stringify(e.metadata).slice(0, 80) : '—')}
+                  <td className="text-muted-foreground max-w-[200px] px-4 py-3 text-xs">
+                    <span className="block truncate">
+                      {e.errorMessage ||
+                        (e.metadata
+                          ? JSON.stringify(e.metadata).slice(0, 80)
+                          : '—')}
                     </span>
                   </td>
                 </tr>
@@ -204,7 +239,9 @@ export default function AuditLogs() {
       {pagination && pagination.totalPages > 1 && (
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground text-xs">
-            {pagination.total} {t('common.results', { defaultValue: 'results' })} — page {pagination.page} of {pagination.totalPages}
+            {pagination.total}{' '}
+            {t('common.results', { defaultValue: 'results' })} — page{' '}
+            {pagination.page} of {pagination.totalPages}
           </span>
           <div className="flex items-center gap-2">
             <button

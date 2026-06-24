@@ -85,7 +85,9 @@ export default function RoleManagement() {
         return
       }
       await adminApi.assignRole(user._id, assignRole)
-      const roleLabel = t(`admin.role_${assignRole}`, { defaultValue: ROLE_LABELS[assignRole] || assignRole })
+      const roleLabel = t(`admin.role_${assignRole}`, {
+        defaultValue: ROLE_LABELS[assignRole] || assignRole,
+      })
       toast.success(`${roleLabel} assigned to ${user.email}`)
       setAssignEmail('')
       await fetchData()
@@ -127,7 +129,10 @@ export default function RoleManagement() {
         <div className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-700 dark:text-amber-300">
           <AlertTriangle size={18} />
           <span className="text-sm font-semibold">
-            {t('admin.max_super_admin_warning', { count: superAdminCount, max: maxSuperAdmins })}
+            {t('admin.max_super_admin_warning', {
+              count: superAdminCount,
+              max: maxSuperAdmins,
+            })}
           </span>
         </div>
       )}
@@ -209,14 +214,18 @@ export default function RoleManagement() {
                   </td>
                   <td className="px-4 py-3">
                     <span className="bg-primary/15 text-primary rounded-lg px-2 py-1 text-xs font-bold">
-                      {t(`admin.role_${u.role}`, { defaultValue: ROLE_LABELS[u.role] || u.role })}
+                      {t(`admin.role_${u.role}`, {
+                        defaultValue: ROLE_LABELS[u.role] || u.role,
+                      })}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-lg px-2 py-1 text-xs font-bold ${u.status === 'active' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-red-500/15 text-red-500'}`}
                     >
-                      {t(`admin.status_${u.status}`, { defaultValue: u.status })}
+                      {t(`admin.status_${u.status}`, {
+                        defaultValue: u.status,
+                      })}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-end">
@@ -224,7 +233,8 @@ export default function RoleManagement() {
                       onClick={() => handleRevoke(u._id, u.email)}
                       className="text-destructive hover:bg-destructive/10 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
                     >
-                      <UserMinus size={14} className="mr-1 inline" /> {t('admin.revoke')}
+                      <UserMinus size={14} className="mr-1 inline" />{' '}
+                      {t('admin.revoke')}
                     </button>
                   </td>
                 </tr>

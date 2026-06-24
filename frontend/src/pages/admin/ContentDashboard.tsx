@@ -78,7 +78,14 @@ export default function ContentDashboard() {
   }
 
   const openCreateForm = () => {
-    setKbForm({ clauseText: '', contractType: '', category: '', jurisdiction: '', riskLevel: 'low', clausePattern: '' })
+    setKbForm({
+      clauseText: '',
+      contractType: '',
+      category: '',
+      jurisdiction: '',
+      riskLevel: 'low',
+      clausePattern: '',
+    })
     setEditingKbId(null)
     setShowKbForm(true)
   }
@@ -102,7 +109,9 @@ export default function ContentDashboard() {
       if (editingKbId) {
         const res = await adminApi.updateKBEntry(editingKbId, kbForm)
         const updated = (res.data as { data: KBEntry }).data
-        setKbEntries((prev) => prev.map((e) => (e.id === editingKbId ? updated : e)))
+        setKbEntries((prev) =>
+          prev.map((e) => (e.id === editingKbId ? updated : e))
+        )
       } else {
         const res = await adminApi.createKBEntry(kbForm)
         const created = (res.data as { data: KBEntry }).data
@@ -175,51 +184,76 @@ export default function ContentDashboard() {
             <div className="border-border/40 rounded-2xl border p-5">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-bold">
-                  {editingKbId ? t('admin.edit_entry', { defaultValue: 'Edit Entry' }) : t('admin.new_entry', { defaultValue: 'New KB Entry' })}
+                  {editingKbId
+                    ? t('admin.edit_entry', { defaultValue: 'Edit Entry' })
+                    : t('admin.new_entry', { defaultValue: 'New KB Entry' })}
                 </h3>
-                <button onClick={() => setShowKbForm(false)} className="text-muted-foreground hover:text-foreground">
+                <button
+                  onClick={() => setShowKbForm(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
                   <X size={16} />
                 </button>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">{t('admin.clause')}</label>
+                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+                    {t('admin.clause')}
+                  </label>
                   <textarea
                     value={kbForm.clauseText}
-                    onChange={(e) => setKbForm((f) => ({ ...f, clauseText: e.target.value }))}
+                    onChange={(e) =>
+                      setKbForm((f) => ({ ...f, clauseText: e.target.value }))
+                    }
                     rows={2}
                     className="bg-background border-border w-full rounded-xl border px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">{t('admin.type')}</label>
+                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+                    {t('admin.type')}
+                  </label>
                   <input
                     value={kbForm.contractType}
-                    onChange={(e) => setKbForm((f) => ({ ...f, contractType: e.target.value }))}
+                    onChange={(e) =>
+                      setKbForm((f) => ({ ...f, contractType: e.target.value }))
+                    }
                     className="bg-background border-border w-full rounded-xl border px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">{t('admin.category')}</label>
+                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+                    {t('admin.category')}
+                  </label>
                   <input
                     value={kbForm.category}
-                    onChange={(e) => setKbForm((f) => ({ ...f, category: e.target.value }))}
+                    onChange={(e) =>
+                      setKbForm((f) => ({ ...f, category: e.target.value }))
+                    }
                     className="bg-background border-border w-full rounded-xl border px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">{t('admin.jurisdiction')}</label>
+                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+                    {t('admin.jurisdiction')}
+                  </label>
                   <input
                     value={kbForm.jurisdiction}
-                    onChange={(e) => setKbForm((f) => ({ ...f, jurisdiction: e.target.value }))}
+                    onChange={(e) =>
+                      setKbForm((f) => ({ ...f, jurisdiction: e.target.value }))
+                    }
                     className="bg-background border-border w-full rounded-xl border px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">{t('admin.risk')}</label>
+                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+                    {t('admin.risk')}
+                  </label>
                   <select
                     value={kbForm.riskLevel}
-                    onChange={(e) => setKbForm((f) => ({ ...f, riskLevel: e.target.value }))}
+                    onChange={(e) =>
+                      setKbForm((f) => ({ ...f, riskLevel: e.target.value }))
+                    }
                     className="bg-background border-border w-full rounded-xl border px-3 py-2 text-sm"
                   >
                     <option value="low">Low</option>
@@ -228,19 +262,32 @@ export default function ContentDashboard() {
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">{t('admin.pattern', { defaultValue: 'Clause Pattern' })}</label>
+                  <label className="text-muted-foreground mb-1 block text-xs font-semibold">
+                    {t('admin.pattern', { defaultValue: 'Clause Pattern' })}
+                  </label>
                   <input
                     value={kbForm.clausePattern}
-                    onChange={(e) => setKbForm((f) => ({ ...f, clausePattern: e.target.value }))}
+                    onChange={(e) =>
+                      setKbForm((f) => ({
+                        ...f,
+                        clausePattern: e.target.value,
+                      }))
+                    }
                     className="bg-background border-border w-full rounded-xl border px-3 py-2 text-sm"
                   />
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
-                <button onClick={saveKbEntry} className="bg-primary text-primary-foreground rounded-xl px-4 py-2 text-xs font-bold">
+                <button
+                  onClick={saveKbEntry}
+                  className="bg-primary text-primary-foreground rounded-xl px-4 py-2 text-xs font-bold"
+                >
                   {t('common.save')}
                 </button>
-                <button onClick={() => setShowKbForm(false)} className="bg-muted rounded-xl px-4 py-2 text-xs font-semibold">
+                <button
+                  onClick={() => setShowKbForm(false)}
+                  className="bg-muted rounded-xl px-4 py-2 text-xs font-semibold"
+                >
                   {t('common.cancel')}
                 </button>
               </div>
@@ -253,10 +300,16 @@ export default function ContentDashboard() {
                 <tr className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
                   <th className="px-4 py-3 text-start">{t('admin.clause')}</th>
                   <th className="px-4 py-3 text-start">{t('admin.type')}</th>
-                  <th className="px-4 py-3 text-start">{t('admin.category')}</th>
-                  <th className="px-4 py-3 text-start">{t('admin.jurisdiction')}</th>
+                  <th className="px-4 py-3 text-start">
+                    {t('admin.category')}
+                  </th>
+                  <th className="px-4 py-3 text-start">
+                    {t('admin.jurisdiction')}
+                  </th>
                   <th className="px-4 py-3 text-start">{t('admin.risk')}</th>
-                  {canModify && <th className="px-4 py-3 text-end">{t('admin.actions')}</th>}
+                  {canModify && (
+                    <th className="px-4 py-3 text-end">{t('admin.actions')}</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -273,7 +326,9 @@ export default function ContentDashboard() {
                       <span
                         className={`rounded-lg px-2 py-1 text-xs font-bold ${e.riskLevel === 'high' ? 'bg-red-500/15 text-red-500' : e.riskLevel === 'medium' ? 'bg-amber-500/15 text-amber-600' : 'bg-emerald-500/15 text-emerald-600'}`}
                       >
-                        {t(`risk.${e.riskLevel}`, { defaultValue: e.riskLevel })}
+                        {t(`risk.${e.riskLevel}`, {
+                          defaultValue: e.riskLevel,
+                        })}
                       </span>
                     </td>
                     {canModify && (
@@ -363,11 +418,31 @@ export default function ContentDashboard() {
       {tab === 'metrics' && metrics && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {[
-            { key: 'faithfulness', label: t('admin.faithfulness'), value: metrics.avgFaithfulness },
-            { key: 'relevancy', label: t('admin.relevancy'), value: metrics.avgRelevancy },
-            { key: 'precision', label: t('admin.precision'), value: metrics.avgPrecision },
-            { key: 'recall', label: t('admin.recall'), value: metrics.avgRecall },
-            { key: 'total_evals', label: t('admin.total_evals'), value: metrics.totalEvaluations },
+            {
+              key: 'faithfulness',
+              label: t('admin.faithfulness'),
+              value: metrics.avgFaithfulness,
+            },
+            {
+              key: 'relevancy',
+              label: t('admin.relevancy'),
+              value: metrics.avgRelevancy,
+            },
+            {
+              key: 'precision',
+              label: t('admin.precision'),
+              value: metrics.avgPrecision,
+            },
+            {
+              key: 'recall',
+              label: t('admin.recall'),
+              value: metrics.avgRecall,
+            },
+            {
+              key: 'total_evals',
+              label: t('admin.total_evals'),
+              value: metrics.totalEvaluations,
+            },
           ].map((m) => (
             <div
               key={m.key}

@@ -17,6 +17,7 @@ import {
   DollarSign,
   HeadphonesIcon,
   History,
+  Package,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../hooks/useAuth'
@@ -91,6 +92,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       label: t('admin.evaluations_title'),
       icon: BarChart3,
       section: 'evaluations',
+    },
+    {
+      path: '/admin/plans',
+      label: t('admin.plans_title'),
+      icon: Package,
+      section: 'billing',
     },
     {
       path: '/admin/financial',

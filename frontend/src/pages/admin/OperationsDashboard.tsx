@@ -97,7 +97,9 @@ export default function OperationsDashboard() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Activity className="text-primary" size={28} />
-        <h1 className="text-2xl font-bold">{t('admin.operations_dashboard')}</h1>
+        <h1 className="text-2xl font-bold">
+          {t('admin.operations_dashboard')}
+        </h1>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -134,7 +136,9 @@ export default function OperationsDashboard() {
                 <span
                   className={`rounded-full px-2.5 py-1 text-xs font-bold ${s.status === 'healthy' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-red-500/15 text-red-500'}`}
                 >
-                  {t(`admin.status_${s.status.toLowerCase()}`, { defaultValue: s.status })}
+                  {t(`admin.status_${s.status.toLowerCase()}`, {
+                    defaultValue: s.status,
+                  })}
                 </span>
               </div>
               <div className="text-muted-foreground mt-2 text-sm">
@@ -180,11 +184,21 @@ export default function OperationsDashboard() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
-                  <th className="px-4 py-3 text-start">{t('admin.agent', { defaultValue: 'Agent' })}</th>
-                  <th className="px-4 py-3">{t('admin.avg_latency', { defaultValue: 'Avg Latency' })}</th>
-                  <th className="px-4 py-3">{t('admin.avg_tokens', { defaultValue: 'Avg Tokens' })}</th>
-                  <th className="px-4 py-3">{t('admin.error_rate', { defaultValue: 'Error Rate' })}</th>
-                  <th className="px-4 py-3">{t('admin.retry_rate', { defaultValue: 'Retry Rate' })}</th>
+                  <th className="px-4 py-3 text-start">
+                    {t('admin.agent', { defaultValue: 'Agent' })}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t('admin.avg_latency', { defaultValue: 'Avg Latency' })}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t('admin.avg_tokens', { defaultValue: 'Avg Tokens' })}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t('admin.error_rate', { defaultValue: 'Error Rate' })}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t('admin.retry_rate', { defaultValue: 'Retry Rate' })}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -253,7 +267,9 @@ export default function OperationsDashboard() {
           </div>
           {infra.recentErrors.length > 0 && (
             <div className="border-border/40 rounded-2xl border p-5">
-              <h3 className="mb-2 text-sm font-bold">{t('admin.recent_errors')}</h3>
+              <h3 className="mb-2 text-sm font-bold">
+                {t('admin.recent_errors')}
+              </h3>
               {infra.recentErrors.map((e, idx) => (
                 <div key={idx} className="flex items-start gap-2 py-1 text-sm">
                   <AlertTriangle
@@ -277,10 +293,16 @@ export default function OperationsDashboard() {
             <thead>
               <tr className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
                 <th className="px-4 py-3 text-start">ID</th>
-                <th className="px-4 py-3 text-start">{t('admin.agent', { defaultValue: 'Agent' })}</th>
+                <th className="px-4 py-3 text-start">
+                  {t('admin.agent', { defaultValue: 'Agent' })}
+                </th>
                 <th className="px-4 py-3">{t('admin.status')}</th>
-                <th className="px-4 py-3">{t('admin.duration', { defaultValue: 'Duration' })}</th>
-                <th className="px-4 py-3">{t('admin.tokens', { defaultValue: 'Tokens' })}</th>
+                <th className="px-4 py-3">
+                  {t('admin.duration', { defaultValue: 'Duration' })}
+                </th>
+                <th className="px-4 py-3">
+                  {t('admin.tokens', { defaultValue: 'Tokens' })}
+                </th>
                 <th className="px-4 py-3 text-end">{t('admin.time')}</th>
               </tr>
             </thead>
@@ -293,12 +315,16 @@ export default function OperationsDashboard() {
                   <td className="px-4 py-3 text-start font-mono text-xs">
                     {tr.id}
                   </td>
-                  <td className="px-4 py-3 text-start capitalize">{tr.agent}</td>
+                  <td className="px-4 py-3 text-start capitalize">
+                    {tr.agent}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-lg px-2 py-1 text-xs font-bold ${tr.status === 'success' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-red-500/15 text-red-500'}`}
                     >
-                      {t(`admin.status_${tr.status.toLowerCase()}`, { defaultValue: tr.status })}
+                      {t(`admin.status_${tr.status.toLowerCase()}`, {
+                        defaultValue: tr.status,
+                      })}
                     </span>
                   </td>
                   <td className="px-4 py-3 font-mono">{tr.durationMs}ms</td>
@@ -335,7 +361,9 @@ export default function OperationsDashboard() {
               <span
                 className={`rounded-lg px-2 py-1 text-xs font-bold ${a.resolved ? 'bg-emerald-500/15 text-emerald-600' : 'bg-red-500/15 text-red-500'}`}
               >
-                {a.resolved ? t('admin.resolved', { defaultValue: 'Resolved' }) : t('admin.active', { defaultValue: 'Active' })}
+                {a.resolved
+                  ? t('admin.resolved', { defaultValue: 'Resolved' })
+                  : t('admin.active', { defaultValue: 'Active' })}
               </span>
             </div>
           ))}
