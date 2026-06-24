@@ -1,4 +1,5 @@
 import { jest, describe, test, expect, beforeEach } from "@jest/globals";
+import * as promptService from "../../src/services/prompt.service.js";
 
 // ── Mock Setup ───────────────────────────────────
 
@@ -183,6 +184,7 @@ describe("RiskClassifierAgent — Integration Tests for Accuracy", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(promptService, 'getPrompt').mockResolvedValue('Mock system prompt for testing');
     mockSearchRecords.mockResolvedValue({ result: { hits: [] } });
     agent = new RiskClassifierAgent();
   });

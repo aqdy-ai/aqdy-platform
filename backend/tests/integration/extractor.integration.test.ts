@@ -2,6 +2,7 @@ import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import * as promptService from "../../src/services/prompt.service.js";
 
 // ── Mock Setup ───────────────────────────────────
 
@@ -519,6 +520,7 @@ describe("ExtractorAgent — Integration Tests with Sample Contracts", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(promptService, 'getPrompt').mockResolvedValue('Mock system prompt for testing');
     agent = new ExtractorAgent();
   });
 

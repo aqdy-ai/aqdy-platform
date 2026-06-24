@@ -1,4 +1,5 @@
 import { jest, describe, test, expect, beforeEach } from "@jest/globals";
+import * as promptService from "../../src/services/prompt.service.js";
 
 // ── Mock Setup ───────────────────────────────────
 
@@ -110,6 +111,7 @@ describe("RedlineAgent — Integration Tests for Suggestion Quality", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(promptService, 'getPrompt').mockResolvedValue('Mock system prompt for testing');
     agent = new RedlineAgent();
   });
 
