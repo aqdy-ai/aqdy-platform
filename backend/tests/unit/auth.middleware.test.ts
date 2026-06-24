@@ -105,7 +105,7 @@ describe("Auth Middleware", () => {
 
   describe("requireAdmin", () => {
     test("should allow access for user with admin role", () => {
-      const mockReq = { user: { role: "admin" } } as any;
+      const mockReq = { user: { role: "super_admin" } } as any;
       const mockNextFn = jest.fn();
 
       requireAdmin(

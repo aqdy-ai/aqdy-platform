@@ -1,7 +1,14 @@
 import { jest, describe, test, expect, beforeEach } from "@jest/globals";
-import * as promptService from "../../src/services/prompt.service.js";
 
 // ── Mock Setup ───────────────────────────────────
+
+const mockGetPrompt = jest.fn() as jest.Mock;
+const mockSetFallback = jest.fn() as jest.Mock;
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: mockSetFallback,
+}));
 
 const mockInvoke = jest.fn() as jest.Mock;
 
@@ -73,7 +80,7 @@ describe("ExtractorAgent", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(promptService, 'getPrompt').mockResolvedValue('Mock system prompt for testing');
+    mockGetPrompt.mockResolvedValue('Mock system prompt for testing');
     agent = new ExtractorAgent();
   });
 

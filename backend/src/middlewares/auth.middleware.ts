@@ -16,6 +16,10 @@ export const authenticateJwt = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
+  if ((req as AuthenticatedRequest).user) {
+    return next();
+  }
+
   try {
     let token = req.cookies?.accessToken;
 
