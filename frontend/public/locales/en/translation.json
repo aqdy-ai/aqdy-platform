@@ -408,6 +408,7 @@
     "amount": "Amount",
     "status": "Status",
     "actions": "Actions",
+    "currency": "Currency",
     "credit_balance": "Credit Balance",
     "last_login": "Last Login",
     "joined_date": "Joined Date",

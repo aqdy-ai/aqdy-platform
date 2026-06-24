@@ -1,5 +1,6 @@
 import { Router, Response } from "express";
 import { User } from "../models/user.model.js";
+import { Plan } from "../models/plan.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
 import {
   authenticateJwt,
@@ -113,6 +114,11 @@ router.post(
       } else if (planSlug) {
         user.planSlug = planSlug;
         user.plan = planSlug;
+        // Sync credit allowance to the new plan
+        const targetPlan = await Plan.findOne({ slug: planSlug, isActive: true });
+        if (targetPlan) {
+          user.creditBalance = targetPlan.creditAllowance;
+        }
       }
       await user.save();
       await writeLog({

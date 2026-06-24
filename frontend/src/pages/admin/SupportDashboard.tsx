@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  ExternalLink,
 } from 'lucide-react'
 import { adminApi, type PaymentRecord } from '../../services/adminApi'
 import { toast } from 'sonner'
@@ -29,6 +30,7 @@ interface Contract {
   uploadedAt: string
   language: string
   status: string
+  analysisId?: string
 }
 
 export default function SupportDashboard() {
@@ -40,7 +42,10 @@ export default function SupportDashboard() {
   const [payments, setPayments] = useState<PaymentRecord[]>([])
   const [creditAmount, setCreditAmount] = useState(0)
   const [creditReason, setCreditReason] = useState('')
+  const [creditIsDeduction, setCreditIsDeduction] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [analysisPage, setAnalysisPage] = useState(1)
+  const pageSize = 10
 
   const search = useCallback(async () => {
     if (!query.trim()) return
@@ -99,9 +104,10 @@ export default function SupportDashboard() {
       return toast.error(t('admin.reason'))
     }
     try {
+      const adjustedAmount = creditIsDeduction ? -Math.abs(creditAmount) : Math.abs(creditAmount)
       const res = await adminApi.supportCreditAdjustment(
         selectedUser._id,
-        creditAmount,
+        adjustedAmount,
         creditReason.trim()
       )
       const newBal = (res.data as { data: { newBalance: number } }).data
@@ -262,9 +268,32 @@ export default function SupportDashboard() {
                   <CreditCard size={16} />
                   {t('admin.credit_adjustment')}
                 </h3>
-                <div className="mt-3 flex flex-wrap gap-3">
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <div className="flex items-center overflow-hidden rounded-xl border">
+                    <button
+                      onClick={() => setCreditIsDeduction(false)}
+                      className={`px-3 py-2 text-xs font-bold transition-colors ${
+                        !creditIsDeduction
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-background text-muted-foreground hover:bg-muted'
+                      }`}
+                    >
+                      + Add
+                    </button>
+                    <button
+                      onClick={() => setCreditIsDeduction(true)}
+                      className={`px-3 py-2 text-xs font-bold transition-colors ${
+                        creditIsDeduction
+                          ? 'bg-red-500 text-white'
+                          : 'bg-background text-muted-foreground hover:bg-muted'
+                      }`}
+                    >
+                      − Deduct
+                    </button>
+                  </div>
                   <input
                     type="number"
+                    min="0"
                     value={creditAmount}
                     onChange={(e) => setCreditAmount(Number(e.target.value))}
                     placeholder={t('admin.amount')}
@@ -382,23 +411,54 @@ export default function SupportDashboard() {
                         {t('admin.status')}
                       </th>
                       <th className="px-4 py-2 text-end">{t('admin.date')}</th>
+                      <th className="px-4 py-2 text-end"></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {analysisHistory.map((c) => (
+                    {analysisHistory
+                      .slice((analysisPage - 1) * pageSize, analysisPage * pageSize)
+                      .map((c) => (
                       <tr key={c._id} className="border-border/20 border-b">
                         <td className="px-4 py-2 font-medium">{c.filename}</td>
-                        <td className="px-4 py-2">{c.language}</td>
-                        <td className="px-4 py-2">{c.status}</td>
+                        <td className="px-4 py-2 uppercase text-xs font-semibold">{c.language}</td>
+                        <td className="px-4 py-2">
+                          {c.status === 'analyzed' ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600">
+                              <CheckCircle2 size={10} />
+                              Analyzed
+                            </span>
+                          ) : c.status === 'failed' ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-500/15 px-2.5 py-0.5 text-[11px] font-bold text-red-500">
+                              <XCircle size={10} />
+                              Failed
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[11px] font-bold text-amber-600">
+                              <Clock size={10} />
+                              Pending
+                            </span>
+                          )}
+                        </td>
                         <td className="text-muted-foreground px-4 py-2 text-end text-xs">
                           {new Date(c.uploadedAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-2 text-end">
+                          <a
+                            href={`/dashboard?contract=${c._id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:bg-primary/10 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-colors"
+                          >
+                            <ExternalLink size={10} />
+                            View
+                          </a>
                         </td>
                       </tr>
                     ))}
                     {analysisHistory.length === 0 && (
                       <tr>
                         <td
-                          colSpan={4}
+                          colSpan={5}
                           className="text-muted-foreground px-4 py-6 text-center"
                         >
                           {t('admin.no_data')}
@@ -407,6 +467,27 @@ export default function SupportDashboard() {
                     )}
                   </tbody>
                 </table>
+                {analysisHistory.length > pageSize && (
+                  <div className="border-border/30 flex items-center justify-between border-t px-4 py-3">
+                    <button
+                      onClick={() => setAnalysisPage((p) => Math.max(1, p - 1))}
+                      disabled={analysisPage === 1}
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 text-xs font-bold"
+                    >
+                      {t('common.previous_page')}
+                    </button>
+                    <span className="text-muted-foreground text-xs">
+                      {analysisPage} / {Math.ceil(analysisHistory.length / pageSize)}
+                    </span>
+                    <button
+                      onClick={() => setAnalysisPage((p) => Math.min(Math.ceil(analysisHistory.length / pageSize), p + 1))}
+                      disabled={analysisPage >= Math.ceil(analysisHistory.length / pageSize)}
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 text-xs font-bold"
+                    >
+                      {t('common.next_page')}
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           ) : (

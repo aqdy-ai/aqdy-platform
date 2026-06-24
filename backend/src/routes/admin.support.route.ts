@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { User } from "../models/user.model.js";
 import { Contract } from "../models/contract.model.js";
+import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
 import Payment from "../models/payment.model.js";
 import {
@@ -86,7 +87,36 @@ router.get("/users/:id", async (req, res: Response) => {
     const contracts = await Contract.find({ userId: id })
       .sort({ createdAt: -1 })
       .limit(50)
-      .select("filename uploadedAt language fileSize status");
+      .select("filename uploadedAt language fileSize");
+
+    // Derive status from RiskAnalysis for each contract
+    const contractIds = contracts.map((c) => c._id);
+    const analyses = await RiskAnalysis.find({
+      contractId: { $in: contractIds },
+    }).select("contractId executiveSummary.overallRisk");
+
+    const analysisMap = new Map(
+      analyses.map((a) => [
+        String(a.contractId),
+        a.executiveSummary?.overallRisk ?? null,
+      ]),
+    );
+
+    const analysisHistory = contracts.map((c) => {
+      const risk = analysisMap.get(String(c._id));
+      let status: string;
+      if (!risk) status = "pending";
+      else if (risk) status = "analyzed";
+      else status = "failed";
+      return {
+        _id: c._id,
+        filename: c.filename,
+        uploadedAt: c.uploadedAt,
+        language: c.language,
+        fileSize: c.fileSize,
+        status,
+      };
+    });
 
     // Get payment history
     const payments = await Payment.find({ userId: id })
@@ -108,7 +138,7 @@ router.get("/users/:id", async (req, res: Response) => {
       success: true,
       data: {
         user,
-        analysisHistory: contracts,
+        analysisHistory,
         payments,
         recentActivity,
       },
