@@ -1,7 +1,9 @@
+import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "./errorHandler.js";
 import { verifyAccessToken } from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
+import { env } from "../config/env.js";
 import { AuthenticatedRequest } from "../types/auth.js";
 import {
   isAdminRole,
@@ -10,6 +12,31 @@ import {
   type Section,
   type Action,
 } from "../config/roles.js";
+
+/**
+ * Verifies a custom HMAC-signed JWT (HS256) without using the jsonwebtoken library.
+ * Returns the decoded payload on success, or null if the token is malformed or signature is invalid.
+ */
+export const verifyJWT = (token: string): Record<string, unknown> | null => {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [headerB64, payloadB64, signatureB64] = parts;
+
+  try {
+    const hmac = crypto.createHmac("sha256", env.JWT_SECRET);
+    hmac.update(`${headerB64}.${payloadB64}`);
+    const expectedSignature = hmac.digest("base64url");
+
+    if (expectedSignature !== signatureB64) return null;
+
+    const payload = JSON.parse(
+      Buffer.from(payloadB64, "base64url").toString("utf-8"),
+    );
+    return payload;
+  } catch {
+    return null;
+  }
+};
 
 export const authenticateJwt = async (
   req: Request,

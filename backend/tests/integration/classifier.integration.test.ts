@@ -1,10 +1,15 @@
 import { jest, describe, test, expect, beforeEach } from "@jest/globals";
-import * as promptService from "../../src/services/prompt.service.js";
 
 // ── Mock Setup ───────────────────────────────────
 
 const mockInvoke = jest.fn() as jest.Mock;
 const mockSearchRecords = jest.fn() as jest.Mock;
+const mockGetPrompt = jest.fn() as jest.Mock;
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: jest.fn(),
+}));
 
 jest.unstable_mockModule("@langchain/google-genai", () => {
   return {
@@ -184,7 +189,7 @@ describe("RiskClassifierAgent — Integration Tests for Accuracy", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(promptService, 'getPrompt').mockResolvedValue('Mock system prompt for testing');
+    mockGetPrompt.mockResolvedValue('Mock system prompt for testing');
     mockSearchRecords.mockResolvedValue({ result: { hits: [] } });
     agent = new RiskClassifierAgent();
   });

@@ -19,6 +19,19 @@ jest.unstable_mockModule("../../src/services/auditLog.service.js", () => ({
   logAdmin: {
     viewLogs: jest.fn().mockResolvedValue(undefined),
   },
+  logRole: {
+    assign: jest.fn().mockResolvedValue(undefined),
+    revoke: jest.fn().mockResolvedValue(undefined),
+  },
+  logSupport: {
+    emailVerify: jest.fn().mockResolvedValue(undefined),
+    passwordReset: jest.fn().mockResolvedValue(undefined),
+    creditAdjustment: jest.fn().mockResolvedValue(undefined),
+  },
+  logContent: {
+    update: jest.fn().mockResolvedValue(undefined),
+  },
+  writeLog: jest.fn().mockResolvedValue(undefined),
 }));
 
 const mockTriggerAnalysis = jest.fn() as jest.Mock<any>;
@@ -51,6 +64,16 @@ jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
   requireEmailVerified: (_req: any, _res: any, next: any) => {
     next();
   },
+  requireRole:
+    (..._roles: string[]) =>
+    (_req: any, _res: any, next: any) => {
+      next();
+    },
+  requirePermission:
+    (_section: string, _action: string) =>
+    (_req: any, _res: any, next: any) => {
+      next();
+    },
   verifyJWT: () => ({ sub: "6a21a76caad3374228b4d6b0" }),
 }));
 

@@ -1,10 +1,17 @@
 import { jest, describe, test, expect, beforeEach } from "@jest/globals";
-import * as promptService from "../../src/services/prompt.service.js";
 
 // ── Mock Setup ───────────────────────────────────
 
 const mockInvoke = jest.fn() as jest.Mock;
 const mockSearchRecords = jest.fn() as jest.Mock;
+const mockGetPrompt = jest.fn() as jest.Mock;
+
+const mockSetFallback = jest.fn() as jest.Mock;
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: mockSetFallback,
+}));
 
 // Mock Gemini LLM call
 jest.unstable_mockModule("@langchain/google-genai", () => {
@@ -47,7 +54,7 @@ describe("RiskClassifierAgent", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(promptService, 'getPrompt').mockResolvedValue('Mock system prompt for testing');
+    mockGetPrompt.mockResolvedValue('Mock system prompt for testing');
     agent = new RiskClassifierAgent(0.75); // threshold 0.75
   });
 

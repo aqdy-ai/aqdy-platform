@@ -1,9 +1,14 @@
 import { jest, describe, test, expect, beforeEach } from "@jest/globals";
-import * as promptService from "../../src/services/prompt.service.js";
 
 // ── Mock Setup ───────────────────────────────────
 
 const mockInvoke = jest.fn() as jest.Mock;
+const mockGetPrompt = jest.fn() as jest.Mock;
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: jest.fn(),
+}));
 
 // Mock Gemini LLM call
 jest.unstable_mockModule("@langchain/google-genai", () => {
@@ -35,7 +40,7 @@ describe("RedlineAgent", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(promptService, 'getPrompt').mockResolvedValue('Mock system prompt for testing');
+    mockGetPrompt.mockResolvedValue('Mock system prompt for testing');
     agent = new RedlineAgent();
   });
 
