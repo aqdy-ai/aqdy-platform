@@ -1,4 +1,12 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, jest } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  jest,
+} from "@jest/globals";
 import mongoose from "mongoose";
 import request from "supertest";
 import { config } from "dotenv";
@@ -44,7 +52,7 @@ describe("Account Profile & Settings API", () => {
     });
 
     authToken = res.body.data.token;
-    
+
     const user = await User.findOne({ email: "account-test@example.com" });
     testUserId = String(user?._id);
   });
@@ -125,7 +133,10 @@ describe("Account Profile & Settings API", () => {
     expect(res.body.success).toBe(true);
 
     const userInDb = await User.findById(testUserId).select("+passwordHash");
-    const isMatch = await bcrypt.compare("NewStrongPass123!", userInDb?.passwordHash || "");
+    const isMatch = await bcrypt.compare(
+      "NewStrongPass123!",
+      userInDb?.passwordHash || "",
+    );
     expect(isMatch).toBe(true);
   });
 
@@ -197,7 +208,9 @@ describe("Account Profile & Settings API", () => {
     let res = await request(app).get("/api/account/profile");
     expect(res.status).toBe(401);
 
-    res = await request(app).patch("/api/account/profile").send({ name: "Test" });
+    res = await request(app)
+      .patch("/api/account/profile")
+      .send({ name: "Test" });
     expect(res.status).toBe(401);
 
     res = await request(app).delete("/api/account");

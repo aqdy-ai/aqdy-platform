@@ -29,12 +29,9 @@ jest.unstable_mockModule("../../src/pipeline/orchestrator.service.js", () => ({
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-const { AnalysisService } = await import(
-  "../../src/services/analysis.service.js"
-);
-const { RiskAnalysis } = await import(
-  "../../src/models/riskAnalysis.model.js"
-);
+const { AnalysisService } =
+  await import("../../src/services/analysis.service.js");
+const { RiskAnalysis } = await import("../../src/models/riskAnalysis.model.js");
 
 (RiskAnalysis as any).findOne = mockFindOne;
 (RiskAnalysis as any).find = mockFind;

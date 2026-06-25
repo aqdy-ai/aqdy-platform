@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 import mongoose, { Document, Schema } from "mongoose";
 import { z } from "zod";
+import { ALL_ROLES, type UserRole as ConfigUserRole } from "../config/roles.js";
 
-export type UserRole = "user" | "admin";
+export type UserRole = ConfigUserRole;
 export type UserStatus = "active" | "suspended" | "deleted";
 
 export const UserZodSchema = z.object({
@@ -19,11 +20,13 @@ export const UserZodSchema = z.object({
     .string()
     .min(8)
     .regex(
-      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]/,
       "Password must include uppercase, lowercase, number, and special character",
     ),
-  role: z.enum(["user", "admin"]).default("user"),
-  plan: z.enum(["free", "premium", "enterprise"]).default("free"),
+  role: z.enum(ALL_ROLES).default("user"),
+  plan: z.enum(["free", "pro", "enterprise"]).default("free"),
+  passwordResetToken: z.string().optional(),
+  passwordResetExpiresAt: z.date().optional(),
   status: z.enum(["active", "suspended", "deleted"]).default("active"),
   lastLogin: z.date().optional(),
   refreshToken: z.string().optional(),
@@ -38,7 +41,8 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  passwordHash: string;
+  passwordHash?: string;
+  googleId?: string;
   role: UserRole;
   plan: string;
   planSlug: string;
@@ -48,6 +52,12 @@ export interface IUser extends Document {
   lastLogin?: Date;
   refreshToken?: string;
   refreshTokenExpiresAt?: Date;
+  passwordResetToken?: string;
+  passwordResetExpiresAt?: Date;
+  isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpiresAt?: Date;
+  emailVerificationSentAt?: Date;
   verifyPassword(password: string): Promise<boolean>;
 }
 
@@ -62,12 +72,15 @@ const UserSchema = new Schema<IUser>(
       lowercase: true,
       index: true,
     },
-    passwordHash: { type: String, required: true, select: false },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
+    passwordHash: { type: String, select: false },
+    googleId: { type: String, unique: true, sparse: true, index: true },
+    role: { type: String, enum: ALL_ROLES, default: "user" },
     plan: { type: String, required: true, default: "free" },
+    passwordResetToken: { type: String },
+    passwordResetExpiresAt: { type: Date },
     planSlug: {
       type: String,
-      enum: ["free", "premium", "enterprise"],
+      enum: ["free", "pro", "enterprise"],
       default: "free",
       index: true,
     },
@@ -82,6 +95,10 @@ const UserSchema = new Schema<IUser>(
     lastLogin: { type: Date },
     refreshToken: { type: String, select: false },
     refreshTokenExpiresAt: { type: Date, select: false },
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, select: false },
+    emailVerificationExpiresAt: { type: Date },
+    emailVerificationSentAt: { type: Date },
   },
   {
     timestamps: true,
@@ -89,8 +106,13 @@ const UserSchema = new Schema<IUser>(
       virtuals: true,
       transform(_, ret) {
         delete ret.passwordHash;
+        delete ret.passwordResetToken;
+        delete ret.passwordResetExpiresAt;
         delete ret.refreshToken;
         delete ret.refreshTokenExpiresAt;
+        delete ret.emailVerificationToken;
+        delete ret.emailVerificationExpiresAt;
+        delete ret.emailVerificationSentAt;
         delete ret.__v;
         return ret;
       },
@@ -99,8 +121,13 @@ const UserSchema = new Schema<IUser>(
       virtuals: true,
       transform(_, ret) {
         delete ret.passwordHash;
+        delete ret.passwordResetToken;
+        delete ret.passwordResetExpiresAt;
         delete ret.refreshToken;
         delete ret.refreshTokenExpiresAt;
+        delete ret.emailVerificationToken;
+        delete ret.emailVerificationExpiresAt;
+        delete ret.emailVerificationSentAt;
         delete ret.__v;
         return ret;
       },
@@ -126,6 +153,9 @@ UserSchema.pre<IUser>("validate", async function () {
 });
 
 UserSchema.methods.verifyPassword = async function (password: string) {
+  if (!this.passwordHash) {
+    return false;
+  }
   return bcrypt.compare(password, this.passwordHash);
 };
 

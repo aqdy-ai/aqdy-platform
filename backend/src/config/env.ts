@@ -56,6 +56,7 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().min(1, "STRIPE_WEBHOOK_SECRET is required"),
 
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
+  GOOGLE_CLIENT_ID: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

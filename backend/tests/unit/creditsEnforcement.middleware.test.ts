@@ -1,5 +1,5 @@
-import { describe, test, expect, jest, beforeEach } from '@jest/globals';
-import mongoose from 'mongoose';
+import { describe, test, expect, jest, beforeEach } from "@jest/globals";
+import mongoose from "mongoose";
 
 // ── Test fixtures ──────────────────────────────────────────────────────────
 const validUserId = new mongoose.Types.ObjectId().toString();
@@ -7,10 +7,11 @@ const validContractId = new mongoose.Types.ObjectId().toString();
 
 // ── Mock: creditsService ───────────────────────────────────────────────────
 const mockGetBalance = jest.fn<() => Promise<number>>();
-const mockCalculateAnalysisCost = jest.fn<(inputTokens: number, outputTokens: number) => number>();
+const mockCalculateAnalysisCost =
+  jest.fn<(inputTokens: number, outputTokens: number) => number>();
 const mockDeduct = jest.fn<() => Promise<unknown>>();
 
-jest.unstable_mockModule('../../src/services/credits.service.js', () => ({
+jest.unstable_mockModule("../../src/services/credits.service.js", () => ({
   creditsService: {
     getBalance: mockGetBalance,
     calculateAnalysisCost: mockCalculateAnalysisCost,
@@ -18,7 +19,7 @@ jest.unstable_mockModule('../../src/services/credits.service.js', () => ({
   },
   InsufficientCreditsError: class InsufficientCreditsError extends Error {
     statusCode = 402;
-    constructor(msg = 'Insufficient credits available.') {
+    constructor(msg = "Insufficient credits available.") {
       super(msg);
     }
   },
@@ -27,14 +28,14 @@ jest.unstable_mockModule('../../src/services/credits.service.js', () => ({
 // ── Mock: contractService ──────────────────────────────────────────────────
 const mockGetContractById = jest.fn<() => Promise<{ text: string } | null>>();
 
-jest.unstable_mockModule('../../src/services/contract.service.js', () => ({
+jest.unstable_mockModule("../../src/services/contract.service.js", () => ({
   contractService: {
     getContractById: mockGetContractById,
   },
 }));
 
 // ── Mock: logger (suppress output during tests) ───────────────────────────
-jest.unstable_mockModule('../../src/utils/logger.js', () => ({
+jest.unstable_mockModule("../../src/utils/logger.js", () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -43,9 +44,8 @@ jest.unstable_mockModule('../../src/utils/logger.js', () => ({
 }));
 
 // ── Import SUT after mocks are set up ─────────────────────────────────────
-const { enforceCreditsBeforeAnalysis } = await import(
-  '../../src/middlewares/creditsEnforcement.middleware.js'
-);
+const { enforceCreditsBeforeAnalysis } =
+  await import("../../src/middlewares/creditsEnforcement.middleware.js");
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 const mockReq = (
@@ -71,19 +71,19 @@ const mockNext = jest.fn();
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
-describe('enforceCreditsBeforeAnalysis', () => {
+describe("enforceCreditsBeforeAnalysis", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
     // Default: contract text of 2000 chars → ~500 tokens
-    mockGetContractById.mockResolvedValue({ text: 'x'.repeat(2000) });
+    mockGetContractById.mockResolvedValue({ text: "x".repeat(2000) });
     // Default estimated cost: 5 credits
     mockCalculateAnalysisCost.mockReturnValue(5);
   });
 
   // ── Test 1: Sufficient balance passes ─────────────────────────────────
 
-  test('should call next() when user has sufficient balance', async () => {
+  test("should call next() when user has sufficient balance", async () => {
     mockGetBalance.mockResolvedValue(100); // plenty of credits
 
     const req = mockReq(validUserId, validContractId);
@@ -96,7 +96,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
     expect(res.json).not.toHaveBeenCalled();
   });
 
-  test('should attach estimatedCreditCost and estimatedTokens to req', async () => {
+  test("should attach estimatedCreditCost and estimatedTokens to req", async () => {
     mockGetBalance.mockResolvedValue(100);
     mockCalculateAnalysisCost.mockReturnValue(7.5);
 
@@ -106,13 +106,13 @@ describe('enforceCreditsBeforeAnalysis', () => {
     await enforceCreditsBeforeAnalysis(req, res, mockNext);
 
     expect(req.estimatedCreditCost).toBe(7.5);
-    expect(typeof req.estimatedTokens).toBe('number');
+    expect(typeof req.estimatedTokens).toBe("number");
     expect(req.estimatedTokens).toBeGreaterThan(0);
   });
 
   // ── Test 2: Insufficient balance returns 402 ──────────────────────────
 
-  test('should return HTTP 402 when user has insufficient credits', async () => {
+  test("should return HTTP 402 when user has insufficient credits", async () => {
     mockGetBalance.mockResolvedValue(2); // balance < estimatedCost (5)
 
     const req = mockReq(validUserId, validContractId);
@@ -124,7 +124,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        error: 'Insufficient credits',
+        error: "Insufficient credits",
         details: expect.objectContaining({
           currentBalance: 2,
           requiredCredits: 5,
@@ -134,7 +134,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
     expect(mockNext).not.toHaveBeenCalled();
   });
 
-  test('402 response body should contain a human-readable message', async () => {
+  test("402 response body should contain a human-readable message", async () => {
     mockGetBalance.mockResolvedValue(1);
     mockCalculateAnalysisCost.mockReturnValue(10);
 
@@ -149,7 +149,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
 
   // ── Test 3: Exact balance edge case passes ────────────────────────────
 
-  test('should call next() when balance exactly equals estimated cost', async () => {
+  test("should call next() when balance exactly equals estimated cost", async () => {
     const exactCost = 5;
     mockCalculateAnalysisCost.mockReturnValue(exactCost);
     mockGetBalance.mockResolvedValue(exactCost); // balance == requiredCredits
@@ -165,7 +165,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
 
   // ── Test 4: No userId passes through ─────────────────────────────────
 
-  test('should call next() without balance check when user is not set', async () => {
+  test("should call next() without balance check when user is not set", async () => {
     const req = mockReq(null); // no authenticated user
     const res = mockRes();
 
@@ -179,7 +179,7 @@ describe('enforceCreditsBeforeAnalysis', () => {
 
   // ── Test 5: Falls back to default token estimate if contract not found ─
 
-  test('should use default token estimate and still enforce when contract lookup fails', async () => {
+  test("should use default token estimate and still enforce when contract lookup fails", async () => {
     mockGetContractById.mockResolvedValue(null); // contract not found
     mockGetBalance.mockResolvedValue(0); // zero balance → should block
     mockCalculateAnalysisCost.mockReturnValue(3);
@@ -196,8 +196,8 @@ describe('enforceCreditsBeforeAnalysis', () => {
 
   // ── Test 6: Fails open on unexpected service error ────────────────────
 
-  test('should call next() (fail-open) when creditsService throws unexpectedly', async () => {
-    mockGetBalance.mockRejectedValue(new Error('DB connection lost'));
+  test("should call next() (fail-open) when creditsService throws unexpectedly", async () => {
+    mockGetBalance.mockRejectedValue(new Error("DB connection lost"));
 
     const req = mockReq(validUserId, validContractId);
     const res = mockRes();

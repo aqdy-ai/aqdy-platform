@@ -2,9 +2,9 @@ name: Aqdy CI/CD
 
 on:
   push:
-    branches: [develop, main]
+    branches: [develop, main, fix/pre-stage]
   pull_request:
-    branches: [develop, main]
+    branches: [develop, main, fix/pre-stage]
 
 env:
   NODE_VERSION: 24
@@ -199,7 +199,10 @@ jobs:
     name: 🐳 Build Docker Images
     runs-on: ubuntu-latest
     needs: [test-backend, test-frontend, security-audit]
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/pre-stage'
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
@@ -223,7 +226,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/pre-stage' }}
 
       - name: Extract metadata for frontend image
         id: meta-frontend
@@ -233,7 +236,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/pre-stage' }}
 
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v5
@@ -320,7 +323,7 @@ jobs:
     name: 🚀 Deploy to Production
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/pre-stage'
     environment:
       name: production
       url: https://aqdy.app
@@ -340,7 +343,7 @@ jobs:
         run: |
           aws ecs update-service \
             --cluster aqdy-production \
-            --service aqdy-platform-backend-production \
+            --service aqdy-platform-production-backend \
             --force-new-deployment \
             --region ${{ secrets.AWS_REGION }}
 
@@ -348,7 +351,7 @@ jobs:
         run: |
           aws ecs update-service \
             --cluster aqdy-production \
-            --service aqdy-platform-frontend-production \
+            --service aqdy-platform-production-frontend \
             --force-new-deployment \
             --region ${{ secrets.AWS_REGION }}
 
@@ -356,14 +359,14 @@ jobs:
         run: |
           aws ecs wait services-stable \
             --cluster aqdy-production \
-            --services aqdy-platform-backend-production \
+            --services aqdy-platform-production-backend \
             --region ${{ secrets.AWS_REGION }}
 
       - name: Wait for production frontend to stabilize
         run: |
           aws ecs wait services-stable \
             --cluster aqdy-production \
-            --services aqdy-platform-frontend-production \
+            --services aqdy-platform-production-frontend \
             --region ${{ secrets.AWS_REGION }}
 
       - name: Run smoke tests on production
@@ -382,11 +385,11 @@ jobs:
           echo "❌ Deployment failed — triggering rollback"
           aws ecs update-service \
             --cluster aqdy-production \
-            --service aqdy-platform-backend-production \
+            --service aqdy-platform-production-backend \
             --task-definition aqdy-platform-backend-previous \
             --region ${{ secrets.AWS_REGION }}
           aws ecs update-service \
             --cluster aqdy-production \
-            --service aqdy-platform-frontend-production \
+            --service aqdy-platform-production-frontend \
             --task-definition aqdy-platform-frontend-previous \
             --region ${{ secrets.AWS_REGION }}

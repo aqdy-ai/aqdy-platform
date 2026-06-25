@@ -1,15 +1,18 @@
+import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { ApiResponse } from "../types/index.js";
 import { AppError } from "../middlewares/errorHandler.js";
-import { UserZodSchema } from "../models/user.model.js";
+import { User, UserZodSchema } from "../models/user.model.js";
 import {
   loginUser,
   registerUser,
   logoutUser,
   refreshTokens,
+  loginWithGoogle,
 } from "../services/auth.service.js";
 import { AuthenticatedRequest } from "../types/auth.js";
+import { emailService } from "../services/email.service.js";
 
 const registerSchema = UserZodSchema;
 
@@ -62,6 +65,7 @@ export const register = async (
           name: user.name,
           role: user.role,
           plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
         },
         token,
       },
@@ -105,6 +109,54 @@ export const login = async (
           name: user.name,
           role: user.role,
           plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
+        },
+        token,
+      },
+      message: "Login successful.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const googleLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken || typeof idToken !== "string") {
+      throw new AppError(400, "Google ID token is required.");
+    }
+
+    const { user, token, refreshToken } = await loginWithGoogle(idToken);
+
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: String(user._id),
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
         },
         token,
       },
@@ -188,6 +240,11 @@ export const me = async (
       throw new AppError(401, "Authentication required.");
     }
 
+    const userWithPasswordInfo = await User.findById(user._id).select(
+      "+passwordHash",
+    );
+    const hasPassword = !!userWithPasswordInfo?.passwordHash;
+
     const response: ApiResponse<{
       user: {
         id: string;
@@ -195,6 +252,8 @@ export const me = async (
         name: string;
         role: string;
         plan: string;
+        isEmailVerified: boolean;
+        hasPassword: boolean;
       };
     }> = {
       success: true,
@@ -205,6 +264,8 @@ export const me = async (
           name: user.name,
           role: user.role,
           plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
+          hasPassword,
         },
       },
       message: "Authenticated user information.",
@@ -222,5 +283,180 @@ export const me = async (
             }`,
           ),
     );
+  }
+};
+
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { token } = req.body;
+    if (!token || typeof token !== "string") {
+      throw new AppError(400, "Verification token is required.");
+    }
+
+    const user = await User.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpiresAt: { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new AppError(400, "Verification token is invalid or has expired.");
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpiresAt = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Email verification successful.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendVerification = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new AppError(401, "Authentication required.");
+    }
+
+    if (user.isEmailVerified) {
+      throw new AppError(400, "Email is already verified.");
+    }
+
+    const cooldownMs = 60000;
+    if (
+      user.emailVerificationSentAt &&
+      Date.now() - user.emailVerificationSentAt.getTime() < cooldownMs
+    ) {
+      const remainingSecs = Math.ceil(
+        (cooldownMs - (Date.now() - user.emailVerificationSentAt.getTime())) /
+          1000,
+      );
+      throw new AppError(
+        429,
+        `Please wait ${remainingSecs} seconds before requesting a new verification link.`,
+      );
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    user.emailVerificationToken = verificationToken;
+    user.emailVerificationExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    ); // 24 hours
+    user.emailVerificationSentAt = new Date();
+    await user.save();
+
+    await emailService.sendVerificationEmail(
+      user.email,
+      user.name,
+      verificationToken,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Verification email resent successfully.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const schema = z.object({
+      email: z.string().email(),
+    });
+    const { email } = schema.parse(req.body);
+
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+    }).select("+passwordHash");
+    if (user) {
+      if (user.googleId && !user.passwordHash) {
+        throw new AppError(
+          400,
+          "OAuth account detected. Please login using Google and set a password from your Account Settings.",
+        );
+      }
+      const token = crypto.randomBytes(32).toString("hex");
+      user.passwordResetToken = token;
+      user.passwordResetExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      await user.save();
+      await emailService.sendPasswordResetEmail(user.email, user.name, token);
+    }
+    // Always respond with generic message to prevent enumeration.
+    res.status(200).json({
+      success: true,
+      message:
+        "If an account with that email exists, a password reset link has been sent.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const schema = z.object({
+      token: z.string(),
+      newPassword: z
+        .string()
+        .min(8)
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]+$/,
+          "Password must include uppercase, lowercase, number, and special character",
+        ),
+    });
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      const message = result.error.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+        .join("; ");
+      throw new AppError(400, `Validation failed: ${message}`);
+    }
+    const { token, newPassword } = result.data;
+
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetExpiresAt: { $gt: new Date() },
+    });
+    if (!user) {
+      throw new AppError(400, "Invalid or expired password reset token.");
+    }
+    // Set new password via virtual field
+    user.password = newPassword;
+    // Invalidate password reset token and refresh tokens
+    user.passwordResetToken = undefined;
+    user.passwordResetExpiresAt = undefined;
+    user.refreshToken = undefined;
+    user.refreshTokenExpiresAt = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password has been reset successfully.",
+    });
+  } catch (error) {
+    console.error("RESET_PASSWORD_ERROR:", error);
+    next(error);
   }
 };

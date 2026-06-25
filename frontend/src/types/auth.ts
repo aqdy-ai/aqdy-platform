@@ -5,6 +5,23 @@ import { loginSchema, registerSchema } from '../hooks/useAuth'
 export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
 
+/** All admin roles available in the platform */
+export const ADMIN_ROLES = [
+  'super_admin',
+  'financial_admin',
+  'support_admin',
+  'content_admin',
+  'operations_admin',
+  'analytics_admin',
+] as const
+
+export type AdminRole = (typeof ADMIN_ROLES)[number]
+export type UserRole =
+  | 'user'
+  | AdminRole
+  // Legacy compat
+  | 'admin'
+
 /**
  * Data structure sent to the backend registration API.
  * Excludes confirmPassword which is only for frontend validation.
@@ -20,5 +37,30 @@ export interface User {
   id: string
   name: string
   email: string
-  role: string
+  role: UserRole
+  isEmailVerified?: boolean
+}
+
+/** Detailed password validation breakdown for real-time UI feedback */
+export interface PasswordValidationResult {
+  hasMinLength: boolean
+  hasUppercase: boolean
+  hasLowercase: boolean
+  hasNumber: boolean
+  hasSpecial: boolean
+  allValid: boolean
+}
+
+const ADMIN_ROLE_DEFAULT_ROUTES: Record<string, string> = {
+  super_admin: '/admin/analytics',
+  financial_admin: '/admin/financial',
+  support_admin: '/admin/support',
+  content_admin: '/admin/content',
+  operations_admin: '/admin/operations',
+  analytics_admin: '/admin/analytics',
+}
+
+export function getDefaultAdminRoute(role: string): string {
+  if (role === 'admin') return '/admin/analytics'
+  return ADMIN_ROLE_DEFAULT_ROUTES[role] || '/admin/analytics'
 }

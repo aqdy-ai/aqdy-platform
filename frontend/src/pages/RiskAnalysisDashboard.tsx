@@ -204,23 +204,24 @@ export default function RiskAnalysisDashboard() {
   const dataToRender = analysis
     ? {
         contractName: analysis.filename || t('dashboard.default_filename'),
-        overallScore: Math.max(
-          10,
-          100 -
-            analysis.clauseAnalysis?.filter(
-              (c: IClauseAnalysis) =>
-                c.riskLevel === 'critical' || c.riskLevel === 'high'
-            ).length *
-              20 -
-            analysis.clauseAnalysis?.filter(
-              (c: IClauseAnalysis) => c.riskLevel === 'medium'
-            ).length *
-              10 -
-            analysis.clauseAnalysis?.filter(
-              (c: IClauseAnalysis) => c.riskLevel === 'low'
-            ).length *
-              5
-        ),
+        overallScore: (() => {
+          const clauses = analysis.clauseAnalysis ?? []
+          const total = clauses.length
+          if (total === 0) return 100
+          const highCount = clauses.filter(
+            (c: IClauseAnalysis) =>
+              c.riskLevel === 'critical' || c.riskLevel === 'high'
+          ).length
+          const mediumCount = clauses.filter(
+            (c: IClauseAnalysis) => c.riskLevel === 'medium'
+          ).length
+          // Weight: high/critical = 3, medium = 1, low = 0
+          const weightedRisk = highCount * 3 + mediumCount * 1
+          const maxRisk = total * 3
+          return Math.round(
+            Math.max(0, Math.min(100, (1 - weightedRisk / maxRisk) * 100))
+          )
+        })(),
         overallRisk: analysis.executiveSummary?.overallRisk || 'medium',
         summary: isRtl
           ? analysis.executiveSummary?.summary?.ar || 'لا يوجد ملخص متاح.'
@@ -307,23 +308,23 @@ export default function RiskAnalysisDashboard() {
 
   const getOverallRiskBadgeClass = (risk: string) => {
     if (risk === 'high' || risk === 'critical') {
-      return 'bg-red-500/10 text-red-500 border border-red-500/20'
+      return 'bg-red-500/10 text-red-500 dark:text-red-200 border border-red-500/20 dark:border-red-500/30'
     } else if (risk === 'medium') {
-      return 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+      return 'bg-orange-500/10 text-orange-500 dark:text-orange-200 border border-orange-500/20 dark:border-orange-500/30'
     } else {
-      return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+      return 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-200 border border-emerald-500/20 dark:border-emerald-500/30'
     }
   }
 
   const getSeverityBadgeClass = (sev: 'high' | 'medium' | 'low') => {
     switch (sev) {
       case 'high':
-        return 'bg-red-500/10 text-red-500 border border-red-500/20'
+        return 'bg-red-500/10 text-red-500 dark:text-red-200 border border-red-500/20 dark:border-red-500/30'
       case 'medium':
-        return 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
+        return 'bg-orange-500/10 text-orange-500 dark:text-orange-200 border border-orange-500/20 dark:border-orange-500/30'
       case 'low':
       default:
-        return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+        return 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-200 border border-emerald-500/20 dark:border-emerald-500/30'
     }
   }
 
@@ -434,7 +435,7 @@ export default function RiskAnalysisDashboard() {
     )
   }
 
-  const overallRiskLevel = dataToRender.stats.high > 0 ? 'high' : 'medium'
+  const overallRiskLevel = dataToRender.overallRisk
 
   return (
     <div className="animate-in fade-in space-y-8 py-10 duration-500">
@@ -717,7 +718,7 @@ export default function RiskAnalysisDashboard() {
                               {item.title}
                             </span>
                             <span
-                              className={`w-24 shrink-0 rounded-full px-2.5 py-1 text-center text-[10px] font-extrabold tracking-wider uppercase ${getSeverityBadgeClass(item.severity)}`}
+                              className={`w-24 shrink-0 rounded-full px-2.5 py-1 text-center text-[10px] font-extrabold tracking-wider whitespace-nowrap uppercase ${getSeverityBadgeClass(item.severity)}`}
                             >
                               {getSeverityLabel(item.severity)}
                             </span>
@@ -755,7 +756,7 @@ export default function RiskAnalysisDashboard() {
                           >
                             <ClauseCard
                               item={item as ClauseItem}
-                              contractId={contractId || 'mock-contract-id'}
+                              contractId={contractId || ''}
                               clauseIndex={item.clauseIndex}
                             />
                           </div>

@@ -140,7 +140,6 @@ src/
 | PATCH | `/api/account/profile` | Update name/email/password |
 | DELETE | `/api/account` | Soft delete account |
 | GET | `/api/account/subscription` | Current subscription details |
-| POST | `/api/account/subscription/upgrade` | Change plan |
 | POST | `/api/account/subscription/cancel` | Cancel subscription |
 | GET | `/api/account/credits` | Balance, usage, allowance |
 | GET | `/api/account/credits/history` | Paginated credit ledger |

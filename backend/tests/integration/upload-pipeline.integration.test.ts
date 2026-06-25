@@ -1,10 +1,4 @@
-import {
-  jest,
-  describe,
-  test,
-  expect,
-  beforeEach,
-} from "@jest/globals";
+import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 import { Readable } from "stream";
 
 /**
@@ -16,20 +10,33 @@ import { Readable } from "stream";
 
 // ── 1. Mock LLM ───────────────────────────────────────────────────────────────
 
-// استخدام unknown بدل any لتجنب ESLint وضبط الـ Generics لـ jest.Mock
 const mockInvoke = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+const mockGetPrompt = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 
-jest.unstable_mockModule("@langchain/google-genai", () => ({
-  ChatGoogleGenerativeAI: jest.fn().mockImplementation(() => ({
-    invoke: mockInvoke,
-  })),
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: jest.fn(),
+}));
+
+jest.unstable_mockModule("../../src/services/llm.service.js", () => ({
+  llmService: {
+    call: mockInvoke,
+    callPrimary: mockInvoke,
+    callFallback: mockInvoke,
+  },
 }));
 
 // ── 2. Mock MongoDB models ─────────────────────────────────────────────────────
 
-const mockContractSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
-const mockAnalysisSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
-const mockAuditSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
+const mockContractSave = jest
+  .fn<(...args: unknown[]) => Promise<unknown>>()
+  .mockImplementation(() => Promise.resolve({}));
+const mockAnalysisSave = jest
+  .fn<(...args: unknown[]) => Promise<unknown>>()
+  .mockImplementation(() => Promise.resolve({}));
+const mockAuditSave = jest
+  .fn<(...args: unknown[]) => Promise<unknown>>()
+  .mockImplementation(() => Promise.resolve({}));
 
 const MOCK_CONTRACT_ID = "507f1f77bcf86cd799439011";
 
@@ -45,7 +52,9 @@ jest.unstable_mockModule("../../src/models/contract.model.js", () => ({
 }));
 
 // تعريف Structure الـ Mock بدون استخدام any
-const mockSort = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockResolvedValue(null);
+const mockSort = jest
+  .fn<(...args: unknown[]) => Promise<unknown>>()
+  .mockResolvedValue(null);
 const mockFindOne = jest.fn().mockReturnValue({
   sort: mockSort,
 });
@@ -82,15 +91,12 @@ jest.unstable_mockModule("../../src/agents/riskClassifier.agent.js", () => ({
 
 const { pdfService } = await import("../../src/services/pdf.service.js");
 const { docxService } = await import("../../src/services/docx.service.js");
-const { contractService } = await import(
-  "../../src/services/contract.service.js"
-);
-const { analysisService } = await import(
-  "../../src/services/analysis.service.js"
-);
-const { orchestratorService } = await import(
-  "../../src/pipeline/orchestrator.service.js"
-);
+const { contractService } =
+  await import("../../src/services/contract.service.js");
+const { analysisService } =
+  await import("../../src/services/analysis.service.js");
+const { orchestratorService } =
+  await import("../../src/pipeline/orchestrator.service.js");
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
 
@@ -118,8 +124,7 @@ const ENGLISH_CLAUSES_LLM_RESPONSE = JSON.stringify([
   },
   {
     clauseNumber: 3,
-    clauseText:
-      "The Employee shall not disclose any confidential information.",
+    clauseText: "The Employee shall not disclose any confidential information.",
     clauseType: "confidentiality",
   },
 ]);
@@ -132,8 +137,7 @@ const ARABIC_CLAUSES_LLM_RESPONSE = JSON.stringify([
   },
   {
     clauseNumber: 2,
-    clauseText:
-      "يجوز لأي من الطرفين إنهاء العقد بإخطار كتابي مدته ستون يوماً.",
+    clauseText: "يجوز لأي من الطرفين إنهاء العقد بإخطار كتابي مدته ستون يوماً.",
     clauseType: "termination",
   },
 ]);
@@ -180,14 +184,19 @@ function makeDocxFile(
 describe("Upload → Extract → Store Pipeline", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // عمل Type Casting آمن للـ Caches والـ Queues لتجنب الـ Explicit any للـ Linter
-    const orchestrator = orchestratorService as unknown as { extractionCache: Map<string, unknown> };
+    const orchestrator = orchestratorService as unknown as {
+      extractionCache: Map<string, unknown>;
+    };
     orchestrator.extractionCache.clear();
-    
-    const analysis = analysisService as unknown as { executionQueue: { retryDelayMs: number } };
+
+    const analysis = analysisService as unknown as {
+      executionQueue: { retryDelayMs: number };
+    };
     analysis.executionQueue.retryDelayMs = 1;
 
+    mockGetPrompt.mockResolvedValue("Mock system prompt");
     mockClassify.mockResolvedValue({
       riskLevel: "low",
       confidence: 0.95,
@@ -282,9 +291,8 @@ describe("Upload → Extract → Store Pipeline", () => {
       );
 
       expect(mockInvoke).toHaveBeenCalledTimes(1);
-      const calledMessages = mockInvoke.mock.calls[0][0] as unknown[];
-      const lastMsg = calledMessages[calledMessages.length - 1];
-      expect(JSON.stringify(lastMsg)).toContain("employment contract");
+      const prompt = mockInvoke.mock.calls[0][0] as string;
+      expect(prompt).toContain("employment contract");
     });
 
     test("triggerAnalysis() persists all extracted clauses to RiskAnalysis", async () => {
@@ -338,15 +346,13 @@ describe("Upload → Extract → Store Pipeline", () => {
 
   describe("Full pipeline — spying on parsePdf / parseDocx", () => {
     test("PDF pipeline: parse → save contract → extract → persist analysis", async () => {
-      const parseSpy = jest
-        .spyOn(pdfService, "parsePdf")
-        .mockResolvedValue({
-          text: ENGLISH_CONTRACT_TEXT,
-          pages: 2,
-          fileSize: 102400,
-          filename: "employment-contract.pdf",
-          language: "en",
-        });
+      const parseSpy = jest.spyOn(pdfService, "parsePdf").mockResolvedValue({
+        text: ENGLISH_CONTRACT_TEXT,
+        pages: 2,
+        fileSize: 102400,
+        filename: "employment-contract.pdf",
+        language: "en",
+      });
 
       mockInvoke.mockResolvedValue({ content: ENGLISH_CLAUSES_LLM_RESPONSE });
 
@@ -378,15 +384,13 @@ describe("Upload → Extract → Store Pipeline", () => {
     });
 
     test("DOCX pipeline: parse → save contract → extract → persist analysis", async () => {
-      const parseSpy = jest
-        .spyOn(docxService, "parseDocx")
-        .mockResolvedValue({
-          text: ENGLISH_CONTRACT_TEXT,
-          pages: 1,
-          fileSize: 51200,
-          filename: "service-agreement.docx",
-          language: "en",
-        });
+      const parseSpy = jest.spyOn(docxService, "parseDocx").mockResolvedValue({
+        text: ENGLISH_CONTRACT_TEXT,
+        pages: 1,
+        fileSize: 51200,
+        filename: "service-agreement.docx",
+        language: "en",
+      });
 
       mockInvoke.mockResolvedValue({ content: ENGLISH_CLAUSES_LLM_RESPONSE });
 
@@ -417,15 +421,13 @@ describe("Upload → Extract → Store Pipeline", () => {
     });
 
     test("Arabic PDF pipeline: parse (Arabic text) → save → extract → persist", async () => {
-      const parseSpy = jest
-        .spyOn(pdfService, "parsePdf")
-        .mockResolvedValue({
-          text: ARABIC_CONTRACT_TEXT,
-          pages: 3,
-          fileSize: 80000,
-          filename: "contract-ar.pdf",
-          language: "ar",
-        });
+      const parseSpy = jest.spyOn(pdfService, "parsePdf").mockResolvedValue({
+        text: ARABIC_CONTRACT_TEXT,
+        pages: 3,
+        fileSize: 80000,
+        filename: "contract-ar.pdf",
+        language: "ar",
+      });
 
       mockInvoke.mockResolvedValue({ content: ARABIC_CLAUSES_LLM_RESPONSE });
 
@@ -466,7 +468,7 @@ describe("Upload → Extract → Store Pipeline", () => {
         analysisService.triggerAnalysis(
           MOCK_CONTRACT_ID,
           "user_test",
-          ENGLISH_CONTRACT_TEXT,
+          "FAILING_CONTRACT_TEXT_TO_BYPASS_CACHE",
           "en",
         ),
       ).resolves.toBeUndefined();

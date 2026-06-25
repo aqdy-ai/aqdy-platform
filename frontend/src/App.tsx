@@ -15,6 +15,9 @@ import { useAuth } from './hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { getDirection } from './lib/i18n'
 import type { SupportedLocale } from './types'
+import { ADMIN_ROLES, getDefaultAdminRoute } from './types/auth'
+import type { AdminRole } from './types/auth'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // 🌟 Lazy Loading للمكونات والـ Pages الخاصة بمنصة عقدي
 const Home = lazy(() => import('./pages/Home'))
@@ -24,39 +27,99 @@ const RiskAnalysisDashboard = lazy(
   () => import('./pages/RiskAnalysisDashboard')
 )
 const Login = lazy(() => import('./pages/Login'))
-const Register = lazy(() => import('./pages/Register'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const AccountSettings = lazy(() => import('./pages/AccountSettings'))
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminContracts = lazy(() => import('./pages/admin/AdminContracts'))
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'))
+const AdminEvaluations = lazy(() => import('./pages/admin/evaluations'))
+const RoleManagement = lazy(() => import('./pages/admin/RoleManagement'))
+const FinancialDashboard = lazy(
+  () => import('./pages/admin/FinancialDashboard')
+)
+const SupportDashboard = lazy(() => import('./pages/admin/SupportDashboard'))
+const ContentDashboard = lazy(() => import('./pages/admin/ContentDashboard'))
+const OperationsDashboard = lazy(
+  () => import('./pages/admin/OperationsDashboard')
+)
+const AnalyticsDashboard = lazy(
+  () => import('./pages/admin/AnalyticsDashboard')
+)
+const AuditLogs = lazy(() => import('./pages/admin/AuditLogs'))
+const AdminPlans = lazy(() => import('./pages/admin/AdminPlans'))
+const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 import AdminRoute from './components/AdminRoute'
+import Register from './pages/Register'
 const BillingHistory = lazy(() => import('./pages/BillingHistory'))
 const ContractHistory = lazy(() => import('./pages/ContractHistory'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
+const VerifyPrompt = lazy(() => import('./pages/VerifyPrompt'))
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
+
+/**
+ * AdminRootRedirect: يوجه المسؤول إلى أول صفحة يملك صلاحية الوصول إليها
+ */
+const AdminRootRedirect = () => {
+  const { user } = useAuth()
+  const role = user?.role ?? 'user'
+  return <Navigate to={getDefaultAdminRoute(role)} replace />
+}
 
 /**
  * GuestRoute: يمنع المستخدم المسجل من دخول صفحات الـ Login/Register ويرجعه للرئيسية
  */
 const GuestRoute = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated, isInitialLoading } = useAuth()
+  const { isAuthenticated, isInitialLoading, user } = useAuth()
 
   if (isInitialLoading) {
     return null
   }
-  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>
+  if (isAuthenticated) {
+    const role = user?.role ?? 'user'
+    const isAdmin = role === 'admin' || ADMIN_ROLES.includes(role as AdminRole)
+    return <Navigate to={isAdmin ? getDefaultAdminRoute(role) : '/'} replace />
+  }
+  return <>{children}</>
 }
 
 /**
  * ProtectedRoute: يحمي الصفحات الداخلية وبيرجع المستخدم لصفحة الـ Login لو مش مسجل
  */
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated, isInitialLoading } = useAuth()
+  const { isAuthenticated, isInitialLoading, user } = useAuth()
 
   if (isInitialLoading) {
     return null
   }
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+  const role = user?.role ?? 'user'
+  const isAdmin = role === 'admin' || ADMIN_ROLES.includes(role as AdminRole)
+  if (user && !user.isEmailVerified && !isAdmin) {
+    return <Navigate to="/verify-email" replace />
+  }
+  return <>{children}</>
+}
+
+/**
+ * VerifyEmailRoute: Only accessible if authenticated AND unverified
+ */
+const VerifyEmailRoute = () => {
+  const { isAuthenticated, isInitialLoading, user } = useAuth()
+  if (isInitialLoading) return null
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (
+    user?.isEmailVerified ||
+    (user?.role &&
+      (user.role === 'admin' || ADMIN_ROLES.includes(user.role as AdminRole)))
+  )
+    return <Navigate to="/" replace />
+  return <VerifyPrompt />
 }
 
 /**
@@ -91,19 +154,109 @@ function AppContent() {
     >
       <DisclaimerModal />
 
-      <MainLayout>
-        <Routes>
-          {/* الـ Public Routes */}
-          <Route path="/" element={<Home />} />
+      <Routes>
+        {/* 👑 Admin Routes - بدون MainLayout (بدون Navbar عادية) */}
+        {(
+          [
+            {
+              path: '/admin',
+              element: <AdminRootRedirect />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/accounts',
+              element: <AdminAccounts />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/contracts',
+              element: <AdminContracts />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/payments',
+              element: <AdminPayments />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/evaluations',
+              element: <AdminEvaluations />,
+              allowedRoles: undefined,
+            },
+            {
+              path: '/admin/roles',
+              element: <RoleManagement />,
+              allowedRoles: ['super_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/plans',
+              element: <AdminPlans />,
+              allowedRoles: ['super_admin', 'financial_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/financial',
+              element: <FinancialDashboard />,
+              allowedRoles: ['super_admin', 'financial_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/support',
+              element: <SupportDashboard />,
+              allowedRoles: ['super_admin', 'support_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/content',
+              element: <ContentDashboard />,
+              allowedRoles: ['super_admin', 'content_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/operations',
+              element: <OperationsDashboard />,
+              allowedRoles: ['super_admin', 'operations_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/analytics',
+              element: <AnalyticsDashboard />,
+              allowedRoles: ['super_admin', 'analytics_admin'] as AdminRole[],
+            },
+            {
+              path: '/admin/audit-logs',
+              element: <AuditLogs />,
+              allowedRoles: undefined,
+            },
+          ] satisfies {
+            path: string
+            element: ReactNode
+            allowedRoles: AdminRole[] | undefined
+          }[]
+        ).map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={
+              <AdminRoute allowedRoles={route.allowedRoles}>
+                <AdminLayout>
+                  <ErrorBoundary key={route.path}>
+                    {route.element}
+                  </ErrorBoundary>
+                </AdminLayout>
+              </AdminRoute>
+            }
+          />
+        ))}
+        <Route
+          path="/admin/dashboard"
+          element={<Navigate to="/admin" replace />}
+        />
 
-          {/* 🌟 دمج صفحة الأسعار وتمرير الـ Props المتوافقة مع الـ Types بنجاح */}
+        {/* 🏠 Normal Routes - داخل MainLayout */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
           <Route
             path="/pricing"
             element={
               <Pricing isLoggedIn={isAuthenticated} userPlan={userPlan} />
             }
           />
-
           <Route
             path="/test-dashboard"
             element={
@@ -112,8 +265,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* الـ Protected Routes (المحمية) */}
           <Route
             path="/dashboard"
             element={
@@ -132,42 +283,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* الـ Admin Routes (للمسؤولين فقط) */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/accounts"
-            element={
-              <AdminRoute>
-                <AdminAccounts />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/contracts"
-            element={
-              <AdminRoute>
-                <AdminContracts />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/payments"
-            element={
-              <AdminRoute>
-                <AdminPayments />
-              </AdminRoute>
-            }
-          />
-
-          {/* الـ Guest Routes (ممنوعة على المسجلين) */}
           <Route
             path="/account-settings"
             element={
@@ -201,6 +316,22 @@ function AppContent() {
             }
           />
           <Route
+            path="/forgot-password"
+            element={
+              <GuestRoute>
+                <ForgotPassword />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <GuestRoute>
+                <ResetPassword />
+              </GuestRoute>
+            }
+          />
+          <Route
             path="/billing-history"
             element={
               <ProtectedRoute>
@@ -216,11 +347,14 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* Fallback في حال كتابة مسار خاطئ */}
+          <Route path="/verify-email" element={<VerifyEmailRoute />} />
+          <Route path="/verify" element={<VerifyEmail />} />
+          {/* 🔓 Public Legal Pages — no auth required */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </MainLayout>
+        </Route>
+      </Routes>
     </Suspense>
   )
 }

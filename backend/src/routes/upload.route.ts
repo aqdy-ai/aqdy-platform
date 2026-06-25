@@ -5,7 +5,6 @@ import { pdfService } from "../services/pdf.service.js";
 import { docxService } from "../services/docx.service.js";
 import { contractService } from "../services/contract.service.js";
 import { auditLogService } from "../services/auditLog.service.js";
-import { analysisService } from "../services/analysis.service.js";
 import { logger } from "../utils/logger.js";
 import {
   detectPromptInjection,
@@ -146,44 +145,9 @@ uploadRouter.post(
         },
       });
 
-      // ── Step 4: Audit — ANALYSIS_STARTED ─────────────────────────────────
-      await auditLogService.logEvent({
-        contractId,
-        userId,
-        action: "ANALYSIS_STARTED",
-        ...auditMeta,
-        metadata: {
-          filename: parsed.filename,
-          language: parsed.language,
-        },
-      });
-
-      // ── Step 5: Fire-and-forget extraction pipeline ───────────────────────
-      // analysisService.triggerAnalysis() handles:
-      //   - ExtractorAgent.extract() via LLM
-      //   - Persisting results to RiskAnalysis collection
-      //   - Writing ANALYSIS_COMPLETED / ANALYSIS_FAILED audit entries
-      analysisService
-        .triggerAnalysis(
-          contractId,
-          userId,
-          parsed.text,
-          parsed.language,
-          auditMeta,
-        )
-        .catch((err) => {
-          logger.error(
-            `❌ Background analysis failed for contract ${contractId}:`,
-            err,
-          );
-        });
-
-      logger.info(`✅ Contract uploaded and analysis triggered: ${contractId}`);
-
-      // ── Step 6: Respond immediately (202 Accepted) ────────────────────────
-      return res.status(202).json({
-        message:
-          "Contract uploaded successfully. Analysis is running in the background.",
+      // ── Step 4: Respond immediately (201 Created) ────────────────────────
+      return res.status(201).json({
+        message: "Contract uploaded successfully.",
         contractId,
         filename: parsed.filename,
         language: parsed.language,

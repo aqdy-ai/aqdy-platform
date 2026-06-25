@@ -140,7 +140,7 @@ Content-Type: application/json
 Cookie: accessToken=...
 
 {
-  "planId": "507f1f77bcf86cd799439011",
+  "planSlug": "pro",
   "billingCycle": "monthly"  // or "annual"
 }
 ```
@@ -162,10 +162,9 @@ const session = await paymentService.createCheckoutSession(
 {
   "success": true,
   "data": {
-    "sessionId": "cs_test_1234567890",
     "url": "https://checkout.stripe.com/pay/cs_test_1234567890"
   },
-  "message": "Checkout session created"
+  "message": "Checkout session created successfully"
 }
 ```
 
@@ -205,14 +204,16 @@ After successful payment, Stripe:
 }
 ```
 
-**Backend Processing:**
-1. Verify webhook signature
-2. Extract user/plan metadata
-3. Call `fulfillSubscription()`
-4. Create `Subscription` record
-5. Top up credits via `creditsService.topupForPlanAllowance()`
-6. Update `User.plan` field
-7. Log to AuditLog for audit trail
+**Backend Processing (webhook or success callback):**
+1. Verify webhook signature (webhook path only)
+2. Retrieve Stripe subscription to get period dates
+3. Idempotency check — bail if `stripeSubscriptionId` already recorded
+4. Expire any existing active subscriptions for this user
+5. Create new `Subscription` record with status `"active"`
+6. Update `User.plan` / `User.planSlug` / `User.status` to `"active"`
+7. Top up credits via `creditsService.topup(userId, plan.creditAllowance, "plan_topup")`
+8. Record `Payment` document (handles duplicate key errors gracefully)
+9. Log to `AuditLog` for idempotency (webhook path only)
 
 **Result:** User now has an active subscription and credits.
 
@@ -322,14 +323,22 @@ After successful payment, Stripe:
 **Backend Processing:**
 1. Find subscription by Stripe subscription ID
 2. Set `Subscription.status = "past_due"`
-3. Find associated user
-4. **Suspend account**: Disable analysis/chat, show upgrade prompt
-5. Log failure event
+3. **Suspend user**: `User.status = "suspended"` — blocks analysis/chat
+4. Record failed `Payment` event
+5. Log failure to `AuditLog`
 
 **Stripe Retry Logic:**
 - Stripe automatically retries for 3-4 days
 - Sends additional `invoice.payment_failed` events on retry attempts
 - If successful after retry, sends `invoice.paid` webhook
+
+**Subscription Recovery (invoice.paid after past_due):**
+1. `handleSuccessfulRenewal()` updates `Subscription.status → "active"`
+2. `User.status` is restored to `"active"` (user regains platform access)
+3. Credits are topped up per plan allowance
+4. Renewal payment is recorded
+5. The `customer.subscription.updated` handler also restores `User.status` when
+   Stripe reports the subscription transition from `past_due` back to `active`
 
 **User Actions:**
 - Update payment method in Stripe portal
@@ -368,18 +377,22 @@ After successful payment, Stripe:
 - Can view past analyses
 - Can upgrade again anytime
 
-### Downgrade
+### Downgrade / Plan Change
 
-**User downgrades** from Pro to Free or Pro to Enterprise:
+**User changes plan** (e.g. Pro to Enterprise or Pro to Free):
 
 1. User initiates checkout for new plan
 2. Stripe creates new subscription
 3. Stripe cancels old subscription
-4. Backend receives two webhook events:
-   - `customer.subscription.deleted` (old)
-   - `checkout.session.completed` (new)
-5. New subscription becomes active
-6. Credits are topped up based on new plan
+4. Backend receives two webhook events (order **not** guaranteed):
+   - `checkout.session.completed` (new plan)
+   - `customer.subscription.deleted` (old plan)
+5. The `customer.subscription.deleted` handler **checks whether the user already
+   has a newer active subscription** before downgrading to Free. If a newer
+   active subscription exists, the downgrade is skipped. This prevents a race
+   condition where the deletion event arrives after activation.
+6. New subscription becomes active; old one is marked `cancelled`
+7. Credits are topped up based on new plan
 
 ---
 
@@ -430,21 +443,32 @@ Middleware order matters — `raw()` must come first!
 **Solution:** Check AuditLog for duplicate events:
 
 ```typescript
-const isDuplicate = await AuditLog.findOne({
-  eventName: `stripe_${event.type}`,
-  data: { stripeEventId: event.id },
+// backend/src/services/payment.service.ts — handleWebhook()
+const existingLog = await AuditLog.findOne({
+  "metadata.stripeEventId": event.id,
 });
-
-if (isDuplicate) {
-  logger.info("Duplicate webhook, skipping processing");
-  res.status(200).json({ received: true });
+if (existingLog) {
+  logger.info(`Skipping already processed Stripe event: ${event.id}`);
   return;
 }
 
-// Process webhook...
+// ... process webhook ...
+
+await AuditLog.create({
+  action: "STRIPE_WEBHOOK",
+  outcome: "success",
+  metadata: {
+    stripeEventId: event.id,
+    eventType: event.type,
+  },
+});
 ```
 
 Each webhook is logged with Stripe event ID, preventing duplicate processing.
+
+**Additional idempotency in `fulfillSubscription()`:**
+- The `Subscription.stripeSubscriptionId` field has a **unique sparse index** in MongoDB, so duplicate `Subscription.create()` calls safely fail with E11000.
+- The `Payment.providerTxId` field also has a **unique index** — duplicate payment records are caught and skipped.
 
 ---
 
@@ -471,10 +495,9 @@ Each webhook is logged with Stripe event ID, preventing duplicate processing.
 {
   "success": true,
   "data": {
-    "sessionId": "cs_test_1234567890",
     "url": "https://checkout.stripe.com/pay/cs_test_1234567890"
   },
-  "message": "Checkout session created"
+  "message": "Checkout session created successfully"
 }
 ```
 
@@ -676,13 +699,14 @@ Each webhook is logged with Stripe event ID, preventing duplicate processing.
 ```typescript
 async createCheckoutSession(
   userId: string,
-  planId: string,
-  billingCycle: "monthly" | "annual"
-): Promise<{ sessionId: string; url: string }> {
-  // 1. Fetch plan with Stripe IDs
-  // 2. Determine price ID (monthly or annual)
-  // 3. Create Stripe session with metadata
-  // 4. Return session and checkout URL
+  planSlugOrId: string,
+  billingCycle: "monthly" | "annual" = "monthly",
+): Promise<{ url: string }> {
+  // 1. Resolve plan by slug (or ObjectId fallback)
+  // 2. Determine price ID (monthly or annual, falls back to monthly)
+  // 3. Create or reuse Stripe customer
+  // 4. Create Stripe session with metadata
+  // 5. Return checkout URL
 }
 ```
 
@@ -762,19 +786,47 @@ async generateInvoicePdf(payment: IPayment): Promise<Buffer> {
 **Solution:** All critical operations are idempotent
 
 ```typescript
-// Example: fulfillSubscription() is idempotent
-async fulfillSubscription(userId, planId, stripeSessionId) {
-  // Check if already processed
-  const existing = await Subscription.findOne({
-    userId,
-    stripeSubscriptionId: stripeSubId,
-  });
+// fulfillSubscription() is idempotent via:
+// 1. Explicit findOne check for stripeSubscriptionId
+// 2. MongoDB unique sparse index on stripeSubscriptionId (catches races)
+// 3. Duplicate key error caught and ignored
+async fulfillSubscription(session: Stripe.Checkout.Session): Promise<void> {
+  const { userId, planId } = session.metadata || {};
 
-  if (existing) {
-    return existing;  // Already fulfilled
+  const stripeSubscriptionId = session.subscription as string;
+
+  // Idempotency check
+  const exists = await Subscription.findOne({ stripeSubscriptionId });
+  if (exists) return;
+
+  const plan = await Plan.findById(planId);
+  const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+
+  // Expire old subscriptions
+  await Subscription.updateMany(
+    { userId, status: "active" },
+    { status: "expired" },
+  );
+
+  // Create new subscription (duplicate-key-safe)
+  try {
+    await Subscription.create({ ... stripeSubscriptionId, ... });
+  } catch (err: any) {
+    if (err.code === 11000) return; // race winner already created it
+    throw err;
   }
 
-  // Create new subscription...
+  // Update user's plan + restore status to active
+  await User.findByIdAndUpdate(userId, {
+    plan: plan.slug,
+    planSlug: plan.slug,
+    status: "active",
+  });
+
+  // Top up credits
+  if (plan.creditAllowance > 0) {
+    await creditsService.topup(userId, plan.creditAllowance, "plan_topup");
+  }
 }
 ```
 
@@ -813,11 +865,6 @@ class PaymentError extends AppError {
 **Cancel Subscription:**
 ```typescript
 await subscriptionService.cancelSubscription(userId);
-```
-
-**Upgrade Plan:**
-```typescript
-await subscriptionService.upgradeSubscription(userId, newPlanId);
 ```
 
 **Check Usage:**

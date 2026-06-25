@@ -21,8 +21,9 @@ import {
   mergeExtractionResults,
   MAX_CHUNK_SIZE,
 } from "../utils/text.utils.js";
+import { getPrompt, setFallback } from "../services/prompt.service.js";
 import {
-  EXTRACTOR_SYSTEM_PROMPT,
+  EXTRACTOR_SYSTEM_PROMPT as FALLBACK_EXTRACTOR_PROMPT,
   buildExtractionUserPrompt,
 } from "./extractor.prompts.js";
 
@@ -82,7 +83,7 @@ export class ExtractorAgent {
   async extract(
     contractText: string,
     language?: "ar" | "en",
-    options?: { callbacks?: any[] },
+    options?: { callbacks?: unknown[] },
   ): Promise<ExtractionResult> {
     const startTime = Date.now();
 
@@ -164,10 +165,11 @@ export class ExtractorAgent {
    */
   private async callLLM(
     userPrompt: string,
-    callbacks?: any[],
+    callbacks?: unknown[],
   ): Promise<LLMResponse> {
+    const systemPrompt = await getPrompt("extractor");
     return llmService.call(userPrompt, {
-      systemPrompt: EXTRACTOR_SYSTEM_PROMPT,
+      systemPrompt,
       temperature: 0.1,
       maxTokens: 8192,
       callbacks,
@@ -238,4 +240,5 @@ export class ExtractorAgent {
 
 // ── Default Instance ─────────────────────────────
 
+setFallback("extractor", FALLBACK_EXTRACTOR_PROMPT);
 export const extractorAgent = new ExtractorAgent();

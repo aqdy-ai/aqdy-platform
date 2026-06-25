@@ -56,7 +56,8 @@ async function createPayment(
 // ── DB lifecycle ──────────────────────────────────────────────────────────────
 beforeAll(async () => {
   const mongoURI =
-    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aqdy-admin-payments-test";
+    process.env.MONGODB_URI ||
+    "mongodb://127.0.0.1:27017/aqdy-admin-payments-test";
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(mongoURI);
   }
@@ -112,7 +113,7 @@ describe("GET /api/admin/payments — paginated listing", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@payments.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -121,7 +122,7 @@ describe("GET /api/admin/payments — paginated listing", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
@@ -182,7 +183,7 @@ describe("GET /api/admin/payments — filter by status", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@filter.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -191,7 +192,7 @@ describe("GET /api/admin/payments — filter by status", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
@@ -241,7 +242,7 @@ describe("GET /api/admin/payments — filter by userId", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@userid.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -249,13 +250,27 @@ describe("GET /api/admin/payments — filter by userId", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
   test("returns only payments belonging to the specified userId", async () => {
-    const u1 = await User.create({ name: "U1", email: "u1@test.com", role: "user", status: "active", planSlug: "free", passwordHash: "h" });
-    const u2 = await User.create({ name: "U2", email: "u2@test.com", role: "user", status: "active", planSlug: "free", passwordHash: "h" });
+    const u1 = await User.create({
+      name: "U1",
+      email: "u1@test.com",
+      role: "user",
+      status: "active",
+      planSlug: "free",
+      passwordHash: "h",
+    });
+    const u2 = await User.create({
+      name: "U2",
+      email: "u2@test.com",
+      role: "user",
+      status: "active",
+      planSlug: "free",
+      passwordHash: "h",
+    });
 
     await createPayment(u1._id as mongoose.Types.ObjectId);
     await createPayment(u1._id as mongoose.Types.ObjectId);
@@ -292,7 +307,7 @@ describe("GET /api/admin/payments — filter by date range", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@daterange.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -301,33 +316,42 @@ describe("GET /api/admin/payments — filter by date range", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
   test("filters payments by dateFrom only", async () => {
-    const past   = new Date("2024-01-15T00:00:00Z");
+    const past = new Date("2024-01-15T00:00:00Z");
     const recent = new Date("2026-05-01T00:00:00Z");
 
     // Use insertMany with timestamps disabled to set explicit createdAt values
-    await Payment.insertMany([
-      {
-        userId: adminUserId,
-        subscriptionId: new mongoose.Types.ObjectId(),
-        amount: 10, currency: "USD", status: "succeeded",
-        provider: "stripe",
-        providerTxId: `pi_past_${Date.now()}_1`,
-        createdAt: past, updatedAt: past,
-      },
-      {
-        userId: adminUserId,
-        subscriptionId: new mongoose.Types.ObjectId(),
-        amount: 20, currency: "USD", status: "succeeded",
-        provider: "stripe",
-        providerTxId: `pi_recent_${Date.now()}_2`,
-        createdAt: recent, updatedAt: recent,
-      },
-    ], { timestamps: false });
+    await Payment.insertMany(
+      [
+        {
+          userId: adminUserId,
+          subscriptionId: new mongoose.Types.ObjectId(),
+          amount: 10,
+          currency: "USD",
+          status: "succeeded",
+          provider: "stripe",
+          providerTxId: `pi_past_${Date.now()}_1`,
+          createdAt: past,
+          updatedAt: past,
+        },
+        {
+          userId: adminUserId,
+          subscriptionId: new mongoose.Types.ObjectId(),
+          amount: 20,
+          currency: "USD",
+          status: "succeeded",
+          provider: "stripe",
+          providerTxId: `pi_recent_${Date.now()}_2`,
+          createdAt: recent,
+          updatedAt: recent,
+        },
+      ],
+      { timestamps: false },
+    );
 
     const res = await request(testApp)
       .get("/api/admin/payments?dateFrom=2026-01-01T00:00:00Z")
@@ -339,27 +363,36 @@ describe("GET /api/admin/payments — filter by date range", () => {
   });
 
   test("filters payments by dateTo only", async () => {
-    const past   = new Date("2024-01-15T00:00:00Z");
+    const past = new Date("2024-01-15T00:00:00Z");
     const recent = new Date("2026-05-01T00:00:00Z");
 
-    await Payment.insertMany([
-      {
-        userId: adminUserId,
-        subscriptionId: new mongoose.Types.ObjectId(),
-        amount: 10, currency: "USD", status: "succeeded",
-        provider: "stripe",
-        providerTxId: `pi_past_${Date.now()}_a`,
-        createdAt: past, updatedAt: past,
-      },
-      {
-        userId: adminUserId,
-        subscriptionId: new mongoose.Types.ObjectId(),
-        amount: 20, currency: "USD", status: "succeeded",
-        provider: "stripe",
-        providerTxId: `pi_recent_${Date.now()}_b`,
-        createdAt: recent, updatedAt: recent,
-      },
-    ], { timestamps: false });
+    await Payment.insertMany(
+      [
+        {
+          userId: adminUserId,
+          subscriptionId: new mongoose.Types.ObjectId(),
+          amount: 10,
+          currency: "USD",
+          status: "succeeded",
+          provider: "stripe",
+          providerTxId: `pi_past_${Date.now()}_a`,
+          createdAt: past,
+          updatedAt: past,
+        },
+        {
+          userId: adminUserId,
+          subscriptionId: new mongoose.Types.ObjectId(),
+          amount: 20,
+          currency: "USD",
+          status: "succeeded",
+          provider: "stripe",
+          providerTxId: `pi_recent_${Date.now()}_b`,
+          createdAt: recent,
+          updatedAt: recent,
+        },
+      ],
+      { timestamps: false },
+    );
 
     const res = await request(testApp)
       .get("/api/admin/payments?dateTo=2025-01-01T00:00:00Z")
@@ -388,7 +421,7 @@ describe("GET /api/admin/payments — populated user in response", () => {
     const admin = await User.create({
       name: "Admin",
       email: "admin@populate.test",
-      role: "admin",
+      role: "super_admin",
       status: "active",
       planSlug: "enterprise",
       passwordHash: "h",
@@ -396,7 +429,7 @@ describe("GET /api/admin/payments — populated user in response", () => {
     adminToken = generateToken({
       sub: admin._id.toString(),
       email: admin.email,
-      role: "admin",
+      role: "super_admin",
     });
   });
 
@@ -406,7 +439,7 @@ describe("GET /api/admin/payments — populated user in response", () => {
       email: "ahmed@test.com",
       role: "user",
       status: "active",
-      planSlug: "premium",
+      planSlug: "pro",
       passwordHash: "h",
     });
     await createPayment(user._id as mongoose.Types.ObjectId);
@@ -423,6 +456,6 @@ describe("GET /api/admin/payments — populated user in response", () => {
     expect(typeof payment.userId).toBe("object");
     expect(payment.userId.name).toBe("Ahmed Ali");
     expect(payment.userId.email).toBe("ahmed@test.com");
-    expect(payment.userId.planSlug).toBe("premium");
+    expect(payment.userId.planSlug).toBe("pro");
   });
 });

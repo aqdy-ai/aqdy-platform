@@ -15,7 +15,15 @@
 
 import crypto from "crypto";
 import mongoose from "mongoose";
-import { jest, describe, it, expect, beforeAll, afterAll, afterEach } from "@jest/globals";
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  afterEach,
+} from "@jest/globals";
 import Stripe from "stripe";
 import { PaymentService, stripe } from "../../src/services/payment.service.js";
 import { Plan } from "../../src/models/plan.model.js";
@@ -98,7 +106,11 @@ function buildWebhookEvent(
   secret: string,
 ): { payload: Buffer; signature: string } {
   const timestamp = Math.floor(Date.now() / 1000);
-  const dataStr = JSON.stringify({ id: "evt_test_" + Date.now(), type, data: { object: data } });
+  const dataStr = JSON.stringify({
+    id: "evt_test_" + Date.now(),
+    type,
+    data: { object: data },
+  });
   const payload = Buffer.from(dataStr, "utf8");
   const signedPayload = `${timestamp}.${dataStr}`;
   const sig = crypto
@@ -117,7 +129,8 @@ let paymentService: PaymentService;
 
 beforeAll(async () => {
   const uri = process.env.MONGODB_URI_TEST || process.env.MONGODB_URI;
-  if (!uri) throw new Error("MONGODB_URI_TEST is required for integration tests");
+  if (!uri)
+    throw new Error("MONGODB_URI_TEST is required for integration tests");
   await mongoose.connect(uri);
   paymentService = new PaymentService();
 });
@@ -144,14 +157,20 @@ describe("PaymentService.createCheckoutSession", () => {
     const user = await createTestUser();
     const plan = await createTestPlan();
 
-    const mockCreate = jest.spyOn(stripe.checkout.sessions, "create").mockResolvedValue(stripeResponse({
-      url: "https://checkout.stripe.com/test",
-      id: "cs_test_mock",
-    }));
+    const mockCreate = jest
+      .spyOn(stripe.checkout.sessions, "create")
+      .mockResolvedValue(
+        stripeResponse({
+          url: "https://checkout.stripe.com/test",
+          id: "cs_test_mock",
+        }),
+      );
 
-    jest.spyOn(stripe.customers, "create").mockResolvedValue(stripeResponse({
-      id: "cus_test_mock",
-    }));
+    jest.spyOn(stripe.customers, "create").mockResolvedValue(
+      stripeResponse({
+        id: "cus_test_mock",
+      }),
+    );
 
     const result = await paymentService.createCheckoutSession(
       String(user._id),
@@ -160,7 +179,8 @@ describe("PaymentService.createCheckoutSession", () => {
 
     expect(result.url).toBe("https://checkout.stripe.com/test");
 
-    const callArgs = mockCreate.mock.calls[0][0] as Stripe.Checkout.SessionCreateParams;
+    const callArgs = mockCreate.mock
+      .calls[0][0] as Stripe.Checkout.SessionCreateParams;
     expect(callArgs.metadata?.planSlug).toBe(plan.slug);
     expect(callArgs.metadata?.planId).toBe(String(plan._id));
 
@@ -171,13 +191,17 @@ describe("PaymentService.createCheckoutSession", () => {
     const user = await createTestUser();
     const plan = await createTestPlan();
 
-    jest.spyOn(stripe.checkout.sessions, "create").mockResolvedValue(stripeResponse({
-      url: "https://checkout.stripe.com/test",
-      id: "cs_test_mock",
-    }));
-    jest.spyOn(stripe.customers, "create").mockResolvedValue(stripeResponse({
-      id: "cus_test_mock",
-    }));
+    jest.spyOn(stripe.checkout.sessions, "create").mockResolvedValue(
+      stripeResponse({
+        url: "https://checkout.stripe.com/test",
+        id: "cs_test_mock",
+      }),
+    );
+    jest.spyOn(stripe.customers, "create").mockResolvedValue(
+      stripeResponse({
+        id: "cus_test_mock",
+      }),
+    );
 
     const result = await paymentService.createCheckoutSession(
       String(user._id),
@@ -233,10 +257,12 @@ describe("PaymentService.createCheckoutSession", () => {
     const plan = await createTestPlan();
 
     const createCustomerSpy = jest.spyOn(stripe.customers, "create");
-    jest.spyOn(stripe.checkout.sessions, "create").mockResolvedValue(stripeResponse({
-      url: "https://checkout.stripe.com/test",
-      id: "cs_test_mock",
-    }));
+    jest.spyOn(stripe.checkout.sessions, "create").mockResolvedValue(
+      stripeResponse({
+        url: "https://checkout.stripe.com/test",
+        id: "cs_test_mock",
+      }),
+    );
 
     await paymentService.createCheckoutSession(String(user._id), plan.slug);
 
@@ -263,11 +289,13 @@ describe("PaymentService.fulfillSubscription (post-payment activation)", () => {
       customerId,
     );
 
-    jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(stripeResponse({
-      id: subId,
-      current_period_start: Math.floor(Date.now() / 1000),
-      current_period_end: Math.floor(Date.now() / 1000) + 2592000,
-    }));
+    jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(
+      stripeResponse({
+        id: subId,
+        current_period_start: Math.floor(Date.now() / 1000),
+        current_period_end: Math.floor(Date.now() / 1000) + 2592000,
+      }),
+    );
 
     await paymentService.fulfillSubscription(mockSession);
 
@@ -305,11 +333,13 @@ describe("PaymentService.fulfillSubscription (post-payment activation)", () => {
       subId,
     );
 
-    jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(stripeResponse({
-      id: subId,
-      current_period_start: Math.floor(Date.now() / 1000),
-      current_period_end: Math.floor(Date.now() / 1000) + 2592000,
-    }));
+    jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(
+      stripeResponse({
+        id: subId,
+        current_period_start: Math.floor(Date.now() / 1000),
+        current_period_end: Math.floor(Date.now() / 1000) + 2592000,
+      }),
+    );
 
     await paymentService.fulfillSubscription(mockSession);
     await paymentService.fulfillSubscription(mockSession);
@@ -319,7 +349,7 @@ describe("PaymentService.fulfillSubscription (post-payment activation)", () => {
 
     const finalUser = await User.findById(user._id);
     // ✅ تحديث لتوقع القيمة المستلمة من الداتابيز الفتيّة لمنع الـ Test Mismatch الـعشوائي
-    expect(finalUser?.creditBalance).toBe(1000); 
+    expect(finalUser?.creditBalance).toBe(1000);
 
     jest.restoreAllMocks();
   });
@@ -329,11 +359,13 @@ describe("PaymentService.fulfillSubscription (post-payment activation)", () => {
     const plan = await createTestPlan({ creditAllowance: 0 });
     const subId = "sub_nocredit_" + Date.now();
 
-    jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(stripeResponse({
-      id: subId,
-      current_period_start: Math.floor(Date.now() / 1000),
-      current_period_end: Math.floor(Date.now() / 1000) + 2592000,
-    }));
+    jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(
+      stripeResponse({
+        id: subId,
+        current_period_start: Math.floor(Date.now() / 1000),
+        current_period_end: Math.floor(Date.now() / 1000) + 2592000,
+      }),
+    );
 
     const mockSession = buildMockSession(
       String(user._id),
@@ -361,25 +393,29 @@ describe("PaymentService.confirmSession", () => {
     const plan = await createTestPlan({ creditAllowance: 200 });
     const subId = "sub_confirm_" + Date.now();
 
-    jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue(stripeResponse({
-      id: "cs_test_confirm",
-      payment_status: "paid",
-      subscription: subId,
-      customer: "cus_test",
-      amount_total: 2900,
-      currency: "usd",
-      metadata: {
-        userId: String(user._id),
-        planId: String(plan._id),
-        planSlug: plan.slug,
-      },
-    }));
+    jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue(
+      stripeResponse({
+        id: "cs_test_confirm",
+        payment_status: "paid",
+        subscription: subId,
+        customer: "cus_test",
+        amount_total: 2900,
+        currency: "usd",
+        metadata: {
+          userId: String(user._id),
+          planId: String(plan._id),
+          planSlug: plan.slug,
+        },
+      }),
+    );
 
-    jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(stripeResponse({
-      id: subId,
-      current_period_start: Math.floor(Date.now() / 1000),
-      current_period_end: Math.floor(Date.now() / 1000) + 2592000,
-    }));
+    jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(
+      stripeResponse({
+        id: subId,
+        current_period_start: Math.floor(Date.now() / 1000),
+        current_period_end: Math.floor(Date.now() / 1000) + 2592000,
+      }),
+    );
 
     const result = await paymentService.confirmSession("cs_test_confirm");
 
@@ -390,10 +426,12 @@ describe("PaymentService.confirmSession", () => {
   });
 
   it("returns status=pending for an unpaid session and does not activate subscription", async () => {
-    jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue(stripeResponse({
-      id: "cs_test_pending",
-      payment_status: "unpaid",
-    }));
+    jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue(
+      stripeResponse({
+        id: "cs_test_pending",
+        payment_status: "unpaid",
+      }),
+    );
 
     const result = await paymentService.confirmSession("cs_test_pending");
     expect(result.status).toBe("pending");
@@ -428,7 +466,9 @@ describe("Cancel callback — no side effects", () => {
 
 describe("PaymentService.handleWebhook", () => {
   it("throws 400 on invalid webhook signature", async () => {
-    const payload = Buffer.from(JSON.stringify({ type: "checkout.session.completed" }));
+    const payload = Buffer.from(
+      JSON.stringify({ type: "checkout.session.completed" }),
+    );
     await expect(
       paymentService.handleWebhook(payload, "invalid_signature"),
     ).rejects.toMatchObject({ statusCode: 400 });
@@ -440,7 +480,10 @@ describe("PaymentService.handleWebhook", () => {
     await AuditLog.create({
       action: "STRIPE_WEBHOOK",
       outcome: "success",
-      metadata: { stripeEventId: eventId, eventType: "checkout.session.completed" },
+      metadata: {
+        stripeEventId: eventId,
+        eventType: "checkout.session.completed",
+      },
     });
 
     jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue({
@@ -450,7 +493,12 @@ describe("PaymentService.handleWebhook", () => {
     } as unknown as Stripe.Event);
 
     const fulfillSpy = jest
-      .spyOn(paymentService as unknown as { fulfillSubscription: () => Promise<void> }, "fulfillSubscription")
+      .spyOn(
+        paymentService as unknown as {
+          fulfillSubscription: () => Promise<void>;
+        },
+        "fulfillSubscription",
+      )
       .mockResolvedValue(undefined);
 
     await paymentService.handleWebhook(Buffer.from(""), "sig");
@@ -485,5 +533,164 @@ describe("PaymentService.handleWebhook", () => {
     expect(sub?.cancelledAt).toBeDefined();
 
     jest.restoreAllMocks();
+  });
+
+  // ─── payment recovery — User.status restored after past_due ───────────
+
+  describe("handleSuccessfulRenewal — restores user after payment recovery", () => {
+    it("restores User.status to active when a past_due renewal succeeds", async () => {
+      const user = await createTestUser({ status: "suspended" });
+      const plan = await createTestPlan({ creditAllowance: 300 });
+      const subId = "sub_recovery_" + Date.now();
+
+      const sub = await Subscription.create({
+        userId: user._id,
+        planId: plan._id,
+        stripeSubscriptionId: subId,
+        status: "past_due",
+        startDate: new Date(Date.now() - 86400000 * 30),
+        endDate: new Date(Date.now() - 86400000),
+        renewalDate: new Date(Date.now() - 86400000),
+      });
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue({
+        id: "evt_recovery_" + Date.now(),
+        type: "invoice.paid",
+        data: {
+          object: {
+            id: "in_test_" + Date.now(),
+            subscription: subId,
+            customer: "cus_test",
+            amount_paid: 2900,
+            currency: "usd",
+          },
+        },
+      } as unknown as Stripe.Event);
+
+      jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(
+        stripeResponse({
+          id: subId,
+          current_period_start: Math.floor(Date.now() / 1000),
+          current_period_end: Math.floor(Date.now() / 1000) + 2592000,
+        }),
+      );
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      const updatedSub = await Subscription.findById(sub._id);
+      expect(updatedSub?.status).toBe("active");
+
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser?.status).toBe("active");
+      expect(updatedUser?.creditBalance).toBe(300);
+
+      jest.restoreAllMocks();
+    });
+  });
+
+  // ─── downgrade race condition fix ─────────────────────────────────────
+
+  describe("customer.subscription.deleted — downgrade race protection", () => {
+    it("skips downgrade to free when user already has a newer active subscription", async () => {
+      const user = await createTestUser({ plan: "pro", planSlug: "pro" });
+      const freePlan = await Plan.create({
+        name: "Free",
+        slug: "free",
+        price: 0,
+        billingCycle: "monthly",
+        features: [],
+        analysisLimit: 3,
+        storageLimit: 50,
+        creditAllowance: 10,
+        stripePriceId: "price_free",
+        isActive: true,
+      });
+      const newPlan = await createTestPlan();
+
+      const oldSubId = "sub_old_" + Date.now();
+      await Subscription.create({
+        userId: user._id,
+        planId: freePlan._id,
+        stripeSubscriptionId: oldSubId,
+        status: "active",
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 86400000),
+        renewalDate: new Date(Date.now() + 86400000),
+      });
+
+      const newSubId = "sub_new_" + Date.now();
+      await Subscription.create({
+        userId: user._id,
+        planId: newPlan._id,
+        stripeSubscriptionId: newSubId,
+        status: "active",
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 2592000000),
+        renewalDate: new Date(Date.now() + 2592000000),
+      });
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue({
+        id: "evt_race_" + Date.now(),
+        type: "customer.subscription.deleted",
+        data: { object: { id: oldSubId } },
+      } as unknown as Stripe.Event);
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser?.plan).toBe("pro");
+
+      const oldSub = await Subscription.findOne({
+        stripeSubscriptionId: oldSubId,
+      });
+      expect(oldSub?.status).toBe("cancelled");
+
+      jest.restoreAllMocks();
+    });
+  });
+
+  // ─── customer.subscription.updated — User.status restoration ──────────
+
+  describe("customer.subscription.updated — past_due to active transition", () => {
+    it("restores User.status to active when subscription moves from past_due to active", async () => {
+      const user = await createTestUser({ status: "suspended" });
+      const plan = await createTestPlan();
+      const subId = "sub_update_" + Date.now();
+
+      await Subscription.create({
+        userId: user._id,
+        planId: plan._id,
+        stripeSubscriptionId: subId,
+        status: "past_due",
+        startDate: new Date(),
+        endDate: new Date(),
+        renewalDate: new Date(),
+      });
+
+      jest.spyOn(stripe.webhooks, "constructEvent").mockReturnValue({
+        id: "evt_update_" + Date.now(),
+        type: "customer.subscription.updated",
+        data: {
+          object: {
+            id: subId,
+            status: "active",
+            current_period_start: Math.floor(Date.now() / 1000),
+            current_period_end: Math.floor(Date.now() / 1000) + 2592000,
+          },
+        },
+      } as unknown as Stripe.Event);
+
+      await paymentService.handleWebhook(Buffer.from(""), "sig");
+
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser?.status).toBe("active");
+
+      const updatedSub = await Subscription.findOne({
+        stripeSubscriptionId: subId,
+      });
+      expect(updatedSub?.status).toBe("active");
+
+      jest.restoreAllMocks();
+    });
   });
 });

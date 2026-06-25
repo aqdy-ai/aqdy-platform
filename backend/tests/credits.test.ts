@@ -1,4 +1,12 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, jest } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  jest,
+} from "@jest/globals";
 import mongoose from "mongoose";
 import express from "express";
 import request from "supertest";
@@ -9,7 +17,10 @@ import { User } from "../src/models/user.model.js";
 import { Plan } from "../src/models/plan.model.js";
 import { Subscription } from "../src/models/subscription.model.js";
 import { CreditLedger } from "../src/models/creditLedger.model.js";
-import { creditsService, InsufficientCreditsError } from "../src/services/credits.service.js";
+import {
+  creditsService,
+  InsufficientCreditsError,
+} from "../src/services/credits.service.js";
 import { env } from "../src/config/env.js";
 import { errorHandler } from "../src/middlewares/errorHandler.js";
 
@@ -26,7 +37,8 @@ function signToken(payload: any): string {
 
 describe("Credits domain and account credits endpoint", () => {
   beforeAll(async () => {
-    const mongoUri = process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27017/aqdy-credits-test";
+    const mongoUri =
+      process.env.MONGODB_URI ?? "mongodb://127.0.0.1:27017/aqdy-credits-test";
     await mongoose.connect(mongoUri);
   });
 
@@ -72,9 +84,9 @@ describe("Credits domain and account credits endpoint", () => {
       creditBalance: 10,
     });
 
-    await expect(creditsService.deduct(String(user._id), 20)).rejects.toBeInstanceOf(
-      InsufficientCreditsError,
-    );
+    await expect(
+      creditsService.deduct(String(user._id), 20),
+    ).rejects.toBeInstanceOf(InsufficientCreditsError);
   });
 
   test("concurrent deductions do not allow overspend", async () => {
@@ -89,8 +101,12 @@ describe("Credits domain and account credits endpoint", () => {
     });
 
     const deductionCalls = [
-      creditsService.deduct(String(user._id), 15, { reason: "analysis_deduction" }),
-      creditsService.deduct(String(user._id), 15, { reason: "analysis_deduction" }),
+      creditsService.deduct(String(user._id), 15, {
+        reason: "analysis_deduction",
+      }),
+      creditsService.deduct(String(user._id), 15, {
+        reason: "analysis_deduction",
+      }),
     ];
 
     const results = await Promise.allSettled(deductionCalls);
@@ -189,7 +205,12 @@ describe("Credits domain and account credits endpoint", () => {
       metadata: {},
     });
 
-    const token = signToken({ sub: String(user._id), email: user.email, role: user.role, plan: user.plan });
+    const token = signToken({
+      sub: String(user._id),
+      email: user.email,
+      role: user.role,
+      plan: user.plan,
+    });
 
     const res = await request(app)
       .get("/api/account/credits")

@@ -1,41 +1,52 @@
-import { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
-import { env } from "../config/env.js";
+import { Request, Response, NextFunction } from "express";
 import { AppError } from "./errorHandler.js";
 import { verifyAccessToken } from "../services/auth.service.js";
 import { User } from "../models/user.model.js";
-import { AuthenticatedRequest, JwtPayload } from "../types/auth.js";
+import { env } from "../config/env.js";
+import { AuthenticatedRequest } from "../types/auth.js";
+import {
+  isAdminRole,
+  hasPermission,
+  type AdminRole,
+  type Section,
+  type Action,
+} from "../config/roles.js";
 
-export function verifyJWT(token: string): JwtPayload | null {
+/**
+ * Verifies a custom HMAC-signed JWT (HS256) without using the jsonwebtoken library.
+ * Returns the decoded payload on success, or null if the token is malformed or signature is invalid.
+ */
+export const verifyJWT = (token: string): Record<string, unknown> | null => {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [headerB64, payloadB64, signatureB64] = parts;
+
   try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const [headerB64, payloadB64, signatureB64] = parts;
-
-    // Verify signature
-    const jwtSecret = process.env.JWT_SECRET || env.JWT_SECRET;
-    const hmac = crypto.createHmac("sha256", jwtSecret);
+    const hmac = crypto.createHmac("sha256", env.JWT_SECRET);
     hmac.update(`${headerB64}.${payloadB64}`);
     const expectedSignature = hmac.digest("base64url");
 
-    if (signatureB64 !== expectedSignature) {
-      return null;
-    }
+    if (expectedSignature !== signatureB64) return null;
 
     const payload = JSON.parse(
-      Buffer.from(payloadB64, "base64url").toString("utf8"),
+      Buffer.from(payloadB64, "base64url").toString("utf-8"),
     );
-    return payload as JwtPayload;
+    return payload;
   } catch {
     return null;
   }
-}
+};
 
 export const authenticateJwt = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
+  if ((req as AuthenticatedRequest).user) {
+    return next();
+  }
+
   try {
     let token = req.cookies?.accessToken;
 
@@ -80,33 +91,106 @@ export const requireAuth = (
   next();
 };
 
+/**
+ * Legacy admin check — accepts any admin role.
+ * @deprecated Use requireRole() or requirePermission() instead.
+ *             requireAdmin bypasses the permission matrix and allows
+ *             any admin role through. This will be removed in a future release.
+ */
 export const requireAdmin = (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ): void => {
   if (!req.user) {
-    const token = req.cookies?.accessToken;
-    if (token) {
-      const decoded = verifyJWT(token);
-      if (decoded) {
-        req.user = {
-          _id: decoded.sub,
-          email: decoded.email,
-          role: decoded.role,
-          plan: decoded.plan,
-        } as AuthenticatedRequest["user"];
-      }
-    }
+    next(new AppError(401, "Authentication required."));
+    return;
   }
 
+  if (!isAdminRole(req.user.role)) {
+    next(new AppError(403, "Forbidden"));
+    return;
+  }
+
+  next();
+};
+
+/**
+ * Middleware factory that restricts access to specific admin roles.
+ * Usage: requireRole("super_admin", "financial_admin")
+ */
+export const requireRole = (...roles: AdminRole[]) => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): void => {
+    if (!req.user) {
+      next(new AppError(401, "Authentication required."));
+      return;
+    }
+
+    const userRole = req.user.role;
+
+    if (!roles.includes(userRole as AdminRole)) {
+      next(
+        new AppError(
+          403,
+          "You do not have permission to access this resource.",
+        ),
+      );
+      return;
+    }
+
+    next();
+  };
+};
+
+/**
+ * Middleware factory that checks role-based permission for a section+action.
+ * Uses the central permission matrix from config/roles.ts.
+ * Usage: requirePermission("billing", "write")
+ */
+export const requirePermission = (
+  section: Section,
+  action: Action = "read",
+) => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): void => {
+    if (!req.user) {
+      next(new AppError(401, "Authentication required."));
+      return;
+    }
+
+    if (!hasPermission(req.user.role, section, action)) {
+      next(
+        new AppError(
+          403,
+          "You do not have permission to access this resource.",
+        ),
+      );
+      return;
+    }
+
+    next();
+  };
+};
+
+export const requireEmailVerified = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): void => {
   if (!req.user) {
     next(new AppError(401, "Authentication required."));
     return;
   }
 
-  if (req.user.role !== "admin") {
-    next(new AppError(403, "Forbidden"));
+  if (!req.user.isEmailVerified && !isAdminRole(req.user.role)) {
+    next(new AppError(403, "Email verification required."));
     return;
   }
 

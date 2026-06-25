@@ -12,7 +12,7 @@ export interface AccountSettingsForm {
   name: string
   email: string
   currentPassword: string
-  newPassword: string
+  password: string
   confirmPassword: string
 }
 
@@ -25,7 +25,8 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function validateAccountSettingsForm(
-  formData: AccountSettingsForm
+  formData: AccountSettingsForm,
+  hasPassword = true
 ): AccountValidationResult {
   const errors: Partial<Record<keyof AccountSettingsForm, string>> = {}
 
@@ -39,19 +40,19 @@ export function validateAccountSettingsForm(
 
   const passwordTouched =
     formData.currentPassword.trim() ||
-    formData.newPassword.trim() ||
+    formData.password.trim() ||
     formData.confirmPassword.trim()
 
   if (passwordTouched) {
-    if (!formData.currentPassword.trim()) {
+    if (hasPassword && !formData.currentPassword.trim()) {
       errors.currentPassword = 'account.errors.currentPasswordRequired'
     }
 
-    if (formData.newPassword.length > 0 && formData.newPassword.length < 8) {
-      errors.newPassword = 'account.errors.passwordTooShort'
+    if (formData.password.length > 0 && formData.password.length < 8) {
+      errors.password = 'account.errors.passwordTooShort'
     }
 
-    if (formData.newPassword !== formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'auth.errors.passwordsMismatch'
     }
   }
@@ -90,7 +91,7 @@ export default function AccountSettings() {
     name: '',
     email: '',
     currentPassword: '',
-    newPassword: '',
+    password: '',
     confirmPassword: '',
   })
 
@@ -119,7 +120,7 @@ export default function AccountSettings() {
   const subscriptionQuery = useQuery({
     queryKey: ['account-subscription'],
     queryFn: async () => await accountApi.getSubscription(),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30,
     retry: false,
   })
 
@@ -153,9 +154,11 @@ export default function AccountSettings() {
       : translatedStatus
   }, [profileQuery.data, t])
 
+  const hasPassword = profileQuery.data?.hasPassword !== false
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const validation = validateAccountSettingsForm(formData)
+    const validation = validateAccountSettingsForm(formData, hasPassword)
 
     if (!validation.valid) {
       Object.values(validation.errors).forEach((errorKey) => {
@@ -169,9 +172,12 @@ export default function AccountSettings() {
       email: formData.email.trim(),
     }
 
-    if (formData.newPassword) {
-      payload.currentPassword = formData.currentPassword
-      payload.newPassword = formData.newPassword
+    if (formData.password) {
+      payload.password = formData.password
+
+      if (hasPassword) {
+        payload.currentPassword = formData.currentPassword
+      }
     }
 
     mutation.mutate(payload)
@@ -261,29 +267,35 @@ export default function AccountSettings() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="account-current-password"
-                      className="text-foreground mb-1 block text-start text-sm font-medium"
-                    >
-                      {t('account.currentPasswordLabel')}
-                    </label>
-                    <input
-                      id="account-current-password"
-                      name="currentPassword"
-                      type="password"
-                      value={formData.currentPassword}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          currentPassword: e.target.value,
-                        })
-                      }
-                      className="border-input bg-background text-foreground focus:border-primary focus:ring-primary/20 w-full rounded-2xl border px-4 py-3 transition outline-none focus:ring-1"
-                      placeholder={t('auth.passwordPlaceholder')}
-                    />
-                  </div>
-                  <div>
+                  {hasPassword ? (
+                    <div>
+                      <label
+                        htmlFor="account-current-password"
+                        className="text-foreground mb-1 block text-start text-sm font-medium"
+                      >
+                        {t('account.currentPasswordLabel')}
+                      </label>
+                      <input
+                        id="account-current-password"
+                        name="currentPassword"
+                        type="password"
+                        value={formData.currentPassword}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            currentPassword: e.target.value,
+                          })
+                        }
+                        className="border-input bg-background text-foreground focus:border-primary focus:ring-primary/20 w-full rounded-2xl border px-4 py-3 transition outline-none focus:ring-1"
+                        placeholder={t('auth.passwordPlaceholder')}
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-primary/5 text-primary border-primary/20 rounded-2xl border p-4 text-sm sm:col-span-2">
+                      {t('account.noPasswordGoogle')}
+                    </div>
+                  )}
+                  <div className={hasPassword ? '' : 'sm:col-span-2'}>
                     <label
                       htmlFor="account-new-password"
                       className="text-foreground mb-1 block text-start text-sm font-medium"
@@ -292,13 +304,13 @@ export default function AccountSettings() {
                     </label>
                     <input
                       id="account-new-password"
-                      name="newPassword"
+                      name="password"
                       type="password"
-                      value={formData.newPassword}
+                      value={formData.password}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          newPassword: e.target.value,
+                          password: e.target.value,
                         })
                       }
                       className="border-input bg-background text-foreground focus:border-primary focus:ring-primary/20 w-full rounded-2xl border px-4 py-3 transition outline-none focus:ring-1"

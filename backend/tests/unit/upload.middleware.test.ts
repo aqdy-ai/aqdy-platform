@@ -1,7 +1,10 @@
 import { describe, test, expect, jest, beforeEach } from "@jest/globals";
 import { Request, Response, NextFunction } from "express";
 import multer from "multer";
-import { handleUploadError, upload } from "../../src/middlewares/upload.middleware.js";
+import {
+  handleUploadError,
+  upload,
+} from "../../src/middlewares/upload.middleware.js";
 import { sanitizeText } from "../../src/middlewares/security.middleware.js";
 
 describe("Upload Middleware", () => {
@@ -26,7 +29,12 @@ describe("Upload Middleware", () => {
     test("should handle LIMIT_FILE_SIZE multer error", () => {
       const err = new multer.MulterError("LIMIT_FILE_SIZE");
 
-      handleUploadError(err, mockRequest as Request, mockResponse as Response, mockNext as unknown as NextFunction);
+      handleUploadError(
+        err,
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext as unknown as NextFunction,
+      );
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
@@ -38,7 +46,12 @@ describe("Upload Middleware", () => {
     test("should handle generic multer error", () => {
       const err = new multer.MulterError("LIMIT_UNEXPECTED_FILE", "field");
 
-      handleUploadError(err, mockRequest as Request, mockResponse as Response, mockNext as unknown as NextFunction);
+      handleUploadError(
+        err,
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext as unknown as NextFunction,
+      );
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
@@ -48,9 +61,16 @@ describe("Upload Middleware", () => {
     });
 
     test("should handle general Error", () => {
-      const err = new Error("Invalid file type. Only PDF and DOCX files are allowed.");
+      const err = new Error(
+        "Invalid file type. Only PDF and DOCX files are allowed.",
+      );
 
-      handleUploadError(err, mockRequest as Request, mockResponse as Response, mockNext as unknown as NextFunction);
+      handleUploadError(
+        err,
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext as unknown as NextFunction,
+      );
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
@@ -60,7 +80,12 @@ describe("Upload Middleware", () => {
     });
 
     test("should call next() if no error is passed", () => {
-      handleUploadError(undefined, mockRequest as Request, mockResponse as Response, mockNext as unknown as NextFunction);
+      handleUploadError(
+        undefined,
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext as unknown as NextFunction,
+      );
 
       expect(mockNext).toHaveBeenCalledTimes(1);
       expect(mockStatus).not.toHaveBeenCalled();
@@ -80,7 +105,10 @@ describe("Upload Middleware", () => {
     });
 
     test("should accept valid DOCX mime type", () => {
-      const mockFile = { mimetype: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" } as any;
+      const mockFile = {
+        mimetype:
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      } as any;
       const callback = jest.fn();
 
       fileFilter({} as Request, mockFile, callback);
@@ -91,9 +119,9 @@ describe("Upload Middleware", () => {
     test("should reject invalid file types (.exe, .txt, .jpg, .zip)", () => {
       const invalidTypes = [
         "application/x-msdownload", // .exe
-        "text/plain",               // .txt
-        "image/jpeg",               // .jpg
-        "application/zip"           // .zip
+        "text/plain", // .txt
+        "image/jpeg", // .jpg
+        "application/zip", // .zip
       ];
 
       for (const mime of invalidTypes) {
@@ -103,7 +131,9 @@ describe("Upload Middleware", () => {
         fileFilter({} as Request, mockFile, callback);
 
         expect(callback).toHaveBeenCalledWith(expect.any(Error));
-        expect((callback.mock.calls[0][0] as Error).message).toBe("Invalid file type. Only PDF and DOCX files are allowed.");
+        expect((callback.mock.calls[0][0] as Error).message).toBe(
+          "Invalid file type. Only PDF and DOCX files are allowed.",
+        );
       }
     });
 
@@ -111,7 +141,7 @@ describe("Upload Middleware", () => {
       // Standard upload filter blocks via mimetype, ensuring double extension mime mappings (like .pdf.exe -> application/x-msdownload) fail
       const mockFile = {
         originalname: "exploit.pdf.exe",
-        mimetype: "application/x-msdownload"
+        mimetype: "application/x-msdownload",
       } as any;
       const callback = jest.fn();
 

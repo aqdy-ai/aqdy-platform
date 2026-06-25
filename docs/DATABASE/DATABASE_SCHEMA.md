@@ -64,8 +64,36 @@ Aqdy uses MongoDB with Mongoose ODM. The database contains 3 main collections.
 
 ---
 
+### 4. Users
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `_id` | ObjectId | Auto | Unique identifier |
+| `name` | String | ✅ | Full name |
+| `email` | String | ✅ | Unique email address (indexed, lowercase) |
+| `passwordHash` | String | ❌ | Hashed password (optional for Google OAuth accounts) |
+| `googleId` | String | ❌ | Unique Google identifier (indexed, sparse) |
+| `role` | String | ✅ | `user` or `admin` |
+| `plan` | String | ✅ | `free`, `pro`, or `enterprise` |
+| `planSlug` | String | ✅ | `free`, `pro`, or `enterprise` (indexed) |
+| `creditBalance` | Number | ✅ | Available credit balance |
+| `stripeCustomerId` | String | ❌ | Stripe customer identifier |
+| `status` | String | ✅ | `active`, `suspended`, or `deleted` |
+| `lastLogin` | Date | ❌ | Last login timestamp |
+| `isEmailVerified` | Boolean | ✅ | Whether the email has been verified |
+| `emailVerificationToken` | String | ❌ | Verification token |
+| `emailVerificationExpiresAt`| Date | ❌ | Token expiration timestamp |
+| `emailVerificationSentAt` | Date | ❌ | Timestamp of last sent verification mail |
+
+**Indexes:**
+- `{ email: 1 }` (unique)
+- `{ planSlug: 1 }`
+- `{ status: 1 }`
+
+---
+
 ## Relationships
 ```
+User (1) ──────── (many) Contracts
 Contract (1) ──── (many) RiskAnalyses
 Contract (1) ──── (many) AuditLogs
 ```

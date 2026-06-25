@@ -184,7 +184,8 @@ describe("chunkContract", () => {
 
 describe("safeParseJSON", () => {
   test("should parse clean JSON", () => {
-    const json = '[{"clauseNumber": 1, "clauseText": "test", "clauseType": "other"}]';
+    const json =
+      '[{"clauseNumber": 1, "clauseText": "test", "clauseType": "other"}]';
     const result = safeParseJSON(json);
     expect(result).toEqual([
       { clauseNumber: 1, clauseText: "test", clauseType: "other" },
@@ -192,7 +193,8 @@ describe("safeParseJSON", () => {
   });
 
   test("should parse JSON wrapped in markdown fences", () => {
-    const raw = '```json\n[{"clauseNumber": 1, "clauseText": "test", "clauseType": "other"}]\n```';
+    const raw =
+      '```json\n[{"clauseNumber": 1, "clauseText": "test", "clauseType": "other"}]\n```';
     const result = safeParseJSON(raw);
     expect(result).toEqual([
       { clauseNumber: 1, clauseText: "test", clauseType: "other" },
@@ -284,9 +286,7 @@ describe("mergeExtractionResults", () => {
   });
 
   test("should handle single chunk", () => {
-    const chunk = [
-      { clauseNumber: 1, clauseText: "Only clause" },
-    ];
+    const chunk = [{ clauseNumber: 1, clauseText: "Only clause" }];
     const merged = mergeExtractionResults([chunk]);
     expect(merged).toHaveLength(1);
     expect(merged[0].clauseNumber).toBe(1);

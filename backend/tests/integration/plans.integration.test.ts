@@ -1,9 +1,15 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from "@jest/globals";
 import mongoose from "mongoose";
 import requestDefault from "supertest";
 import { Plan } from "../../src/models/plan.model.js";
 import type { Application } from "express";
-
 
 // DTO for plan objects returned by API
 type PlanDto = {
@@ -60,7 +66,12 @@ describe("Plans Router Integration Tests", () => {
         slug: "pro",
         price: null,
         billingCycle: "monthly",
-        features: ["100 analyses/month", "Unlimited contracts", "Full history export", "Priority support"],
+        features: [
+          "100 analyses/month",
+          "Unlimited contracts",
+          "Full history export",
+          "Priority support",
+        ],
         analysisLimit: 100,
         storageLimit: -1,
         isActive: true,
@@ -70,7 +81,12 @@ describe("Plans Router Integration Tests", () => {
         slug: "enterprise",
         price: null,
         billingCycle: "monthly",
-        features: ["Unlimited analyses", "Unlimited contracts", "Custom contract history", "SLA guarantee"],
+        features: [
+          "Unlimited analyses",
+          "Unlimited contracts",
+          "Custom contract history",
+          "SLA guarantee",
+        ],
         analysisLimit: -1,
         storageLimit: -1,
         isActive: true,
@@ -95,7 +111,7 @@ describe("Plans Router Integration Tests", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data).toBeDefined();
     expect(Array.isArray(res.body.data)).toBe(true);
-    
+
     // Should return 3 active plans (Free, Pro, Enterprise), not the Inactive Plan
     expect(res.body.data.length).toBe(3);
 

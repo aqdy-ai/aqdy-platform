@@ -26,6 +26,7 @@ const TOPUP_REASONS: CreditLedgerReason[] = [
   "plan_topup",
   "manual_adjustment",
   "refund",
+  "plan_reset",
 ];
 
 export interface CreditMetadata {
@@ -75,8 +76,7 @@ export class CreditsService {
   }
 
   async getBalance(userId: string): Promise<number> {
-    const userObjectId = new mongoose.Types.ObjectId(userId);
-    const user = await User.findById(userObjectId).select("creditBalance");
+    const user = await User.findById(userId).select("creditBalance");
 
     if (user && typeof user.creditBalance === "number") {
       return user.creditBalance;
@@ -152,6 +152,37 @@ export class CreditsService {
     return ledgerEntry;
   }
 
+  // Create a credit ledger entry without affecting balance
+  async createEntry(
+    userId: string,
+    amount: number,
+    reason: CreditLedgerReason,
+    session?: mongoose.ClientSession,
+  ): Promise<ICreditLedger> {
+    if (amount === 0) {
+      throw new AppError(400, "Entry amount must be non-zero.");
+    }
+    if (
+      !TOPUP_REASONS.includes(reason) &&
+      !DEDUCTION_REASONS.includes(reason)
+    ) {
+      throw new AppError(400, `Invalid credit entry reason: ${reason}`);
+    }
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+    const ledgerEntry = new CreditLedger({
+      userId: userObjectId,
+      delta: amount,
+      balanceAfter: 0, // placeholder, will be set after fetching current balance
+      reason,
+      metadata: {},
+    });
+    // Retrieve current balance to compute balanceAfter
+    const currentBalance = await this.getBalance(userId);
+    ledgerEntry.balanceAfter = currentBalance + amount;
+    await ledgerEntry.save(session ? { session } : undefined);
+    return ledgerEntry;
+  }
+
   async topupForPlanAllowance(userId: string): Promise<ICreditLedger | null> {
     const subscription = await subscriptionService.getUserSubscription(userId);
 
@@ -177,6 +208,7 @@ export class CreditsService {
     userId: string,
     cost: number,
     metadata: CreditMetadata = {},
+    session?: mongoose.ClientSession,
   ): Promise<ICreditLedger> {
     if (cost <= 0) {
       throw new AppError(400, "Deduction cost must be greater than zero.");
@@ -193,7 +225,7 @@ export class CreditsService {
     const updatedUser = await User.findOneAndUpdate(
       { _id: userObjectId, creditBalance: { $gte: cost } },
       { $inc: { creditBalance: -cost } },
-      { returnDocument: "after" },
+      { returnDocument: "after", session },
     );
 
     if (!updatedUser) {
@@ -213,11 +245,15 @@ export class CreditsService {
     });
 
     try {
-      await ledgerEntry.save();
+      await ledgerEntry.save({ session });
     } catch (error) {
-      await User.findByIdAndUpdate(userObjectId, {
-        $inc: { creditBalance: cost },
-      });
+      await User.findByIdAndUpdate(
+        userObjectId,
+        {
+          $inc: { creditBalance: cost },
+        },
+        { session },
+      );
       throw error;
     }
 

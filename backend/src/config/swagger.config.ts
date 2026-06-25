@@ -80,6 +80,18 @@ const options: swaggerJsdoc.Options = {
             password: { type: "string", example: "StrongPass123!" },
           },
         },
+        GoogleLoginRequest: {
+          type: "object",
+          required: ["idToken"],
+          properties: {
+            idToken: {
+              type: "string",
+              description:
+                "The Google ID Token received after front-end authentication.",
+              example: "eyJhbGciOiJSUzI1NiIsImtpZCI6...",
+            },
+          },
+        },
         RefreshRequest: {
           type: "object",
           description:
@@ -101,6 +113,7 @@ const options: swaggerJsdoc.Options = {
                     name: { type: "string" },
                     role: { type: "string" },
                     plan: { type: "string" },
+                    hasPassword: { type: "boolean" },
                   },
                 },
               },
@@ -123,6 +136,7 @@ const options: swaggerJsdoc.Options = {
                     name: { type: "string" },
                     role: { type: "string" },
                     plan: { type: "string" },
+                    hasPassword: { type: "boolean" },
                   },
                 },
               },
@@ -142,6 +156,7 @@ const options: swaggerJsdoc.Options = {
                 plan: { type: "string" },
                 memberSince: { type: "string", format: "date-time" },
                 lastLogin: { type: "string", format: "date-time" },
+                hasPassword: { type: "boolean" },
               },
             },
             message: { type: "string" },
@@ -193,16 +208,6 @@ const options: swaggerJsdoc.Options = {
             message: {
               type: "string",
               example: "Subscription retrieved successfully",
-            },
-          },
-        },
-        UpgradeSubscriptionRequest: {
-          type: "object",
-          required: ["planId"],
-          properties: {
-            planId: {
-              type: "string",
-              example: "64abc123def456",
             },
           },
         },
@@ -316,8 +321,8 @@ const options: swaggerJsdoc.Options = {
           properties: {
             planSlug: {
               type: "string",
-              enum: ["free", "premium", "enterprise"],
-              example: "premium",
+              enum: ["free", "pro", "enterprise"],
+              example: "pro",
             },
           },
         },
@@ -498,8 +503,8 @@ const options: swaggerJsdoc.Options = {
                 },
                 planSlug: {
                   type: "string",
-                  enum: ["free", "premium", "enterprise"],
-                  example: "premium",
+                  enum: ["free", "pro", "enterprise"],
+                  example: "pro",
                 },
                 status: {
                   type: "string",
@@ -519,8 +524,8 @@ const options: swaggerJsdoc.Options = {
               properties: {
                 page: { type: "integer", example: 1 },
                 pageSize: { type: "integer", example: 20 },
-                total: { type: "integer", example: 84 },
-                totalPages: { type: "integer", example: 5 },
+                total: { type: "integer", example: 50 },
+                totalPages: { type: "integer", example: 3 },
                 hasNext: { type: "boolean", example: true },
                 hasPrev: { type: "boolean", example: false },
               },
@@ -538,6 +543,71 @@ const options: swaggerJsdoc.Options = {
               type: "array",
               items: { $ref: "#/components/schemas/AdminPaymentItem" },
             },
+          },
+        },
+        Evaluation: {
+          type: "object",
+          properties: {
+            _id: { type: "string", example: "64abc123def456" },
+            analysisId: { type: "string", example: "64abc123def456" },
+            traceId: { type: "string", example: "langfuse-trace-id" },
+            faithfulness: {
+              type: "number",
+              example: 4,
+              minimum: 1,
+              maximum: 5,
+            },
+            relevancy: { type: "number", example: 4, minimum: 1, maximum: 5 },
+            precision: { type: "number", example: 3, minimum: 1, maximum: 5 },
+            recall: { type: "number", example: 3, minimum: 1, maximum: 5 },
+            reasoning: {
+              type: "object",
+              properties: {
+                faithfulness: { type: "string" },
+                relevancy: { type: "string" },
+                precision: { type: "string" },
+                recall: { type: "string" },
+                overall: { type: "string" },
+              },
+            },
+            createdAt: { type: "string", format: "date-time" },
+          },
+        },
+        EvaluationStatsResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            data: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  date: { type: "string", example: "2026-06-22" },
+                  avgFaithfulness: { type: "number", example: 4.2 },
+                  avgRelevancy: { type: "number", example: 3.8 },
+                  avgPrecision: { type: "number", example: 3.5 },
+                  avgRecall: { type: "number", example: 3.2 },
+                  count: { type: "integer", example: 10 },
+                },
+              },
+            },
+          },
+        },
+        EvaluationLowScoresResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Evaluation" },
+            },
+          },
+        },
+        EvaluationReEvaluateResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            message: { type: "string", example: "Re-evaluation triggered" },
           },
         },
       },
@@ -836,6 +906,55 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      "/api/auth/google": {
+        post: {
+          tags: ["Authentication"],
+          summary: "Log in or register using Google account",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/GoogleLoginRequest" },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description:
+                "Authentication successful. Access and refresh tokens are set in httpOnly cookies.",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/AuthResponse" },
+                },
+              },
+            },
+            400: {
+              description: "Google ID token is required or invalid.",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Google authentication failed.",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+            500: {
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
       "/api/auth/logout": {
         post: {
           tags: ["Authentication"],
@@ -1112,41 +1231,6 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
-      "/api/account/subscription/upgrade": {
-        post: {
-          tags: ["Account"],
-          summary: "Upgrade user subscription (requires accessToken cookie)",
-          security: [{ cookieAuth: [] }],
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  $ref: "#/components/schemas/UpgradeSubscriptionRequest",
-                },
-              },
-            },
-          },
-          responses: {
-            200: {
-              description: "Subscription upgraded successfully",
-              content: {
-                "application/json": {
-                  schema: {
-                    $ref: "#/components/schemas/ApiResponse",
-                  },
-                },
-              },
-            },
-            400: {
-              description: "Invalid plan",
-            },
-            401: {
-              description: "Authentication required",
-            },
-          },
-        },
-      },
       "/api/account/subscription/cancel": {
         post: {
           tags: ["Account"],
@@ -1340,7 +1424,7 @@ const options: swaggerJsdoc.Options = {
               in: "query",
               schema: {
                 type: "string",
-                enum: ["free", "premium", "enterprise"],
+                enum: ["free", "pro", "enterprise"],
               },
             },
             {
@@ -1480,11 +1564,11 @@ const options: swaggerJsdoc.Options = {
                   properties: {
                     plan: {
                       type: "string",
-                      enum: ["free", "premium", "enterprise"],
+                      enum: ["free", "pro", "enterprise"],
                     },
                     planSlug: {
                       type: "string",
-                      enum: ["free", "premium", "enterprise"],
+                      enum: ["free", "pro", "enterprise"],
                     },
                     status: { type: "string", enum: ["active", "suspended"] },
                     role: { type: "string", enum: ["admin", "user"] },
@@ -1805,6 +1889,140 @@ const options: swaggerJsdoc.Options = {
                 },
               },
             },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/admin/evaluations/stats": {
+        get: {
+          tags: ["Admin", "Evaluations"],
+          summary: "Get average evaluation scores per day",
+          description:
+            "Returns average faithfulness, relevancy, precision, and recall scores grouped by date. Requires admin role.",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "startDate",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Start date filter (ISO string)",
+            },
+            {
+              name: "endDate",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "End date filter (ISO string)",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Stats retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/EvaluationStatsResponse",
+                  },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            403: { description: "Admin role required" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/admin/evaluations/low-scores": {
+        get: {
+          tags: ["Admin", "Evaluations"],
+          summary: "Get evaluations with low scores",
+          description:
+            "Returns evaluation records where any metric score is below 3. Requires admin role.",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "startDate",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "Start date filter (ISO string)",
+            },
+            {
+              name: "endDate",
+              in: "query",
+              schema: { type: "string", format: "date-time" },
+              description: "End date filter (ISO string)",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Low-score evaluations retrieved successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/EvaluationLowScoresResponse",
+                  },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            403: { description: "Admin role required" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/admin/evaluations/re-evaluate/{analysisId}": {
+        post: {
+          tags: ["Admin", "Evaluations"],
+          summary: "Trigger re-evaluation for an analysis",
+          description:
+            "Triggers a fresh LLM-as-a-Judge evaluation for a specific analysis. Requires admin role.",
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              name: "analysisId",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "MongoDB ObjectId of the analysis",
+            },
+          ],
+          responses: {
+            202: {
+              description: "Re-evaluation triggered",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/EvaluationReEvaluateResponse",
+                  },
+                },
+              },
+            },
+            404: { description: "Analysis not found" },
+            401: { description: "Authentication required" },
+            403: { description: "Admin role required" },
+            500: { description: "Server error" },
+          },
+        },
+      },
+      "/api/admin/evaluations/backfill": {
+        post: {
+          tags: ["Admin", "Evaluations"],
+          summary: "Backfill evaluations for all un-evaluated analyses",
+          description:
+            "Triggers evaluation for every completed analysis that does not yet have an evaluation. Requires admin role.",
+          security: [{ cookieAuth: [] }],
+          responses: {
+            202: {
+              description: "Backfill triggered",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/EvaluationReEvaluateResponse",
+                  },
+                },
+              },
+            },
+            401: { description: "Authentication required" },
+            403: { description: "Admin role required" },
             500: { description: "Server error" },
           },
         },

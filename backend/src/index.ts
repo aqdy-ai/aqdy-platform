@@ -28,9 +28,20 @@ import accountsRouter from "./routes/accounts.route.js";
 import plansRouter from "./routes/plans.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import adminStatsRouter from "./routes/admin.stats.route.js";
+import adminDashboardRouter from "./routes/admin.dashboard.route.js";
 import adminPaymentsRouter from "./routes/admin.payments.route.js";
 import adminContractsRouter from "./routes/admin.contracts.route.js";
-
+import evaluationRouter from "./routes/evaluation.route.js";
+import adminRolesRouter from "./routes/admin.roles.route.js";
+import adminSupportRouter from "./routes/admin.support.route.js";
+import adminFinancialRouter from "./routes/admin.financial.route.js";
+import adminContentRouter from "./routes/admin.content.route.js";
+import adminOperationsRouter from "./routes/admin.operations.route.js";
+import adminPlansRouter from "./routes/admin.plans.route.js";
+import {
+  authenticateJwt,
+  requireEmailVerified,
+} from "./middlewares/auth.middleware.js";
 // Initialize Langfuse observability
 initializeLangfuse();
 
@@ -44,17 +55,14 @@ app.use(requestIdMiddleware);
 app.use(helmet());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:8080"],
     credentials: true,
   }),
 );
 app.use(cookieParser());
 
 // ── Stripe webhook needs raw body BEFORE express.json() ──────────
-app.use(
-  "/api/payments/webhook",
-  express.raw({ type: "application/json" }),
-);
+app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -63,18 +71,31 @@ app.use(httpLogger);
 
 // ── Routes ───────────────────────────────────────
 app.use("/api", healthRouter);
-app.use("/api/upload", uploadRouter);
+app.use("/api/upload", authenticateJwt, requireEmailVerified, uploadRouter);
 app.use("/api/auth", authRouter);
-app.use("/api/account", accountRouter);
-app.use("/api/contracts", contractRouter);
-app.use("/api/analysis", analysisRouter);
+app.use("/api/account", authenticateJwt, requireEmailVerified, accountRouter);
+app.use(
+  "/api/contracts",
+  authenticateJwt,
+  requireEmailVerified,
+  contractRouter,
+);
+app.use("/api/analysis", authenticateJwt, requireEmailVerified, analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/admin/audit-logs", auditLogsRouter);
 app.use("/api/admin/accounts", accountsRouter);
 app.use("/api/admin/stats", adminStatsRouter);
+app.use("/api/admin/dashboard", adminDashboardRouter);
 app.use("/api/admin/payments", adminPaymentsRouter);
 app.use("/api/admin/contracts", adminContractsRouter);
+app.use("/api/admin/evaluations", evaluationRouter);
+app.use("/api/admin/roles", adminRolesRouter);
+app.use("/api/admin/support", adminSupportRouter);
+app.use("/api/admin/financial", adminFinancialRouter);
+app.use("/api/admin/content", adminContentRouter);
+app.use("/api/admin/operations", adminOperationsRouter);
+app.use("/api/admin/plans", adminPlansRouter);
 app.use("/api/plans", plansRouter);
 
 // Use Swagger UI

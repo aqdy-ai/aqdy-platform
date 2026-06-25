@@ -1,16 +1,13 @@
 /* src/components/layout/MainLayout.tsx */
 
 import { useEffect } from 'react'
+import { Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import Navbar from './Navbar'
 import Footer from './Footer'
 
-interface MainLayoutProps {
-  children: React.ReactNode
-}
-
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout: React.FC = () => {
   const { i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
 
@@ -33,7 +30,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <div className="bg-secondary/5 absolute end-[-5rem] top-80 h-[500px] w-[500px] rounded-full blur-[120px]" />
         </div>
 
-        <div className="mx-auto max-w-7xl px-6">{children}</div>
+        <div className="mx-auto max-w-7xl px-6">
+          <Outlet />
+        </div>
       </main>
 
       <Footer />

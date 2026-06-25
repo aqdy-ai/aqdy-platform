@@ -25,8 +25,28 @@ const { useAuth } = await import('../src/hooks/useAuth')
 
 describe('Register Page', () => {
   const mockRegister = vi.fn()
+  const mockLoginWithGoogle = vi.fn()
 
   beforeEach(() => {
+    vi.mocked(useAuth).mockReturnValue({
+      register: mockRegister,
+      loginWithGoogle: mockLoginWithGoogle,
+      isLoading: false,
+      forgotPassword: vi.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
+      isAuthenticated: false,
+      user: null,
+      isInitialLoading: false,
+      getPasswordStrength: vi.fn((password: string) => ({
+        hasMinLength: (password || '').length >= 8,
+        hasUppercase: true,
+        hasLowercase: true,
+        hasNumber: true,
+        hasSpecial: true,
+        allValid: (password || '').length >= 8,
+      })),
+    })
     vi.clearAllMocks()
     vi.mocked(useAuth).mockReturnValue({
       register: mockRegister,
@@ -37,6 +57,14 @@ describe('Register Page', () => {
       isAuthenticated: false,
       user: null,
       isInitialLoading: false,
+      getPasswordStrength: vi.fn((password: string) => ({
+        hasMinLength: (password || '').length >= 8,
+        hasUppercase: true,
+        hasLowercase: true,
+        hasNumber: true,
+        hasSpecial: true,
+        allValid: (password || '').length >= 8,
+      })),
     })
     // Use real schema behavior by default
   })
@@ -131,6 +159,14 @@ describe('Register Page', () => {
       isAuthenticated: false,
       user: null,
       isInitialLoading: false,
+      getPasswordStrength: vi.fn((password: string) => ({
+        hasMinLength: (password || '').length >= 8,
+        hasUppercase: true,
+        hasLowercase: true,
+        hasNumber: true,
+        hasSpecial: true,
+        allValid: (password || '').length >= 8,
+      })),
     })
 
     renderComponent()
@@ -164,5 +200,89 @@ describe('Register Page', () => {
       expect.stringContaining('passwordsMismatch')
     )
     expect(mockRegister).not.toHaveBeenCalled()
+  })
+
+  it('should load Google sign-in script', () => {
+    renderComponent()
+
+    const script = document.querySelector(
+      'script[src="https://accounts.google.com/gsi/client"]'
+    )
+
+    expect(script).toBeInTheDocument()
+  })
+
+  it('should render Google sign in container', () => {
+    renderComponent()
+
+    expect(
+      document.getElementById('google-signin-btn')
+    ).toBeInTheDocument()
+  })
+
+  it('should call loginWithGoogle when Google credential is received', async () => {
+    const mockLoginWithGoogle = vi.fn()
+
+    vi.mocked(useAuth).mockReturnValue({
+      register: mockRegister,
+      loginWithGoogle: mockLoginWithGoogle,
+      isLoading: false,
+      forgotPassword: vi.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
+      isAuthenticated: false,
+      user: null,
+      isInitialLoading: false,
+      getPasswordStrength: vi.fn(() => ({
+        hasMinLength: true,
+        hasUppercase: true,
+        hasLowercase: true,
+        hasNumber: true,
+        hasSpecial: true,
+        allValid: true,
+      })),
+    })
+
+    let callback: any
+
+    ;(window as any).google = {
+      accounts: {
+        id: {
+          initialize: vi.fn((options) => {
+            callback = options.callback
+          }),
+          renderButton: vi.fn(),
+        },
+      },
+    }
+
+    renderComponent()
+
+    await callback({
+      credential: 'google-token'
+    })
+
+    expect(mockLoginWithGoogle).toHaveBeenCalledWith(
+      'google-token'
+    )
+  })
+
+  it('should initialize Google sign in', () => {
+    const initialize = vi.fn()
+    const renderButton = vi.fn()
+
+    ;(window as any).google = {
+      accounts: {
+        id: {
+          initialize,
+          renderButton,
+        },
+      },
+    }
+
+    renderComponent()
+
+    expect(initialize).toHaveBeenCalled()
+    expect(renderButton).toHaveBeenCalled()
   })
 })

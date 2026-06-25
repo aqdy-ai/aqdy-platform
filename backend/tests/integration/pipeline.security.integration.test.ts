@@ -19,6 +19,19 @@ jest.unstable_mockModule("../../src/services/auditLog.service.js", () => ({
   logAdmin: {
     viewLogs: jest.fn().mockResolvedValue(undefined),
   },
+  logRole: {
+    assign: jest.fn().mockResolvedValue(undefined),
+    revoke: jest.fn().mockResolvedValue(undefined),
+  },
+  logSupport: {
+    emailVerify: jest.fn().mockResolvedValue(undefined),
+    passwordReset: jest.fn().mockResolvedValue(undefined),
+    creditAdjustment: jest.fn().mockResolvedValue(undefined),
+  },
+  logContent: {
+    update: jest.fn().mockResolvedValue(undefined),
+  },
+  writeLog: jest.fn().mockResolvedValue(undefined),
 }));
 
 const mockTriggerAnalysis = jest.fn() as jest.Mock<any>;
@@ -38,6 +51,7 @@ jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
       _id: "6a21a76caad3374228b4d6b0",
       email: "user@example.com",
       status: "active",
+      isEmailVerified: true,
     };
     next();
   },
@@ -47,6 +61,19 @@ jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
   requireAdmin: (req: any, res: any, next: any) => {
     next();
   },
+  requireEmailVerified: (req: any, res: any, next: any) => {
+    next();
+  },
+  requireRole:
+    (..._roles: string[]) =>
+    (_req: any, _res: any, next: any) => {
+      next();
+    },
+  requirePermission:
+    (_section: string, _action: string) =>
+    (_req: any, _res: any, next: any) => {
+      next();
+    },
   verifyJWT: () => ({ sub: "6a21a76caad3374228b4d6b0" }),
 }));
 
@@ -74,14 +101,19 @@ describe("Upload Route Security Integration", () => {
     // 2. Perform multipart upload
     const response = await request(app)
       .post("/api/upload")
-      .attach("contract", Buffer.from("dummy pdf content"), "malicious_contract.pdf")
+      .attach(
+        "contract",
+        Buffer.from("dummy pdf content"),
+        "malicious_contract.pdf",
+      )
       .set("x-user-id", "user_123");
 
     // 3. Verify security rejection
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
       error: "Security validation failed",
-      message: "Suspicious instruction patterns detected in document text. Upload rejected.",
+      message:
+        "Suspicious instruction patterns detected in document text. Upload rejected.",
     });
 
     // 4. Verify downstream operations were aborted
@@ -109,18 +141,22 @@ describe("Upload Route Security Integration", () => {
     // 2. Perform multipart upload
     const response = await request(app)
       .post("/api/upload")
-      .attach("contract", Buffer.from("dummy pdf content"), "clean_contract.pdf")
+      .attach(
+        "contract",
+        Buffer.from("dummy pdf content"),
+        "clean_contract.pdf",
+      )
       .set("x-user-id", "user_123");
 
-    // 3. Verify success (202 Accepted)
-    expect(response.status).toBe(202);
+    // 3. Verify success (201 Created)
+    expect(response.status).toBe(201);
     expect(response.body.contractId).toBe("contract_xyz");
 
     // 4. Verify text was sanitized before saving
     expect(mockSaveContract).toHaveBeenCalledWith(
       expect.objectContaining({
         text: "This contract binds both parties.", // HTML and script tag stripped
-      })
+      }),
     );
   });
 });

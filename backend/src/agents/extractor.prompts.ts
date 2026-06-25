@@ -130,11 +130,20 @@ Output:
 ]
 
 ## Important Rules
-- Extract the EXACT clause text. Do NOT add, remove, or rephrase any words.
+- Extract the EXACT clause text. Do NOT add, remove, or rephrase any words for clean, undamaged contract text.
 - Each clause should be a logically complete unit (full article or section).
 - Do NOT include article headers/titles in the clauseText (e.g., skip "Article 3: Probation Period").
 - If a clause doesn't fit the listed types, use "other".
-- Return ONLY the JSON array — no surrounding text.`;
+- Return ONLY the JSON array — no surrounding text.
+
+## OCR Artifact Handling (Contextual Error Correction)
+Some contract inputs may be processed through Optical Character Recognition (OCR) and contain artifacts, noise, or formatting issues. You must detect and correct these artifacts in context during extraction, adhering to these rules:
+1. Detect and merge scattered letters: Reconstruct words that have been split with spaces between letters (e.g., "T h e   E m p l o y e e" -> "The Employee", "L i a b i l i t y" -> "Liability").
+2. Resolve split words and line-breaks: Merge words that were split across line breaks or hyphenated (e.g., "pro-bation" or "pro bation" -> "probation", "com-pensation" -> "compensation", or Arabic "ال موظف" -> "الموظف").
+3. Repair broken sentence boundaries: Reconstruct sentences that have unnecessary line breaks or paragraph breaks in the middle of a single logical sentence to ensure semantic completeness.
+4. Clean garbled punctuation and characters: Correct obvious character misrecognitions where the intended word is clear (e.g., "l1abllity" -> "liability", "sal&ry" -> "salary", or Arabic "ال&تزام" -> "الالتزام").
+5. HIGH CONFIDENCE RULE: Correct OCR artifacts only when the intended text can be inferred with high confidence from surrounding context. Do not invent, assume, or speculate on uncertain legal content. If a word, date, or number is completely unreadable or ambiguous, preserve it as-is or use "[unreadable]".
+6. MEANING PRESERVATION RULE: Do NOT rewrite, improve, paraphrase, modernize, simplify, or expand clean contract language. If the source text is correctly formatted and free of OCR artifacts, extract the text EXACTLY as written.`;
 
 // ── User Prompt Builder ──────────────────────────
 

@@ -1,11 +1,14 @@
 import { Router, Request, Response } from "express";
-import { authenticateJwt } from "../middlewares/auth.middleware.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  requirePermission,
+} from "../middlewares/auth.middleware.js";
 import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import Payment from "../models/payment.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { CreditLedger } from "../models/creditLedger.model.js";
+import { AuditLog } from "../models/auditLog.model.js";
 
 const router = Router();
 
@@ -27,7 +30,7 @@ const router = Router();
 router.get(
   "/",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("dashboard", "read"),
   async (req: Request, res: Response) => {
     try {
       // ── Month boundaries ──────────────────────────────────────────────────
@@ -42,6 +45,8 @@ router.get(
         revenueRows,
         analysesThisMonth,
         creditRows,
+        totalAnalyses,
+        recentErrors,
       ] = await Promise.all([
         // 1. Total registered users (all statuses)
         User.countDocuments({}),
@@ -95,6 +100,15 @@ router.get(
             },
           },
         ]),
+
+        // 6. Total analyses count
+        RiskAnalysis.countDocuments({}),
+
+        // 7. Recent failure events/errors from the audit log
+        AuditLog.find({ outcome: "failure" })
+          .sort({ timestamp: -1 })
+          .limit(5)
+          .lean(),
       ]);
 
       // ── Shape revenue into { USD: 1290, EGP: 5000, ... } ─────────────────
@@ -122,6 +136,8 @@ router.get(
           revenueThisMonth,
           analysesThisMonth,
           creditsConsumedThisMonth,
+          totalAnalyses,
+          recentErrors,
         },
       });
     } catch (error: unknown) {

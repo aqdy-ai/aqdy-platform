@@ -10,8 +10,9 @@ import { z } from "zod";
 import { llmService } from "../services/llm.service.js";
 import { logger } from "../utils/logger.js";
 import { safeParseJSON } from "../utils/text.utils.js";
+import { getPrompt, setFallback } from "../services/prompt.service.js";
 import {
-  REDLINE_SYSTEM_PROMPT,
+  REDLINE_SYSTEM_PROMPT as FALLBACK_REDLINE_PROMPT,
   buildRedlineUserPrompt,
 } from "./redline.prompts.js";
 
@@ -61,7 +62,7 @@ export class RedlineAgent {
     clauseType: string,
     language: "ar" | "en",
     saferAlternative?: string,
-    options?: { callbacks?: any[] },
+    options?: { callbacks?: unknown[] },
   ): Promise<RedlineResult> {
     const startTime = Date.now();
 
@@ -99,7 +100,7 @@ export class RedlineAgent {
     }
 
     // 1. Construct prompts
-    const systemPrompt = REDLINE_SYSTEM_PROMPT;
+    const systemPrompt = await getPrompt("redline");
     const userPrompt = buildRedlineUserPrompt(
       clauseText,
       riskLevel,
@@ -159,4 +160,5 @@ export class RedlineAgent {
 
 // ── Default Instance ─────────────────────────────
 
+setFallback("redline", FALLBACK_REDLINE_PROMPT);
 export const redlineAgent = new RedlineAgent();

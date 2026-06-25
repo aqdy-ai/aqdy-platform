@@ -13,8 +13,9 @@ import { llmService } from "../services/llm.service.js";
 import { ragService } from "../services/rag.service.js";
 import { logger } from "../utils/logger.js";
 import { safeParseJSON } from "../utils/text.utils.js";
+import { getPrompt, setFallback } from "../services/prompt.service.js";
 import {
-  RISK_CLASSIFIER_SYSTEM_PROMPT,
+  RISK_CLASSIFIER_SYSTEM_PROMPT as FALLBACK_CLASSIFIER_PROMPT,
   buildClassificationUserPrompt,
 } from "./riskClassifier.prompts.js";
 
@@ -66,7 +67,7 @@ export class RiskClassifierAgent {
     clauseText: string,
     clauseType: string,
     language: "ar" | "en",
-    options?: { callbacks?: any[] },
+    options?: { callbacks?: unknown[] },
   ): Promise<ClassificationResult> {
     const startTime = Date.now();
 
@@ -139,7 +140,7 @@ export class RiskClassifierAgent {
     }
 
     // 2. Construct context-aware prompts
-    const systemPrompt = RISK_CLASSIFIER_SYSTEM_PROMPT;
+    const systemPrompt = await getPrompt("riskClassifier");
     const userPrompt = buildClassificationUserPrompt(
       clauseText,
       clauseType,
@@ -201,4 +202,5 @@ export class RiskClassifierAgent {
 
 // ── Default Instance ─────────────────────────────
 
+setFallback("riskClassifier", FALLBACK_CLASSIFIER_PROMPT);
 export const riskClassifierAgent = new RiskClassifierAgent();

@@ -1,8 +1,10 @@
 import { Router, Request, Response } from "express";
 import mongoose from "mongoose";
 import Payment from "../models/payment.model.js";
-import { authenticateJwt } from "../middlewares/auth.middleware.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  requirePermission,
+} from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -32,7 +34,7 @@ const VALID_STATUSES = ["pending", "succeeded", "failed", "refunded"] as const;
 router.get(
   "/",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("billing", "read"),
   async (req: Request, res: Response) => {
     try {
       const {

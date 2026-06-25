@@ -3,10 +3,8 @@ import { contractExportService } from "../services/contractExport.service.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { AuthenticatedRequest } from "../types/auth.js";
 import { Subscription } from "../models/subscription.model.js";
-import { Plan } from "../models/plan.model.js";
-
 const UPGRADE_URL = "https://aqdy.ai/pricing";
-const ALLOWED_PLANS = ["pro", "enterprise", "premium"];
+const ALLOWED_PLANS = ["pro", "enterprise"];
 
 // GET /api/account/contracts/export
 export const exportContractsHandler = async (
@@ -25,7 +23,7 @@ export const exportContractsHandler = async (
       status: "active",
     }).populate("planId");
 
-    const plan = subscription?.planId as any;
+    const plan = subscription?.planId as Record<string, unknown> | undefined;
     const planSlug = plan?.slug ?? "free";
 
     if (!ALLOWED_PLANS.includes(planSlug)) {

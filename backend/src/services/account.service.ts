@@ -1,9 +1,10 @@
+import bcrypt from "bcryptjs";
 import { AppError } from "../middlewares/errorHandler.js";
 import { User, IUser } from "../models/user.model.js";
 import { UpdateProfileInput, ProfileResponse } from "../types/account.js";
 
 export const getProfile = async (userId: string): Promise<ProfileResponse> => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("+passwordHash");
   if (!user || user.status !== "active") {
     throw new AppError(404, "User not found or inactive.");
   }
@@ -14,6 +15,7 @@ export const getProfile = async (userId: string): Promise<ProfileResponse> => {
     plan: user.plan,
     memberSince: (user as unknown as { createdAt: Date }).createdAt,
     lastLogin: user.lastLogin,
+    hasPassword: !!user.passwordHash,
   };
 };
 
@@ -43,19 +45,24 @@ export const updateProfile = async (
   }
 
   if (data.password) {
-    if (!data.currentPassword) {
-      throw new AppError(
-        400,
-        "Current password is required to set a new password.",
-      );
+    const isGoogleWithoutPassword = user.googleId && !user.passwordHash;
+
+    if (!isGoogleWithoutPassword) {
+      if (!data.currentPassword) {
+        throw new AppError(
+          400,
+          "Current password is required to change password.",
+        );
+      }
+
+      const valid = await user.verifyPassword(data.currentPassword);
+
+      if (!valid) {
+        throw new AppError(403, "Invalid current password.");
+      }
     }
 
-    const isPasswordValid = await user.verifyPassword(data.currentPassword);
-    if (!isPasswordValid) {
-      throw new AppError(403, "Invalid current password.");
-    }
-
-    user.password = data.password;
+    user.passwordHash = await bcrypt.hash(data.password, 12);
   }
 
   await user.save();

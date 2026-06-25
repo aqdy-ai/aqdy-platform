@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 
+// Forgot password specific rate limiting constants
+const FORGOT_PASSWORD_LIMIT = 5; // max requests per hour per IP
+const FORGOT_PASSWORD_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
 const FREE_TIER_DAILY_LIMIT = 10;
 const ANONYMOUS_IP_REQUEST_LIMIT = 20;
 const ANONYMOUS_IP_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
@@ -11,6 +15,8 @@ interface RateLimitEntry {
 
 const userDailyLimits = new Map<string, RateLimitEntry>();
 const anonymousIpLimits = new Map<string, RateLimitEntry>();
+// Separate store for forgot‑password limiter
+const forgotPasswordLimits = new Map<string, RateLimitEntry>();
 
 const getUtcDateKey = (now = Date.now()): string => {
   const date = new Date(now);
@@ -133,7 +139,41 @@ export const anonymousIpRateLimit = () => {
   };
 };
 
+/**
+ * Rate limiter for the POST /api/auth/forgot‑password endpoint.
+ * Allows a maximum of 5 requests per hour per IP address to mitigate email flooding.
+ */
+export const forgotPasswordRateLimit = () => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!shouldRateLimitAnonymousIp(req)) {
+      return next();
+    }
+
+    const ip = getClientIp(req);
+    const resetAt = Date.now() + FORGOT_PASSWORD_WINDOW_MS;
+    const entry = ensureEntry(
+      forgotPasswordLimits,
+      ip,
+      FORGOT_PASSWORD_WINDOW_MS,
+      resetAt,
+    );
+
+    if (entry.count >= FORGOT_PASSWORD_LIMIT) {
+      return buildLimitResponse(
+        res,
+        429,
+        "Too many password‑reset requests from this IP. Please try again later.",
+        entry.resetAt,
+      );
+    }
+
+    entry.count += 1;
+    next();
+  };
+};
+
 export const resetRateLimitStores = (): void => {
   userDailyLimits.clear();
   anonymousIpLimits.clear();
+  forgotPasswordLimits.clear();
 };

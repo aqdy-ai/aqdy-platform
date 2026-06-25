@@ -1,8 +1,10 @@
 import { Router, Request, Response } from "express";
 import { Contract } from "../models/contract.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
-import { authenticateJwt } from "../middlewares/auth.middleware.js";
-import { requireAdmin } from "../middlewares/auth.middleware.js";
+import {
+  authenticateJwt,
+  requirePermission,
+} from "../middlewares/auth.middleware.js";
 import { User } from "../models/user.model.js";
 
 const router = Router();
@@ -30,7 +32,7 @@ const VALID_RISK_LEVELS = ["critical", "high", "medium", "low"] as const;
 router.get(
   "/",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("contracts", "read"),
   async (req: Request, res: Response) => {
     try {
       const {
@@ -129,13 +131,17 @@ router.get(
           fileSize: contract.fileSize,
           owner: owner
             ? {
-                _id: (owner as any)._id,
-                name: (owner as any).name,
-                email: (owner as any).email,
+                _id: (owner as Record<string, unknown>)._id,
+                name: (owner as Record<string, unknown>).name,
+                email: (owner as Record<string, unknown>).email,
               }
             : null,
-          status: analysis ? (analysis as any).status || "analyzed" : "pending",
-          riskLevel: analysis ? (analysis as any).overallRisk || null : null,
+          status: analysis
+            ? (analysis as Record<string, unknown>).status || "analyzed"
+            : "pending",
+          riskLevel: analysis
+            ? (analysis as Record<string, unknown>).overallRisk || null
+            : null,
         };
       });
 

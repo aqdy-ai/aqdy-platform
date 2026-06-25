@@ -7,7 +7,6 @@ import {
 } from "../controllers/account.controller.js";
 import {
   getSubscriptionHandler,
-  upgradeSubscriptionHandler,
   cancelSubscriptionHandler,
 } from "../controllers/subscription.controller.js";
 import {
@@ -54,7 +53,6 @@ router.get(
 
 // Subscription routes
 router.get("/subscription", getSubscriptionHandler);
-router.post("/subscription/upgrade", upgradeSubscriptionHandler);
 router.post("/subscription/cancel", cancelSubscriptionHandler);
 
 // Contract history routes

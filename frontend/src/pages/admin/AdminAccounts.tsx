@@ -8,6 +8,8 @@ import {
   ChevronDown,
   Loader2,
   User,
+  Mail,
+  CheckCircle,
 } from 'lucide-react'
 import { adminApi, UserAccount } from '../../services/adminApi'
 import { toast } from 'sonner'
@@ -113,6 +115,34 @@ const AdminAccounts = () => {
     }
   }
 
+  const handleVerifyToggle = async (
+    userId: string,
+    currentVerified: boolean
+  ) => {
+    try {
+      setUpdatingId(userId)
+      const res = await adminApi.updateAccount(userId, {
+        isEmailVerified: !currentVerified,
+      })
+      if (res.data.success) {
+        toast.success(t('admin.email_verified_updated'))
+        // Update local state
+        setAccounts((prev) =>
+          prev.map((acc) =>
+            acc._id === userId
+              ? { ...acc, isEmailVerified: res.data.data.isEmailVerified }
+              : acc
+          )
+        )
+      }
+    } catch (error) {
+      console.error('Failed to update email verification status:', error)
+      toast.error(t('admin.error_updating'))
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       <div className="mb-10">
@@ -153,7 +183,7 @@ const AdminAccounts = () => {
           >
             <option value="">{t('admin.filter_plan')}</option>
             <option value="free">{t('admin.plan_free')}</option>
-            <option value="premium">{t('admin.plan_pro')}</option>
+            <option value="pro">{t('admin.plan_pro')}</option>
             <option value="enterprise">{t('admin.plan_enterprise')}</option>
           </select>
           <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
@@ -254,7 +284,9 @@ const AdminAccounts = () => {
                       {/* Plan */}
                       <td className="px-6 py-4.5">
                         <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold capitalize">
-                          {t(`admin.plan_${account.planSlug || 'free'}`)}
+                          {t(
+                            `admin.plan_${account.planSlug === 'premium' ? 'pro' : account.planSlug || 'free'}`
+                          )}
                         </span>
                       </td>
 
@@ -268,11 +300,24 @@ const AdminAccounts = () => {
 
                       {/* Status */}
                       <td className="px-6 py-4.5">
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-bold ${statusBadgeColor}`}
-                        >
-                          {t(`admin.status_${account.status}`)}
-                        </span>
+                        <div className="flex flex-col items-start gap-1.5">
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-bold ${statusBadgeColor}`}
+                          >
+                            {t(`admin.status_${account.status}`)}
+                          </span>
+                          <span
+                            className={`rounded-full px-3 py-1 text-[10px] font-bold ${
+                              account.isEmailVerified
+                                ? 'bg-emerald-500/10 text-emerald-500'
+                                : 'bg-amber-500/10 text-amber-500'
+                            }`}
+                          >
+                            {account.isEmailVerified
+                              ? t('admin.verified')
+                              : t('admin.unverified')}
+                          </span>
+                        </div>
                       </td>
 
                       {/* Joined Date */}
@@ -319,9 +364,7 @@ const AdminAccounts = () => {
                               <option value="free">
                                 {t('admin.plan_free')}
                               </option>
-                              <option value="premium">
-                                {t('admin.plan_pro')}
-                              </option>
+                              <option value="pro">{t('admin.plan_pro')}</option>
                               <option value="enterprise">
                                 {t('admin.plan_enterprise')}
                               </option>
@@ -350,6 +393,34 @@ const AdminAccounts = () => {
                               <>
                                 <UserX className="h-3.5 w-3.5" />
                                 {t('admin.suspend')}
+                              </>
+                            )}
+                          </button>
+
+                          {/* Email Verification Toggle Button */}
+                          <button
+                            disabled={updatingId === account._id}
+                            onClick={() =>
+                              handleVerifyToggle(
+                                account._id,
+                                !!account.isEmailVerified
+                              )
+                            }
+                            className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-bold transition-all disabled:opacity-50 ${
+                              account.isEmailVerified
+                                ? 'border-amber-500/30 text-amber-500 hover:bg-amber-500/10'
+                                : 'border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10'
+                            }`}
+                          >
+                            {account.isEmailVerified ? (
+                              <>
+                                <Mail className="h-3.5 w-3.5" />
+                                {t('admin.unverify_email')}
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-3.5 w-3.5" />
+                                {t('admin.verify_email')}
                               </>
                             )}
                           </button>
