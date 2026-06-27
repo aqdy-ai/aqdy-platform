@@ -16,7 +16,7 @@ router.use(authenticateJwt, requirePermission("billing", "read"));
 router.get("/overview", async (req, res: Response) => {
   try {
     const { startDate, endDate } = req.query;
-    const filter: Record<string, any> = {
+    const filter: Record<string, unknown> = {
       status: "active",
       planSlug: { $ne: "free" },
     };

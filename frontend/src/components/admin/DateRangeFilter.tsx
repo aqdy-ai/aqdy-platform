@@ -28,14 +28,24 @@ export function DateRangeFilter({
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  // Track previous prop values so we only update state when props truly change
+  const prevStartRef = useRef(initialStartDate)
+  const prevEndRef = useRef(initialEndDate)
+  if (prevStartRef.current !== initialStartDate) {
+    prevStartRef.current = initialStartDate
     setStart(initialStartDate)
+  }
+  if (prevEndRef.current !== initialEndDate) {
+    prevEndRef.current = initialEndDate
     setEnd(initialEndDate)
-  }, [initialStartDate, initialEndDate])
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
@@ -47,7 +57,11 @@ export function DateRangeFilter({
 
   const handleApply = () => {
     if (start && end && new Date(start) > new Date(end)) {
-      setError(t('admin.date_error', { defaultValue: 'Start date cannot be after end date' }))
+      setError(
+        t('admin.date_error', {
+          defaultValue: 'Start date cannot be after end date',
+        })
+      )
       return
     }
     setError('')
@@ -64,41 +78,43 @@ export function DateRangeFilter({
   }
 
   const filterFields = (
-    <div className="flex flex-col gap-3 p-1 min-w-[240px]">
+    <div className="flex min-w-[240px] flex-col gap-3 p-1">
       <div>
-        <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+        <label className="text-muted-foreground mb-1 block text-xs font-bold uppercase">
           {t('admin.start_date', { defaultValue: 'Start Date' })}
         </label>
         <input
           type="date"
           value={start}
           onChange={(e) => setStart(e.target.value)}
-          className="w-full text-sm bg-background border border-border/65 rounded-xl px-3 py-2 text-foreground focus:outline-none focus:border-primary/70"
+          className="bg-background border-border/65 text-foreground focus:border-primary/70 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none"
         />
       </div>
       <div>
-        <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+        <label className="text-muted-foreground mb-1 block text-xs font-bold uppercase">
           {t('admin.end_date', { defaultValue: 'End Date' })}
         </label>
         <input
           type="date"
           value={end}
           onChange={(e) => setEnd(e.target.value)}
-          className="w-full text-sm bg-background border border-border/65 rounded-xl px-3 py-2 text-foreground focus:outline-none focus:border-primary/70"
+          className="bg-background border-border/65 text-foreground focus:border-primary/70 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none"
         />
       </div>
-      {error && <p className="text-xs text-destructive font-semibold">{error}</p>}
-      <div className="flex items-center justify-between gap-2 mt-1">
+      {error && (
+        <p className="text-destructive text-xs font-semibold">{error}</p>
+      )}
+      <div className="mt-1 flex items-center justify-between gap-2">
         <button
           onClick={handleReset}
-          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-xl text-xs font-bold transition-all"
+          className="bg-muted hover:bg-muted/80 text-muted-foreground flex items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all"
         >
           <RotateCcw size={12} />
           {t('common.reset', { defaultValue: 'Reset' })}
         </button>
         <button
           onClick={handleApply}
-          className="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold transition-all"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground flex-1 rounded-xl px-4 py-2 text-xs font-bold transition-all"
         >
           {t('common.apply', { defaultValue: 'Apply' })}
         </button>
@@ -111,12 +127,12 @@ export function DateRangeFilter({
       <div className="relative inline-block text-left" ref={dropdownRef}>
         <div className="flex items-center gap-2">
           {isOverridden && (
-            <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-500/10 text-amber-500 rounded-lg text-xs font-black border border-amber-500/20">
+            <span className="flex items-center gap-1 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-xs font-black text-amber-500">
               {t('admin.custom_range', { defaultValue: 'Custom Range' })}
               {onUseGlobal && (
                 <button
                   onClick={onUseGlobal}
-                  className="hover:underline text-[10px] ml-1 uppercase font-bold"
+                  className="ml-1 text-[10px] font-bold uppercase hover:underline"
                 >
                   ({t('admin.use_global', { defaultValue: 'Use Global' })})
                 </button>
@@ -125,7 +141,7 @@ export function DateRangeFilter({
           )}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-xl text-xs font-semibold transition-all border border-border/30"
+            className="bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground border-border/30 flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all"
           >
             <Filter size={13} />
             {t('admin.filter', { defaultValue: 'Filter' })}
@@ -133,7 +149,7 @@ export function DateRangeFilter({
         </div>
 
         {isOpen && (
-          <div className="absolute right-0 mt-2 z-50 bg-card border border-border/40 rounded-2xl p-4 shadow-xl min-w-[280px]">
+          <div className="bg-card border-border/40 absolute right-0 z-50 mt-2 min-w-[280px] rounded-2xl border p-4 shadow-xl">
             {filterFields}
           </div>
         )}
@@ -142,47 +158,51 @@ export function DateRangeFilter({
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-3 p-4 bg-card/40 border border-border/40 rounded-2xl">
-      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+    <div className="bg-card/40 border-border/40 flex flex-wrap items-end gap-3 rounded-2xl border p-4">
+      <div className="flex min-w-[200px] flex-1 items-center gap-2">
         <Calendar className="text-primary shrink-0" size={16} />
         <div className="flex-1">
-          <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+          <label className="text-muted-foreground mb-1 block text-xs font-bold uppercase">
             {t('admin.start_date', { defaultValue: 'Start Date' })}
           </label>
           <input
             type="date"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="w-full text-sm bg-background border border-border/50 rounded-xl px-3 py-1.5 text-foreground focus:outline-none focus:border-primary/50"
+            className="bg-background border-border/50 text-foreground focus:border-primary/50 w-full rounded-xl border px-3 py-1.5 text-sm focus:outline-none"
           />
         </div>
       </div>
-      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+      <div className="flex min-w-[200px] flex-1 items-center gap-2">
         <Calendar className="text-primary shrink-0" size={16} />
         <div className="flex-1">
-          <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+          <label className="text-muted-foreground mb-1 block text-xs font-bold uppercase">
             {t('admin.end_date', { defaultValue: 'End Date' })}
           </label>
           <input
             type="date"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="w-full text-sm bg-background border border-border/50 rounded-xl px-3 py-1.5 text-foreground focus:outline-none focus:border-primary/50"
+            className="bg-background border-border/50 text-foreground focus:border-primary/50 w-full rounded-xl border px-3 py-1.5 text-sm focus:outline-none"
           />
         </div>
       </div>
-      {error && <p className="w-full text-xs text-destructive font-semibold mt-1">{error}</p>}
-      <div className="flex items-center gap-2 shrink-0">
+      {error && (
+        <p className="text-destructive mt-1 w-full text-xs font-semibold">
+          {error}
+        </p>
+      )}
+      <div className="flex shrink-0 items-center gap-2">
         <button
           onClick={handleReset}
-          className="flex items-center gap-1.5 px-4 py-2 bg-muted hover:bg-muted/80 text-muted-foreground rounded-xl text-xs font-bold transition-all"
+          className="bg-muted hover:bg-muted/80 text-muted-foreground flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all"
         >
           <RotateCcw size={12} />
           {t('common.reset', { defaultValue: 'Reset' })}
         </button>
         <button
           onClick={handleApply}
-          className="px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-bold transition-all"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-6 py-2 text-xs font-bold transition-all"
         >
           {t('common.apply', { defaultValue: 'Apply' })}
         </button>

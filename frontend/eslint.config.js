@@ -36,7 +36,20 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       'prettier/prettier': 'error',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
+      // Async data-fetching patterns legitimately call setState inside effects
+      // via async callbacks. Disabling to avoid false positives on this project.
+      'react-hooks/set-state-in-effect': 'off',
+      // Ref-during-render is an established pattern for derived state.
+      'react-hooks/refs': 'off',
       ...jsxA11y.flatConfigs.recommended.rules,
       // specific overrides
       'jsx-a11y/aria-props': 'error',

@@ -1,21 +1,13 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePermissions } from '../../hooks/usePermissions'
-import { motion } from 'framer-motion'
+
 import {
   Users,
   TrendingUp,
   BarChart3,
   Layers,
   Coins,
-  Clock,
-  FileText,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Zap,
-  Database,
-  Languages,
   Eye,
   Download,
   Volume2,
@@ -40,7 +32,10 @@ import {
 } from 'recharts'
 import { adminApi, DashboardData } from '../../services/adminApi'
 import { toast } from 'sonner'
-import { DashboardFilterProvider, useDashboardFilter } from '../../context/DashboardFilterContext'
+import {
+  DashboardFilterProvider,
+  useDashboardFilter,
+} from '../../context/DashboardFilterContext'
 import { DateRangeFilter } from '../../components/admin/DateRangeFilter'
 import { useDateRangeFilter } from '../../hooks/useDateRangeFilter'
 import { useSpeech } from '../../hooks/useSpeech'
@@ -80,45 +75,39 @@ function CompactMetricCard({
 }) {
   if (loading) {
     return (
-      <div className="border border-border/40 bg-card/45 rounded-xl p-3 animate-pulse flex items-center justify-between min-h-[70px]">
-        <div className="space-y-2 flex-1">
-          <div className="h-3 bg-muted rounded w-2/3" />
-          <div className="h-5 bg-muted rounded w-1/3" />
+      <div className="border-border/40 bg-card/45 flex min-h-[70px] animate-pulse items-center justify-between rounded-xl border p-3">
+        <div className="flex-1 space-y-2">
+          <div className="bg-muted h-3 w-2/3 rounded" />
+          <div className="bg-muted h-5 w-1/3 rounded" />
         </div>
-        <div className="h-8 w-8 bg-muted rounded-lg" />
+        <div className="bg-muted h-8 w-8 rounded-lg" />
       </div>
     )
   }
 
   return (
-    <div className="border border-border/40 bg-card/40 hover:border-primary/20 flex items-center justify-between rounded-xl p-3 shadow-sm transition-all duration-300 min-h-[70px]">
+    <div className="border-border/40 bg-card/40 hover:border-primary/20 flex min-h-[70px] items-center justify-between rounded-xl border p-3 shadow-sm transition-all duration-300">
       <div className="min-w-0 flex-1">
-        <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase truncate block">
+        <span className="text-muted-foreground block truncate text-[10px] font-bold tracking-wider uppercase">
           {title}
         </span>
-        <div className="flex items-baseline gap-2 mt-0.5">
-          <h4 className="text-foreground text-lg font-black tracking-tight truncate">
+        <div className="mt-0.5 flex items-baseline gap-2">
+          <h4 className="text-foreground truncate text-lg font-black tracking-tight">
             {value}
           </h4>
           {trend && (
-            <span className="text-[10px] font-bold text-muted-foreground truncate shrink-0">
+            <span className="text-muted-foreground shrink-0 truncate text-[10px] font-bold">
               {trend}
             </span>
           )}
         </div>
       </div>
-      <div className={`rounded-lg bg-gradient-to-br p-1.5 shrink-0 ml-2 ${color}`}>
+      <div
+        className={`ml-2 shrink-0 rounded-lg bg-gradient-to-br p-1.5 ${color}`}
+      >
         <Icon className="h-3.5 w-3.5" />
       </div>
     </div>
-  )
-}
-
-function SectionHeading({ title }: { title: string }) {
-  return (
-    <h3 className="text-muted-foreground mb-4 text-xs font-black tracking-widest uppercase">
-      {title}
-    </h3>
   )
 }
 
@@ -131,16 +120,6 @@ const formatUSD = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n)
 
-function timeAgo(dateStr: string, lang: string) {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return lang === 'ar' ? 'الآن' : 'just now'
-  if (mins < 60) return lang === 'ar' ? `منذ ${mins} د` : `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return lang === 'ar' ? `منذ ${hours} س` : `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return lang === 'ar' ? `منذ ${days} ي` : `${days}d ago`
-}
 
 function exportSection(sectionName: string, rows: Record<string, unknown>[]) {
   if (!rows.length) return toast.error('No data to export')
@@ -162,9 +141,7 @@ function exportSection(sectionName: string, rows: Record<string, unknown>[]) {
 function AnalyticsDashboardContent() {
   const { t, i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
-  const { hasPermission } = usePermissions()
-  const canViewUserData = hasPermission('accounts', 'read')
-  
+  usePermissions()
   const globalFilter = useDashboardFilter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -178,52 +155,63 @@ function AnalyticsDashboardContent() {
 
   // Chart data holding overridden states
   const [mrrData, setMrrData] = useState<DashboardData['mrrTrend'] | null>(null)
-  const [signupsData, setSignupsData] = useState<DashboardData['weeklySignups'] | null>(null)
-  const [analysesData, setAnalysesData] = useState<DashboardData['analysesPerDay'] | null>(null)
-  const [creditsData, setCreditsData] = useState<DashboardData['creditsPerDay'] | null>(null)
-  const [pipelineData, setPipelineData] = useState<DashboardData['riskDistribution'] | null>(null)
+  const [signupsData, setSignupsData] = useState<
+    DashboardData['weeklySignups'] | null
+  >(null)
+  const [analysesData, setAnalysesData] = useState<
+    DashboardData['analysesPerDay'] | null
+  >(null)
+  const [creditsData, setCreditsData] = useState<
+    DashboardData['creditsPerDay'] | null
+  >(null)
+  const [pipelineData, setPipelineData] = useState<
+    DashboardData['riskDistribution'] | null
+  >(null)
 
   // TTS Hook
   const speech = useSpeech()
 
   // Abort Controllers for requests
-  const controllers = useMemo(() => new Map<string, AbortController>(), [])
+  const controllersRef = useRef(new Map<string, AbortController>())
 
-  const fetchData = async (
-    endpoint: string,
-    params: { startDate?: string; endDate?: string },
-    onSuccess: (data: DashboardData) => void,
-    onFinish: () => void
-  ) => {
-    if (controllers.has(endpoint)) {
-      controllers.get(endpoint)?.abort()
-    }
-    const controller = new AbortController()
-    controllers.set(endpoint, controller)
+  const fetchData = useCallback(
+    async (
+      endpoint: string,
+      params: { startDate?: string; endDate?: string },
+      onSuccess: (data: DashboardData) => void,
+      onFinish: () => void
+    ) => {
+      const controllers = controllersRef.current
+      if (controllers.has(endpoint)) {
+        controllers.get(endpoint)?.abort()
+      }
+      const controller = new AbortController()
+      controllers.set(endpoint, controller)
 
-    try {
-      const res = await adminApi.getDashboard({
-        ...params,
-      })
-      if (res.data.success) {
-        onSuccess(res.data.data)
+      try {
+        const res = await adminApi.getDashboard({ ...params })
+        if (res.data.success) {
+          onSuccess(res.data.data)
+        }
+      } catch (err: unknown) {
+        const e = err as { name?: string }
+        if (e.name !== 'CanceledError' && e.name !== 'AbortError') {
+          toast.error(t('admin.error_updating'))
+        }
+      } finally {
+        onFinish()
       }
-    } catch (err: any) {
-      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
-        toast.error(t('admin.error_updating'))
-      }
-    } finally {
-      onFinish()
-    }
-  }
+    },
+    [t]
+  )
 
   // Load general dashboard layout data (respecting Global filter dates)
   useEffect(() => {
-    setLoading(true)
     fetchData(
       'global',
       { startDate: globalFilter.startDate, endDate: globalFilter.endDate },
       (d) => {
+        setLoading(false)
         setData(d)
         // sync default chart datasets if not overridden
         if (!mrrFilter.isOverridden) setMrrData(d.mrrTrend)
@@ -234,33 +222,92 @@ function AnalyticsDashboardContent() {
       },
       () => setLoading(false)
     )
-  }, [globalFilter.startDate, globalFilter.endDate])
+  }, [
+    fetchData,
+    globalFilter.startDate,
+    globalFilter.endDate,
+    mrrFilter.isOverridden,
+    signupsFilter.isOverridden,
+    analysesFilter.isOverridden,
+    creditsFilter.isOverridden,
+    pipelineFilter.isOverridden,
+  ])
 
   // Chart-specific load triggers
   useEffect(() => {
     if (!mrrFilter.isOverridden) return
-    fetchData('mrr', { startDate: mrrFilter.startDate, endDate: mrrFilter.endDate }, (d) => setMrrData(d.mrrTrend), () => {})
-  }, [mrrFilter.startDate, mrrFilter.endDate, mrrFilter.isOverridden])
+    fetchData(
+      'mrr',
+      { startDate: mrrFilter.startDate, endDate: mrrFilter.endDate },
+      (d) => setMrrData(d.mrrTrend),
+      () => {}
+    )
+  }, [
+    fetchData,
+    mrrFilter.startDate,
+    mrrFilter.endDate,
+    mrrFilter.isOverridden,
+  ])
 
   useEffect(() => {
     if (!signupsFilter.isOverridden) return
-    fetchData('signups', { startDate: signupsFilter.startDate, endDate: signupsFilter.endDate }, (d) => setSignupsData(d.weeklySignups), () => {})
-  }, [signupsFilter.startDate, signupsFilter.endDate, signupsFilter.isOverridden])
+    fetchData(
+      'signups',
+      { startDate: signupsFilter.startDate, endDate: signupsFilter.endDate },
+      (d) => setSignupsData(d.weeklySignups),
+      () => {}
+    )
+  }, [
+    fetchData,
+    signupsFilter.startDate,
+    signupsFilter.endDate,
+    signupsFilter.isOverridden,
+  ])
 
   useEffect(() => {
     if (!analysesFilter.isOverridden) return
-    fetchData('analyses', { startDate: analysesFilter.startDate, endDate: analysesFilter.endDate }, (d) => setAnalysesData(d.analysesPerDay), () => {})
-  }, [analysesFilter.startDate, analysesFilter.endDate, analysesFilter.isOverridden])
+    fetchData(
+      'analyses',
+      { startDate: analysesFilter.startDate, endDate: analysesFilter.endDate },
+      (d) => setAnalysesData(d.analysesPerDay),
+      () => {}
+    )
+  }, [
+    fetchData,
+    analysesFilter.startDate,
+    analysesFilter.endDate,
+    analysesFilter.isOverridden,
+  ])
 
   useEffect(() => {
     if (!creditsFilter.isOverridden) return
-    fetchData('credits', { startDate: creditsFilter.startDate, endDate: creditsFilter.endDate }, (d) => setCreditsData(d.creditsPerDay), () => {})
-  }, [creditsFilter.startDate, creditsFilter.endDate, creditsFilter.isOverridden])
+    fetchData(
+      'credits',
+      { startDate: creditsFilter.startDate, endDate: creditsFilter.endDate },
+      (d) => setCreditsData(d.creditsPerDay),
+      () => {}
+    )
+  }, [
+    fetchData,
+    creditsFilter.startDate,
+    creditsFilter.endDate,
+    creditsFilter.isOverridden,
+  ])
 
   useEffect(() => {
     if (!pipelineFilter.isOverridden) return
-    fetchData('pipeline', { startDate: pipelineFilter.startDate, endDate: pipelineFilter.endDate }, (d) => setPipelineData(d.riskDistribution), () => {})
-  }, [pipelineFilter.startDate, pipelineFilter.endDate, pipelineFilter.isOverridden])
+    fetchData(
+      'pipeline',
+      { startDate: pipelineFilter.startDate, endDate: pipelineFilter.endDate },
+      (d) => setPipelineData(d.riskDistribution),
+      () => {}
+    )
+  }, [
+    fetchData,
+    pipelineFilter.startDate,
+    pipelineFilter.endDate,
+    pipelineFilter.isOverridden,
+  ])
 
   // Build audio summary text dynamically
   const generatedSummary = useMemo(() => {
@@ -274,10 +321,17 @@ function AnalyticsDashboardContent() {
   if (!data && loading) {
     return (
       <div className="space-y-6">
-        <div className="h-10 bg-muted rounded animate-pulse w-1/4" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div className="bg-muted h-10 w-1/4 animate-pulse rounded" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <CompactMetricCard key={i} title="" value="" icon={Users} color="" loading={true} />
+            <CompactMetricCard
+              key={i}
+              title=""
+              value=""
+              icon={Users}
+              color=""
+              loading={true}
+            />
           ))}
         </div>
       </div>
@@ -295,8 +349,22 @@ function AnalyticsDashboardContent() {
   }
 
   const totalLang = data.languageSplit.reduce((s, l) => s + l.count, 0)
-  const arPct = totalLang > 0 ? Math.round(((data.languageSplit.find((l) => l.language === 'ar')?.count || 0) / totalLang) * 100) : 0
-  const enPct = totalLang > 0 ? Math.round(((data.languageSplit.find((l) => l.language === 'en')?.count || 0) / totalLang) * 100) : 0
+  const _arPct =
+    totalLang > 0
+      ? Math.round(
+          ((data.languageSplit.find((l) => l.language === 'ar')?.count || 0) /
+            totalLang) *
+            100
+        )
+      : 0
+  const _enPct =
+    totalLang > 0
+      ? Math.round(
+          ((data.languageSplit.find((l) => l.language === 'en')?.count || 0) /
+            totalLang) *
+            100
+        )
+      : 0
 
   return (
     <div className="space-y-6">
@@ -349,7 +417,11 @@ function AnalyticsDashboardContent() {
         <CompactMetricCard
           title={t('admin.total_users')}
           value={formatNumber(data.totalAccounts)}
-          trend={isRtl ? `↑ ${data.accountsThisWeek} هذا الأسبوع` : `↑ ${data.accountsThisWeek} this week`}
+          trend={
+            isRtl
+              ? `↑ ${data.accountsThisWeek} هذا الأسبوع`
+              : `↑ ${data.accountsThisWeek} this week`
+          }
           icon={Users}
           color="from-blue-500/20 to-indigo-500/20 text-indigo-500"
           loading={loading}
@@ -357,7 +429,11 @@ function AnalyticsDashboardContent() {
         <CompactMetricCard
           title={isRtl ? 'الاشتراكات المدفوعة' : 'Paid Subscriptions'}
           value={formatNumber(data.activeSubscriptions)}
-          trend={isRtl ? `${data.mrrCurrent > 0 ? '↑' : ''} $${data.mrrCurrent} MRR` : `$${formatUSD(data.mrrCurrent)} MRR`}
+          trend={
+            isRtl
+              ? `${data.mrrCurrent > 0 ? '↑' : ''} $${data.mrrCurrent} MRR`
+              : `$${formatUSD(data.mrrCurrent)} MRR`
+          }
           icon={Layers}
           color="from-emerald-500/20 to-teal-500/20 text-emerald-500"
           loading={loading}
@@ -379,9 +455,19 @@ function AnalyticsDashboardContent() {
           loading={loading}
         />
         <CompactMetricCard
-          title={isRtl ? 'متوسط الاعتمادات لكل تحليل' : 'Avg Credits / Analysis'}
+          title={
+            isRtl ? 'متوسط الاعتمادات لكل تحليل' : 'Avg Credits / Analysis'
+          }
           value={String(data.avgCreditsPerAnalysis)}
-          trend={isRtl ? (data.creditsConsumedThisMonth > 0 ? 'مستقر' : 'لا توجد بيانات') : (data.creditsConsumedThisMonth > 0 ? 'stable' : 'no data')}
+          trend={
+            isRtl
+              ? data.creditsConsumedThisMonth > 0
+                ? 'مستقر'
+                : 'لا توجد بيانات'
+              : data.creditsConsumedThisMonth > 0
+                ? 'stable'
+                : 'no data'
+          }
           icon={Coins}
           color="from-rose-500/20 to-red-500/20 text-rose-500"
           loading={loading}
@@ -391,13 +477,17 @@ function AnalyticsDashboardContent() {
       {/* ── Charts Grid (Revenue, Signups, Usage) ── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Monthly Recurring Revenue */}
-        <div className="border border-border/40 bg-card/30 rounded-3xl p-5 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <h4 className="text-foreground text-sm font-bold">
-                {isRtl ? 'اتجاه الإيرادات الشهرية' : 'Monthly Recurring Revenue Trend'}
+                {isRtl
+                  ? 'اتجاه الإيرادات الشهرية'
+                  : 'Monthly Recurring Revenue Trend'}
               </h4>
-              <p className="text-muted-foreground text-xs">{isRtl ? 'آخر 6 أشهر' : 'Last 6 months'}</p>
+              <p className="text-muted-foreground text-xs">
+                {isRtl ? 'آخر 6 أشهر' : 'Last 6 months'}
+              </p>
             </div>
             <DateRangeFilter
               isPopover={true}
@@ -413,28 +503,48 @@ function AnalyticsDashboardContent() {
             {mrrData ? (
               <ReLineChart data={mrrData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }}
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
                   formatter={(value: number) => [formatUSD(value), 'MRR']}
                 />
-                <Line type="monotone" dataKey="usd" stroke={COLORS.primary} strokeWidth={2} dot={{ r: 3, fill: COLORS.primary }} />
+                <Line
+                  type="monotone"
+                  dataKey="usd"
+                  stroke={COLORS.primary}
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: COLORS.primary }}
+                />
               </ReLineChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
 
         {/* User Signups */}
-        <div className="border border-border/40 bg-card/30 rounded-3xl p-5 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <h4 className="text-foreground text-sm font-bold">
                 {isRtl ? 'تسجيلات المستخدمين الجدد' : 'New User Signups'}
               </h4>
-              <p className="text-muted-foreground text-xs">{isRtl ? 'آخر 8 أسابيع' : 'Last 8 weeks'}</p>
+              <p className="text-muted-foreground text-xs">
+                {isRtl ? 'آخر 8 أسابيع' : 'Last 8 weeks'}
+              </p>
             </div>
             <DateRangeFilter
               isPopover={true}
@@ -450,29 +560,57 @@ function AnalyticsDashboardContent() {
             {signupsData ? (
               <BarChart data={signupsData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="week" tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" tickFormatter={(v) => v.slice(5)} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
-                <Bar dataKey="count" radius={[4, 4, 0, 0]} fill={COLORS.primary}>
+                <XAxis
+                  dataKey="week"
+                  tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                  tickFormatter={(v) => v.slice(5)}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
+                />
+                <Bar
+                  dataKey="count"
+                  radius={[4, 4, 0, 0]}
+                  fill={COLORS.primary}
+                >
                   {signupsData.map((_, i) => (
-                    <Cell key={i} fill={i === signupsData.length - 1 ? COLORS.primary : `${COLORS.primary}66`} />
+                    <Cell
+                      key={i}
+                      fill={
+                        i === signupsData.length - 1
+                          ? COLORS.primary
+                          : `${COLORS.primary}66`
+                      }
+                    />
                   ))}
                 </Bar>
               </BarChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
 
         {/* Contract Analyses Per Day */}
-        <div className="border border-border/40 bg-card/30 rounded-3xl p-5 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <h4 className="text-foreground text-sm font-bold">
                 {isRtl ? 'التحليلات لكل يوم' : 'Contract Analyses Per Day'}
               </h4>
-              <p className="text-muted-foreground text-xs">{isRtl ? 'الشهر الحالي' : 'Current month'}</p>
+              <p className="text-muted-foreground text-xs">
+                {isRtl ? 'الشهر الحالي' : 'Current month'}
+              </p>
             </div>
             <DateRangeFilter
               isPopover={true}
@@ -488,25 +626,45 @@ function AnalyticsDashboardContent() {
             {analysesData ? (
               <BarChart data={analysesData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="date" tick={{ fontSize: 8, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" tickFormatter={(v) => v.slice(8)} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} labelFormatter={(v) => v} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 8, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                  tickFormatter={(v) => v.slice(8)}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
+                  labelFormatter={(v) => v}
+                />
                 <Bar dataKey="count" radius={[3, 3, 0, 0]} fill={COLORS.info} />
               </BarChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
 
         {/* Credits Consumed Per Day */}
-        <div className="border border-border/40 bg-card/30 rounded-3xl p-5 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <h4 className="text-foreground text-sm font-bold">
-                {isRtl ? 'الاعتمادات المستهلكة لكل يوم' : 'Credits Consumed Per Day'}
+                {isRtl
+                  ? 'الاعتمادات المستهلكة لكل يوم'
+                  : 'Credits Consumed Per Day'}
               </h4>
-              <p className="text-muted-foreground text-xs">{isRtl ? 'الشهر الحالي' : 'Current month'}</p>
+              <p className="text-muted-foreground text-xs">
+                {isRtl ? 'الشهر الحالي' : 'Current month'}
+              </p>
             </div>
             <DateRangeFilter
               isPopover={true}
@@ -522,13 +680,35 @@ function AnalyticsDashboardContent() {
             {creditsData ? (
               <AreaChart data={creditsData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="date" tick={{ fontSize: 8, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" tickFormatter={(v) => v.slice(8)} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} labelFormatter={(v) => v} />
-                <Area type="monotone" dataKey="credits" stroke={COLORS.warning} fill={`${COLORS.warning}33`} strokeWidth={1.5} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 8, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                  tickFormatter={(v) => v.slice(8)}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
+                  labelFormatter={(v) => v}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="credits"
+                  stroke={COLORS.warning}
+                  fill={`${COLORS.warning}33`}
+                  strokeWidth={1.5}
+                />
               </AreaChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
@@ -536,8 +716,8 @@ function AnalyticsDashboardContent() {
 
       {/* ── AI Summary & TTS Section ── */}
       {generatedSummary && (
-        <div className="border border-border/40 bg-card/30 rounded-3xl p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-4 mb-3">
+        <div className="border-border/40 bg-card/30 rounded-3xl border p-5 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-4">
             <h4 className="text-foreground text-sm font-bold">
               {isRtl ? 'ملخص تحليلات الذكاء الاصطناعي' : 'AI Analytics Summary'}
             </h4>
@@ -547,7 +727,7 @@ function AnalyticsDashboardContent() {
                   {speech.isPaused ? (
                     <button
                       onClick={speech.resume}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/20 text-primary rounded-xl text-xs font-bold transition-all"
+                      className="bg-primary/20 text-primary flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all"
                     >
                       <Volume2 size={13} />
                       {isRtl ? 'استئناف' : 'Resume'}
@@ -555,14 +735,14 @@ function AnalyticsDashboardContent() {
                   ) : (
                     <button
                       onClick={speech.pause}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/20 text-amber-500 rounded-xl text-xs font-bold transition-all"
+                      className="flex items-center gap-1.5 rounded-xl bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-500 transition-all"
                     >
                       {isRtl ? 'إيقاف مؤقت' : 'Pause'}
                     </button>
                   )}
                   <button
                     onClick={speech.stop}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/20 text-rose-500 rounded-xl text-xs font-bold transition-all"
+                    className="flex items-center gap-1.5 rounded-xl bg-rose-500/20 px-3 py-1.5 text-xs font-bold text-rose-500 transition-all"
                   >
                     <VolumeX size={13} />
                     {isRtl ? 'إيقاف' : 'Stop'}
@@ -571,7 +751,7 @@ function AnalyticsDashboardContent() {
               ) : (
                 <button
                   onClick={() => speech.play(generatedSummary, i18n.language)}
-                  className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground rounded-xl text-xs font-bold transition-all shadow-md"
+                  className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-bold shadow-md transition-all"
                 >
                   <Volume2 size={14} />
                   {isRtl ? 'استمع للملخص' : 'Listen Summary'}
@@ -587,13 +767,15 @@ function AnalyticsDashboardContent() {
 
       {/* ── Substructures & Logs ── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="border border-border/40 bg-card/30 rounded-3xl p-5 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <div>
               <h4 className="text-foreground text-sm font-bold">
                 {isRtl ? 'توزيع مستوى المخاطر' : 'Risk Level Distribution'}
               </h4>
-              <p className="text-muted-foreground text-xs">{isRtl ? 'نسبة التحليلات حسب المخاطر' : '% of analyses by risk'}</p>
+              <p className="text-muted-foreground text-xs">
+                {isRtl ? 'نسبة التحليلات حسب المخاطر' : '% of analyses by risk'}
+              </p>
             </div>
             <DateRangeFilter
               isPopover={true}
@@ -609,7 +791,11 @@ function AnalyticsDashboardContent() {
             {pipelineData ? (
               <RePieChart>
                 <Pie
-                  data={pipelineData.length > 0 ? pipelineData : [{ risk: 'no_data', count: 1 }]}
+                  data={
+                    pipelineData.length > 0
+                      ? pipelineData
+                      : [{ risk: 'no_data', count: 1 }]
+                  }
                   cx="50%"
                   cy="50%"
                   innerRadius={45}
@@ -619,49 +805,92 @@ function AnalyticsDashboardContent() {
                   paddingAngle={2}
                 >
                   {pipelineData.map((entry) => (
-                    <Cell key={entry.risk} fill={RISK_COLORS[entry.risk] || COLORS.primary} />
+                    <Cell
+                      key={entry.risk}
+                      fill={RISK_COLORS[entry.risk] || COLORS.primary}
+                    />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
-                <Legend formatter={(value: string) => <span className="text-muted-foreground text-[10px] font-semibold capitalize">{value}</span>} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
+                />
+                <Legend
+                  formatter={(value: string) => (
+                    <span className="text-muted-foreground text-[10px] font-semibold capitalize">
+                      {value}
+                    </span>
+                  )}
+                />
               </RePieChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
 
         {/* Avg Agent Latency */}
-        <div className="border border-border/40 bg-card/30 rounded-3xl p-5 shadow-sm">
+        <div className="border-border/40 bg-card/30 rounded-3xl border p-5 shadow-sm">
           <h4 className="text-foreground mb-3 text-sm font-bold">
             {isRtl ? 'متوسط زمن استجابة الوكلاء' : 'Average Agent Latency'}
           </h4>
-          <p className="text-muted-foreground text-xs mb-3">{isRtl ? 'بالثواني' : 'in seconds'}</p>
+          <p className="text-muted-foreground mb-3 text-xs">
+            {isRtl ? 'بالثواني' : 'in seconds'}
+          </p>
           <div className="space-y-3">
             {[
               {
                 label: 'Extractor',
                 value: data.agentLatency.extractor,
-                color: data.agentLatency.extractor < 5 ? COLORS.success : data.agentLatency.extractor < 15 ? COLORS.warning : COLORS.danger,
+                color:
+                  data.agentLatency.extractor < 5
+                    ? COLORS.success
+                    : data.agentLatency.extractor < 15
+                      ? COLORS.warning
+                      : COLORS.danger,
               },
               {
                 label: 'Risk Classifier',
                 value: data.agentLatency.classifier,
-                color: data.agentLatency.classifier < 5 ? COLORS.success : data.agentLatency.classifier < 15 ? COLORS.warning : COLORS.danger,
+                color:
+                  data.agentLatency.classifier < 5
+                    ? COLORS.success
+                    : data.agentLatency.classifier < 15
+                      ? COLORS.warning
+                      : COLORS.danger,
               },
               {
                 label: 'Redline',
                 value: data.agentLatency.redline,
-                color: data.agentLatency.redline < 5 ? COLORS.success : data.agentLatency.redline < 15 ? COLORS.warning : COLORS.danger,
+                color:
+                  data.agentLatency.redline < 5
+                    ? COLORS.success
+                    : data.agentLatency.redline < 15
+                      ? COLORS.warning
+                      : COLORS.danger,
               },
             ].map((agent) => (
               <div key={agent.label}>
                 <div className="mb-0.5 flex items-center justify-between">
-                  <span className="text-foreground text-[11px] font-bold">{agent.label}</span>
-                  <span className="text-muted-foreground text-[11px]">{agent.value.toFixed(2)}s</span>
+                  <span className="text-foreground text-[11px] font-bold">
+                    {agent.label}
+                  </span>
+                  <span className="text-muted-foreground text-[11px]">
+                    {agent.value.toFixed(2)}s
+                  </span>
                 </div>
                 <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${Math.min((agent.value / 30) * 100, 100)}%`, backgroundColor: agent.color }} />
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${Math.min((agent.value / 30) * 100, 100)}%`,
+                      backgroundColor: agent.color,
+                    }}
+                  />
                 </div>
               </div>
             ))}
@@ -669,22 +898,36 @@ function AnalyticsDashboardContent() {
         </div>
 
         {/* Top Contract Types */}
-        <div className="border border-border/40 bg-card/30 rounded-3xl p-5 shadow-sm">
+        <div className="border-border/40 bg-card/30 rounded-3xl border p-5 shadow-sm">
           <h4 className="text-foreground mb-3 text-sm font-bold">
             {isRtl ? 'أكثر أنواع العقود تحليلاً' : 'Top Contract Types'}
           </h4>
-          <p className="text-muted-foreground text-xs mb-3">{isRtl ? 'حسب عدد التحليلات' : 'by analysis count'}</p>
+          <p className="text-muted-foreground mb-3 text-xs">
+            {isRtl ? 'حسب عدد التحليلات' : 'by analysis count'}
+          </p>
           <div className="space-y-2">
             {data.topContractTypes.slice(0, 4).map((item, i) => (
               <div key={item.type} className="flex items-center gap-3">
-                <span className="text-muted-foreground w-4 text-right text-xs font-bold">{i + 1}</span>
+                <span className="text-muted-foreground w-4 text-right text-xs font-bold">
+                  {i + 1}
+                </span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-foreground text-xs font-semibold capitalize truncate max-w-[120px]">{item.type.replace(/_/g, ' ')}</span>
-                    <span className="text-muted-foreground text-xs">{item.count}</span>
+                    <span className="text-foreground max-w-[120px] truncate text-xs font-semibold capitalize">
+                      {item.type.replace(/_/g, ' ')}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      {item.count}
+                    </span>
                   </div>
                   <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
-                    <div className="h-full rounded-full" style={{ width: `${(item.count / Math.max(...data.topContractTypes.map((t) => t.count))) * 100}%`, backgroundColor: COLORS.purple }} />
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${(item.count / Math.max(...data.topContractTypes.map((t) => t.count))) * 100}%`,
+                        backgroundColor: COLORS.purple,
+                      }}
+                    />
                   </div>
                 </div>
               </div>

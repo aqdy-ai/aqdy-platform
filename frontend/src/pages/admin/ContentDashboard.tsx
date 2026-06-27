@@ -181,13 +181,11 @@ export default function ContentDashboard() {
   }, [])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (tab === 'kb') loadKb(1)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, filters])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (tab === 'metrics') loadMetrics()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metricsDateRange, customStartDate, customEndDate, tab])

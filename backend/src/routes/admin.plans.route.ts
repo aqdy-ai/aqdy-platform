@@ -55,7 +55,7 @@ router.get("/", async (_req: Request, res: Response) => {
         hasPrev: pageNum > 1,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, error: "Failed to fetch plans" });
   }
 });
@@ -75,7 +75,7 @@ router.get("/:id", async (req: Request, res: Response) => {
     }
 
     res.json({ success: true, data: plan });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({ success: false, error: "Failed to fetch plan" });
   }
 });
@@ -186,7 +186,7 @@ router.delete(
         message: "Plan deactivated successfully",
         data: plan,
       });
-    } catch (error) {
+    } catch (_error) {
       res
         .status(500)
         .json({ success: false, error: "Failed to deactivate plan" });

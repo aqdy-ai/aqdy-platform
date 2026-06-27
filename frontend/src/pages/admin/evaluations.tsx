@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
@@ -14,7 +14,10 @@ import {
 } from 'recharts'
 import { adminApi } from '../../services/adminApi'
 import { Loader2, BarChart3 } from 'lucide-react'
-import { DashboardFilterProvider, useDashboardFilter } from '../../context/DashboardFilterContext'
+import {
+  DashboardFilterProvider,
+  useDashboardFilter,
+} from '../../context/DashboardFilterContext'
 import { DateRangeFilter } from '../../components/admin/DateRangeFilter'
 import { useDateRangeFilter } from '../../hooks/useDateRangeFilter'
 
@@ -55,9 +58,9 @@ function MetricCard({
 }) {
   if (loading) {
     return (
-      <div className="border-border/40 bg-card/40 relative min-h-[130px] rounded-2xl border p-6 animate-pulse">
-        <div className="h-4 bg-muted rounded w-2/3 mb-4" />
-        <div className="h-8 bg-muted rounded w-1/3" />
+      <div className="border-border/40 bg-card/40 relative min-h-[130px] animate-pulse rounded-2xl border p-6">
+        <div className="bg-muted mb-4 h-4 w-2/3 rounded" />
+        <div className="bg-muted h-8 w-1/3 rounded" />
       </div>
     )
   }
@@ -94,66 +97,90 @@ function AdminEvaluationsContent() {
   const [loadingStats, setLoadingStats] = useState(true)
   const [loadingLow, setLoadingLow] = useState(true)
 
-  const controllers = useMemo(() => new Map<string, AbortController>(), [])
+  const controllersRef = useRef(new Map<string, AbortController>())
 
-  const fetchStats = async (params: { startDate?: string; endDate?: string }) => {
-    if (controllers.has('stats')) {
-      controllers.get('stats')?.abort()
-    }
-    const controller = new AbortController()
-    controllers.set('stats', controller)
+  const fetchStats = useCallback(
+    async (params: { startDate?: string; endDate?: string }) => {
+      const controllers = controllersRef.current
+      if (controllers.has('stats')) {
+        controllers.get('stats')?.abort()
+      }
+      const controller = new AbortController()
+      controllers.set('stats', controller)
 
-    try {
-      setLoadingStats(true)
-      const res = await adminApi.getEvaluationStats(params)
-      if (res.data.success) {
-        setStats(res.data.data)
-      } else {
-        toast.error(t('evaluations.error_stats'))
+      try {
+        setLoadingStats(true)
+        const res = await adminApi.getEvaluationStats(params)
+        if (res.data.success) {
+          setStats(res.data.data)
+        } else {
+          toast.error(t('evaluations.error_stats'))
+        }
+      } catch (err: unknown) {
+        const e = err as { name?: string }
+        if (e.name !== 'CanceledError' && e.name !== 'AbortError') {
+          toast.error(t('evaluations.error_generic'))
+        }
+      } finally {
+        setLoadingStats(false)
       }
-    } catch (err: any) {
-      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
-        toast.error(t('evaluations.error_generic'))
-      }
-    } finally {
-      setLoadingStats(false)
-    }
-  }
+    },
+    [t]
+  )
 
-  const fetchLowScores = async (params: { startDate?: string; endDate?: string }) => {
-    if (controllers.has('lowScores')) {
-      controllers.get('lowScores')?.abort()
-    }
-    const controller = new AbortController()
-    controllers.set('lowScores', controller)
+  const fetchLowScores = useCallback(
+    async (params: { startDate?: string; endDate?: string }) => {
+      const controllers = controllersRef.current
+      if (controllers.has('lowScores')) {
+        controllers.get('lowScores')?.abort()
+      }
+      const controller = new AbortController()
+      controllers.set('lowScores', controller)
 
-    try {
-      setLoadingLow(true)
-      const res = await adminApi.getLowScores(params)
-      if (res.data.success) {
-        setLowScores(res.data.data)
-      } else {
-        toast.error(t('evaluations.error_low'))
+      try {
+        setLoadingLow(true)
+        const res = await adminApi.getLowScores(params)
+        if (res.data.success) {
+          setLowScores(res.data.data)
+        } else {
+          toast.error(t('evaluations.error_low'))
+        }
+      } catch (err: unknown) {
+        const e = err as { name?: string }
+        if (e.name !== 'CanceledError' && e.name !== 'AbortError') {
+          toast.error(t('evaluations.error_generic'))
+        }
+      } finally {
+        setLoadingLow(false)
       }
-    } catch (err: any) {
-      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
-        toast.error(t('evaluations.error_generic'))
-      }
-    } finally {
-      setLoadingLow(false)
-    }
-  }
+    },
+    [t]
+  )
 
   // Monitor global filter changes
   useEffect(() => {
-    fetchLowScores({ startDate: globalFilter.startDate, endDate: globalFilter.endDate })
-  }, [globalFilter.startDate, globalFilter.endDate])
+    fetchLowScores({
+      startDate: globalFilter.startDate,
+      endDate: globalFilter.endDate,
+    })
+  }, [fetchLowScores, globalFilter.startDate, globalFilter.endDate])
 
   useEffect(() => {
-    const activeStart = chartFilter.isOverridden ? chartFilter.startDate : globalFilter.startDate
-    const activeEnd = chartFilter.isOverridden ? chartFilter.endDate : globalFilter.endDate
+    const activeStart = chartFilter.isOverridden
+      ? chartFilter.startDate
+      : globalFilter.startDate
+    const activeEnd = chartFilter.isOverridden
+      ? chartFilter.endDate
+      : globalFilter.endDate
     fetchStats({ startDate: activeStart, endDate: activeEnd })
-  }, [globalFilter.startDate, globalFilter.endDate, chartFilter.startDate, chartFilter.endDate, chartFilter.isOverridden])
+  }, [
+    fetchStats,
+    globalFilter.startDate,
+    globalFilter.endDate,
+    chartFilter.startDate,
+    chartFilter.endDate,
+    chartFilter.isOverridden,
+  ])
 
   const hasData = stats.length > 0
   const latest = stats[stats.length - 1] ?? {
@@ -226,8 +253,8 @@ function AdminEvaluationsContent() {
       </div>
 
       {/* Trends Line Chart */}
-      <section className="border-border/40 bg-card/30 rounded-2xl border p-6 shadow-sm relative">
-        <div className="flex items-center justify-between mb-4">
+      <section className="border-border/40 bg-card/30 relative rounded-2xl border p-6 shadow-sm">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-muted-foreground font-semibold uppercase">
             {t('evaluations.daily_trends')}
           </h2>
@@ -312,27 +339,31 @@ function AdminEvaluationsContent() {
       {/* Low Score Evaluations */}
       <section className="space-y-4">
         <h2 className="text-muted-foreground font-semibold uppercase">
-          {t('evaluations.low_scores', { defaultValue: 'Low Score Analytics (Requires Attention)' })}
+          {t('evaluations.low_scores', {
+            defaultValue: 'Low Score Analytics (Requires Attention)',
+          })}
         </h2>
         {loadingLow ? (
           <div className="flex h-24 items-center justify-center">
             <Loader2 className="text-primary h-6 w-6 animate-spin" />
           </div>
         ) : lowScores.length === 0 ? (
-          <p className="text-muted-foreground text-sm font-semibold p-4 border border-border/40 rounded-xl bg-card/20 text-center">
-            {t('evaluations.no_low_scores', { defaultValue: 'No low scores detected.' })}
+          <p className="text-muted-foreground border-border/40 bg-card/20 rounded-xl border p-4 text-center text-sm font-semibold">
+            {t('evaluations.no_low_scores', {
+              defaultValue: 'No low scores detected.',
+            })}
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {lowScores.map((e) => {
               const lowest = getLowestMetric(e)
               return (
                 <div
                   key={e._id}
-                  className="border border-border/40 bg-card/30 rounded-2xl p-5 space-y-3"
+                  className="border-border/40 bg-card/30 space-y-3 rounded-2xl border p-5"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground font-semibold">
+                    <span className="text-muted-foreground text-xs font-semibold">
                       {new Date(e.createdAt).toLocaleDateString()}
                     </span>
                     <span className="bg-destructive/10 text-destructive rounded-lg px-2 py-0.5 text-xs font-bold capitalize">

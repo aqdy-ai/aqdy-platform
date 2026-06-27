@@ -59,7 +59,13 @@ export const judgeService = {
         maxTokens: 1024,
       });
 
-      let parsed: any;
+      let parsed: {
+        faithfulness: number;
+        relevancy: number;
+        precision: number;
+        recall: number;
+        reasoning?: Record<string, string>;
+      };
       try {
         parsed = JSON.parse(content.trim());
       } catch (err) {
@@ -114,7 +120,7 @@ export const judgeService = {
     } catch (err) {
       logger.error("JudgeService – unexpected error", {
         error: err instanceof Error ? err.message : String(err),
-        analysisId: (analysis as any)?._id?.toString(),
+        analysisId: analysis._id?.toString(),
       });
     }
   },

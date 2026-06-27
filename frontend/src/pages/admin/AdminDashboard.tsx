@@ -1,22 +1,8 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePermissions } from '../../hooks/usePermissions'
 import { motion } from 'framer-motion'
-import {
-  Users,
-  TrendingUp,
-  BarChart3,
-  Layers,
-  Coins,
-  Clock,
-  FileText,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Zap,
-  Database,
-  Languages,
-} from 'lucide-react'
+import { Users, TrendingUp, BarChart3, Layers, Coins, Zap } from 'lucide-react'
 import {
   BarChart,
   Bar,
@@ -29,14 +15,14 @@ import {
   Line,
   AreaChart,
   Area,
-  PieChart as RePieChart,
-  Pie,
   Cell,
-  Legend,
 } from 'recharts'
 import { adminApi, DashboardData } from '../../services/adminApi'
 import { toast } from 'sonner'
-import { DashboardFilterProvider, useDashboardFilter } from '../../context/DashboardFilterContext'
+import {
+  DashboardFilterProvider,
+  useDashboardFilter,
+} from '../../context/DashboardFilterContext'
 import { DateRangeFilter } from '../../components/admin/DateRangeFilter'
 import { useDateRangeFilter } from '../../hooks/useDateRangeFilter'
 
@@ -48,14 +34,6 @@ const COLORS = {
   info: '#06b6d4',
   purple: '#8b5cf6',
   pink: '#ec4899',
-}
-
-const RISK_COLORS: Record<string, string> = {
-  high: COLORS.danger,
-  medium: COLORS.warning,
-  low: COLORS.success,
-  critical: '#7f1d1d',
-  unknown: '#6b7280',
 }
 
 function MetricCard({
@@ -77,9 +55,9 @@ function MetricCard({
 }) {
   if (loading) {
     return (
-      <div className="border-border/40 bg-card/45 rounded-2xl border p-6 min-h-[130px] animate-pulse">
-        <div className="h-4 bg-muted rounded w-2/3 mb-4" />
-        <div className="h-8 bg-muted rounded w-1/3" />
+      <div className="border-border/40 bg-card/45 min-h-[130px] animate-pulse rounded-2xl border p-6">
+        <div className="bg-muted mb-4 h-4 w-2/3 rounded" />
+        <div className="bg-muted h-8 w-1/3 rounded" />
       </div>
     )
   }
@@ -130,22 +108,11 @@ const formatUSD = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n)
 
-function timeAgo(dateStr: string, lang: string) {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return lang === 'ar' ? 'الآن' : 'just now'
-  if (mins < 60) return lang === 'ar' ? `منذ ${mins} د` : `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return lang === 'ar' ? `منذ ${hours} س` : `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return lang === 'ar' ? `منذ ${days} ي` : `${days}d ago`
-}
 
 function AdminDashboardContent() {
   const { t, i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
-  const { hasPermission } = usePermissions()
-  const canViewUserData = hasPermission('accounts', 'read')
+  usePermissions()
   const globalFilter = useDashboardFilter()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -157,46 +124,55 @@ function AdminDashboardContent() {
   const creditsFilter = useDateRangeFilter()
 
   const [mrrData, setMrrData] = useState<DashboardData['mrrTrend'] | null>(null)
-  const [signupsData, setSignupsData] = useState<DashboardData['weeklySignups'] | null>(null)
-  const [analysesData, setAnalysesData] = useState<DashboardData['analysesPerDay'] | null>(null)
-  const [creditsData, setCreditsData] = useState<DashboardData['creditsPerDay'] | null>(null)
+  const [signupsData, setSignupsData] = useState<
+    DashboardData['weeklySignups'] | null
+  >(null)
+  const [analysesData, setAnalysesData] = useState<
+    DashboardData['analysesPerDay'] | null
+  >(null)
+  const [creditsData, setCreditsData] = useState<
+    DashboardData['creditsPerDay'] | null
+  >(null)
 
-  const controllers = useMemo(() => new Map<string, AbortController>(), [])
+  const controllersRef = useRef(new Map<string, AbortController>())
 
-  const fetchData = async (
-    endpoint: string,
-    params: { startDate?: string; endDate?: string },
-    onSuccess: (data: DashboardData) => void,
-    onFinish: () => void
-  ) => {
-    if (controllers.has(endpoint)) {
-      controllers.get(endpoint)?.abort()
-    }
-    const controller = new AbortController()
-    controllers.set(endpoint, controller)
-
-    try {
-      const res = await adminApi.getDashboard({
-        ...params,
-      })
-      if (res.data.success) {
-        onSuccess(res.data.data)
+  const fetchData = useCallback(
+    async (
+      endpoint: string,
+      params: { startDate?: string; endDate?: string },
+      onSuccess: (data: DashboardData) => void,
+      onFinish: () => void
+    ) => {
+      const controllers = controllersRef.current
+      if (controllers.has(endpoint)) {
+        controllers.get(endpoint)?.abort()
       }
-    } catch (err: any) {
-      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
-        toast.error(t('admin.error_updating'))
+      const controller = new AbortController()
+      controllers.set(endpoint, controller)
+
+      try {
+        const res = await adminApi.getDashboard({ ...params })
+        if (res.data.success) {
+          onSuccess(res.data.data)
+        }
+      } catch (err: unknown) {
+        const e = err as { name?: string }
+        if (e.name !== 'CanceledError' && e.name !== 'AbortError') {
+          toast.error(t('admin.error_updating'))
+        }
+      } finally {
+        onFinish()
       }
-    } finally {
-      onFinish()
-    }
-  }
+    },
+    [t]
+  )
 
   useEffect(() => {
-    setLoading(true)
     fetchData(
       'global',
       { startDate: globalFilter.startDate, endDate: globalFilter.endDate },
       (d) => {
+        setLoading(false)
         setData(d)
         if (!mrrFilter.isOverridden) setMrrData(d.mrrTrend)
         if (!signupsFilter.isOverridden) setSignupsData(d.weeklySignups)
@@ -205,32 +181,80 @@ function AdminDashboardContent() {
       },
       () => setLoading(false)
     )
-  }, [globalFilter.startDate, globalFilter.endDate])
+  }, [
+    fetchData,
+    globalFilter.startDate,
+    globalFilter.endDate,
+    mrrFilter.isOverridden,
+    signupsFilter.isOverridden,
+    analysesFilter.isOverridden,
+    creditsFilter.isOverridden,
+  ])
 
   useEffect(() => {
     if (!mrrFilter.isOverridden) return
-    fetchData('mrr', { startDate: mrrFilter.startDate, endDate: mrrFilter.endDate }, (d) => setMrrData(d.mrrTrend), () => {})
-  }, [mrrFilter.startDate, mrrFilter.endDate, mrrFilter.isOverridden])
+    fetchData(
+      'mrr',
+      { startDate: mrrFilter.startDate, endDate: mrrFilter.endDate },
+      (d) => setMrrData(d.mrrTrend),
+      () => {}
+    )
+  }, [
+    fetchData,
+    mrrFilter.startDate,
+    mrrFilter.endDate,
+    mrrFilter.isOverridden,
+  ])
 
   useEffect(() => {
     if (!signupsFilter.isOverridden) return
-    fetchData('signups', { startDate: signupsFilter.startDate, endDate: signupsFilter.endDate }, (d) => setSignupsData(d.weeklySignups), () => {})
-  }, [signupsFilter.startDate, signupsFilter.endDate, signupsFilter.isOverridden])
+    fetchData(
+      'signups',
+      { startDate: signupsFilter.startDate, endDate: signupsFilter.endDate },
+      (d) => setSignupsData(d.weeklySignups),
+      () => {}
+    )
+  }, [
+    fetchData,
+    signupsFilter.startDate,
+    signupsFilter.endDate,
+    signupsFilter.isOverridden,
+  ])
 
   useEffect(() => {
     if (!analysesFilter.isOverridden) return
-    fetchData('analyses', { startDate: analysesFilter.startDate, endDate: analysesFilter.endDate }, (d) => setAnalysesData(d.analysesPerDay), () => {})
-  }, [analysesFilter.startDate, analysesFilter.endDate, analysesFilter.isOverridden])
+    fetchData(
+      'analyses',
+      { startDate: analysesFilter.startDate, endDate: analysesFilter.endDate },
+      (d) => setAnalysesData(d.analysesPerDay),
+      () => {}
+    )
+  }, [
+    fetchData,
+    analysesFilter.startDate,
+    analysesFilter.endDate,
+    analysesFilter.isOverridden,
+  ])
 
   useEffect(() => {
     if (!creditsFilter.isOverridden) return
-    fetchData('credits', { startDate: creditsFilter.startDate, endDate: creditsFilter.endDate }, (d) => setCreditsData(d.creditsPerDay), () => {})
-  }, [creditsFilter.startDate, creditsFilter.endDate, creditsFilter.isOverridden])
+    fetchData(
+      'credits',
+      { startDate: creditsFilter.startDate, endDate: creditsFilter.endDate },
+      (d) => setCreditsData(d.creditsPerDay),
+      () => {}
+    )
+  }, [
+    fetchData,
+    creditsFilter.startDate,
+    creditsFilter.endDate,
+    creditsFilter.isOverridden,
+  ])
 
   if (!data && loading) {
     return (
-      <div className="space-y-8 animate-pulse">
-        <div className="h-6 bg-muted rounded w-1/4" />
+      <div className="animate-pulse space-y-8">
+        <div className="bg-muted h-6 w-1/4 rounded" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <MetricCard key={i} title="" value="" color="" loading={true} />
@@ -251,8 +275,22 @@ function AdminDashboardContent() {
   }
 
   const totalLang = data.languageSplit.reduce((s, l) => s + l.count, 0)
-  const arPct = totalLang > 0 ? Math.round(((data.languageSplit.find((l) => l.language === 'ar')?.count || 0) / totalLang) * 100) : 0
-  const enPct = totalLang > 0 ? Math.round(((data.languageSplit.find((l) => l.language === 'en')?.count || 0) / totalLang) * 100) : 0
+  const _arPct =
+    totalLang > 0
+      ? Math.round(
+          ((data.languageSplit.find((l) => l.language === 'ar')?.count || 0) /
+            totalLang) *
+            100
+        )
+      : 0
+  const _enPct =
+    totalLang > 0
+      ? Math.round(
+          ((data.languageSplit.find((l) => l.language === 'en')?.count || 0) /
+            totalLang) *
+            100
+        )
+      : 0
 
   return (
     <div className="space-y-8">
@@ -272,7 +310,11 @@ function AdminDashboardContent() {
         <MetricCard
           title={t('admin.total_users')}
           value={formatNumber(data.totalAccounts)}
-          trend={isRtl ? `↑ ${data.accountsThisWeek} هذا الأسبوع` : `↑ ${data.accountsThisWeek} this week`}
+          trend={
+            isRtl
+              ? `↑ ${data.accountsThisWeek} هذا الأسبوع`
+              : `↑ ${data.accountsThisWeek} this week`
+          }
           icon={Users}
           delay={0}
           color="from-blue-500/20 to-indigo-500/20 text-indigo-500"
@@ -281,7 +323,11 @@ function AdminDashboardContent() {
         <MetricCard
           title={isRtl ? 'الاشتراكات المدفوعة' : 'Paid Subscriptions'}
           value={formatNumber(data.activeSubscriptions)}
-          trend={isRtl ? `${data.mrrCurrent > 0 ? '↑' : ''} $${data.mrrCurrent} MRR` : `$${formatUSD(data.mrrCurrent)} MRR`}
+          trend={
+            isRtl
+              ? `${data.mrrCurrent > 0 ? '↑' : ''} $${data.mrrCurrent} MRR`
+              : `$${formatUSD(data.mrrCurrent)} MRR`
+          }
           icon={Layers}
           delay={0.05}
           color="from-emerald-500/20 to-teal-500/20 text-emerald-500"
@@ -306,9 +352,19 @@ function AdminDashboardContent() {
           loading={loading}
         />
         <MetricCard
-          title={isRtl ? 'متوسط الاعتمادات لكل تحليل' : 'Avg Credits / Analysis'}
+          title={
+            isRtl ? 'متوسط الاعتمادات لكل تحليل' : 'Avg Credits / Analysis'
+          }
           value={String(data.avgCreditsPerAnalysis)}
-          trend={isRtl ? (data.creditsConsumedThisMonth > 0 ? 'مستقر' : 'لا توجد بيانات') : (data.creditsConsumedThisMonth > 0 ? 'stable' : 'no data')}
+          trend={
+            isRtl
+              ? data.creditsConsumedThisMonth > 0
+                ? 'مستقر'
+                : 'لا توجد بيانات'
+              : data.creditsConsumedThisMonth > 0
+                ? 'stable'
+                : 'no data'
+          }
           icon={Coins}
           delay={0.2}
           color="from-rose-500/20 to-red-500/20 text-rose-500"
@@ -322,7 +378,11 @@ function AdminDashboardContent() {
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <MetricCard
-          title={isRtl ? 'الاعتمادات المصدرة (كل الوقت)' : 'Credits Issued (All Time)'}
+          title={
+            isRtl
+              ? 'الاعتمادات المصدرة (كل الوقت)'
+              : 'Credits Issued (All Time)'
+          }
           value={formatNumber(data.creditsIssuedAllTime)}
           icon={Coins}
           delay={0}
@@ -330,9 +390,17 @@ function AdminDashboardContent() {
           loading={loading}
         />
         <MetricCard
-          title={isRtl ? 'الاعتمادات المستهلكة هذا الشهر' : 'Credits Consumed This Month'}
+          title={
+            isRtl
+              ? 'الاعتمادات المستهلكة هذا الشهر'
+              : 'Credits Consumed This Month'
+          }
           value={formatNumber(data.creditsConsumedThisMonth)}
-          trend={data.creditsConsumedLastMonth > 0 ? `${data.creditsConsumedThisMonth >= data.creditsConsumedLastMonth ? '↑' : '↓'} vs last month` : undefined}
+          trend={
+            data.creditsConsumedLastMonth > 0
+              ? `${data.creditsConsumedThisMonth >= data.creditsConsumedLastMonth ? '↑' : '↓'} vs last month`
+              : undefined
+          }
           icon={Zap}
           delay={0.05}
           color="from-amber-500/20 to-yellow-500/20 text-amber-500"
@@ -342,13 +410,17 @@ function AdminDashboardContent() {
 
       {/* ── Section 3: Revenue & Growth ── */}
       <div className="flex items-center justify-between">
-        <SectionHeading title={isRtl ? 'الإيرادات والنمو' : 'REVENUE & GROWTH'} />
+        <SectionHeading
+          title={isRtl ? 'الإيرادات والنمو' : 'REVENUE & GROWTH'}
+        />
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <h4 className="text-foreground text-sm font-bold">
-              {isRtl ? 'اتجاه الإيرادات الشهرية' : 'Monthly Recurring Revenue Trend'}
+              {isRtl
+                ? 'اتجاه الإيرادات الشهرية'
+                : 'Monthly Recurring Revenue Trend'}
             </h4>
             <DateRangeFilter
               isPopover={true}
@@ -364,21 +436,39 @@ function AdminDashboardContent() {
             {mrrData ? (
               <ReLineChart data={mrrData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }}
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
                   formatter={(value: number) => [formatUSD(value), 'MRR']}
                 />
-                <Line type="monotone" dataKey="usd" stroke={COLORS.primary} strokeWidth={2.5} dot={{ r: 4, fill: COLORS.primary }} />
+                <Line
+                  type="monotone"
+                  dataKey="usd"
+                  stroke={COLORS.primary}
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: COLORS.primary }}
+                />
               </ReLineChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
-        <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <h4 className="text-foreground text-sm font-bold">
               {isRtl ? 'تسجيلات المستخدمين الجدد' : 'New User Signups'}
             </h4>
@@ -396,17 +486,43 @@ function AdminDashboardContent() {
             {signupsData ? (
               <BarChart data={signupsData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="week" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" tickFormatter={(v) => v.slice(5)} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} />
-                <Bar dataKey="count" radius={[6, 6, 0, 0]} fill={COLORS.primary}>
+                <XAxis
+                  dataKey="week"
+                  tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                  tickFormatter={(v) => v.slice(5)}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
+                />
+                <Bar
+                  dataKey="count"
+                  radius={[6, 6, 0, 0]}
+                  fill={COLORS.primary}
+                >
                   {signupsData.map((_, i) => (
-                    <Cell key={i} fill={i === signupsData.length - 1 ? COLORS.primary : `${COLORS.primary}66`} />
+                    <Cell
+                      key={i}
+                      fill={
+                        i === signupsData.length - 1
+                          ? COLORS.primary
+                          : `${COLORS.primary}66`
+                      }
+                    />
                   ))}
                 </Bar>
               </BarChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
@@ -417,8 +533,8 @@ function AdminDashboardContent() {
         <SectionHeading title={isRtl ? 'الاستخدام' : 'USAGE'} />
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <h4 className="text-foreground text-sm font-bold">
               {isRtl ? 'التحليلات لكل يوم' : 'Contract Analyses Per Day'}
             </h4>
@@ -436,20 +552,38 @@ function AdminDashboardContent() {
             {analysesData ? (
               <BarChart data={analysesData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" tickFormatter={(v) => v.slice(8)} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} labelFormatter={(v) => v} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                  tickFormatter={(v) => v.slice(8)}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
+                  labelFormatter={(v) => v}
+                />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]} fill={COLORS.info} />
               </BarChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
-        <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm relative">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-border/40 bg-card/30 relative rounded-3xl border p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
             <h4 className="text-foreground text-sm font-bold">
-              {isRtl ? 'الاعتمادات المستهلكة لكل يوم' : 'Credits Consumed Per Day'}
+              {isRtl
+                ? 'الاعتمادات المستهلكة لكل يوم'
+                : 'Credits Consumed Per Day'}
             </h4>
             <DateRangeFilter
               isPopover={true}
@@ -465,13 +599,35 @@ function AdminDashboardContent() {
             {creditsData ? (
               <AreaChart data={creditsData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" tickFormatter={(v) => v.slice(8)} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--muted-foreground)" />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)' }} labelFormatter={(v) => v} />
-                <Area type="monotone" dataKey="credits" stroke={COLORS.warning} fill={`${COLORS.warning}33`} strokeWidth={2} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                  tickFormatter={(v) => v.slice(8)}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  stroke="var(--muted-foreground)"
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
+                  }}
+                  labelFormatter={(v) => v}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="credits"
+                  stroke={COLORS.warning}
+                  fill={`${COLORS.warning}33`}
+                  strokeWidth={2}
+                />
               </AreaChart>
             ) : (
-              <div className="h-full w-full bg-muted/20 animate-pulse rounded-lg" />
+              <div className="bg-muted/20 h-full w-full animate-pulse rounded-lg" />
             )}
           </ResponsiveContainer>
         </div>
