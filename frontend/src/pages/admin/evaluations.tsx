@@ -81,31 +81,35 @@ export default function AdminEvaluations() {
   const [appliedStartDate, setAppliedStartDate] = useState('')
   const [appliedEndDate, setAppliedEndDate] = useState('')
 
-  const fetchAll = useCallback(async (sd: string, ed: string) => {
-    setLoadingStats(true)
-    setLoadingLow(true)
-    try {
-      const params: { startDate?: string; endDate?: string } = {}
-      if (sd) params.startDate = sd
-      if (ed) params.endDate = ed
-      const paramArg = Object.keys(params).length ? params : undefined
-      const [statsRes, lowRes] = await Promise.all([
-        adminApi.getEvaluationStats(paramArg),
-        adminApi.getLowScores(paramArg),
-      ])
-      if (statsRes.data.success) setStats(statsRes.data.data)
-      else toast.error(t('evaluations.error_stats'))
-      if (lowRes.data.success) setLowScores(lowRes.data.data)
-      else toast.error(t('evaluations.error_low'))
-    } catch {
-      toast.error(t('evaluations.error_generic'))
-    } finally {
-      setLoadingStats(false)
-      setLoadingLow(false)
-    }
-  }, [t])
+  const fetchAll = useCallback(
+    async (sd: string, ed: string) => {
+      setLoadingStats(true)
+      setLoadingLow(true)
+      try {
+        const params: { startDate?: string; endDate?: string } = {}
+        if (sd) params.startDate = sd
+        if (ed) params.endDate = ed
+        const paramArg = Object.keys(params).length ? params : undefined
+        const [statsRes, lowRes] = await Promise.all([
+          adminApi.getEvaluationStats(paramArg),
+          adminApi.getLowScores(paramArg),
+        ])
+        if (statsRes.data.success) setStats(statsRes.data.data)
+        else toast.error(t('evaluations.error_stats'))
+        if (lowRes.data.success) setLowScores(lowRes.data.data)
+        else toast.error(t('evaluations.error_low'))
+      } catch {
+        toast.error(t('evaluations.error_generic'))
+      } finally {
+        setLoadingStats(false)
+        setLoadingLow(false)
+      }
+    },
+    [t]
+  )
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAll('', '')
   }, [fetchAll])
 
@@ -156,8 +160,14 @@ export default function AdminEvaluations() {
       {/* ── Date Filter Bar ── */}
       <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
         <div className="flex items-center gap-2">
-          <label className="text-muted-foreground text-xs font-semibold">From:</label>
+          <label
+            htmlFor="eval-start-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            From:
+          </label>
           <input
+            id="eval-start-date"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -165,8 +175,14 @@ export default function AdminEvaluations() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-muted-foreground text-xs font-semibold">To:</label>
+          <label
+            htmlFor="eval-end-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            To:
+          </label>
           <input
+            id="eval-end-date"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}

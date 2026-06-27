@@ -141,22 +141,28 @@ export default function AdminDashboard() {
   const [appliedStartDate, setAppliedStartDate] = useState('')
   const [appliedEndDate, setAppliedEndDate] = useState('')
 
-  const fetchData = useCallback(async (sd: string, ed: string) => {
-    try {
-      setLoading(true)
-      const params: { startDate?: string; endDate?: string } = {}
-      if (sd) params.startDate = sd
-      if (ed) params.endDate = ed
-      const res = await adminApi.getDashboard(Object.keys(params).length ? params : undefined)
-      if (res.data.success) setData(res.data.data)
-    } catch {
-      toast.error(t('admin.error_updating'))
-    } finally {
-      setLoading(false)
-    }
-  }, [t])
+  const fetchData = useCallback(
+    async (sd: string, ed: string) => {
+      try {
+        setLoading(true)
+        const params: { startDate?: string; endDate?: string } = {}
+        if (sd) params.startDate = sd
+        if (ed) params.endDate = ed
+        const res = await adminApi.getDashboard(
+          Object.keys(params).length ? params : undefined
+        )
+        if (res.data.success) setData(res.data.data)
+      } catch {
+        toast.error(t('admin.error_updating'))
+      } finally {
+        setLoading(false)
+      }
+    },
+    [t]
+  )
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData('', '')
   }, [fetchData])
 
@@ -207,10 +213,14 @@ export default function AdminDashboard() {
       {/* ── Date Filter Bar ── */}
       <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
         <div className="flex items-center gap-2">
-          <label className="text-muted-foreground text-xs font-semibold">
+          <label
+            htmlFor="admin-start-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
             {isRtl ? 'من' : 'From'}:
           </label>
           <input
+            id="admin-start-date"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -218,10 +228,14 @@ export default function AdminDashboard() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-muted-foreground text-xs font-semibold">
+          <label
+            htmlFor="admin-end-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
             {isRtl ? 'إلى' : 'To'}:
           </label>
           <input
+            id="admin-end-date"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}

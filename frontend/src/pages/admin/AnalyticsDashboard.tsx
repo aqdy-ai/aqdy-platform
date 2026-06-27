@@ -167,22 +167,28 @@ export default function AnalyticsDashboard() {
   // TTS
   const [ttsPlaying, setTtsPlaying] = useState(false)
 
-  const fetchData = useCallback(async (sd: string, ed: string) => {
-    try {
-      setLoading(true)
-      const params: { startDate?: string; endDate?: string } = {}
-      if (sd) params.startDate = sd
-      if (ed) params.endDate = ed
-      const res = await adminApi.getDashboard(Object.keys(params).length ? params : undefined)
-      if (res.data.success) setData(res.data.data)
-    } catch {
-      toast.error(t('admin.error_updating'))
-    } finally {
-      setLoading(false)
-    }
-  }, [t])
+  const fetchData = useCallback(
+    async (sd: string, ed: string) => {
+      try {
+        setLoading(true)
+        const params: { startDate?: string; endDate?: string } = {}
+        if (sd) params.startDate = sd
+        if (ed) params.endDate = ed
+        const res = await adminApi.getDashboard(
+          Object.keys(params).length ? params : undefined
+        )
+        if (res.data.success) setData(res.data.data)
+      } catch {
+        toast.error(t('admin.error_updating'))
+      } finally {
+        setLoading(false)
+      }
+    },
+    [t]
+  )
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData('', '')
   }, [fetchData])
 
@@ -271,7 +277,13 @@ export default function AnalyticsDashboard() {
             title={isRtl ? 'استماع إلى الملخص' : 'Listen to summary'}
           >
             {ttsPlaying ? <Volume2 size={12} /> : <VolumeX size={12} />}
-            {ttsPlaying ? (isRtl ? 'إيقاف' : 'Stop') : (isRtl ? 'استماع' : 'Listen')}
+            {ttsPlaying
+              ? isRtl
+                ? 'إيقاف'
+                : 'Stop'
+              : isRtl
+                ? 'استماع'
+                : 'Listen'}
           </button>
           <button
             onClick={() => {
@@ -302,10 +314,14 @@ export default function AnalyticsDashboard() {
       {/* ── Date Filter Bar ── */}
       <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
         <div className="flex items-center gap-2">
-          <label className="text-muted-foreground text-xs font-semibold">
+          <label
+            htmlFor="analytics-start-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
             {isRtl ? 'من' : 'From'}:
           </label>
           <input
+            id="analytics-start-date"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -313,10 +329,14 @@ export default function AnalyticsDashboard() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-muted-foreground text-xs font-semibold">
+          <label
+            htmlFor="analytics-end-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
             {isRtl ? 'إلى' : 'To'}:
           </label>
           <input
+            id="analytics-end-date"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}

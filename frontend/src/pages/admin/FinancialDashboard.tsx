@@ -73,27 +73,33 @@ export default function FinancialDashboard() {
   const [webhookPage, setWebhookPage] = useState(1)
   const [webhookTotalPages, setWebhookTotalPages] = useState(1)
 
-  const fetchAll = useCallback(async (df: string, dt: string) => {
-    try {
-      setLoading(true)
-      const subsParams: Record<string, string | number> = {}
-      if (df) subsParams.dateFrom = df
-      if (dt) subsParams.dateTo = dt
-      const [ov, subs, pl] = await Promise.all([
-        adminApi.getFinancialOverview(),
-        adminApi.getSubscriptions(Object.keys(subsParams).length ? subsParams : undefined),
-        adminApi.getPlans({ pageSize: 100 }),
-      ])
-      setOverview((ov.data as { data: OverviewData }).data)
-      setSubscriptions((subs.data as { data: Subscription[] }).data)
-      setPlans(pl.data.data)
-    } catch {
-      toast.error(t('common.error'))
-    }
-    setLoading(false)
-  }, [t])
+  const fetchAll = useCallback(
+    async (df: string, dt: string) => {
+      try {
+        setLoading(true)
+        const subsParams: Record<string, string | number> = {}
+        if (df) subsParams.dateFrom = df
+        if (dt) subsParams.dateTo = dt
+        const [ov, subs, pl] = await Promise.all([
+          adminApi.getFinancialOverview(),
+          adminApi.getSubscriptions(
+            Object.keys(subsParams).length ? subsParams : undefined
+          ),
+          adminApi.getPlans({ pageSize: 100 }),
+        ])
+        setOverview((ov.data as { data: OverviewData }).data)
+        setSubscriptions((subs.data as { data: Subscription[] }).data)
+        setPlans(pl.data.data)
+      } catch {
+        toast.error(t('common.error'))
+      }
+      setLoading(false)
+    },
+    [t]
+  )
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAll('', '')
   }, [fetchAll])
 
@@ -273,8 +279,14 @@ export default function FinancialDashboard() {
       {/* ── Date Filter Bar ── */}
       <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
         <div className="flex items-center gap-2">
-          <label className="text-muted-foreground text-xs font-semibold">From:</label>
+          <label
+            htmlFor="financial-start-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            From:
+          </label>
           <input
+            id="financial-start-date"
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
@@ -282,8 +294,14 @@ export default function FinancialDashboard() {
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-muted-foreground text-xs font-semibold">To:</label>
+          <label
+            htmlFor="financial-end-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            To:
+          </label>
           <input
+            id="financial-end-date"
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
