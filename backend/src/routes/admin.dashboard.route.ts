@@ -46,7 +46,9 @@ router.get(
         : monthRange(y, m).end;
 
       const prevMonthStart = queryStartDate
-        ? new Date(monthStart.getTime() - (monthEnd.getTime() - monthStart.getTime()))
+        ? new Date(
+            monthStart.getTime() - (monthEnd.getTime() - monthStart.getTime()),
+          )
         : monthRange(y, m - 1).start;
       const prevMonthEnd = queryStartDate
         ? new Date(monthStart.getTime())
@@ -364,8 +366,14 @@ router.get(
       const dailyMap = new Map(dailyAnalyses.map((d) => [d._id, d.count]));
       const creditMap = new Map(dailyCredits.map((d) => [d._id, d.total]));
       const rangeStart = new Date(monthStart);
-      const rangeEnd = queryEndDate ? new Date(queryEndDate) : new Date(y, m + 1, 0);
-      for (let d = new Date(rangeStart); d <= rangeEnd; d.setDate(d.getDate() + 1)) {
+      const rangeEnd = queryEndDate
+        ? new Date(queryEndDate)
+        : new Date(y, m + 1, 0);
+      for (
+        let d = new Date(rangeStart);
+        d <= rangeEnd;
+        d.setDate(d.getDate() + 1)
+      ) {
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         analysesPerDay.push({ date: key, count: dailyMap.get(key) || 0 });
         creditsPerDay.push({ date: key, credits: creditMap.get(key) || 0 });
