@@ -120,7 +120,6 @@ const formatUSD = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n)
 
-
 function exportSection(sectionName: string, rows: Record<string, unknown>[]) {
   if (!rows.length) return toast.error('No data to export')
   const headers = Object.keys(rows[0])

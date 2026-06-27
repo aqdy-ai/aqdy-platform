@@ -51,7 +51,9 @@ function FinancialDashboardContent() {
   const [_subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [_plans, setPlans] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
-  const [_planChangeMap, _setPlanChangeMap] = useState<Record<string, string>>({})
+  const [_planChangeMap, _setPlanChangeMap] = useState<Record<string, string>>(
+    {}
+  )
   const [_modifyingId, _setModifyingId] = useState<string | null>(null)
   const { canWrite } = usePermissions()
   const _canModify = canWrite('billing')

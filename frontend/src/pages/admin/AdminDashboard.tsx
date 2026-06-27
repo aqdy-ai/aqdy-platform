@@ -108,7 +108,6 @@ const formatUSD = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n)
 
-
 function AdminDashboardContent() {
   const { t, i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
