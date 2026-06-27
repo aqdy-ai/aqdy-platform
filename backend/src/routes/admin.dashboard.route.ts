@@ -37,13 +37,19 @@ router.get(
       const m = now.getMonth();
 
       // Determine date range for current/filtered selection
-      const filteredStart = startDate ? new Date(startDate as string) : monthRange(y, m).start;
-      const filteredEnd = endDate ? new Date(endDate as string) : monthRange(y, m).end;
+      const filteredStart = startDate
+        ? new Date(startDate as string)
+        : monthRange(y, m).start;
+      const filteredEnd = endDate
+        ? new Date(endDate as string)
+        : monthRange(y, m).end;
 
-      const { start: monthStart, end: monthEnd } = { start: filteredStart, end: filteredEnd };
+      const { start: monthStart, end: monthEnd } = {
+        start: filteredStart,
+        end: filteredEnd,
+      };
       const { start: lastMonthStart, end: lastMonthEnd } = monthRange(y, m - 1);
       const weekAgo = new Date(now.getTime() - 7 * 86400000);
-
 
       const [
         totalAccounts,
