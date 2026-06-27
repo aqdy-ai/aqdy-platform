@@ -13,14 +13,22 @@ const router = Router();
 router.use(authenticateJwt, requirePermission("billing", "read"));
 
 /** GET /api/admin/financial/overview — MRR, ARR, churn, revenue */
-router.get("/overview", async (_req, res: Response) => {
+router.get("/overview", async (req, res: Response) => {
   try {
-    const totalActive = await User.countDocuments({
+    const { startDate, endDate } = req.query;
+    const filter: Record<string, any> = {
       status: "active",
       planSlug: { $ne: "free" },
-    });
+    };
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate as string);
+      if (endDate) filter.createdAt.$lte = new Date(endDate as string);
+    }
+
+    const totalActive = await User.countDocuments(filter);
     const planCounts = await User.aggregate([
-      { $match: { status: "active", planSlug: { $ne: "free" } } },
+      { $match: filter },
       { $group: { _id: "$planSlug", count: { $sum: 1 } } },
     ]);
     const planPrices: Record<string, number> = { pro: 29, enterprise: 99 };

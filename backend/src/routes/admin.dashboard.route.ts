@@ -29,15 +29,21 @@ router.get(
   "/",
   authenticateJwt,
   requirePermission("dashboard", "read"),
-  async (_req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
+      const { startDate, endDate } = req.query;
       const now = new Date();
       const y = now.getFullYear();
       const m = now.getMonth();
 
-      const { start: monthStart, end: monthEnd } = monthRange(y, m);
+      // Determine date range for current/filtered selection
+      const filteredStart = startDate ? new Date(startDate as string) : monthRange(y, m).start;
+      const filteredEnd = endDate ? new Date(endDate as string) : monthRange(y, m).end;
+
+      const { start: monthStart, end: monthEnd } = { start: filteredStart, end: filteredEnd };
       const { start: lastMonthStart, end: lastMonthEnd } = monthRange(y, m - 1);
       const weekAgo = new Date(now.getTime() - 7 * 86400000);
+
 
       const [
         totalAccounts,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
@@ -14,6 +14,9 @@ import {
 } from 'recharts'
 import { adminApi } from '../../services/adminApi'
 import { Loader2, BarChart3 } from 'lucide-react'
+import { DashboardFilterProvider, useDashboardFilter } from '../../context/DashboardFilterContext'
+import { DateRangeFilter } from '../../components/admin/DateRangeFilter'
+import { useDateRangeFilter } from '../../hooks/useDateRangeFilter'
 
 interface DailyStat {
   date: string
@@ -44,10 +47,21 @@ interface Evaluation {
 function MetricCard({
   title,
   value,
+  loading = false,
 }: {
   title: string
   value: string | number
+  loading?: boolean
 }) {
+  if (loading) {
+    return (
+      <div className="border-border/40 bg-card/40 relative min-h-[130px] rounded-2xl border p-6 animate-pulse">
+        <div className="h-4 bg-muted rounded w-2/3 mb-4" />
+        <div className="h-8 bg-muted rounded w-1/3" />
+      </div>
+    )
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -70,39 +84,76 @@ function MetricCard({
   )
 }
 
-export default function AdminEvaluations() {
+function AdminEvaluationsContent() {
   const { t } = useTranslation()
+  const globalFilter = useDashboardFilter()
+  const chartFilter = useDateRangeFilter()
+
   const [stats, setStats] = useState<DailyStat[]>([])
   const [lowScores, setLowScores] = useState<Evaluation[]>([])
   const [loadingStats, setLoadingStats] = useState(true)
   const [loadingLow, setLoadingLow] = useState(true)
 
+  const controllers = useMemo(() => new Map<string, AbortController>(), [])
+
+  const fetchStats = async (params: { startDate?: string; endDate?: string }) => {
+    if (controllers.has('stats')) {
+      controllers.get('stats')?.abort()
+    }
+    const controller = new AbortController()
+    controllers.set('stats', controller)
+
+    try {
+      setLoadingStats(true)
+      const res = await adminApi.getEvaluationStats(params)
+      if (res.data.success) {
+        setStats(res.data.data)
+      } else {
+        toast.error(t('evaluations.error_stats'))
+      }
+    } catch (err: any) {
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        toast.error(t('evaluations.error_generic'))
+      }
+    } finally {
+      setLoadingStats(false)
+    }
+  }
+
+  const fetchLowScores = async (params: { startDate?: string; endDate?: string }) => {
+    if (controllers.has('lowScores')) {
+      controllers.get('lowScores')?.abort()
+    }
+    const controller = new AbortController()
+    controllers.set('lowScores', controller)
+
+    try {
+      setLoadingLow(true)
+      const res = await adminApi.getLowScores(params)
+      if (res.data.success) {
+        setLowScores(res.data.data)
+      } else {
+        toast.error(t('evaluations.error_low'))
+      }
+    } catch (err: any) {
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        toast.error(t('evaluations.error_generic'))
+      }
+    } finally {
+      setLoadingLow(false)
+    }
+  }
+
+  // Monitor global filter changes
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await adminApi.getEvaluationStats()
-        if (res.data.success) setStats(res.data.data)
-        else toast.error(t('evaluations.error_stats'))
-      } catch {
-        toast.error(t('evaluations.error_generic'))
-      } finally {
-        setLoadingStats(false)
-      }
-    }
-    const fetchLow = async () => {
-      try {
-        const res = await adminApi.getLowScores()
-        if (res.data.success) setLowScores(res.data.data)
-        else toast.error(t('evaluations.error_low'))
-      } catch {
-        toast.error(t('evaluations.error_generic'))
-      } finally {
-        setLoadingLow(false)
-      }
-    }
-    fetchStats()
-    fetchLow()
-  }, [t])
+    fetchLowScores({ startDate: globalFilter.startDate, endDate: globalFilter.endDate })
+  }, [globalFilter.startDate, globalFilter.endDate])
+
+  useEffect(() => {
+    const activeStart = chartFilter.isOverridden ? chartFilter.startDate : globalFilter.startDate
+    const activeEnd = chartFilter.isOverridden ? chartFilter.endDate : globalFilter.endDate
+    fetchStats({ startDate: activeStart, endDate: activeEnd })
+  }, [globalFilter.startDate, globalFilter.endDate, chartFilter.startDate, chartFilter.endDate, chartFilter.isOverridden])
 
   const hasData = stats.length > 0
   const latest = stats[stats.length - 1] ?? {
@@ -142,31 +193,54 @@ export default function AdminEvaluations() {
         {t('evaluations.title')}
       </h1>
 
+      {/* Global Date Filter */}
+      <DateRangeFilter
+        initialStartDate={globalFilter.startDate}
+        initialEndDate={globalFilter.endDate}
+        onApply={(s, e) => globalFilter.setDates(s, e)}
+        onReset={() => globalFilter.resetDates()}
+      />
+
       {/* Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title={t('evaluations.faithfulness')}
           value={hasData ? latest.avgFaithfulness.toFixed(2) : '—'}
+          loading={loadingStats}
         />
         <MetricCard
           title={t('evaluations.relevancy')}
           value={hasData ? latest.avgRelevancy.toFixed(2) : '—'}
+          loading={loadingStats}
         />
         <MetricCard
           title={t('evaluations.precision')}
           value={hasData ? latest.avgPrecision.toFixed(2) : '—'}
+          loading={loadingStats}
         />
         <MetricCard
           title={t('evaluations.recall')}
           value={hasData ? latest.avgRecall.toFixed(2) : '—'}
+          loading={loadingStats}
         />
       </div>
 
       {/* Trends Line Chart */}
-      <section className="border-border/40 bg-card/30 rounded-2xl border p-6 shadow-sm">
-        <h2 className="text-muted-foreground mb-4 font-semibold uppercase">
-          {t('evaluations.daily_trends')}
-        </h2>
+      <section className="border-border/40 bg-card/30 rounded-2xl border p-6 shadow-sm relative">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-muted-foreground font-semibold uppercase">
+            {t('evaluations.daily_trends')}
+          </h2>
+          <DateRangeFilter
+            isPopover={true}
+            initialStartDate={chartFilter.startDate}
+            initialEndDate={chartFilter.endDate}
+            isOverridden={chartFilter.isOverridden}
+            onApply={(s, e) => chartFilter.applyCustomFilter(s, e)}
+            onReset={() => chartFilter.resetToGlobal()}
+            onUseGlobal={() => chartFilter.resetToGlobal()}
+          />
+        </div>
         {loadingStats ? (
           <div className="flex h-48 items-center justify-center">
             <Loader2 className="text-primary h-8 w-8 animate-spin" />
@@ -202,28 +276,32 @@ export default function AdminEvaluations() {
                 type="monotone"
                 dataKey="avgFaithfulness"
                 name={t('evaluations.faithfulness')}
-                stroke="#6366f1"
+                stroke="#10b981"
+                strokeWidth={2}
                 dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="avgRelevancy"
                 name={t('evaluations.relevancy')}
-                stroke="#22c55e"
+                stroke="#3b82f6"
+                strokeWidth={2}
                 dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="avgPrecision"
                 name={t('evaluations.precision')}
-                stroke="#f59e0b"
+                stroke="#8b5cf6"
+                strokeWidth={2}
                 dot={false}
               />
               <Line
                 type="monotone"
                 dataKey="avgRecall"
                 name={t('evaluations.recall')}
-                stroke="#ef4444"
+                stroke="#f59e0b"
+                strokeWidth={2}
                 dot={false}
               />
             </ReLineChart>
@@ -231,85 +309,55 @@ export default function AdminEvaluations() {
         )}
       </section>
 
-      {/* Low-Score Table */}
-      <section className="border-border/40 bg-card/30 rounded-2xl border p-6 shadow-sm">
-        <h2 className="text-muted-foreground mb-4 font-semibold uppercase">
-          {t('evaluations.low_scores')}
+      {/* Low Score Evaluations */}
+      <section className="space-y-4">
+        <h2 className="text-muted-foreground font-semibold uppercase">
+          {t('evaluations.low_scores', { defaultValue: 'Low Score Analytics (Requires Attention)' })}
         </h2>
         {loadingLow ? (
-          <div className="flex h-48 items-center justify-center">
-            <Loader2 className="text-primary h-8 w-8 animate-spin" />
+          <div className="flex h-24 items-center justify-center">
+            <Loader2 className="text-primary h-6 w-6 animate-spin" />
           </div>
         ) : lowScores.length === 0 ? (
-          <div className="flex h-32 flex-col items-center justify-center gap-2 text-center">
-            <p className="text-muted-foreground text-sm">
-              {t('evaluations.no_evaluations')}
-            </p>
-          </div>
+          <p className="text-muted-foreground text-sm font-semibold p-4 border border-border/40 rounded-xl bg-card/20 text-center">
+            {t('evaluations.no_low_scores', { defaultValue: 'No low scores detected.' })}
+          </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto border-collapse">
-              <thead>
-                <tr className="bg-muted">
-                  <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    {t('evaluations.analysis_id')}
-                  </th>
-                  <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    {t('evaluations.lowest_metric')}
-                  </th>
-                  <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    {t('evaluations.score')}
-                  </th>
-                  <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    {t('evaluations.reasoning')}
-                  </th>
-                  <th className="text-muted-foreground px-4 py-2 text-center text-xs font-medium">
-                    {t('evaluations.action')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {lowScores.map((e) => {
-                  const { metric, value } = getLowestMetric(e)
-                  const reasoning =
-                    e.reasoning[metric as keyof typeof e.reasoning] ?? ''
-                  return (
-                    <tr key={e._id} className="border-border/20 border-b">
-                      <td className="text-foreground px-4 py-2 text-sm">
-                        {e.analysisId?.toString().slice(0, 12)}…
-                      </td>
-                      <td className="text-foreground px-4 py-2 text-sm capitalize">
-                        {metricLabel(metric)}
-                      </td>
-                      <td className="text-foreground px-4 py-2 text-sm">
-                        {value}
-                      </td>
-                      <td
-                        className="text-muted-foreground max-w-xs truncate px-4 py-2 text-sm"
-                        title={reasoning}
-                      >
-                        {reasoning}
-                      </td>
-                      <td className="px-4 py-2 text-center">
-                        <button
-                          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded px-3 py-1 text-xs font-medium transition-colors"
-                          onClick={() => {
-                            toast.info(
-                              t('evaluations.inspect', { id: e.analysisId })
-                            )
-                          }}
-                        >
-                          {t('evaluations.view')}
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {lowScores.map((e) => {
+              const lowest = getLowestMetric(e)
+              return (
+                <div
+                  key={e._id}
+                  className="border border-border/40 bg-card/30 rounded-2xl p-5 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground font-semibold">
+                      {new Date(e.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className="bg-destructive/10 text-destructive rounded-lg px-2 py-0.5 text-xs font-bold capitalize">
+                      {metricLabel(lowest.metric)}: {lowest.value.toFixed(1)}
+                    </span>
+                  </div>
+                  {e.reasoning.overall && (
+                    <p className="text-foreground text-sm font-medium">
+                      {e.reasoning.overall}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </section>
     </div>
+  )
+}
+
+export default function AdminEvaluations() {
+  return (
+    <DashboardFilterProvider>
+      <AdminEvaluationsContent />
+    </DashboardFilterProvider>
   )
 }

@@ -257,8 +257,8 @@ export interface DashboardData {
 }
 
 export const adminApi = {
-  getDashboard: () =>
-    adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard'),
+  getDashboard: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard', { params }),
   getStats: () => adminClient.get<AdminStats>('/stats'),
   // Evaluation endpoints
   getEvaluationStats: (params?: { startDate?: string; endDate?: string }) =>
@@ -330,8 +330,8 @@ export const adminApi = {
       reason,
     }),
 
-  // ── Financial Admin ─────────────────────────────────
-  getFinancialOverview: () => adminClient.get('/financial/overview'),
+  getFinancialOverview: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get('/financial/overview', { params }),
   getSubscriptions: (params?: {
     page?: number
     planSlug?: string
