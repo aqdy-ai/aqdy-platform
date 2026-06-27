@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePermissions } from '../../hooks/usePermissions'
 import { motion } from 'framer-motion'
@@ -17,6 +17,7 @@ import {
   Zap,
   Database,
   Languages,
+  Filter,
 } from 'lucide-react'
 import {
   BarChart,
@@ -135,21 +136,35 @@ export default function AdminDashboard() {
   const canViewUserData = hasPermission('accounts', 'read')
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [appliedStartDate, setAppliedStartDate] = useState('')
+  const [appliedEndDate, setAppliedEndDate] = useState('')
+
+  const fetchData = useCallback(async (sd: string, ed: string) => {
+    try {
+      setLoading(true)
+      const params: { startDate?: string; endDate?: string } = {}
+      if (sd) params.startDate = sd
+      if (ed) params.endDate = ed
+      const res = await adminApi.getDashboard(Object.keys(params).length ? params : undefined)
+      if (res.data.success) setData(res.data.data)
+    } catch {
+      toast.error(t('admin.error_updating'))
+    } finally {
+      setLoading(false)
+    }
+  }, [t])
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const res = await adminApi.getDashboard()
-        if (res.data.success) setData(res.data.data)
-      } catch {
-        toast.error(t('admin.error_updating'))
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [t])
+    fetchData('', '')
+  }, [fetchData])
+
+  const handleFilter = () => {
+    setAppliedStartDate(startDate)
+    setAppliedEndDate(endDate)
+    fetchData(startDate, endDate)
+  }
 
   if (loading) {
     return (
@@ -189,6 +204,53 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* ── Date Filter Bar ── */}
+      <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <label className="text-muted-foreground text-xs font-semibold">
+            {isRtl ? 'من' : 'From'}:
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-muted-foreground text-xs font-semibold">
+            {isRtl ? 'إلى' : 'To'}:
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
+          />
+        </div>
+        <button
+          onClick={handleFilter}
+          className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition-colors hover:opacity-90"
+        >
+          <Filter size={12} />
+          {t('admin.filter', { defaultValue: 'Filter' })}
+        </button>
+        {(appliedStartDate || appliedEndDate) && (
+          <button
+            onClick={() => {
+              setStartDate('')
+              setEndDate('')
+              setAppliedStartDate('')
+              setAppliedEndDate('')
+              fetchData('', '')
+            }}
+            className="text-muted-foreground hover:text-foreground text-xs font-semibold underline"
+          >
+            {t('admin.clear_filters', { defaultValue: 'Clear filters' })}
+          </button>
+        )}
+      </div>
+
       {/* ── Section 1: Business Overview ── */}
       <SectionHeading
         title={isRtl ? 'نظرة عامة على الأعمال' : 'BUSINESS OVERVIEW'}

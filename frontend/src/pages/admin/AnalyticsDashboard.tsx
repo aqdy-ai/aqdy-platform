@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePermissions } from '../../hooks/usePermissions'
 import { motion } from 'framer-motion'
@@ -19,6 +19,9 @@ import {
   Languages,
   Eye,
   Download,
+  Volume2,
+  VolumeX,
+  Filter,
 } from 'lucide-react'
 import {
   BarChart,
@@ -78,22 +81,22 @@ function MetricCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay }}
-      className="border-border/40 bg-card/40 hover:border-primary/30 relative min-h-[130px] overflow-hidden rounded-2xl border p-6 shadow-sm transition-all duration-300 hover:shadow-md"
+      className="border-border/40 bg-card/40 hover:border-primary/30 overflow-hidden rounded-xl border p-3 shadow-sm transition-all duration-300 hover:shadow-md"
     >
       <div className="flex items-start justify-between">
-        <span className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+        <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
           {title}
         </span>
-        <div className={`rounded-xl bg-gradient-to-br p-2.5 ${color}`}>
-          <Icon className="h-4 w-4" />
+        <div className={`rounded-lg bg-gradient-to-br p-1.5 ${color}`}>
+          <Icon className="h-3 w-3" />
         </div>
       </div>
-      <div className="mt-3">
-        <h3 className="text-foreground text-3xl font-black tracking-tight">
+      <div className="mt-1.5">
+        <h3 className="text-foreground text-lg font-black tracking-tight">
           {value}
         </h3>
         {trend && (
-          <p className="text-muted-foreground mt-1 text-xs font-semibold">
+          <p className="text-muted-foreground mt-0.5 text-[10px] font-semibold">
             {trend}
           </p>
         )}
@@ -155,20 +158,62 @@ export default function AnalyticsDashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const res = await adminApi.getDashboard()
-        if (res.data.success) setData(res.data.data)
-      } catch {
-        toast.error(t('admin.error_updating'))
-      } finally {
-        setLoading(false)
-      }
+  // Date filters
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [appliedStartDate, setAppliedStartDate] = useState('')
+  const [appliedEndDate, setAppliedEndDate] = useState('')
+
+  // TTS
+  const [ttsPlaying, setTtsPlaying] = useState(false)
+
+  const fetchData = useCallback(async (sd: string, ed: string) => {
+    try {
+      setLoading(true)
+      const params: { startDate?: string; endDate?: string } = {}
+      if (sd) params.startDate = sd
+      if (ed) params.endDate = ed
+      const res = await adminApi.getDashboard(Object.keys(params).length ? params : undefined)
+      if (res.data.success) setData(res.data.data)
+    } catch {
+      toast.error(t('admin.error_updating'))
+    } finally {
+      setLoading(false)
     }
-    fetchData()
   }, [t])
+
+  useEffect(() => {
+    fetchData('', '')
+  }, [fetchData])
+
+  const handleFilter = () => {
+    setAppliedStartDate(startDate)
+    setAppliedEndDate(endDate)
+    fetchData(startDate, endDate)
+  }
+
+  const handleSpeakSummary = () => {
+    if (!data) return
+    if (ttsPlaying) {
+      window.speechSynthesis.cancel()
+      setTtsPlaying(false)
+      return
+    }
+    const lang = i18n.language === 'ar' ? 'ar-EG' : 'en-US'
+    const summary = isRtl
+      ? `ملخص تحليلات أكيدس. إجمالي المستخدمين: ${data.totalAccounts}. الإيرادات الشهرية المتكررة: ${data.mrrCurrent} دولار. التحليلات هذا الشهر: ${data.analysesThisMonth}. إجمالي التحليلات: ${data.totalAnalyses}. الاعتمادات المستهلكة هذا الشهر: ${data.creditsConsumedThisMonth}.`
+      : `Aqdes Analytics Summary. Total users: ${data.totalAccounts}. Monthly recurring revenue: ${data.mrrCurrent} dollars. Analyses this month: ${data.analysesThisMonth}. Total analyses: ${data.totalAnalyses}. Credits consumed this month: ${data.creditsConsumedThisMonth}.`
+
+    const utterance = new SpeechSynthesisUtterance(summary)
+    utterance.lang = lang
+    utterance.rate = 1
+    utterance.pitch = 1
+    utterance.onend = () => setTtsPlaying(false)
+    utterance.onerror = () => setTtsPlaying(false)
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.speak(utterance)
+    setTtsPlaying(true)
+  }
 
   if (loading) {
     return (
@@ -219,192 +264,89 @@ export default function AnalyticsDashboard() {
             {t('admin.readonly', { defaultValue: 'READ-ONLY' })}
           </span>
         </div>
-        <button
-          onClick={() => {
-            const allData: Record<string, unknown>[] = [
-              {
-                totalAccounts: data.totalAccounts,
-                accountsThisWeek: data.accountsThisWeek,
-                activeSubscriptions: data.activeSubscriptions,
-                totalAnalyses: data.totalAnalyses,
-                mrr: data.mrrCurrent,
-                mrrChange: data.mrrChange,
-                creditsIssued: data.creditsIssuedAllTime,
-                creditsConsumed: data.creditsConsumedThisMonth,
-                analysesThisMonth: data.analysesThisMonth,
-                avgCredits: data.avgCreditsPerAnalysis,
-              },
-            ]
-            exportSection('full-dashboard', allData)
-          }}
-          className="bg-muted text-muted-foreground hover:text-foreground flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
-        >
-          <Download size={12} />
-          {t('admin.export_csv', { defaultValue: 'Export CSV' })}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSpeakSummary}
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${ttsPlaying ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+            title={isRtl ? 'استماع إلى الملخص' : 'Listen to summary'}
+          >
+            {ttsPlaying ? <Volume2 size={12} /> : <VolumeX size={12} />}
+            {ttsPlaying ? (isRtl ? 'إيقاف' : 'Stop') : (isRtl ? 'استماع' : 'Listen')}
+          </button>
+          <button
+            onClick={() => {
+              const allData: Record<string, unknown>[] = [
+                {
+                  totalAccounts: data.totalAccounts,
+                  accountsThisWeek: data.accountsThisWeek,
+                  activeSubscriptions: data.activeSubscriptions,
+                  totalAnalyses: data.totalAnalyses,
+                  mrr: data.mrrCurrent,
+                  mrrChange: data.mrrChange,
+                  creditsIssued: data.creditsIssuedAllTime,
+                  creditsConsumed: data.creditsConsumedThisMonth,
+                  analysesThisMonth: data.analysesThisMonth,
+                  avgCredits: data.avgCreditsPerAnalysis,
+                },
+              ]
+              exportSection('full-dashboard', allData)
+            }}
+            className="bg-muted text-muted-foreground hover:text-foreground flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
+          >
+            <Download size={12} />
+            {t('admin.export_csv', { defaultValue: 'Export CSV' })}
+          </button>
+        </div>
       </div>
 
-      {/* ── Section 1: Business Overview ── */}
-      <div className="flex items-center justify-between">
-        <SectionHeading
-          title={isRtl ? 'نظرة عامة على الأعمال' : 'BUSINESS OVERVIEW'}
-        />
+      {/* ── Date Filter Bar ── */}
+      <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <label className="text-muted-foreground text-xs font-semibold">
+            {isRtl ? 'من' : 'From'}:
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-muted-foreground text-xs font-semibold">
+            {isRtl ? 'إلى' : 'To'}:
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
+          />
+        </div>
         <button
-          onClick={() =>
-            exportSection('business-overview', [
-              {
-                totalAccounts: data.totalAccounts,
-                accountsThisWeek: data.accountsThisWeek,
-                activeSubscriptions: data.activeSubscriptions,
-                mrr: data.mrrCurrent,
-                analysesThisMonth: data.analysesThisMonth,
-                avgCredits: data.avgCreditsPerAnalysis,
-              },
-            ])
-          }
-          className="bg-muted text-muted-foreground hover:text-foreground flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
+          onClick={handleFilter}
+          className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition-colors hover:opacity-90"
         >
-          <Download size={12} />
-          CSV
+          <Filter size={12} />
+          {t('admin.filter', { defaultValue: 'Filter' })}
         </button>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <MetricCard
-          title={t('admin.total_users')}
-          value={formatNumber(data.totalAccounts)}
-          trend={
-            isRtl
-              ? `↑ ${data.accountsThisWeek} هذا الأسبوع`
-              : `↑ ${data.accountsThisWeek} this week`
-          }
-          icon={Users}
-          delay={0}
-          color="from-blue-500/20 to-indigo-500/20 text-indigo-500"
-        />
-        <MetricCard
-          title={isRtl ? 'الاشتراكات المدفوعة' : 'Paid Subscriptions'}
-          value={formatNumber(data.activeSubscriptions)}
-          trend={
-            isRtl
-              ? `${data.mrrCurrent > 0 ? '↑' : ''} $${data.mrrCurrent} MRR`
-              : `$${formatUSD(data.mrrCurrent)} MRR`
-          }
-          icon={Layers}
-          delay={0.05}
-          color="from-emerald-500/20 to-teal-500/20 text-emerald-500"
-        />
-        <MetricCard
-          title={t('admin.mrr')}
-          value={formatUSD(data.mrrCurrent)}
-          trend={`${data.mrrChange >= 0 ? '↑' : '↓'} ${Math.abs(data.mrrChange)}% vs last month`}
-          icon={TrendingUp}
-          delay={0.1}
-          color="from-amber-500/20 to-orange-500/20 text-amber-500"
-        />
-        <MetricCard
-          title={t('admin.analyses_this_month')}
-          value={formatNumber(data.analysesThisMonth)}
-          trend={`${data.analysesChange >= 0 ? '↑' : '↓'} ${Math.abs(data.analysesChange)}% vs last month`}
-          icon={BarChart3}
-          delay={0.15}
-          color="from-purple-500/20 to-pink-500/20 text-purple-500"
-        />
-        <MetricCard
-          title={
-            isRtl ? 'متوسط الاعتمادات لكل تحليل' : 'Avg Credits / Analysis'
-          }
-          value={String(data.avgCreditsPerAnalysis)}
-          trend={
-            isRtl
-              ? `${data.creditsConsumedThisMonth > 0 ? 'مستقر' : 'لا توجد بيانات'}`
-              : data.creditsConsumedThisMonth > 0
-                ? 'stable'
-                : 'no data'
-          }
-          icon={Coins}
-          delay={0.2}
-          color="from-rose-500/20 to-red-500/20 text-rose-500"
-        />
+        {(appliedStartDate || appliedEndDate) && (
+          <button
+            onClick={() => {
+              setStartDate('')
+              setEndDate('')
+              setAppliedStartDate('')
+              setAppliedEndDate('')
+              fetchData('', '')
+            }}
+            className="text-muted-foreground hover:text-foreground text-xs font-semibold underline"
+          >
+            {t('admin.clear_filters', { defaultValue: 'Clear filters' })}
+          </button>
+        )}
       </div>
 
-      {/* ── Section 2: Credits Ledger ── */}
-      <div className="flex items-center justify-between">
-        <SectionHeading title={isRtl ? 'سجل الاعتمادات' : 'CREDITS LEDGER'} />
-        <button
-          onClick={() =>
-            exportSection('credits-ledger', [
-              {
-                creditsIssuedAllTime: data.creditsIssuedAllTime,
-                creditsConsumedThisMonth: data.creditsConsumedThisMonth,
-                creditsRemaining: data.creditsRemaining,
-                avgInputTokens: data.avgInputTokens,
-              },
-            ])
-          }
-          className="bg-muted text-muted-foreground hover:text-foreground flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
-        >
-          <Download size={12} />
-          CSV
-        </button>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <MetricCard
-          title={
-            isRtl
-              ? 'الاعتمادات المصدرة (كل الوقت)'
-              : 'Credits Issued (All Time)'
-          }
-          value={formatNumber(data.creditsIssuedAllTime)}
-          icon={Coins}
-          delay={0}
-          color="from-violet-500/20 to-purple-500/20 text-purple-500"
-        />
-        <MetricCard
-          title={
-            isRtl
-              ? 'الاعتمادات المستهلكة هذا الشهر'
-              : 'Credits Consumed This Month'
-          }
-          value={formatNumber(data.creditsConsumedThisMonth)}
-          trend={
-            data.creditsConsumedLastMonth > 0
-              ? `${data.creditsConsumedThisMonth >= data.creditsConsumedLastMonth ? '↑' : '↓'} vs last month`
-              : undefined
-          }
-          icon={Zap}
-          delay={0.05}
-          color="from-amber-500/20 to-yellow-500/20 text-amber-500"
-        />
-        <MetricCard
-          title={
-            isRtl
-              ? 'الاعتمادات المتبقية (كل المستخدمين)'
-              : 'Credits Remaining (All Users)'
-          }
-          value={formatNumber(data.creditsRemaining)}
-          icon={Database}
-          delay={0.1}
-          color="from-cyan-500/20 to-blue-500/20 text-cyan-500"
-        />
-        <MetricCard
-          title={
-            isRtl
-              ? 'متوسط توكنات الإدخال لكل تحليل'
-              : 'Avg Input Tokens / Analysis'
-          }
-          value={formatNumber(data.avgInputTokens)}
-          trend={
-            isRtl
-              ? 'توكنات الإخراج أثقل في معادلة الفوترة'
-              : 'output tokens weighted more in billing'
-          }
-          icon={FileText}
-          delay={0.15}
-          color="from-sky-500/20 to-indigo-500/20 text-sky-500"
-        />
-      </div>
-
-      {/* ── Section 3: Revenue & Growth ── */}
+      {/* ── Section 1: Revenue & Growth (Charts First) ── */}
       <div className="flex items-center justify-between">
         <SectionHeading
           title={isRtl ? 'الإيرادات والنمو' : 'REVENUE & GROWTH'}
@@ -511,7 +453,7 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      {/* ── Section 4: Usage ── */}
+      {/* ── Section 2: Usage ── */}
       <div className="flex items-center justify-between">
         <SectionHeading title={isRtl ? 'الاستخدام' : 'USAGE'} />
         <button
@@ -608,6 +550,166 @@ export default function AnalyticsDashboard() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* ── Section 3: Business Overview (Cards) ── */}
+      <div className="flex items-center justify-between">
+        <SectionHeading
+          title={isRtl ? 'نظرة عامة على الأعمال' : 'BUSINESS OVERVIEW'}
+        />
+        <button
+          onClick={() =>
+            exportSection('business-overview', [
+              {
+                totalAccounts: data.totalAccounts,
+                accountsThisWeek: data.accountsThisWeek,
+                activeSubscriptions: data.activeSubscriptions,
+                mrr: data.mrrCurrent,
+                analysesThisMonth: data.analysesThisMonth,
+                avgCredits: data.avgCreditsPerAnalysis,
+              },
+            ])
+          }
+          className="bg-muted text-muted-foreground hover:text-foreground flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
+        >
+          <Download size={12} />
+          CSV
+        </button>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <MetricCard
+          title={t('admin.total_users')}
+          value={formatNumber(data.totalAccounts)}
+          trend={
+            isRtl
+              ? `↑ ${data.accountsThisWeek} هذا الأسبوع`
+              : `↑ ${data.accountsThisWeek} this week`
+          }
+          icon={Users}
+          delay={0}
+          color="from-blue-500/20 to-indigo-500/20 text-indigo-500"
+        />
+        <MetricCard
+          title={isRtl ? 'الاشتراكات المدفوعة' : 'Paid Subscriptions'}
+          value={formatNumber(data.activeSubscriptions)}
+          trend={
+            isRtl
+              ? `${data.mrrCurrent > 0 ? '↑' : ''} $${data.mrrCurrent} MRR`
+              : `$${formatUSD(data.mrrCurrent)} MRR`
+          }
+          icon={Layers}
+          delay={0.05}
+          color="from-emerald-500/20 to-teal-500/20 text-emerald-500"
+        />
+        <MetricCard
+          title={t('admin.mrr')}
+          value={formatUSD(data.mrrCurrent)}
+          trend={`${data.mrrChange >= 0 ? '↑' : '↓'} ${Math.abs(data.mrrChange)}% vs last month`}
+          icon={TrendingUp}
+          delay={0.1}
+          color="from-amber-500/20 to-orange-500/20 text-amber-500"
+        />
+        <MetricCard
+          title={t('admin.analyses_this_month')}
+          value={formatNumber(data.analysesThisMonth)}
+          trend={`${data.analysesChange >= 0 ? '↑' : '↓'} ${Math.abs(data.analysesChange)}% vs last month`}
+          icon={BarChart3}
+          delay={0.15}
+          color="from-purple-500/20 to-pink-500/20 text-purple-500"
+        />
+        <MetricCard
+          title={
+            isRtl ? 'متوسط الاعتمادات لكل تحليل' : 'Avg Credits / Analysis'
+          }
+          value={String(data.avgCreditsPerAnalysis)}
+          trend={
+            isRtl
+              ? `${data.creditsConsumedThisMonth > 0 ? 'مستقر' : 'لا توجد بيانات'}`
+              : data.creditsConsumedThisMonth > 0
+                ? 'stable'
+                : 'no data'
+          }
+          icon={Coins}
+          delay={0.2}
+          color="from-rose-500/20 to-red-500/20 text-rose-500"
+        />
+      </div>
+
+      {/* ── Section 4: Credits Ledger (Cards) ── */}
+      <div className="flex items-center justify-between">
+        <SectionHeading title={isRtl ? 'سجل الاعتمادات' : 'CREDITS LEDGER'} />
+        <button
+          onClick={() =>
+            exportSection('credits-ledger', [
+              {
+                creditsIssuedAllTime: data.creditsIssuedAllTime,
+                creditsConsumedThisMonth: data.creditsConsumedThisMonth,
+                creditsRemaining: data.creditsRemaining,
+                avgInputTokens: data.avgInputTokens,
+              },
+            ])
+          }
+          className="bg-muted text-muted-foreground hover:text-foreground flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors"
+        >
+          <Download size={12} />
+          CSV
+        </button>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <MetricCard
+          title={
+            isRtl
+              ? 'الاعتمادات المصدرة (كل الوقت)'
+              : 'Credits Issued (All Time)'
+          }
+          value={formatNumber(data.creditsIssuedAllTime)}
+          icon={Coins}
+          delay={0}
+          color="from-violet-500/20 to-purple-500/20 text-purple-500"
+        />
+        <MetricCard
+          title={
+            isRtl
+              ? 'الاعتمادات المستهلكة هذا الشهر'
+              : 'Credits Consumed This Month'
+          }
+          value={formatNumber(data.creditsConsumedThisMonth)}
+          trend={
+            data.creditsConsumedLastMonth > 0
+              ? `${data.creditsConsumedThisMonth >= data.creditsConsumedLastMonth ? '↑' : '↓'} vs last month`
+              : undefined
+          }
+          icon={Zap}
+          delay={0.05}
+          color="from-amber-500/20 to-yellow-500/20 text-amber-500"
+        />
+        <MetricCard
+          title={
+            isRtl
+              ? 'الاعتمادات المتبقية (كل المستخدمين)'
+              : 'Credits Remaining (All Users)'
+          }
+          value={formatNumber(data.creditsRemaining)}
+          icon={Database}
+          delay={0.1}
+          color="from-cyan-500/20 to-blue-500/20 text-cyan-500"
+        />
+        <MetricCard
+          title={
+            isRtl
+              ? 'متوسط توكنات الإدخال لكل تحليل'
+              : 'Avg Input Tokens / Analysis'
+          }
+          value={formatNumber(data.avgInputTokens)}
+          trend={
+            isRtl
+              ? 'توكنات الإخراج أثقل في معادلة الفوترة'
+              : 'output tokens weighted more in billing'
+          }
+          icon={FileText}
+          delay={0.15}
+          color="from-sky-500/20 to-indigo-500/20 text-sky-500"
+        />
       </div>
 
       {/* ── Section 5: Pipeline & Product ── */}
