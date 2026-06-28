@@ -13,7 +13,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { adminApi } from '../../services/adminApi'
-import { Loader2, BarChart3, Filter } from 'lucide-react'
+import { Loader2, BarChart3, Filter, Calendar } from 'lucide-react'
 
 interface DailyStat {
   date: string
@@ -166,13 +166,24 @@ export default function AdminEvaluations() {
           >
             From:
           </label>
-          <input
-            id="eval-start-date"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
-          />
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="eval-start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <label
@@ -181,13 +192,24 @@ export default function AdminEvaluations() {
           >
             To:
           </label>
-          <input
-            id="eval-end-date"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
-          />
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="eval-end-date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
         </div>
         <button
           onClick={handleFilter}

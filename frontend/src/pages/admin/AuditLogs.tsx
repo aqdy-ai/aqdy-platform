@@ -1,6 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { History, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  History,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react'
 import { adminApi } from '../../services/adminApi'
 import { toast } from 'sonner'
 
@@ -59,10 +66,20 @@ export default function AuditLogs() {
   >(null)
   const [loading, setLoading] = useState(true)
 
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [actionFilter, setActionFilter] = useState('')
   const [outcomeFilter, setOutcomeFilter] = useState('')
   const [emailFilter, setEmailFilter] = useState('')
   const [page, setPage] = useState(1)
+
+  const toggleRow = (id: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const fetchLogs = useCallback(async () => {
     try {
@@ -213,39 +230,89 @@ export default function AuditLogs() {
               </tr>
             ) : (
               entries.map((e) => (
-                <tr
-                  key={e._id}
-                  className="border-border/20 hover:bg-muted/30 border-b transition-colors"
-                >
-                  <td className="text-muted-foreground px-4 py-3 text-xs whitespace-nowrap">
-                    {new Date(e.timestamp).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3 text-xs font-semibold">
-                    {formatAction(e.action)}
-                  </td>
-                  <td className="px-4 py-3 text-xs">
-                    {e.userEmail ? (
-                      <span className="font-medium">{e.userEmail}</span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span
-                      className={`rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase ${outcomeColor(e.outcome)}`}
-                    >
-                      {e.outcome}
-                    </span>
-                  </td>
-                  <td className="text-muted-foreground max-w-[200px] px-4 py-3 text-xs">
-                    <span className="block truncate">
-                      {e.errorMessage ||
-                        (e.metadata
-                          ? JSON.stringify(e.metadata).slice(0, 80)
-                          : '—')}
-                    </span>
-                  </td>
-                </tr>
+                <React.Fragment key={e._id}>
+                  <tr className="border-border/20 hover:bg-muted/30 border-b transition-colors">
+                    <td className="text-muted-foreground px-4 py-3 text-xs whitespace-nowrap">
+                      {new Date(e.timestamp).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-xs font-semibold">
+                      {formatAction(e.action)}
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      {e.userEmail ? (
+                        <span className="font-medium">{e.userEmail}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span
+                        className={`rounded-lg px-2 py-0.5 text-[10px] font-bold uppercase ${outcomeColor(e.outcome)}`}
+                      >
+                        {e.outcome}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => toggleRow(e._id)}
+                        className="text-primary hover:text-primary/80 flex items-center gap-1.5 text-xs font-semibold transition-colors"
+                      >
+                        {expandedRows.has(e._id) ? (
+                          <ChevronUp size={14} />
+                        ) : (
+                          <ChevronDown size={14} />
+                        )}
+                        {t('admin.more_details', {
+                          defaultValue: 'More Details',
+                        })}
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedRows.has(e._id) && (
+                    <tr className="border-border/20 border-b">
+                      <td colSpan={5} className="bg-muted/20 px-6 py-4">
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs">
+                          <div>
+                            <span className="text-muted-foreground font-semibold">
+                              User ID:
+                            </span>{' '}
+                            <span className="text-foreground">
+                              {e.userId || '—'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground font-semibold">
+                              IP Address:
+                            </span>{' '}
+                            <span className="text-foreground">
+                              {e.ipAddress || '—'}
+                            </span>
+                          </div>
+                          {e.errorMessage && (
+                            <div className="col-span-2">
+                              <span className="text-muted-foreground font-semibold">
+                                Error:
+                              </span>{' '}
+                              <span className="text-red-500">
+                                {e.errorMessage}
+                              </span>
+                            </div>
+                          )}
+                          {e.metadata && Object.keys(e.metadata).length > 0 && (
+                            <div className="col-span-2">
+                              <span className="text-muted-foreground font-semibold">
+                                Metadata:
+                              </span>{' '}
+                              <pre className="bg-background mt-1 overflow-x-auto rounded-lg p-3 text-xs">
+                                {JSON.stringify(e.metadata, null, 2)}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))
             )}
           </tbody>

@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BookOpen, Pencil, Trash2, Bot, Plus, X, Search } from 'lucide-react'
+import {
+  BookOpen,
+  Pencil,
+  Trash2,
+  Bot,
+  Plus,
+  X,
+  Search,
+  Calendar,
+} from 'lucide-react'
 import { adminApi } from '../../services/adminApi'
 import { usePermissions } from '../../hooks/usePermissions'
 import { toast } from 'sonner'
@@ -801,19 +810,43 @@ export default function ContentDashboard() {
             ))}
             {metricsDateRange === 'custom' && (
               <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="bg-background border-border rounded-xl border px-3 py-1.5 text-xs"
-                />
+                <div className="relative">
+                  <Calendar
+                    className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+                    onClick={(e) => {
+                      const input =
+                        e.currentTarget.parentElement?.querySelector(
+                          'input[type="date"]'
+                        ) as HTMLInputElement | null
+                      input?.showPicker()
+                    }}
+                  />
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="bg-background border-border rounded-xl border px-3 py-1.5 ps-8 text-xs"
+                  />
+                </div>
                 <span className="text-muted-foreground text-xs">&ndash;</span>
-                <input
-                  type="date"
-                  value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="bg-background border-border rounded-xl border px-3 py-1.5 text-xs"
-                />
+                <div className="relative">
+                  <Calendar
+                    className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+                    onClick={(e) => {
+                      const input =
+                        e.currentTarget.parentElement?.querySelector(
+                          'input[type="date"]'
+                        ) as HTMLInputElement | null
+                      input?.showPicker()
+                    }}
+                  />
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="bg-background border-border rounded-xl border px-3 py-1.5 ps-8 text-xs"
+                  />
+                </div>
               </div>
             )}
           </div>

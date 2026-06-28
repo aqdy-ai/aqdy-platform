@@ -306,9 +306,9 @@ const AdminPlans = () => {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 py-10 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 py-10 backdrop-blur-sm">
           <div
-            className={`bg-card mx-4 w-full max-w-2xl rounded-3xl border p-8 shadow-2xl ${
+            className={`bg-card mx-4 max-h-[calc(100vh-5rem)] w-full max-w-2xl overflow-y-auto rounded-3xl border p-8 shadow-2xl ${
               isRtl ? 'text-right' : 'text-left'
             }`}
           >
@@ -554,8 +554,8 @@ const AdminPlans = () => {
 
       {/* Delete confirmation toast alternative handled inline */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 py-20 backdrop-blur-sm">
-          <div className="bg-card mx-4 mt-10 w-full max-w-md rounded-3xl border p-8 text-center shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-card mx-4 w-full max-w-md rounded-3xl border p-8 text-center shadow-2xl">
             <AlertTriangle
               size={40}
               className="text-destructive mx-auto mb-4"

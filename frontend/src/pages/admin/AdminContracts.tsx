@@ -275,7 +275,15 @@ const AdminContracts = () => {
 
         {/* Date From */}
         <div className="relative">
-          <Calendar className="text-muted-foreground/60 pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Calendar
+            className="text-muted-foreground/60 absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+            onClick={(e) => {
+              const input = e.currentTarget.parentElement?.querySelector(
+                'input[type="date"]'
+              ) as HTMLInputElement | null
+              input?.showPicker()
+            }}
+          />
           <input
             type="date"
             value={dateFrom}
@@ -290,7 +298,15 @@ const AdminContracts = () => {
 
         {/* Date To */}
         <div className="relative">
-          <Calendar className="text-muted-foreground/60 pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Calendar
+            className="text-muted-foreground/60 absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+            onClick={(e) => {
+              const input = e.currentTarget.parentElement?.querySelector(
+                'input[type="date"]'
+              ) as HTMLInputElement | null
+              input?.showPicker()
+            }}
+          />
           <input
             type="date"
             value={dateTo}
