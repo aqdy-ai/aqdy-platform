@@ -1,20 +1,40 @@
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      # Pass DOPPLER_TOKEN from shell:  DOPPLER_TOKEN=dp.st.xxx docker compose up
+      # When set, secrets are fetched from Doppler; otherwise falls back to .env
+      - DOPPLER_TOKEN=${DOPPLER_TOKEN}
+      - NODE_ENV=${NODE_ENV:-development}
     env_file:
-      - .env  # Point to the root .env file
+      - .env
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # This bakes the Google Client ID into the Vite static build
         - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
         - VITE_API_URL=http://localhost:3000/api
     ports:
       - "8080:80"
+    depends_on:
+      - backend

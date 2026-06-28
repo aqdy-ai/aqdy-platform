@@ -1,9 +1,7 @@
-import dotenv from "dotenv";
 import swaggerJsdoc from "swagger-jsdoc";
+import { env } from "./env.js";
 
-dotenv.config();
-
-const swaggerServerUrl = `http://localhost:${process.env.PORT || "3000"}`;
+const swaggerServerUrl = `http://localhost:${env.PORT}`;
 
 const options: swaggerJsdoc.Options = {
   definition: {

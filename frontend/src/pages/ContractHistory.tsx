@@ -242,7 +242,7 @@ export default function ContractHistory() {
             {exportDropdownOpen && (
               <div
                 className={cn(
-                  'border-border/50 bg-card animate-in fade-in-0 slide-in-from-top-1 absolute z-[40] mt-2 w-40 rounded-xl border p-1.5 shadow-xl backdrop-blur-md duration-150 end-0'
+                  'border-border/50 bg-card animate-in fade-in-0 slide-in-from-top-1 absolute end-0 z-[40] mt-2 w-40 rounded-xl border p-1.5 shadow-xl backdrop-blur-md duration-150'
                 )}
                 data-testid="export-dropdown"
               >
@@ -299,7 +299,7 @@ export default function ContractHistory() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
-                'bg-input/10 border-border/60 hover:border-border placeholder:text-muted-foreground/50 h-10 rounded-xl font-semibold ps-10'
+                'bg-input/10 border-border/60 hover:border-border placeholder:text-muted-foreground/50 h-10 rounded-xl ps-10 font-semibold'
               )}
               aria-label="Search filename"
             />
@@ -338,7 +338,7 @@ export default function ContractHistory() {
                   defaultValue: 'From Date',
                 })}
                 className={cn(
-                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl text-xs font-semibold ps-10'
+                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl ps-10 text-xs font-semibold'
                 )}
                 aria-label="From Date"
               />
@@ -366,7 +366,7 @@ export default function ContractHistory() {
                 }}
                 placeholder={t('history.date_to', { defaultValue: 'To Date' })}
                 className={cn(
-                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl text-xs font-semibold ps-10'
+                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl ps-10 text-xs font-semibold'
                 )}
                 aria-label="To Date"
               />

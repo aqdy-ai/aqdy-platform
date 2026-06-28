@@ -195,7 +195,7 @@ export const loginWithGoogle = async (
   let email: string;
   let name: string;
 
-  if (process.env.NODE_ENV === "test") {
+  if (env.NODE_ENV === "test") {
     // Mock token verification for integration tests
     if (idToken.startsWith("mock-google-token-")) {
       const suffix = idToken.replace("mock-google-token-", "");

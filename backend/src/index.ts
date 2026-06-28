@@ -42,11 +42,20 @@ import {
   authenticateJwt,
   requireEmailVerified,
 } from "./middlewares/auth.middleware.js";
+import {
+  analysisWorker,
+  closeAnalysisWorker,
+  closeAnalysisQueue,
+} from "./queue/index.js";
+import { closeRedis } from "./config/redis.config.js";
 // Initialize Langfuse observability
 initializeLangfuse();
 
 // Initialize Database
 connectDB();
+
+// Start BullMQ worker for background analysis jobs
+logger.info("Starting BullMQ analysis worker...");
 
 const app: Application = express();
 
@@ -120,8 +129,17 @@ if (env.NODE_ENV !== "test") {
 const gracefulShutdown = async () => {
   logger.info("Shutting down gracefully...");
 
+  // Close BullMQ worker (stop accepting new jobs)
+  await closeAnalysisWorker();
+
   // Flush Langfuse traces
   await flushLangfuseTraces();
+
+  // Close BullMQ queue
+  await closeAnalysisQueue();
+
+  // Close Redis connection
+  await closeRedis();
 
   // Close server if it was started
   if (server && typeof server.close === "function") {

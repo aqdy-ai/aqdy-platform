@@ -553,6 +553,8 @@
     "memory": "Memory",
     "queue_active": "Queue Active",
     "queue_failed": "Queue Failed",
+    "queue_pending": "Queue Pending",
+    "queue_completed": "Queue Completed",
     "analytics_dashboard": "Analytics Dashboard",
     "business_metrics": "Business Metrics",
     "total_accounts": "Total Accounts",

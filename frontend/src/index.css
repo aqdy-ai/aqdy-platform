@@ -106,8 +106,8 @@
   flex-direction: column;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="date"]::-moz-calendar-picker-indicator {
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='date']::-moz-calendar-picker-indicator {
   display: none;
   -webkit-appearance: none;
 }

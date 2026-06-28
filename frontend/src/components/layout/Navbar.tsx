@@ -21,9 +21,8 @@ import { Link } from 'react-router-dom'
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { isAuthenticated, logout, user } = useAuth()
-  const isRtl = i18n.language === 'ar'
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)

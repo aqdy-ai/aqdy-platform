@@ -29,7 +29,12 @@ interface InfraData {
     memoryTotalMB: number
     nodeVersion: string
   }
-  queue: { activeJobs: number; pendingJobs: number; failedJobs: number }
+  queue: {
+    activeJobs: number
+    pendingJobs: number
+    failedJobs: number
+    completedJobs: number
+  }
   recentErrors: { message: string; timestamp: string; count: number }[]
 }
 interface AlertItem {
@@ -262,6 +267,22 @@ export default function OperationsDashboard() {
               </div>
               <div className="mt-1 text-xl font-bold text-red-500">
                 {infra.queue.failedJobs}
+              </div>
+            </div>
+            <div className="border-border/40 rounded-2xl border p-5">
+              <div className="text-muted-foreground text-xs font-semibold uppercase">
+                {t('admin.queue_pending')}
+              </div>
+              <div className="mt-1 text-xl font-bold text-amber-500">
+                {infra.queue.pendingJobs}
+              </div>
+            </div>
+            <div className="border-border/40 rounded-2xl border p-5">
+              <div className="text-muted-foreground text-xs font-semibold uppercase">
+                {t('admin.queue_completed')}
+              </div>
+              <div className="mt-1 text-xl font-bold text-emerald-600">
+                {infra.queue.completedJobs}
               </div>
             </div>
           </div>

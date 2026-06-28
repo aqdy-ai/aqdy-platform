@@ -233,9 +233,7 @@ router.get(
         ? new Date(queryStartDate)
         : new Date(now.getTime() - 7 * 7 * 86400000);
       const signupEnd = queryEndDate ? new Date(queryEndDate) : new Date(now);
-      signupCursor.setDate(
-        signupCursor.getDate() - signupCursor.getDay() + 1,
-      );
+      signupCursor.setDate(signupCursor.getDate() - signupCursor.getDay() + 1);
       signupCursor.setHours(0, 0, 0, 0);
       while (signupCursor < signupEnd) {
         const weekStart = new Date(signupCursor);

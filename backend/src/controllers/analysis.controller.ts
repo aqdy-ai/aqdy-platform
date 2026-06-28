@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { contractService } from "../services/contract.service.js";
 import { auditLogService } from "../services/auditLog.service.js";
 import { analysisService } from "../services/analysis.service.js";
+import { analysisQueue } from "../queue/analysis.queue.js";
 import { ApiResponse } from "../types/index.js";
 import { logger } from "../utils/logger.js";
 import { AppError } from "../middlewares/errorHandler.js";
@@ -11,7 +12,7 @@ import { AppError } from "../middlewares/errorHandler.js";
  *
  * Re-triggers the LLM extraction pipeline for a previously uploaded contract.
  * Useful for re-running analysis after changes or on-demand retries.
- * The heavy lifting is done by analysisService.triggerAnalysis().
+ * The job is enqueued to BullMQ and processed by a background worker.
  */
 export const analyzeContract = async (
   req: Request,
@@ -21,19 +22,16 @@ export const analyzeContract = async (
   try {
     const { contractId, userId } = req.body;
 
-    // [Week 2][Day 6][Task 4] - Basic validation before processing
     if (!contractId || !userId) {
       throw new AppError(400, "Missing required fields: contractId and userId");
     }
 
-    // Verify the contract exists
     const contract = await contractService.getContractById(contractId);
 
     if (!contract) {
       throw new AppError(404, "Contract not found");
     }
 
-    // [Week 2][Day 6][Task 2] - Parsing Pipeline Validation
     if (
       !contract.text ||
       contract.text.trim().length === 0 ||
@@ -45,7 +43,6 @@ export const analyzeContract = async (
       );
     }
 
-    // Audit trail — mark analysis as started
     await auditLogService.logEvent({
       contractId: String(contract._id),
       userId,
@@ -56,22 +53,30 @@ export const analyzeContract = async (
       },
     });
 
-    logger.info("Contract analysis started", { contractId, userId });
+    logger.info("Enqueueing contract analysis", { contractId, userId });
 
-    // Fire-and-forget — delegate all orchestration to the service layer
-    analysisService
-      .triggerAnalysis(
-        String(contract._id),
+    try {
+      await analysisQueue.add(
+        "analyze-contract",
+        {
+          contractId: String(contract._id),
+          userId,
+          text: contract.text,
+          language: contract.language,
+        },
+        {
+          jobId: `analysis-${contract._id}`,
+        },
+      );
+    } catch (queueError) {
+      logger.error("Failed to enqueue analysis job to BullMQ", {
+        contractId,
         userId,
-        contract.text,
-        contract.language,
-      )
-      .catch((err) => {
-        logger.error(
-          `Error in background analysis for contract ${contract._id}:`,
-          err,
-        );
+        error: queueError instanceof Error ? queueError.message : String(queueError),
+        stack: queueError instanceof Error ? queueError.stack : undefined,
       });
+      throw new AppError(500, "Analysis queue is unavailable. Please try again.");
+    }
 
     const response: ApiResponse<{ contractId: string; status: string }> = {
       success: true,
