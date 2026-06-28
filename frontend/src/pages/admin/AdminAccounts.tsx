@@ -179,14 +179,14 @@ const AdminAccounts = () => {
               setPlanFilter(e.target.value)
               setPage(1)
             }}
-            className="bg-background/50 border-border/50 focus:border-primary text-foreground min-w-[140px] cursor-pointer appearance-none rounded-xl border py-2.5 pr-10 pl-4 text-sm transition-all outline-none"
+            className="bg-background/50 border-border/50 focus:border-primary text-foreground min-w-[140px] cursor-pointer appearance-none rounded-xl border py-2.5 ps-4 pe-10 text-sm transition-all outline-none"
           >
             <option value="">{t('admin.filter_plan')}</option>
             <option value="free">{t('admin.plan_free')}</option>
             <option value="pro">{t('admin.plan_pro')}</option>
             <option value="enterprise">{t('admin.plan_enterprise')}</option>
           </select>
-          <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
+          <ChevronDown className="text-muted-foreground pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2" />
         </div>
 
         {/* Status Filter */}
@@ -197,13 +197,13 @@ const AdminAccounts = () => {
               setStatusFilter(e.target.value)
               setPage(1)
             }}
-            className="bg-background/50 border-border/50 focus:border-primary text-foreground min-w-[140px] cursor-pointer appearance-none rounded-xl border py-2.5 pr-10 pl-4 text-sm transition-all outline-none"
+            className="bg-background/50 border-border/50 focus:border-primary text-foreground min-w-[140px] cursor-pointer appearance-none rounded-xl border py-2.5 ps-4 pe-10 text-sm transition-all outline-none"
           >
             <option value="">{t('admin.filter_status')}</option>
             <option value="active">{t('admin.status_active')}</option>
             <option value="suspended">{t('admin.status_suspended')}</option>
           </select>
-          <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
+          <ChevronDown className="text-muted-foreground pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2" />
         </div>
       </div>
 
@@ -359,7 +359,7 @@ const AdminAccounts = () => {
                               onChange={(e) =>
                                 handlePlanChange(account._id, e.target.value)
                               }
-                              className="bg-background/80 border-border/60 hover:border-primary text-foreground cursor-pointer appearance-none rounded-xl border px-3 py-1.5 pr-8 text-xs font-bold transition-all outline-none disabled:opacity-50"
+                              className="bg-background/80 border-border/60 hover:border-primary text-foreground cursor-pointer appearance-none rounded-xl border px-3 py-1.5 pe-8 text-xs font-bold transition-all outline-none disabled:opacity-50"
                             >
                               <option value="free">
                                 {t('admin.plan_free')}
@@ -369,7 +369,7 @@ const AdminAccounts = () => {
                                 {t('admin.plan_enterprise')}
                               </option>
                             </select>
-                            <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-2.5 h-3 w-3 -translate-y-1/2" />
+                            <ChevronDown className="text-muted-foreground pointer-events-none absolute end-2.5 top-1/2 h-3 w-3 -translate-y-1/2" />
                           </div>
 
                           {/* Status Toggle Button */}

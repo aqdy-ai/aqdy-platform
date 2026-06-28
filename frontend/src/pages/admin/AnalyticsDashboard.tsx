@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePermissions } from '../../hooks/usePermissions'
 import { motion } from 'framer-motion'
+import { speakText } from '../../lib/speech'
 import {
   Users,
   TrendingUp,
@@ -211,14 +212,10 @@ export default function AnalyticsDashboard() {
       ? `ملخص تحليلات أكيدس. إجمالي المستخدمين: ${data.totalAccounts}. الإيرادات الشهرية المتكررة: ${data.mrrCurrent} دولار. التحليلات هذا الشهر: ${data.analysesThisMonth}. إجمالي التحليلات: ${data.totalAnalyses}. الاعتمادات المستهلكة هذا الشهر: ${data.creditsConsumedThisMonth}.`
       : `Aqdes Analytics Summary. Total users: ${data.totalAccounts}. Monthly recurring revenue: ${data.mrrCurrent} dollars. Analyses this month: ${data.analysesThisMonth}. Total analyses: ${data.totalAnalyses}. Credits consumed this month: ${data.creditsConsumedThisMonth}.`
 
-    const utterance = new SpeechSynthesisUtterance(summary)
-    utterance.lang = lang
-    utterance.rate = 1
-    utterance.pitch = 1
+    window.speechSynthesis.cancel()
+    const utterance = speakText(summary, lang)
     utterance.onend = () => setTtsPlaying(false)
     utterance.onerror = () => setTtsPlaying(false)
-    window.speechSynthesis.cancel()
-    window.speechSynthesis.speak(utterance)
     setTtsPlaying(true)
   }
 

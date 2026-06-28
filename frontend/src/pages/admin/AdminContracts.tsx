@@ -259,7 +259,7 @@ const AdminContracts = () => {
               setPage(1)
             }}
             data-testid="status-filter"
-            className="bg-background/50 border-border/50 focus:border-primary text-foreground min-w-[140px] cursor-pointer appearance-none rounded-xl border py-2.5 pr-10 pl-4 text-sm transition-all outline-none"
+            className="bg-background/50 border-border/50 focus:border-primary text-foreground min-w-[140px] cursor-pointer appearance-none rounded-xl border py-2.5 ps-4 pe-10 text-sm transition-all outline-none"
           >
             <option value="">{isRtl ? 'كل الحالات' : 'All Statuses'}</option>
             <option value="analyzed">
@@ -270,7 +270,7 @@ const AdminContracts = () => {
             </option>
             <option value="failed">{isRtl ? 'فشل' : 'Failed'}</option>
           </select>
-          <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
+          <ChevronDown className="text-muted-foreground pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2" />
         </div>
 
         {/* Date From */}

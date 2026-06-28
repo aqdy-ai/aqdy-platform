@@ -14,6 +14,7 @@ import { AuthProvider } from './hooks/AuthContext'
 import { useAuth } from './hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { getDirection } from './lib/i18n'
+import { initSpeechSynthesis } from './lib/speech'
 import type { SupportedLocale } from './types'
 import { ADMIN_ROLES, getDefaultAdminRoute } from './types/auth'
 import type { AdminRole } from './types/auth'
@@ -135,6 +136,7 @@ function AppContent() {
     document.documentElement.dir =
       getDirection(i18n.language as SupportedLocale) || 'ltr'
     document.documentElement.lang = i18n.language
+    initSpeechSynthesis()
   }, [i18n.language])
 
   // 🎯 قراءة الـ plan بطريقة آمنة تماماً ومتوافقة مع الـ ESLint (بدون any وبدون خصائص مفقودة)

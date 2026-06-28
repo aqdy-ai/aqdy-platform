@@ -243,9 +243,7 @@ export default function Pricing({
                 {/* شارات الكروت الاحترافية */}
                 {badgeText && (
                   <div
-                    className={`absolute top-0 rounded-full px-4 py-1 text-xs font-bold tracking-wider uppercase shadow-sm ${
-                      isRtl ? 'left-6' : 'right-6'
-                    } -translate-y-1/2 ${
+                    className={`absolute end-6 top-0 rounded-full px-4 py-1 text-xs font-bold tracking-wider uppercase shadow-sm -translate-y-1/2 ${
                       isCurrentBadge
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-accent text-accent-foreground animate-pulse'

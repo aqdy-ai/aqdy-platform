@@ -319,7 +319,7 @@ export default function ContentDashboard() {
             <div className="relative min-w-[200px] flex-1">
               <Search
                 size={16}
-                className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+                className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 -translate-y-1/2"
               />
               <input
                 value={search}
@@ -327,7 +327,7 @@ export default function ContentDashboard() {
                 placeholder={t('admin.search_placeholder', {
                   defaultValue: 'Search clauses by name or text...',
                 })}
-                className="bg-background border-border w-full rounded-xl border py-2 pr-3 pl-9 text-sm"
+                className="bg-background border-border w-full rounded-xl border py-2 ps-9 pe-3 text-sm"
               />
             </div>
             <select
@@ -537,7 +537,7 @@ export default function ContentDashboard() {
                       className="bg-background border-border w-full rounded-xl border px-3 py-2 pr-20 text-sm"
                     />
                     <span
-                      className={`pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs ${
+                      className={`pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-xs ${
                         kbForm.clausePattern.length > CLAUSE_PATTERN_MAX * 0.9
                           ? 'text-destructive'
                           : 'text-muted-foreground'

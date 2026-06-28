@@ -1,6 +1,9 @@
 /* src/components/features/ClauseChat.tsx */
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { speakText } from '../../lib/speech'
 
 // Web Speech API type declarations (not yet in lib.dom.d.ts for all envs)
 interface SpeechRecognitionEvent extends Event {
@@ -40,6 +43,76 @@ import {
   VolumeX,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import type { Components } from 'react-markdown'
+
+const markdownComponents: Components = {
+  h1: ({ children, ...props }) => (
+    <h1 className="mt-2 mb-1 text-base leading-tight font-black" {...props}>
+      {children}
+    </h1>
+  ),
+  h2: ({ children, ...props }) => (
+    <h2 className="mt-1.5 mb-1 text-sm leading-tight font-black" {...props}>
+      {children}
+    </h2>
+  ),
+  h3: ({ children, ...props }) => (
+    <h3 className="mt-1 mb-1 text-xs leading-tight font-black" {...props}>
+      {children}
+    </h3>
+  ),
+  p: ({ children, ...props }) => (
+    <p className="mb-1 leading-relaxed last:mb-0" {...props}>
+      {children}
+    </p>
+  ),
+  ul: ({ children, ...props }) => (
+    <ul className="mb-1 list-disc pl-4 last:mb-0" {...props}>
+      {children}
+    </ul>
+  ),
+  ol: ({ children, ...props }) => (
+    <ol className="mb-1 list-decimal pl-4 last:mb-0" {...props}>
+      {children}
+    </ol>
+  ),
+  li: ({ children, ...props }) => (
+    <li className="mb-0.5 leading-relaxed" {...props}>
+      {children}
+    </li>
+  ),
+  strong: ({ children, ...props }) => (
+    <strong className="font-black" {...props}>
+      {children}
+    </strong>
+  ),
+  code: ({ children, ...props }) => (
+    <code
+      className="bg-background/60 rounded px-1 py-0.5 text-[11px] font-bold"
+      {...props}
+    >
+      {children}
+    </code>
+  ),
+  pre: ({ children, ...props }) => (
+    <pre
+      className="bg-background/60 mt-1 mb-1 overflow-x-auto rounded-lg p-2 text-[11px] last:mb-0"
+      {...props}
+    >
+      {children}
+    </pre>
+  ),
+  a: ({ children, ...props }) => (
+    <a
+      className="text-primary underline underline-offset-2 hover:opacity-80"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+}
 
 export interface Message {
   role: 'user' | 'assistant'
@@ -185,18 +258,16 @@ export default function ClauseChat({
   const handleSpeak = (text: string, index: number) => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return
 
-    // If currently playing this index, stop it
     if (activePlayingIndex === index) {
       window.speechSynthesis.cancel()
       setActivePlayingIndex(null)
       return
     }
 
-    // Cancel any current playback first
     window.speechSynthesis.cancel()
 
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = isRtl ? 'ar-EG' : 'en-US'
+    const lang = isRtl ? 'ar-SA' : 'en-US'
+    const utterance = speakText(text, lang)
 
     utterance.onend = () => {
       setActivePlayingIndex(null)
@@ -208,7 +279,6 @@ export default function ClauseChat({
     }
 
     setActivePlayingIndex(index)
-    window.speechSynthesis.speak(utterance)
   }
 
   // Cleanup active streams and requests
@@ -479,7 +549,18 @@ export default function ClauseChat({
                     : 'bg-secondary text-secondary-foreground rounded-tl-none'
                 }`}
               >
-                {msg.content}
+                {isUser ? (
+                  <span>{msg.content}</span>
+                ) : (
+                  <div className="prose-sm max-w-none [&_*:first-child]:mt-0 [&_*:last-child]:mb-0">
+                    <Markdown
+                      remarkPlugins={[remarkGfm]}
+                      components={markdownComponents}
+                    >
+                      {msg.content}
+                    </Markdown>
+                  </div>
+                )}
                 {msg.isStreaming && (
                   <span
                     className="ml-0.5 inline-block animate-pulse"

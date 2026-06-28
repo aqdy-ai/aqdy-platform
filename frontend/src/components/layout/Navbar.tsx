@@ -154,9 +154,7 @@ const Navbar = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className={`border-border/50 bg-card/95 absolute z-[70] mt-2 w-48 max-w-[calc(100vw-1.5rem)] rounded-2xl border shadow-xl backdrop-blur-md focus:outline-none ${
-                        isRtl ? 'left-0' : 'right-0'
-                      }`}
+                      className={`border-border/50 bg-card/95 absolute end-0 z-[70] mt-2 w-48 max-w-[calc(100vw-1.5rem)] rounded-2xl border shadow-xl backdrop-blur-md focus:outline-none`}
                       role="menu"
                       aria-orientation="vertical"
                       aria-labelledby="user-menu-button"

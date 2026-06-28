@@ -55,6 +55,8 @@ export default function ContractHistory() {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [appliedDateFrom, setAppliedDateFrom] = useState('')
+  const [appliedDateTo, setAppliedDateTo] = useState('')
   const [riskFilter, setRiskFilter] = useState('') // '', 'high', 'medium', 'low'
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
@@ -106,8 +108,8 @@ export default function ContractHistory() {
       queryKey: [
         'contracts',
         debouncedSearchQuery,
-        dateFrom,
-        dateTo,
+        appliedDateFrom,
+        appliedDateTo,
         riskFilter,
         page,
         limit,
@@ -122,10 +124,13 @@ export default function ContractHistory() {
         params.append('sortOrder', sortOrder)
         if (debouncedSearchQuery)
           params.append('filename', debouncedSearchQuery)
-        if (dateFrom)
-          params.append('uploadedAfter', new Date(dateFrom).toISOString())
-        if (dateTo) {
-          const toDate = new Date(dateTo)
+        if (appliedDateFrom)
+          params.append(
+            'uploadedAfter',
+            new Date(appliedDateFrom).toISOString()
+          )
+        if (appliedDateTo) {
+          const toDate = new Date(appliedDateTo)
           toDate.setHours(23, 59, 59, 999)
           params.append('uploadedBefore', toDate.toISOString())
         }
@@ -164,10 +169,18 @@ export default function ContractHistory() {
     window.open(`/api/account/contracts/export?format=${format}`, '_blank')
   }
 
+  const handleApplyDateFilter = () => {
+    setAppliedDateFrom(dateFrom)
+    setAppliedDateTo(dateTo)
+    setPage(1)
+  }
+
   const resetFilters = () => {
     setSearchQuery('')
     setDateFrom('')
     setDateTo('')
+    setAppliedDateFrom('')
+    setAppliedDateTo('')
     setRiskFilter('')
     setPage(1)
   }
@@ -182,7 +195,10 @@ export default function ContractHistory() {
   }
 
   const hasActiveFilters =
-    searchQuery !== '' || dateFrom !== '' || dateTo !== '' || riskFilter !== ''
+    searchQuery !== '' ||
+    appliedDateFrom !== '' ||
+    appliedDateTo !== '' ||
+    riskFilter !== ''
   const showEmptyState =
     !isLoading && !isError && data?.contracts?.length === 0 && !hasActiveFilters
   const showNoResults =
@@ -226,8 +242,7 @@ export default function ContractHistory() {
             {exportDropdownOpen && (
               <div
                 className={cn(
-                  'border-border/50 bg-card animate-in fade-in-0 slide-in-from-top-1 absolute z-[40] mt-2 w-40 rounded-xl border p-1.5 shadow-xl backdrop-blur-md duration-150',
-                  isRtl ? 'left-0' : 'right-0'
+                  'border-border/50 bg-card animate-in fade-in-0 slide-in-from-top-1 absolute z-[40] mt-2 w-40 rounded-xl border p-1.5 shadow-xl backdrop-blur-md duration-150 end-0'
                 )}
                 data-testid="export-dropdown"
               >
@@ -272,10 +287,10 @@ export default function ContractHistory() {
 
       {/* Filters Dashboard Card */}
       <div className="bg-card border-border/60 space-y-6 rounded-3xl border p-6 shadow-sm">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
           {/* Search bar */}
           <div className="relative">
-            <Search className="text-muted-foreground/60 focus-within:text-primary absolute top-1/2 mx-3 h-4 w-4 shrink-0 -translate-y-1/2 transition-colors" />
+            <Search className="text-muted-foreground/60 focus-within:text-primary absolute start-3 top-1/2 h-4 w-4 shrink-0 -translate-y-1/2 transition-colors" />
             <Input
               type="text"
               placeholder={t('history.search_placeholder', {
@@ -284,8 +299,7 @@ export default function ContractHistory() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
-                'bg-input/10 border-border/60 hover:border-border placeholder:text-muted-foreground/50 h-10 rounded-xl font-semibold',
-                isRtl ? 'pr-10' : 'pl-10'
+                'bg-input/10 border-border/60 hover:border-border placeholder:text-muted-foreground/50 h-10 rounded-xl font-semibold ps-10'
               )}
               aria-label="Search filename"
             />
@@ -293,8 +307,7 @@ export default function ContractHistory() {
               <button
                 onClick={() => setSearchQuery('')}
                 className={cn(
-                  'text-muted-foreground/60 hover:text-foreground absolute top-1/2 -translate-y-1/2 rounded-full p-1',
-                  isRtl ? 'left-2' : 'right-2'
+                  'text-muted-foreground/60 hover:text-foreground absolute end-2 top-1/2 -translate-y-1/2 rounded-full p-1'
                 )}
               >
                 <X size={14} />
@@ -305,7 +318,15 @@ export default function ContractHistory() {
           {/* Date range from picker */}
           <div className="flex flex-col gap-1.5">
             <div className="relative">
-              <Calendar className="text-muted-foreground/60 pointer-events-none absolute top-1/2 mx-3 h-4 w-4 shrink-0 -translate-y-1/2" />
+              <Calendar
+                className="text-muted-foreground/60 absolute start-3 top-1/2 h-4 w-4 shrink-0 -translate-y-1/2 cursor-pointer"
+                onClick={(e) => {
+                  const input = e.currentTarget.parentElement?.querySelector(
+                    'input[type="date"]'
+                  ) as HTMLInputElement | null
+                  input?.showPicker()
+                }}
+              />
               <Input
                 type="date"
                 value={dateFrom}
@@ -317,8 +338,7 @@ export default function ContractHistory() {
                   defaultValue: 'From Date',
                 })}
                 className={cn(
-                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl text-xs font-semibold',
-                  isRtl ? 'pr-10' : 'pl-10'
+                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl text-xs font-semibold ps-10'
                 )}
                 aria-label="From Date"
               />
@@ -328,7 +348,15 @@ export default function ContractHistory() {
           {/* Date range to picker */}
           <div className="flex flex-col gap-1.5">
             <div className="relative">
-              <Calendar className="text-muted-foreground/60 pointer-events-none absolute top-1/2 mx-3 h-4 w-4 shrink-0 -translate-y-1/2" />
+              <Calendar
+                className="text-muted-foreground/60 absolute start-3 top-1/2 h-4 w-4 shrink-0 -translate-y-1/2 cursor-pointer"
+                onClick={(e) => {
+                  const input = e.currentTarget.parentElement?.querySelector(
+                    'input[type="date"]'
+                  ) as HTMLInputElement | null
+                  input?.showPicker()
+                }}
+              />
               <Input
                 type="date"
                 value={dateTo}
@@ -338,12 +366,21 @@ export default function ContractHistory() {
                 }}
                 placeholder={t('history.date_to', { defaultValue: 'To Date' })}
                 className={cn(
-                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl text-xs font-semibold',
-                  isRtl ? 'pr-10' : 'pl-10'
+                  'bg-input/10 border-border/60 hover:border-border h-10 rounded-xl text-xs font-semibold ps-10'
                 )}
                 aria-label="To Date"
               />
             </div>
+          </div>
+
+          {/* Apply Filter Button */}
+          <div className="flex items-end gap-2">
+            <Button
+              onClick={handleApplyDateFilter}
+              className="h-10 w-full rounded-xl px-5 text-xs font-bold shadow-sm"
+            >
+              {isRtl ? 'تطبيق' : 'Apply'}
+            </Button>
           </div>
 
           {/* Risk Level Filter dropdown */}
