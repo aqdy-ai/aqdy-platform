@@ -39,9 +39,12 @@ export const judgeService = {
   async evaluateAnalysis(analysis: IRiskAnalysis): Promise<void> {
     const langfuse = getLangfuseClient();
     if (!langfuse) {
-      logger.info("JudgeService – Langfuse not initialized, skipping evaluation", {
-        analysisId: analysis._id.toString(),
-      });
+      logger.info(
+        "JudgeService – Langfuse not initialized, skipping evaluation",
+        {
+          analysisId: analysis._id.toString(),
+        },
+      );
       return;
     }
 

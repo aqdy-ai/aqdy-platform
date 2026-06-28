@@ -105,7 +105,7 @@ export const PaymentSuccess: React.FC = () => {
                 className="w-full rounded-xl font-bold shadow-lg"
                 onClick={() => {
                   // Reload window to force auth context to fetch updated user info
-                  window.location.assign('/test-dashboard')
+                  window.location.assign('/risk-analysis')
                 }}
               >
                 {isRtl ? 'الذهاب إلى لوحة التحكم' : 'Go to Dashboard'}

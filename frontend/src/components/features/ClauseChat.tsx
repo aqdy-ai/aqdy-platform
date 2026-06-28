@@ -44,6 +44,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { Components } from 'react-markdown'
+import ThumbsFeedback from '../ui/ThumbsFeedback'
 
 const markdownComponents: Components = {
   h1: ({ children, ...props }) => (
@@ -570,6 +571,14 @@ export default function ClauseChat({
                   </span>
                 )}
               </div>
+              {!isUser && !msg.isStreaming && msg.content && (
+                <ThumbsFeedback
+                  targetType="chat_message"
+                  targetId={`${clauseIndex}-msg-${index}`}
+                  contractId={contractId}
+                  className="mt-1 justify-start"
+                />
+              )}
             </div>
           )
         })}

@@ -23,7 +23,6 @@ import ErrorBoundary from './components/ErrorBoundary'
 // 🌟 Lazy Loading للمكونات والـ Pages الخاصة بمنصة عقدي
 const Home = lazy(() => import('./pages/Home'))
 const Pricing = lazy(() => import('./pages/Pricing'))
-const TestDashboard = lazy(() => import('./pages/Dashboard'))
 const RiskAnalysisDashboard = lazy(
   () => import('./pages/RiskAnalysisDashboard')
 )
@@ -257,14 +256,6 @@ function AppContent() {
             path="/pricing"
             element={
               <Pricing isLoggedIn={isAuthenticated} userPlan={userPlan} />
-            }
-          />
-          <Route
-            path="/test-dashboard"
-            element={
-              <ProtectedRoute>
-                <TestDashboard />
-              </ProtectedRoute>
             }
           />
           <Route

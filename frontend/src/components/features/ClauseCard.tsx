@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import ClauseChat from './ClauseChat'
 import { getConfidenceMeta } from '../../lib/utils'
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis'
+import ThumbsFeedback from '../ui/ThumbsFeedback'
 
 export interface ClauseItem {
   id: string
@@ -183,6 +184,20 @@ export default function ClauseCard({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Per-clause Feedback */}
+      <div className="flex items-center justify-between pt-1">
+        <span className="text-muted-foreground text-[10px] font-bold">
+          {isRtl
+            ? 'هل كان هذا التحليل مفيداً؟'
+            : 'Was this clause analysis helpful?'}
+        </span>
+        <ThumbsFeedback
+          targetType="clause"
+          targetId={`${contractId || ''}-clause-${clauseIndex ?? item.clauseIndex ?? 0}`}
+          contractId={contractId}
+        />
       </div>
 
       {/* Action Row - Chat toggle button */}

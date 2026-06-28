@@ -28,7 +28,11 @@ export async function checkRateLimit(
 ): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
   try {
     const client = getRedis();
-    if (!client.status || client.status === "end" || client.status === "close") {
+    if (
+      !client.status ||
+      client.status === "end" ||
+      client.status === "close"
+    ) {
       await client.connect();
     }
 

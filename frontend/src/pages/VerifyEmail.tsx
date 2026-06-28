@@ -89,7 +89,7 @@ export default function VerifyEmail() {
             </div>
 
             <button
-              onClick={() => navigate('/test-dashboard')}
+              onClick={() => navigate('/risk-analysis')}
               className="group bg-primary text-primary-foreground hover:bg-primary/95 focus:ring-primary/50 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold shadow-lg transition-all hover:cursor-pointer focus:ring-2 focus:outline-none"
             >
               {t('auth.gotoDashboard')}

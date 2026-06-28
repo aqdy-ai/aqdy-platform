@@ -19,7 +19,10 @@ export function getRedisConnection(): IORedis {
   });
 
   redis.on("connect", () => {
-    logger.info("Redis connected", { host: url.hostname, port: url.port || "6379" });
+    logger.info("Redis connected", {
+      host: url.hostname,
+      port: url.port || "6379",
+    });
   });
 
   redis.on("error", (err) => {

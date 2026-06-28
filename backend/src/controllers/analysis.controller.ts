@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { contractService } from "../services/contract.service.js";
 import { auditLogService } from "../services/auditLog.service.js";
 import { analysisService } from "../services/analysis.service.js";
@@ -6,6 +6,7 @@ import { analysisQueue } from "../queue/analysis.queue.js";
 import { ApiResponse } from "../types/index.js";
 import { logger } from "../utils/logger.js";
 import { AppError } from "../middlewares/errorHandler.js";
+import type { AuthenticatedRequest } from "../types/auth.js";
 
 /**
  * POST /api/analysis/analyze
@@ -15,7 +16,7 @@ import { AppError } from "../middlewares/errorHandler.js";
  * The job is enqueued to BullMQ and processed by a background worker.
  */
 export const analyzeContract = async (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
@@ -47,6 +48,10 @@ export const analyzeContract = async (
       contractId: String(contract._id),
       userId,
       action: "ANALYSIS_STARTED",
+      userEmail: req.user?.email,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"] || null,
+      requestId: req.requestId,
       metadata: {
         filename: contract.filename,
         language: contract.language,
@@ -63,6 +68,10 @@ export const analyzeContract = async (
           userId,
           text: contract.text,
           language: contract.language,
+          userEmail: req.user?.email,
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"] || null,
+          requestId: req.requestId,
         },
         {
           jobId: `analysis-${contract._id}`,
@@ -72,10 +81,14 @@ export const analyzeContract = async (
       logger.error("Failed to enqueue analysis job to BullMQ", {
         contractId,
         userId,
-        error: queueError instanceof Error ? queueError.message : String(queueError),
+        error:
+          queueError instanceof Error ? queueError.message : String(queueError),
         stack: queueError instanceof Error ? queueError.stack : undefined,
       });
-      throw new AppError(500, "Analysis queue is unavailable. Please try again.");
+      throw new AppError(
+        500,
+        "Analysis queue is unavailable. Please try again.",
+      );
     }
 
     const response: ApiResponse<{ contractId: string; status: string }> = {

@@ -11,8 +11,19 @@ import type { AnalysisPayload } from "./analysis.queue.js";
 
 const redisConnection = getRedisConnection();
 
-async function processAnalysisJob(job: { data: AnalysisPayload }): Promise<void> {
-  const { contractId, userId, text, language, userEmail, ipAddress, userAgent, requestId } = job.data;
+async function processAnalysisJob(job: {
+  data: AnalysisPayload;
+}): Promise<void> {
+  const {
+    contractId,
+    userId,
+    text,
+    language,
+    userEmail,
+    ipAddress,
+    userAgent,
+    requestId,
+  } = job.data;
   const startTime = Date.now();
 
   logger.info("BullMQ worker: starting analysis", {
@@ -71,7 +82,10 @@ async function processAnalysisJob(job: { data: AnalysisPayload }): Promise<void>
     logger.error("Credit deduction failed", {
       userId,
       contractId,
-      error: creditError instanceof Error ? creditError.message : String(creditError),
+      error:
+        creditError instanceof Error
+          ? creditError.message
+          : String(creditError),
     });
   }
 
@@ -93,7 +107,10 @@ async function processAnalysisJob(job: { data: AnalysisPayload }): Promise<void>
     },
   });
 
-  logger.info("BullMQ worker: analysis complete", { contractId, durationMs: duration });
+  logger.info("BullMQ worker: analysis complete", {
+    contractId,
+    durationMs: duration,
+  });
 }
 
 export const analysisWorker = new Worker<AnalysisPayload>(
@@ -123,21 +140,23 @@ analysisWorker.on("failed", (job, error) => {
     attempts: job.attemptsMade,
   });
 
-  auditLogService.logEvent({
-    contractId: job.data.contractId,
-    userId: job.data.userId,
-    action: "ANALYSIS_FAILED",
-    outcome: "failure",
-    userEmail: job.data.userEmail,
-    ipAddress: job.data.ipAddress,
-    userAgent: job.data.userAgent,
-    requestId: job.data.requestId,
-    metadata: { error: error.message },
-  }).catch((err) => {
-    logger.error("Failed to log ANALYSIS_FAILED audit event", {
-      error: err instanceof Error ? err.message : String(err),
+  auditLogService
+    .logEvent({
+      contractId: job.data.contractId,
+      userId: job.data.userId,
+      action: "ANALYSIS_FAILED",
+      outcome: "failure",
+      userEmail: job.data.userEmail,
+      ipAddress: job.data.ipAddress,
+      userAgent: job.data.userAgent,
+      requestId: job.data.requestId,
+      metadata: { error: error.message },
+    })
+    .catch((err) => {
+      logger.error("Failed to log ANALYSIS_FAILED audit event", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     });
-  });
 });
 
 analysisWorker.on("error", (error) => {

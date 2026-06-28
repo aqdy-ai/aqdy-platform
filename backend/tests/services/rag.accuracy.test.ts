@@ -1,4 +1,5 @@
 import { describe, test, expect, jest } from "@jest/globals";
+
 import { RAGService, KBMatch } from "../../src/services/rag.service.js";
 
 const ragService = new RAGService();
