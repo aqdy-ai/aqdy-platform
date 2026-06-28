@@ -257,8 +257,10 @@ export interface DashboardData {
 }
 
 export const adminApi = {
-  getDashboard: () =>
-    adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard'),
+  getDashboard: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard', {
+      params,
+    }),
   getStats: () => adminClient.get<AdminStats>('/stats'),
   // Evaluation endpoints
   getEvaluationStats: (params?: { startDate?: string; endDate?: string }) =>

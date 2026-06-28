@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
@@ -13,7 +13,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { adminApi } from '../../services/adminApi'
-import { Loader2, BarChart3 } from 'lucide-react'
+import { Loader2, BarChart3, Filter } from 'lucide-react'
 
 interface DailyStat {
   date: string
@@ -76,33 +76,48 @@ export default function AdminEvaluations() {
   const [lowScores, setLowScores] = useState<Evaluation[]>([])
   const [loadingStats, setLoadingStats] = useState(true)
   const [loadingLow, setLoadingLow] = useState(true)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [appliedStartDate, setAppliedStartDate] = useState('')
+  const [appliedEndDate, setAppliedEndDate] = useState('')
 
-  useEffect(() => {
-    const fetchStats = async () => {
+  const fetchAll = useCallback(
+    async (sd: string, ed: string) => {
+      setLoadingStats(true)
+      setLoadingLow(true)
       try {
-        const res = await adminApi.getEvaluationStats()
-        if (res.data.success) setStats(res.data.data)
+        const params: { startDate?: string; endDate?: string } = {}
+        if (sd) params.startDate = sd
+        if (ed) params.endDate = ed
+        const paramArg = Object.keys(params).length ? params : undefined
+        const [statsRes, lowRes] = await Promise.all([
+          adminApi.getEvaluationStats(paramArg),
+          adminApi.getLowScores(paramArg),
+        ])
+        if (statsRes.data.success) setStats(statsRes.data.data)
         else toast.error(t('evaluations.error_stats'))
-      } catch {
-        toast.error(t('evaluations.error_generic'))
-      } finally {
-        setLoadingStats(false)
-      }
-    }
-    const fetchLow = async () => {
-      try {
-        const res = await adminApi.getLowScores()
-        if (res.data.success) setLowScores(res.data.data)
+        if (lowRes.data.success) setLowScores(lowRes.data.data)
         else toast.error(t('evaluations.error_low'))
       } catch {
         toast.error(t('evaluations.error_generic'))
       } finally {
+        setLoadingStats(false)
         setLoadingLow(false)
       }
-    }
-    fetchStats()
-    fetchLow()
-  }, [t])
+    },
+    [t]
+  )
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchAll('', '')
+  }, [fetchAll])
+
+  const handleFilter = () => {
+    setAppliedStartDate(startDate)
+    setAppliedEndDate(endDate)
+    fetchAll(startDate, endDate)
+  }
 
   const hasData = stats.length > 0
   const latest = stats[stats.length - 1] ?? {
@@ -141,6 +156,61 @@ export default function AdminEvaluations() {
       <h1 className="text-foreground text-2xl font-bold">
         {t('evaluations.title')}
       </h1>
+
+      {/* ── Date Filter Bar ── */}
+      <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="eval-start-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            From:
+          </label>
+          <input
+            id="eval-start-date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="eval-end-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            To:
+          </label>
+          <input
+            id="eval-end-date"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
+          />
+        </div>
+        <button
+          onClick={handleFilter}
+          className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition-colors hover:opacity-90"
+        >
+          <Filter size={12} />
+          Filter
+        </button>
+        {(appliedStartDate || appliedEndDate) && (
+          <button
+            onClick={() => {
+              setStartDate('')
+              setEndDate('')
+              setAppliedStartDate('')
+              setAppliedEndDate('')
+              fetchAll('', '')
+            }}
+            className="text-muted-foreground hover:text-foreground text-xs font-semibold underline"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
