@@ -1,5 +1,13 @@
 import { z } from "zod";
-import { loadSecrets } from "./secrets.js";
+
+let loadSecrets: () => Promise<void> = async () => {};
+
+try {
+  const secretsModule = await import("./secrets.js");
+  loadSecrets = secretsModule.loadSecrets;
+} catch {
+  console.warn("secrets.js not found — falling back to process.env only");
+}
 
 await loadSecrets();
 

@@ -10,6 +10,8 @@ const jestConfig: JestConfigWithTsJest = {
     "^@langfuse/langchain$": "<rootDir>/../node_modules/@langfuse/langchain",
     "^langfuse$": "<rootDir>/tests/__mocks__/langfuse.ts",
     "pdfjs-dist/legacy/build/pdf.mjs": "<rootDir>/tests/__mocks__/pdfjs-dist.js",
+    // Rewrite .js imports to .ts for ESM + ts-jest compatibility
+    "^(\\.{1,2}/.*)\\.js$": "$1",
   },
   resolver: "<rootDir>/tests/jest-resolver.cjs",
   moduleDirectories: ["node_modules", "<rootDir>/node_modules", "../../node_modules"],
