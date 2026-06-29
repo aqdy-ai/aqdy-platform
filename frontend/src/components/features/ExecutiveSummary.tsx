@@ -1,6 +1,14 @@
 import { useTranslation } from 'react-i18next'
-import { FileText, AlertCircle, CheckCircle, BarChart3 } from 'lucide-react'
+import {
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  BarChart3,
+  Volume2,
+  VolumeX,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis'
 
 interface ExecutiveSummaryProps {
   summaryData: {
@@ -28,9 +36,11 @@ export default function ExecutiveSummary({
 }: ExecutiveSummaryProps) {
   const { i18n, t } = useTranslation()
   const isRtl = i18n.language === 'ar'
+  const tts = useSpeechSynthesis()
 
   const { overallRisk, totalClauses, riskyClausesCount, summary } = summaryData
   const durationSeconds = (analysisDuration / 1000).toFixed(2)
+  const summaryText = isRtl ? summary.ar : summary.en
 
   return (
     <div className="bg-card border-muted relative overflow-hidden rounded-2xl border p-6 text-start shadow-sm transition-all duration-200">
@@ -123,11 +133,35 @@ export default function ExecutiveSummary({
 
       {/* Dynamic Ai Text Summary Block */}
       <div className="bg-muted/40 border-muted/50 rounded-xl border p-4">
-        <h3 className="text-muted-foreground mb-1.5 text-xs font-bold tracking-wider uppercase">
-          🤖 {t('dashboard.ai_summary_title')}
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-muted-foreground mb-1.5 text-xs font-bold tracking-wider uppercase">
+            🤖 {t('dashboard.ai_summary_title')}
+          </h3>
+          {typeof window !== 'undefined' && window.speechSynthesis && (
+            <button
+              onClick={() => tts.toggle(summaryText, isRtl ? 'ar-EG' : 'en-US')}
+              aria-label={
+                tts.isPlaying
+                  ? t('chat.stop_reading', 'Stop reading')
+                  : t('chat.read_aloud', 'Read aloud')
+              }
+              title={
+                tts.isPlaying
+                  ? t('chat.stop_reading', 'Stop reading')
+                  : t('chat.read_aloud', 'Read aloud')
+              }
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/80 focus:ring-primary -mt-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full transition-all focus:ring-1 focus:outline-none"
+            >
+              {tts.isPlaying ? (
+                <VolumeX size={16} className="text-destructive animate-pulse" />
+              ) : (
+                <Volume2 size={16} />
+              )}
+            </button>
+          )}
+        </div>
         <p className="text-foreground/90 text-sm leading-relaxed font-medium">
-          {isRtl ? summary.ar : summary.en}
+          {summaryText}
         </p>
       </div>
     </div>

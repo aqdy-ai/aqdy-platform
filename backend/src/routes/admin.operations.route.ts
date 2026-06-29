@@ -3,6 +3,7 @@ import {
   authenticateJwt,
   requirePermission,
 } from "../middlewares/auth.middleware.js";
+import { analysisQueue } from "../queue/analysis.queue.js";
 
 const router = Router();
 router.use(authenticateJwt, requirePermission("system_health", "read"));
@@ -93,6 +94,7 @@ router.get("/pipeline-metrics", async (_req, res: Response) => {
  */
 router.get("/infrastructure", async (_req, res: Response) => {
   const memUsage = process.memoryUsage();
+  const jobCounts = await analysisQueue.getJobCounts();
   return res.json({
     success: true,
     data: {
@@ -102,7 +104,12 @@ router.get("/infrastructure", async (_req, res: Response) => {
         memoryTotalMB: Math.round(memUsage.heapTotal / 1024 / 1024),
         nodeVersion: process.version,
       },
-      queue: { activeJobs: 3, pendingJobs: 12, failedJobs: 1 },
+      queue: {
+        activeJobs: jobCounts.active,
+        pendingJobs: jobCounts.waiting + jobCounts.delayed,
+        failedJobs: jobCounts.failed,
+        completedJobs: jobCounts.completed,
+      },
       recentErrors: [
         {
           message: "Pinecone timeout on vector search",

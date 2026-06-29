@@ -29,14 +29,31 @@ router.get(
   "/",
   authenticateJwt,
   requirePermission("dashboard", "read"),
-  async (_req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     try {
       const now = new Date();
       const y = now.getFullYear();
       const m = now.getMonth();
 
-      const { start: monthStart, end: monthEnd } = monthRange(y, m);
-      const { start: lastMonthStart, end: lastMonthEnd } = monthRange(y, m - 1);
+      const queryStartDate = req.query.startDate as string | undefined;
+      const queryEndDate = req.query.endDate as string | undefined;
+
+      const monthStart = queryStartDate
+        ? new Date(queryStartDate)
+        : monthRange(y, m).start;
+      const monthEnd = queryEndDate
+        ? new Date(queryEndDate)
+        : monthRange(y, m).end;
+
+      const prevMonthStart = queryStartDate
+        ? new Date(
+            monthStart.getTime() - (monthEnd.getTime() - monthStart.getTime()),
+          )
+        : monthRange(y, m - 1).start;
+      const prevMonthEnd = queryStartDate
+        ? new Date(monthStart.getTime())
+        : monthRange(y, m - 1).end;
+
       const weekAgo = new Date(now.getTime() - 7 * 86400000);
 
       const [
@@ -74,7 +91,7 @@ router.get(
           {
             $match: {
               status: "succeeded",
-              createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd },
+              createdAt: { $gte: prevMonthStart, $lt: prevMonthEnd },
             },
           },
           { $group: { _id: "$currency", total: { $sum: "$amount" } } },
@@ -83,7 +100,7 @@ router.get(
           createdAt: { $gte: monthStart, $lt: monthEnd },
         }),
         RiskAnalysis.countDocuments({
-          createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd },
+          createdAt: { $gte: prevMonthStart, $lt: prevMonthEnd },
         }),
         RiskAnalysis.countDocuments({}),
         CreditLedger.aggregate([
@@ -103,7 +120,7 @@ router.get(
           {
             $match: {
               delta: { $lt: 0 },
-              createdAt: { $gte: lastMonthStart, $lt: lastMonthEnd },
+              createdAt: { $gte: prevMonthStart, $lt: prevMonthEnd },
             },
           },
           { $group: { _id: null, total: { $sum: { $abs: "$delta" } } } },
@@ -178,32 +195,49 @@ router.get(
             100
           : 0;
 
-      // ── MRR trend last 6 months ──
+      // ── MRR trend (filter-aware) ──
       const mrrTrend: { month: string; usd: number }[] = [];
-      for (let i = 5; i >= 0; i--) {
-        const { start, end } = monthRange(y, m - i);
+      const mrrCursor = queryStartDate
+        ? new Date(queryStartDate)
+        : new Date(y, m - 5, 1);
+      const mrrEnd = queryEndDate
+        ? new Date(queryEndDate)
+        : new Date(y, m + 1, 1);
+      mrrCursor.setDate(1);
+      mrrCursor.setHours(0, 0, 0, 0);
+      while (mrrCursor < mrrEnd) {
+        const monthStart = new Date(mrrCursor);
+        const monthEnd = new Date(
+          mrrCursor.getFullYear(),
+          mrrCursor.getMonth() + 1,
+          1,
+        );
         const rows = await Payment.aggregate([
           {
             $match: {
               status: "succeeded",
-              createdAt: { $gte: start, $lt: end },
+              createdAt: { $gte: monthStart, $lt: monthEnd },
             },
           },
           { $group: { _id: "$currency", total: { $sum: "$amount" } } },
         ]);
         const usd = rows.find((r) => r._id === "USD")?.total || 0;
-        const label = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}`;
+        const label = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, "0")}`;
         mrrTrend.push({ month: label, usd: Math.round(usd * 100) / 100 });
+        mrrCursor.setMonth(mrrCursor.getMonth() + 1);
       }
 
-      // ── Weekly signups last 8 weeks ──
+      // ── Weekly signups (filter-aware) ──
       const weeklySignups: { week: string; count: number }[] = [];
-      for (let i = 7; i >= 0; i--) {
-        const { start } = weekRange(now, i);
-        // adjust start to monday
-        const weekStart = new Date(start);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-        const weekEnd = new Date(weekStart);
+      const signupCursor = queryStartDate
+        ? new Date(queryStartDate)
+        : new Date(now.getTime() - 7 * 7 * 86400000);
+      const signupEnd = queryEndDate ? new Date(queryEndDate) : new Date(now);
+      signupCursor.setDate(signupCursor.getDate() - signupCursor.getDay() + 1);
+      signupCursor.setHours(0, 0, 0, 0);
+      while (signupCursor < signupEnd) {
+        const weekStart = new Date(signupCursor);
+        const weekEnd = new Date(signupCursor);
         weekEnd.setDate(weekEnd.getDate() + 7);
         const count = await User.countDocuments({
           createdAt: { $gte: weekStart, $lt: weekEnd },
@@ -212,6 +246,7 @@ router.get(
           week: weekStart.toISOString().slice(0, 10),
           count,
         });
+        signupCursor.setDate(signupCursor.getDate() + 7);
       }
 
       // ── Daily analyses & credits this month ──
@@ -344,13 +379,20 @@ router.get(
         .lean();
 
       // ── Analyses per day chart data (fill gaps) ──
-      const daysInMonth = new Date(y, m + 1, 0).getDate();
       const analysesPerDay: { date: string; count: number }[] = [];
       const creditsPerDay: { date: string; credits: number }[] = [];
       const dailyMap = new Map(dailyAnalyses.map((d) => [d._id, d.count]));
       const creditMap = new Map(dailyCredits.map((d) => [d._id, d.total]));
-      for (let d = 1; d <= daysInMonth; d++) {
-        const key = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const rangeStart = new Date(monthStart);
+      const rangeEnd = queryEndDate
+        ? new Date(queryEndDate)
+        : new Date(y, m + 1, 0);
+      for (
+        let d = new Date(rangeStart);
+        d <= rangeEnd;
+        d.setDate(d.getDate() + 1)
+      ) {
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         analysesPerDay.push({ date: key, count: dailyMap.get(key) || 0 });
         creditsPerDay.push({ date: key, credits: creditMap.get(key) || 0 });
       }

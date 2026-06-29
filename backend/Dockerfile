@@ -22,7 +22,7 @@ COPY tsconfig.json ./
 RUN npm run build
 
 # ======= Stage 2: Runtime Stage ======
-FROM node:24-alpine
+FROM node:24-slim
 
 WORKDIR /app
 

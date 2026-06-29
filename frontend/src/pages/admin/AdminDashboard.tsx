@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePermissions } from '../../hooks/usePermissions'
 import { motion } from 'framer-motion'
@@ -17,6 +17,8 @@ import {
   Zap,
   Database,
   Languages,
+  Filter,
+  Calendar,
 } from 'lucide-react'
 import {
   BarChart,
@@ -135,21 +137,41 @@ export default function AdminDashboard() {
   const canViewUserData = hasPermission('accounts', 'read')
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [appliedStartDate, setAppliedStartDate] = useState('')
+  const [appliedEndDate, setAppliedEndDate] = useState('')
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(
+    async (sd: string, ed: string) => {
       try {
         setLoading(true)
-        const res = await adminApi.getDashboard()
+        const params: { startDate?: string; endDate?: string } = {}
+        if (sd) params.startDate = sd
+        if (ed) params.endDate = ed
+        const res = await adminApi.getDashboard(
+          Object.keys(params).length ? params : undefined
+        )
         if (res.data.success) setData(res.data.data)
       } catch {
         toast.error(t('admin.error_updating'))
       } finally {
         setLoading(false)
       }
-    }
-    fetchData()
-  }, [t])
+    },
+    [t]
+  )
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData('', '')
+  }, [fetchData])
+
+  const handleFilter = () => {
+    setAppliedStartDate(startDate)
+    setAppliedEndDate(endDate)
+    fetchData(startDate, endDate)
+  }
 
   if (loading) {
     return (
@@ -189,6 +211,83 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* ── Date Filter Bar ── */}
+      <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="admin-start-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            {isRtl ? 'من' : 'From'}:
+          </label>
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="admin-start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="admin-end-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            {isRtl ? 'إلى' : 'To'}:
+          </label>
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="admin-end-date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
+        </div>
+        <button
+          onClick={handleFilter}
+          className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition-colors hover:opacity-90"
+        >
+          <Filter size={12} />
+          {t('admin.filter', { defaultValue: 'Filter' })}
+        </button>
+        {(appliedStartDate || appliedEndDate) && (
+          <button
+            onClick={() => {
+              setStartDate('')
+              setEndDate('')
+              setAppliedStartDate('')
+              setAppliedEndDate('')
+              fetchData('', '')
+            }}
+            className="text-muted-foreground hover:text-foreground text-xs font-semibold underline"
+          >
+            {t('admin.clear_filters', { defaultValue: 'Clear filters' })}
+          </button>
+        )}
+      </div>
+
       {/* ── Section 1: Business Overview ── */}
       <SectionHeading
         title={isRtl ? 'نظرة عامة على الأعمال' : 'BUSINESS OVERVIEW'}

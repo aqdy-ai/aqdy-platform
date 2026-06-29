@@ -1,14 +1,8 @@
-import { jest } from '@jest/globals';
-import { Evaluation } from "../src/models/evaluation.model.js";
-import { IRiskAnalysis } from "../src/models/riskAnalysis.model.js";
+import { jest, beforeAll, afterAll, afterEach, describe, it, expect } from '@jest/globals';
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 
-import { judgeService } from "../src/services/judge.service.js";
-import langfuse from "../src/utils/langfuseClient.js";
-import { llmService } from "../src/services/llm.service.js";
-
-const langfuseMock = langfuse as any;
+// ── Mocks ────────────────────────────────────────────────────────────────────
 
 const mockLlmResponse = JSON.stringify({
   faithfulness: 5,
@@ -24,14 +18,31 @@ const mockLlmResponse = JSON.stringify({
   },
 });
 
-jest.spyOn(llmService, 'call').mockResolvedValue({
-  content: mockLlmResponse,
-  model: "gpt-4o",
-  usedFallback: false,
-});
+const mockLangfuseTrace = { id: "mock-trace-id" };
+const mockLangfuseScore = jest.fn<(...args: unknown[]) => void>();
 
-jest.spyOn(langfuseMock, 'trace').mockReturnValue({ id: "mock-trace-id" });
-jest.spyOn(langfuseMock, 'score').mockImplementation(() => {});
+jest.unstable_mockModule("../src/config/langfuse.config.js", () => ({
+  getLangfuseClient: () => ({
+    trace: jest.fn<(...args: unknown[]) => unknown>().mockReturnValue(mockLangfuseTrace),
+    score: mockLangfuseScore,
+  }),
+  initializeLangfuse: jest.fn(),
+  flushLangfuseTraces: jest.fn(),
+  createLangfuseHandler: jest.fn().mockReturnValue(null),
+}));
+
+jest.unstable_mockModule("../src/services/llm.service.js", () => ({
+  llmService: {
+    call: jest
+      .fn<(...args: unknown[]) => Promise<unknown>>()
+      .mockResolvedValue({ content: mockLlmResponse, model: "gpt-4o", usedFallback: false }),
+  },
+}));
+
+// ── Imports (after mocks) ────────────────────────────────────────────────────
+
+const { judgeService } = await import("../src/services/judge.service.js");
+const { Evaluation } = await import("../src/models/evaluation.model.js");
 
 let mongoServer: MongoMemoryServer;
 
@@ -75,7 +86,7 @@ describe("judgeService.evaluateAnalysis", () => {
           redlineSuggestion: "Consider adding...",
         },
       ],
-    } as unknown as IRiskAnalysis;
+    } as any;
 
     await judgeService.evaluateAnalysis(fakeAnalysis);
 
@@ -87,8 +98,8 @@ describe("judgeService.evaluateAnalysis", () => {
     expect(evalDoc?.recall).toBe(2);
     expect(evalDoc?.traceId).toBe("mock-trace-id");
 
-    expect(langfuseMock.score).toHaveBeenCalledTimes(4);
-    const scoreCalls = langfuseMock.score.mock.calls.map((c: any) => c[0]);
+    expect(mockLangfuseScore).toHaveBeenCalledTimes(4);
+    const scoreCalls = mockLangfuseScore.mock.calls.map((c: any) => c[0]);
     expect(scoreCalls).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "faithfulness", value: 5, traceId: "mock-trace-id" }),
@@ -109,7 +120,7 @@ describe("judgeService.evaluateAnalysis", () => {
         riskyClausesCount: 0,
         summary: { en: "No clauses", ar: "لا يوجد" },
       },
-    } as unknown as IRiskAnalysis;
+    } as any;
 
     await judgeService.evaluateAnalysis(fakeAnalysis);
 

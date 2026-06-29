@@ -5,16 +5,16 @@ import { fileURLToPath } from "url";
 
 // ── Mock Setup ───────────────────────────────────
 
-const mockGetPrompt = jest.fn() as jest.Mock;
-const mockSetFallback = jest.fn() as jest.Mock;
+const mockGetPrompt = jest.fn() as any;
+const mockSetFallback = jest.fn() as any;
 
 jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
   getPrompt: mockGetPrompt,
   setFallback: mockSetFallback,
 }));
 
-const mockOpenAIInvoke = jest.fn() as jest.Mock;
-const mockGeminiInvoke = jest.fn() as jest.Mock;
+const mockOpenAIInvoke = jest.fn() as any;
+const mockGeminiInvoke = jest.fn() as any;
 
 jest.unstable_mockModule("@langchain/openai", () => ({
   ChatOpenAI: jest.fn().mockImplementation(() => ({

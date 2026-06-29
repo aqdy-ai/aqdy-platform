@@ -13,6 +13,13 @@ import { logger } from "../utils/logger.js";
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
+const isQuotaError = (error: unknown): boolean => {
+  const msg = error instanceof Error ? error.message : String(error);
+  return /429|quota|exceeded.*(?:quota|billing|plan)|insufficient_quota/i.test(
+    msg,
+  );
+};
+
 const PRIMARY_MODEL = "gpt-4o";
 const GEMINI_FALLBACK = "gemini-3.1-flash-lite";
 
@@ -108,6 +115,14 @@ const callWithRetry = async (
       const isLastAttempt = attempt === MAX_RETRIES;
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
+
+      if (isQuotaError(error) && !useFallback) {
+        logger.warn(
+          "GPT-4o quota exceeded — skipping remaining retries, switching to Gemini fallback",
+          { attempt, error: errorMessage },
+        );
+        throw error;
+      }
 
       logger.warn("LLM call failed", {
         model: clientName,

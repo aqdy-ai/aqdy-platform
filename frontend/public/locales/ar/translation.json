@@ -558,6 +558,8 @@
     "memory": "الذاكرة العشوائية",
     "queue_active": "المهام النشطة في الطابور",
     "queue_failed": "المهام الفاشلة في الطابور",
+    "queue_pending": "المهام المنتظرة في الطابور",
+    "queue_completed": "المهام المكتملة",
     "analytics_dashboard": "لوحة تحليلات المنصة",
     "business_metrics": "مقاييس الأعمال",
     "total_accounts": "إجمالي الحسابات",

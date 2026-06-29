@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DollarSign,
@@ -10,6 +10,8 @@ import {
   Search,
   Undo2,
   History,
+  Filter,
+  Calendar,
 } from 'lucide-react'
 import { adminApi, AdminPlan } from '../../services/adminApi'
 import { usePermissions } from '../../hooks/usePermissions'
@@ -58,6 +60,8 @@ export default function FinancialDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [appliedDateFrom, setAppliedDateFrom] = useState('')
+  const [appliedDateTo, setAppliedDateTo] = useState('')
 
   // Refund modal
   const [refundTarget, setRefundTarget] = useState<Subscription | null>(null)
@@ -70,12 +74,18 @@ export default function FinancialDashboard() {
   const [webhookPage, setWebhookPage] = useState(1)
   const [webhookTotalPages, setWebhookTotalPages] = useState(1)
 
-  useEffect(() => {
-    ;(async () => {
+  const fetchAll = useCallback(
+    async (df: string, dt: string) => {
       try {
+        setLoading(true)
+        const subsParams: Record<string, string | number> = {}
+        if (df) subsParams.dateFrom = df
+        if (dt) subsParams.dateTo = dt
         const [ov, subs, pl] = await Promise.all([
           adminApi.getFinancialOverview(),
-          adminApi.getSubscriptions(),
+          adminApi.getSubscriptions(
+            Object.keys(subsParams).length ? subsParams : undefined
+          ),
           adminApi.getPlans({ pageSize: 100 }),
         ])
         setOverview((ov.data as { data: OverviewData }).data)
@@ -85,8 +95,20 @@ export default function FinancialDashboard() {
         toast.error(t('common.error'))
       }
       setLoading(false)
-    })()
-  }, [t])
+    },
+    [t]
+  )
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchAll('', '')
+  }, [fetchAll])
+
+  const handleFilter = () => {
+    setAppliedDateFrom(dateFrom)
+    setAppliedDateTo(dateTo)
+    fetchAll(dateFrom, dateTo)
+  }
 
   const fetchWebhooks = async (page = 1) => {
     try {
@@ -255,6 +277,83 @@ export default function FinancialDashboard() {
         </div>
       </div>
 
+      {/* ── Date Filter Bar ── */}
+      <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="financial-start-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            From:
+          </label>
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="financial-start-date"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="financial-end-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            To:
+          </label>
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="financial-end-date"
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
+        </div>
+        <button
+          onClick={handleFilter}
+          className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition-colors hover:opacity-90"
+        >
+          <Filter size={12} />
+          Filter
+        </button>
+        {(appliedDateFrom || appliedDateTo) && (
+          <button
+            onClick={() => {
+              setDateFrom('')
+              setDateTo('')
+              setAppliedDateFrom('')
+              setAppliedDateTo('')
+              fetchAll('', '')
+            }}
+            className="text-muted-foreground hover:text-foreground text-xs font-semibold underline"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
       {/* Metric Cards */}
       {overview && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -386,18 +485,40 @@ export default function FinancialDashboard() {
                 className="bg-background border-border w-36 rounded-lg border py-1.5 ps-8 pe-2.5 text-xs outline-none"
               />
             </div>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="bg-background border-border rounded-lg border px-2 py-1.5 text-xs"
-            />
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="bg-background border-border rounded-lg border px-2 py-1.5 text-xs"
-            />
+            <div className="relative">
+              <Calendar
+                className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+                onClick={(e) => {
+                  const input = e.currentTarget.parentElement?.querySelector(
+                    'input[type="date"]'
+                  ) as HTMLInputElement | null
+                  input?.showPicker()
+                }}
+              />
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="bg-background border-border rounded-lg border px-2 py-1.5 ps-8 text-xs"
+              />
+            </div>
+            <div className="relative">
+              <Calendar
+                className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+                onClick={(e) => {
+                  const input = e.currentTarget.parentElement?.querySelector(
+                    'input[type="date"]'
+                  ) as HTMLInputElement | null
+                  input?.showPicker()
+                }}
+              />
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="bg-background border-border rounded-lg border px-2 py-1.5 ps-8 text-xs"
+              />
+            </div>
           </div>
         </div>
         <table className="w-full text-sm">

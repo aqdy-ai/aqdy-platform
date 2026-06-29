@@ -11,10 +11,14 @@ import {
   BrainCircuit,
   Search,
   MessageSquare,
+  Volume2,
+  VolumeX,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import ClauseChat from './ClauseChat'
 import { getConfidenceMeta } from '../../lib/utils'
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis'
+import ThumbsFeedback from '../ui/ThumbsFeedback'
 
 export interface ClauseItem {
   id: string
@@ -43,6 +47,7 @@ export default function ClauseCard({
   const isRtl = i18n.language === 'ar'
   const [isCopied, setIsCopied] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
+  const explanationTts = useSpeechSynthesis()
 
   const handleCopy = async (text: string) => {
     try {
@@ -113,9 +118,38 @@ export default function ClauseCard({
 
       {/* Explanation Box */}
       <div className="bg-muted/40 border-border/60 space-y-2 rounded-xl border p-4">
-        <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400">
-          <AlertTriangle size={14} />
-          <span>{t('dashboard.explanation')}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400">
+            <AlertTriangle size={14} />
+            <span>{t('dashboard.explanation')}</span>
+          </div>
+          {typeof window !== 'undefined' && window.speechSynthesis && (
+            <button
+              onClick={() =>
+                explanationTts.toggle(
+                  item.explanation,
+                  isRtl ? 'ar-EG' : 'en-US'
+                )
+              }
+              aria-label={
+                explanationTts.isPlaying
+                  ? t('chat.stop_reading', 'Stop reading')
+                  : t('chat.read_aloud', 'Read aloud')
+              }
+              title={
+                explanationTts.isPlaying
+                  ? t('chat.stop_reading', 'Stop reading')
+                  : t('chat.read_aloud', 'Read aloud')
+              }
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/80 focus:ring-primary flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full transition-all focus:ring-1 focus:outline-none"
+            >
+              {explanationTts.isPlaying ? (
+                <VolumeX size={14} className="text-destructive animate-pulse" />
+              ) : (
+                <Volume2 size={14} />
+              )}
+            </button>
+          )}
         </div>
         <p className="text-muted-foreground text-sm leading-relaxed font-medium">
           {item.explanation}
@@ -150,6 +184,20 @@ export default function ClauseCard({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Per-clause Feedback */}
+      <div className="flex items-center justify-between pt-1">
+        <span className="text-muted-foreground text-[10px] font-bold">
+          {isRtl
+            ? 'هل كان هذا التحليل مفيداً؟'
+            : 'Was this clause analysis helpful?'}
+        </span>
+        <ThumbsFeedback
+          targetType="clause"
+          targetId={`${contractId || ''}-clause-${clauseIndex ?? item.clauseIndex ?? 0}`}
+          contractId={contractId}
+        />
       </div>
 
       {/* Action Row - Chat toggle button */}

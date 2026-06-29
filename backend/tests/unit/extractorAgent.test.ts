@@ -2,15 +2,15 @@ import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 
 // ── Mock Setup ───────────────────────────────────
 
-const mockGetPrompt = jest.fn() as jest.Mock;
-const mockSetFallback = jest.fn() as jest.Mock;
+const mockGetPrompt = jest.fn() as any;
+const mockSetFallback = jest.fn() as any;
 
 jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
   getPrompt: mockGetPrompt,
   setFallback: mockSetFallback,
 }));
 
-const mockInvoke = jest.fn() as jest.Mock;
+const mockInvoke = jest.fn() as any;
 
 jest.unstable_mockModule("@langchain/google-genai", () => {
   return {

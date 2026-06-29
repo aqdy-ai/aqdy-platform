@@ -6,16 +6,15 @@ class EmailService {
   private transporter: nodemailer.Transporter | null = null;
 
   constructor() {
-    // Check if SMTP environment variables are configured
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpPort = process.env.SMTP_PORT;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    const smtpHost = env.SMTP_HOST;
+    const smtpPort = env.SMTP_PORT;
+    const smtpUser = env.SMTP_USER;
+    const smtpPass = env.SMTP_PASS;
 
     if (smtpHost && smtpUser && smtpPass) {
       this.transporter = nodemailer.createTransport({
         host: smtpHost,
-        port: parseInt(smtpPort || "587", 10),
+        port: parseInt(smtpPort, 10),
         secure: smtpPort === "465",
         auth: {
           user: smtpUser,
@@ -36,7 +35,7 @@ class EmailService {
     token: string,
   ): Promise<void> {
     const verificationUrl = `${env.FRONTEND_URL}/verify?token=${token}`;
-    const fromAddress = process.env.SMTP_FROM || "no-reply@aqdy.eg";
+    const fromAddress = env.SMTP_FROM;
 
     const subject = "Aqdy Account Verification | تأكيد حساب عقدي";
 
@@ -120,7 +119,7 @@ class EmailService {
     token: string,
   ): Promise<void> {
     const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`;
-    const fromAddress = process.env.SMTP_FROM || "no-reply@aqdy.eg";
+    const fromAddress = env.SMTP_FROM;
     const subject = "Aqdy Password Reset | إعادة تعيين كلمة المرور";
 
     const htmlContent = `

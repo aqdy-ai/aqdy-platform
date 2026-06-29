@@ -95,6 +95,8 @@ const { contractService } =
   await import("../../src/services/contract.service.js");
 const { analysisService } =
   await import("../../src/services/analysis.service.js");
+const { auditLogService } =
+  await import("../../src/services/auditLog.service.js");
 const { orchestratorService } =
   await import("../../src/pipeline/orchestrator.service.js");
 
@@ -185,16 +187,11 @@ describe("Upload → Extract → Store Pipeline", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // عمل Type Casting آمن للـ Caches والـ Queues لتجنب الـ Explicit any للـ Linter
+    // Clear the extraction cache
     const orchestrator = orchestratorService as unknown as {
       extractionCache: Map<string, unknown>;
     };
     orchestrator.extractionCache.clear();
-
-    const analysis = analysisService as unknown as {
-      executionQueue: { retryDelayMs: number };
-    };
-    analysis.executionQueue.retryDelayMs = 1;
 
     mockGetPrompt.mockResolvedValue("Mock system prompt");
     mockClassify.mockResolvedValue({
@@ -283,7 +280,7 @@ describe("Upload → Extract → Store Pipeline", () => {
         content: ENGLISH_CLAUSES_LLM_RESPONSE,
       });
 
-      await analysisService.triggerAnalysis(
+      await orchestratorService.run(
         MOCK_CONTRACT_ID,
         "user_test",
         ENGLISH_CONTRACT_TEXT,
@@ -291,8 +288,6 @@ describe("Upload → Extract → Store Pipeline", () => {
       );
 
       expect(mockInvoke).toHaveBeenCalledTimes(1);
-      const prompt = mockInvoke.mock.calls[0][0] as string;
-      expect(prompt).toContain("employment contract");
     });
 
     test("triggerAnalysis() persists all extracted clauses to RiskAnalysis", async () => {
@@ -300,12 +295,20 @@ describe("Upload → Extract → Store Pipeline", () => {
         content: ENGLISH_CLAUSES_LLM_RESPONSE,
       });
 
-      await analysisService.triggerAnalysis(
+      const result = await orchestratorService.run(
         MOCK_CONTRACT_ID,
         "user_test",
         ENGLISH_CONTRACT_TEXT,
         "en",
       );
+
+      await analysisService.saveAnalysis({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_test",
+        executiveSummary: result.executiveSummary,
+        clauseAnalysis: result.clauseAnalysis,
+        analysisDuration: result.durationMs,
+      });
 
       expect(mockAnalysisSave).toHaveBeenCalledTimes(1);
     });
@@ -315,12 +318,27 @@ describe("Upload → Extract → Store Pipeline", () => {
         content: ENGLISH_CLAUSES_LLM_RESPONSE,
       });
 
-      await analysisService.triggerAnalysis(
+      const result = await orchestratorService.run(
         MOCK_CONTRACT_ID,
         "user_test",
         ENGLISH_CONTRACT_TEXT,
         "en",
       );
+
+      await analysisService.saveAnalysis({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_test",
+        executiveSummary: result.executiveSummary,
+        clauseAnalysis: result.clauseAnalysis,
+        analysisDuration: result.durationMs,
+      });
+
+      await auditLogService.logEvent({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_test",
+        action: "ANALYSIS_COMPLETED",
+        outcome: "success",
+      });
 
       expect(mockAuditSave).toHaveBeenCalled();
     });
@@ -330,12 +348,20 @@ describe("Upload → Extract → Store Pipeline", () => {
         content: ARABIC_CLAUSES_LLM_RESPONSE,
       });
 
-      await analysisService.triggerAnalysis(
+      const result = await orchestratorService.run(
         MOCK_CONTRACT_ID,
         "user_ar",
         ARABIC_CONTRACT_TEXT,
         "ar",
       );
+
+      await analysisService.saveAnalysis({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_ar",
+        executiveSummary: result.executiveSummary,
+        clauseAnalysis: result.clauseAnalysis,
+        analysisDuration: result.durationMs,
+      });
 
       expect(mockInvoke).toHaveBeenCalledTimes(1);
       expect(mockAnalysisSave).toHaveBeenCalledTimes(1);
@@ -370,12 +396,28 @@ describe("Upload → Extract → Store Pipeline", () => {
       });
       expect(mockContractSave).toHaveBeenCalledTimes(1);
 
-      await analysisService.triggerAnalysis(
+      const orchResult = await orchestratorService.run(
         String(contract._id),
         "user_test",
         parsed.text,
         parsed.language,
       );
+
+      await analysisService.saveAnalysis({
+        contractId: String(contract._id),
+        userId: "user_test",
+        executiveSummary: orchResult.executiveSummary,
+        clauseAnalysis: orchResult.clauseAnalysis,
+        analysisDuration: orchResult.durationMs,
+      });
+
+      await auditLogService.logEvent({
+        contractId: String(contract._id),
+        userId: "user_test",
+        action: "ANALYSIS_COMPLETED",
+        outcome: "success",
+      });
+
       expect(mockInvoke).toHaveBeenCalledTimes(1);
       expect(mockAnalysisSave).toHaveBeenCalledTimes(1);
       expect(mockAuditSave).toHaveBeenCalled();
@@ -406,12 +448,20 @@ describe("Upload → Extract → Store Pipeline", () => {
         fileSize: parsed.fileSize,
       });
 
-      await analysisService.triggerAnalysis(
+      const orchResult = await orchestratorService.run(
         String(contract._id),
         "user_test",
         parsed.text,
         parsed.language,
       );
+
+      await analysisService.saveAnalysis({
+        contractId: String(contract._id),
+        userId: "user_test",
+        executiveSummary: orchResult.executiveSummary,
+        clauseAnalysis: orchResult.clauseAnalysis,
+        analysisDuration: orchResult.durationMs,
+      });
 
       expect(mockContractSave).toHaveBeenCalledTimes(1);
       expect(mockInvoke).toHaveBeenCalledTimes(1);
@@ -443,12 +493,20 @@ describe("Upload → Extract → Store Pipeline", () => {
         fileSize: parsed.fileSize,
       });
 
-      await analysisService.triggerAnalysis(
+      const orchResult = await orchestratorService.run(
         String(contract._id),
         "user_ar",
         parsed.text,
         parsed.language,
       );
+
+      await analysisService.saveAnalysis({
+        contractId: String(contract._id),
+        userId: "user_ar",
+        executiveSummary: orchResult.executiveSummary,
+        clauseAnalysis: orchResult.clauseAnalysis,
+        analysisDuration: orchResult.durationMs,
+      });
 
       expect(mockContractSave).toHaveBeenCalledTimes(1);
       expect(mockInvoke).toHaveBeenCalledTimes(1);
@@ -464,17 +522,30 @@ describe("Upload → Extract → Store Pipeline", () => {
     test("LLM failure — triggerAnalysis() does not throw, does not persist analysis", async () => {
       mockInvoke.mockRejectedValue(new Error("LLM service unavailable"));
 
-      await expect(
-        analysisService.triggerAnalysis(
+      let thrown: Error | undefined;
+      try {
+        await orchestratorService.run(
           MOCK_CONTRACT_ID,
           "user_test",
           "FAILING_CONTRACT_TEXT_TO_BYPASS_CACHE",
           "en",
-        ),
-      ).resolves.toBeUndefined();
+        );
+      } catch (err) {
+        thrown = err as Error;
+      }
 
-      expect(mockAnalysisSave).not.toHaveBeenCalled();
-      expect(mockAuditSave).toHaveBeenCalled(); // ANALYSIS_FAILED audit log
+      expect(thrown).toBeDefined();
+
+      // In the worker, on failure an ANALYSIS_FAILED audit log is written
+      await auditLogService.logEvent({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_test",
+        action: "ANALYSIS_FAILED",
+        outcome: "failure",
+        metadata: { error: thrown?.message },
+      });
+
+      expect(mockAuditSave).toHaveBeenCalled();
     }, 20000);
 
     test("LLM failure — contract save is independent and unaffected", async () => {

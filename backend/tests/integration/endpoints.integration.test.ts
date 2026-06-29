@@ -6,19 +6,47 @@ import {
   beforeAll,
   afterAll,
   beforeEach,
+  jest,
 } from "@jest/globals";
 import mongoose from "mongoose";
 import request from "supertest";
+
+// Mock the analysis queue to avoid Redis dependency in test
+jest.unstable_mockModule("../../src/queue/analysis.queue.js", () => ({
+  analysisQueue: {
+    add: jest
+      .fn<(...args: unknown[]) => Promise<unknown>>()
+      .mockResolvedValue({ id: "mock-job-id" }),
+  },
+  closeAnalysisQueue: jest.fn().mockResolvedValue(undefined),
+  AnalysisPayload: {},
+}));
+
+jest.unstable_mockModule("../../src/queue/analysis.worker.js", () => ({
+  analysisWorker: {
+    on: jest.fn(),
+    close: jest.fn().mockResolvedValue(undefined),
+  },
+  closeAnalysisWorker: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.unstable_mockModule("../../src/config/redis.config.js", () => ({
+  getRedisConnection: jest.fn().mockReturnValue({}),
+  closeRedis: jest.fn().mockResolvedValue(undefined),
+}));
 
 let app: any;
 let authToken: string;
 let authenticatedUserId: string;
 
-import { Contract } from "../../src/models/contract.model.js";
-import { RiskAnalysis } from "../../src/models/riskAnalysis.model.js";
-import { AuditLog } from "../../src/models/auditLog.model.js";
-import { creditsService } from "../../src/services/credits.service.js";
-import { jest } from "@jest/globals";
+const { Contract } = await import("../../src/models/contract.model.js");
+const { RiskAnalysis } = await import(
+  "../../src/models/riskAnalysis.model.js"
+);
+const { AuditLog } = await import("../../src/models/auditLog.model.js");
+const { creditsService } = await import(
+  "../../src/services/credits.service.js"
+);
 
 beforeAll(async () => {
   const mongoURI = process.env.MONGODB_URI!.replace("aqdy_db", "aqdy_test");

@@ -1,7 +1,24 @@
 /* tests/BilingualRendering.test.tsx */
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 import RiskAnalysisDashboard from '../src/pages/RiskAnalysisDashboard'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: false, staleTime: 0, gcTime: 0 },
+  },
+})
+
+function WithQueryClient({ children }: { children: ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  )
+}
+
+const renderWithProviders = (ui: ReactNode) =>
+  render(<WithQueryClient>{ui}</WithQueryClient>)
 
 // متغير محلي للتحكم في اللغة النشطة
 let currentTestLanguage = 'ar'
@@ -22,6 +39,9 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams(''), () => {}],
+  useLocation: () => ({ search: '', pathname: '/' }),
+  useNavigate: () => vi.fn(),
+  Link: ({ children, to, ...props }: any) => <a href={to} {...props}>{children}</a>,
 }))
 
 describe('Bilingual Rendering & RTL/LTR Layout Tests', () => {
@@ -31,7 +51,7 @@ describe('Bilingual Rendering & RTL/LTR Layout Tests', () => {
 
   it('should render full Arabic UI layout with RTL directions', () => {
     currentTestLanguage = 'ar'
-    render(<RiskAnalysisDashboard />)
+    renderWithProviders(<RiskAnalysisDashboard />)
 
     // The component renders: isRtl ? 'تحليل مخاطر العقد' : 'Contract Risk Analysis'
     expect(screen.getByText('تحليل مخاطر العقد')).toBeInTheDocument()
@@ -41,7 +61,7 @@ describe('Bilingual Rendering & RTL/LTR Layout Tests', () => {
 
   it('should render full English UI layout with LTR directions', () => {
     currentTestLanguage = 'en'
-    render(<RiskAnalysisDashboard />)
+    renderWithProviders(<RiskAnalysisDashboard />)
 
     // The component renders: isRtl ? 'تحليل مخاطر العقد' : 'Contract Risk Analysis'
     expect(screen.getByText('Contract Risk Analysis')).toBeInTheDocument()
@@ -51,7 +71,7 @@ describe('Bilingual Rendering & RTL/LTR Layout Tests', () => {
 
   it('should render clause items from the internal mock data', () => {
     currentTestLanguage = 'ar'
-    render(<RiskAnalysisDashboard />)
+    renderWithProviders(<RiskAnalysisDashboard />)
 
     // Verify known clause titles from MOCK_RISK_DATA are rendered
     expect(

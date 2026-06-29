@@ -1,7 +1,7 @@
 import { llmService } from "./llm.service.js";
 import { JUDGE_SYSTEM_PROMPT, JUDGE_USER_PROMPT } from "./judgePrompt.js";
 import { Evaluation } from "../models/evaluation.model.js";
-import langfuse from "../utils/langfuseClient.js";
+import { getLangfuseClient } from "../config/langfuse.config.js";
 import { logger } from "../utils/logger.js";
 import type { IRiskAnalysis } from "../models/riskAnalysis.model.js";
 
@@ -37,6 +37,17 @@ function buildAnalysisAnswer(analysis: IRiskAnalysis): string {
 
 export const judgeService = {
   async evaluateAnalysis(analysis: IRiskAnalysis): Promise<void> {
+    const langfuse = getLangfuseClient();
+    if (!langfuse) {
+      logger.info(
+        "JudgeService – Langfuse not initialized, skipping evaluation",
+        {
+          analysisId: analysis._id.toString(),
+        },
+      );
+      return;
+    }
+
     try {
       const trace = langfuse.trace({
         name: `Analysis Evaluation ${analysis._id}`,
