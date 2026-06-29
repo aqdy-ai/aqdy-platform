@@ -16,6 +16,12 @@ jest.unstable_mockModule("../../src/services/contract.service.js", () => ({
 const mockLogEvent = jest.fn() as jest.Mock<any>;
 jest.unstable_mockModule("../../src/services/auditLog.service.js", () => ({
   auditLogService: { logEvent: mockLogEvent },
+  logAuth: {
+    loginSuccess: jest.fn().mockResolvedValue(undefined),
+    loginFailed: jest.fn().mockResolvedValue(undefined),
+    logout: jest.fn().mockResolvedValue(undefined),
+    passwordReset: jest.fn().mockResolvedValue(undefined),
+  },
   logAdmin: {
     viewLogs: jest.fn().mockResolvedValue(undefined),
   },

@@ -1,23 +1,27 @@
-// backend/tests/auth.integration.test.ts
-// Updated to guard mongoose.connect with readyState check
-
 import request from "supertest";
-import { jest } from "@jest/globals";
+import { jest, beforeAll, afterAll, afterEach, describe, it, expect } from "@jest/globals";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
-import app from "../src/index.js"; // app export without listening
-import { User } from "../src/models/user.model.js";
 
 // Mock email service to capture token
-jest.mock("../src/services/email.service.js", () => ({
+const mockSendPasswordResetEmail = jest
+  .fn<(...args: unknown[]) => Promise<undefined>>()
+  .mockResolvedValue(undefined);
+const mockSendVerificationEmail = jest
+  .fn<(...args: unknown[]) => Promise<undefined>>()
+  .mockResolvedValue(undefined);
+
+jest.unstable_mockModule("../src/services/email.service.js", () => ({
   emailService: {
-    sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
-    sendVerificationEmail: jest.fn().mockResolvedValue(undefined),
+    sendPasswordResetEmail: mockSendPasswordResetEmail,
+    sendVerificationEmail: mockSendVerificationEmail,
   },
 }));
 
-const emailMock = (await import("../src/services/email.service.js"))
-  .emailService;
+// ── Imports (after mocks) ────────────────────────────────────────────────────
+
+const { default: app } = await import("../src/index.js");
+const { User } = await import("../src/models/user.model.js");
 
 let mongo: any;
 

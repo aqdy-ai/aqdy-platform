@@ -7,11 +7,41 @@ import {
   beforeAll,
   afterAll,
   beforeEach,
+  jest,
 } from "@jest/globals";
-import app from "../../src/index.js";
-import { Contract } from "../../src/models/contract.model.js";
-import { resetRateLimitStores } from "../../src/middlewares/rateLimit.js";
-import { creditsService } from "../../src/services/credits.service.js";
+
+// Mock the analysis queue to avoid Redis dependency in test
+jest.unstable_mockModule("../../src/queue/analysis.queue.js", () => ({
+  analysisQueue: {
+    add: jest
+      .fn<(...args: unknown[]) => Promise<unknown>>()
+      .mockResolvedValue({ id: "mock-job-id" }),
+  },
+  closeAnalysisQueue: jest.fn().mockResolvedValue(undefined),
+  AnalysisPayload: {},
+}));
+
+jest.unstable_mockModule("../../src/queue/analysis.worker.js", () => ({
+  analysisWorker: {
+    on: jest.fn(),
+    close: jest.fn().mockResolvedValue(undefined),
+  },
+  closeAnalysisWorker: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.unstable_mockModule("../../src/config/redis.config.js", () => ({
+  getRedisConnection: jest.fn().mockReturnValue({}),
+  closeRedis: jest.fn().mockResolvedValue(undefined),
+}));
+
+const { default: app } = await import("../../src/index.js");
+const { Contract } = await import("../../src/models/contract.model.js");
+const { resetRateLimitStores } = await import(
+  "../../src/middlewares/rateLimit.js"
+);
+const { creditsService } = await import(
+  "../../src/services/credits.service.js"
+);
 
 let authToken: string;
 let userId: string;
