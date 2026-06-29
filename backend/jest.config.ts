@@ -7,7 +7,7 @@ const jestConfig: JestConfigWithTsJest = {
   extensionsToTreatAsEsm: [".ts"],
   moduleNameMapper: {
     // This maps the .js imports in your TS files to the actual .ts files
-    "^(\\.\\.?/.*)\\.js$": "$1",
+    "^(\\.\\.?/.*)\\.js$": "$1.ts",
     // Force resolution of hoisted monorepo packages
     "^@langfuse/langchain$": "<rootDir>/../node_modules/@langfuse/langchain",
     "^langfuse$": "<rootDir>/tests/__mocks__/langfuse.ts",
