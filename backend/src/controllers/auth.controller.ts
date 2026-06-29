@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import { env } from "../config/env.js";
 import { ApiResponse } from "../types/index.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { User, UserZodSchema } from "../models/user.model.js";
@@ -13,6 +14,7 @@ import {
 } from "../services/auth.service.js";
 import { AuthenticatedRequest } from "../types/auth.js";
 import { emailService } from "../services/email.service.js";
+import { logAuth } from "../services/auditLog.service.js";
 
 const registerSchema = UserZodSchema;
 
@@ -44,14 +46,14 @@ export const register = async (
 
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -86,16 +88,18 @@ export const login = async (
 
     const { user, token, refreshToken } = await loginUser(body);
 
+    logAuth.loginSuccess(req, { _id: String(user._id), email: user.email });
+
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -116,6 +120,11 @@ export const login = async (
       message: "Login successful.",
     });
   } catch (error) {
+    logAuth.loginFailed(
+      req,
+      req.body?.email || "unknown",
+      (error as Error).message,
+    );
     next(error);
   }
 };
@@ -133,16 +142,18 @@ export const googleLogin = async (
 
     const { user, token, refreshToken } = await loginWithGoogle(idToken);
 
+    logAuth.loginSuccess(req, { _id: String(user._id), email: user.email });
+
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -163,6 +174,7 @@ export const googleLogin = async (
       message: "Login successful.",
     });
   } catch (error) {
+    logAuth.loginFailed(req, "unknown", (error as Error).message);
     next(error);
   }
 };
@@ -207,14 +219,14 @@ export const refresh = async (
 
     res.cookie("accessToken", tokens.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });

@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
+import {
+  useSearchParams,
+  useLocation,
+  useNavigate,
+  Link,
+} from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import {
   ShieldAlert,
   ShieldCheck,
@@ -12,9 +18,14 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
+  AlertCircle,
+  ArrowUpCircle,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import ClauseCard, { ClauseItem } from '../components/features/ClauseCard'
 import { IClauseAnalysis, IRiskAnalysis } from '../types/analysis'
+import ThumbsFeedback from '../components/ui/ThumbsFeedback'
+import { accountApi } from '@/services/accountApi'
 
 // Bilingual Mock Risk Data Generator
 const getMockData = (isRtl: boolean) => ({
@@ -128,6 +139,51 @@ export default function RiskAnalysisDashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [stepIndex, setStepIndex] = useState<number>(0)
+
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    let handled = false
+
+    if (params.get('cancel_success') === 'true') {
+      toast.success(t('billing.cancellationConfirmed'))
+      handled = true
+    }
+    if (params.get('topup_success') === 'true') {
+      toast.success(t('billing.creditTopupSuccess'))
+      handled = true
+    }
+
+    if (handled) {
+      navigate(location.pathname, { replace: true })
+    }
+  }, [location.search, navigate, t, location.pathname])
+
+  const { data: subscription } = useQuery({
+    queryKey: ['account-subscription'],
+    queryFn: async () => await accountApi.getSubscription(),
+    staleTime: 1000 * 60 * 5,
+  })
+
+  const paymentFailed = subscription?.paymentStatus === 'failed'
+
+  let isExpired = false
+  let gracePeriodDays = 0
+
+  if (subscription?.endDate) {
+    const end = new Date(subscription.endDate)
+    const now = new Date()
+    const diffTime = end.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays < 0) {
+      isExpired = true
+    } else if (diffDays <= 3) {
+      gracePeriodDays = diffDays
+    }
+  }
 
   const loadingSteps = Object.values(
     t('dashboard.loading_steps', { returnObjects: true })
@@ -437,337 +493,420 @@ export default function RiskAnalysisDashboard() {
 
   const overallRiskLevel = dataToRender.overallRisk
 
-  return (
-    <div className="animate-in fade-in space-y-8 py-10 duration-500">
-      {/* Header Section */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 text-primary rounded-2xl p-3">
-            <ShieldAlert size={28} />
-          </div>
-          <div>
-            <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight">
-              {isRtl ? 'تحليل مخاطر العقد' : 'Contract Risk Analysis'}
-            </h1>
-            <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm font-semibold">
-              <FileText size={16} />
-              {dataToRender.contractName}
+  if (isExpired) {
+    return (
+      <div
+        className="bg-background min-h-screen py-10"
+        dir={isRtl ? 'rtl' : 'ltr'}
+      >
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="border-border bg-card flex min-h-[50vh] flex-col items-center justify-center rounded-3xl border p-8 text-center shadow-lg">
+            <div className="mb-6 rounded-full bg-red-500/10 p-6 text-red-500">
+              <ShieldAlert size={48} />
+            </div>
+            <h2 className="text-foreground mb-4 text-3xl font-black">
+              {t('dashboard.subscription_expired')}
+            </h2>
+            <p className="text-muted-foreground mb-8 max-w-md text-base font-medium">
+              {t('dashboard.subscription_expired_desc')}
             </p>
+            <Link
+              to="/pricing"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-xl px-6 py-3 text-lg font-bold shadow-md transition-all active:scale-95"
+            >
+              <ArrowUpCircle size={20} />
+              {t('dashboard.upgrade_to_continue')}
+            </Link>
           </div>
         </div>
-
-        <button
-          onClick={() => window.history.back()}
-          className="bg-card hover:bg-muted border-border/60 text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-2 self-start rounded-xl border px-4 py-2.5 text-sm font-bold transition-all active:scale-95"
-        >
-          {isRtl ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
-          {isRtl ? 'العودة للملفات' : 'Back to Files'}
-        </button>
       </div>
+    )
+  }
 
-      <hr className="border-border/40" />
-
-      {/* Executive Summary Card */}
-      <div className="bg-card border-border/60 relative overflow-hidden rounded-3xl border p-6 shadow-md md:p-8">
-        <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent to-transparent" />
-        <div className="relative space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+  return (
+    <div
+      className="bg-background min-h-screen py-10"
+      dir={isRtl ? 'rtl' : 'ltr'}
+    >
+      <div className="mx-auto max-w-7xl space-y-8 px-6">
+        {paymentFailed && (
+          <div className="bg-destructive/10 border-destructive/20 text-destructive flex flex-col items-center justify-between gap-4 rounded-2xl border p-4 shadow-sm sm:flex-row">
             <div className="flex items-center gap-3">
-              <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-black tracking-wider uppercase">
-                <TrendingUp size={14} />
-                {isRtl ? 'ملخص ذكاء اصطناعي تنفيذي' : 'AI Executive Summary'}
-              </span>
-              <span
-                className={`rounded-full px-3 py-1.5 text-xs font-extrabold tracking-wide uppercase ${getOverallRiskBadgeClass(overallRiskLevel)}`}
-              >
-                {getOverallRiskText(overallRiskLevel)}
-              </span>
-            </div>
-            <span
-              className={`rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-black text-amber-600 dark:text-amber-400`}
-            >
-              {getNegotiationPriorityText(negotiationPriority)}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-            <div className="space-y-3 md:col-span-3">
-              <h3 className="text-foreground text-lg font-bold">
-                {isRtl
-                  ? 'النتائج والملخص العام للتحليل'
-                  : 'Key Analysis Findings'}
-              </h3>
-              <p className="text-muted-foreground text-base leading-relaxed font-medium">
-                {dataToRender.summary}
+              <AlertCircle size={24} className="shrink-0" />
+              <p className="text-sm font-semibold">
+                {t('dashboard.payment_failed')}
               </p>
             </div>
+            <Link
+              to="/pricing"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 shrink-0 rounded-xl px-4 py-2 text-sm font-bold transition-colors"
+            >
+              {t('dashboard.retry_payment')}
+            </Link>
+          </div>
+        )}
 
-            {/* Safety Score Radial/Circular Indicator */}
-            <div className="bg-muted/30 border-border/30 flex flex-col items-center justify-center rounded-2xl border p-4">
-              <div className="relative flex items-center justify-center">
-                <svg className="h-24 w-24 -rotate-90 transform">
-                  {/* Background Circle */}
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="40"
-                    className="stroke-muted-foreground/10"
-                    strokeWidth="8"
-                    fill="transparent"
-                  />
-                  {/* Foreground Circle */}
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="40"
-                    className={`${
-                      dataToRender.overallScore >= 80
-                        ? 'stroke-emerald-500'
-                        : dataToRender.overallScore >= 50
-                          ? 'stroke-amber-500'
-                          : 'stroke-red-500'
-                    } transition-all duration-1000 ease-out`}
-                    strokeWidth="8"
-                    strokeDasharray={2 * Math.PI * 40}
-                    strokeDashoffset={
-                      2 * Math.PI * 40 * (1 - dataToRender.overallScore / 100)
-                    }
-                    strokeLinecap="round"
-                    fill="transparent"
-                  />
-                </svg>
-                <span className="text-foreground absolute text-2xl font-black">
-                  {dataToRender.overallScore}%
+        {gracePeriodDays > 0 && !isExpired && !paymentFailed && (
+          <div className="flex items-center gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-600 shadow-sm">
+            <AlertTriangle size={24} className="shrink-0" />
+            <p className="text-sm font-semibold">
+              {t('dashboard.grace_period_warning', { days: gracePeriodDays })}
+            </p>
+          </div>
+        )}
+
+        <div className="animate-in fade-in space-y-8 duration-500">
+          {/* Header Section */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 text-primary rounded-2xl p-3">
+                <ShieldAlert size={28} />
+              </div>
+              <div>
+                <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight">
+                  {isRtl ? 'تحليل مخاطر العقد' : 'Contract Risk Analysis'}
+                </h1>
+                <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm font-semibold">
+                  <FileText size={16} />
+                  {dataToRender.contractName}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => window.history.back()}
+              className="bg-card hover:bg-muted border-border/60 text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-2 self-start rounded-xl border px-4 py-2.5 text-sm font-bold transition-all active:scale-95"
+            >
+              {isRtl ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
+              {isRtl ? 'العودة للملفات' : 'Back to Files'}
+            </button>
+          </div>
+
+          <hr className="border-border/40" />
+
+          {/* Executive Summary Card */}
+          <div className="bg-card border-border/60 relative overflow-hidden rounded-3xl border p-6 shadow-md md:p-8">
+            <div className="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-tr via-transparent to-transparent" />
+            <div className="relative space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="bg-primary/10 text-primary flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-black tracking-wider uppercase">
+                    <TrendingUp size={14} />
+                    {isRtl
+                      ? 'ملخص ذكاء اصطناعي تنفيذي'
+                      : 'AI Executive Summary'}
+                  </span>
+                  <span
+                    className={`rounded-full px-3 py-1.5 text-xs font-extrabold tracking-wide uppercase ${getOverallRiskBadgeClass(overallRiskLevel)}`}
+                  >
+                    {getOverallRiskText(overallRiskLevel)}
+                  </span>
+                </div>
+                <span
+                  className={`rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-black text-amber-600 dark:text-amber-400`}
+                >
+                  {getNegotiationPriorityText(negotiationPriority)}
                 </span>
               </div>
-              <span className="text-muted-foreground mt-2 text-xs font-bold">
-                {isRtl ? 'درجة الأمان العامة' : 'Overall Safety Score'}
-              </span>
-            </div>
-          </div>
 
-          {/* Breakdown bar */}
-          <div className="space-y-2">
-            <span className="text-muted-foreground block text-xs font-bold">
-              {isRtl
-                ? 'توزيع المخاطر والروابط السريعة:'
-                : 'Risk Distribution & Quick Jumps:'}
-            </span>
-            <div className="bg-muted flex h-3 w-full overflow-hidden rounded-full">
-              <div
-                style={{
-                  width: `${(dataToRender.stats.high / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
-                }}
-                className="bg-red-500 transition-all duration-500"
-              />
-              <div
-                style={{
-                  width: `${(dataToRender.stats.medium / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
-                }}
-                className="bg-amber-500 transition-all duration-500"
-              />
-              <div
-                style={{
-                  width: `${(dataToRender.stats.low / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
-                }}
-                className="bg-blue-500 transition-all duration-500"
-              />
-            </div>
-
-            {/* Jump links */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-xs font-extrabold">
-              <button
-                onClick={() => handleJumpToRisk('high')}
-                className="flex cursor-pointer items-center gap-1 text-red-500 hover:underline"
-              >
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />
-                {dataToRender.stats.high} {isRtl ? 'عالية' : 'High'}
-              </button>
-              <button
-                onClick={() => handleJumpToRisk('medium')}
-                className="flex cursor-pointer items-center gap-1 text-amber-500 hover:underline"
-              >
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500" />
-                {dataToRender.stats.medium} {isRtl ? 'متوسطة' : 'Medium'}
-              </button>
-              <button
-                onClick={() => handleJumpToRisk('low')}
-                className="flex cursor-pointer items-center gap-1 text-blue-500 hover:underline"
-              >
-                <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
-                {dataToRender.stats.low} {isRtl ? 'منخفضة' : 'Low'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filter Tabs */}
-      <div
-        ref={tableRef}
-        className="border-border/40 flex flex-wrap items-center gap-2 border-b pb-2"
-      >
-        <button
-          onClick={() => setActiveFilter('all')}
-          className={`cursor-pointer rounded-xl px-4 py-2 text-sm font-bold transition-all ${
-            activeFilter === 'all'
-              ? 'bg-foreground text-background shadow-md'
-              : 'text-muted-foreground hover:bg-muted'
-          }`}
-        >
-          {isRtl ? 'كل الثغرات' : 'All Flaws'} ({dataToRender.items.length})
-        </button>
-        <button
-          onClick={() => setActiveFilter('high')}
-          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
-            activeFilter === 'high'
-              ? 'bg-red-500 text-white shadow-md'
-              : 'text-red-500 hover:bg-red-500/5'
-          }`}
-        >
-          <ShieldAlert size={16} />
-          {isRtl ? 'مخاطر عالية' : 'High Risks'} ({dataToRender.stats.high})
-        </button>
-        <button
-          onClick={() => setActiveFilter('medium')}
-          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
-            activeFilter === 'medium'
-              ? 'bg-amber-500 text-white shadow-md'
-              : 'text-amber-500 hover:bg-amber-500/5'
-          }`}
-        >
-          <AlertTriangle size={16} />
-          {isRtl ? 'متوسطة' : 'Medium'} ({dataToRender.stats.medium})
-        </button>
-        <button
-          onClick={() => setActiveFilter('low')}
-          className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
-            activeFilter === 'low'
-              ? 'bg-blue-500 text-white shadow-md'
-              : 'text-blue-500 hover:bg-blue-500/5'
-          }`}
-        >
-          <ShieldCheck size={16} />
-          {isRtl ? 'منخفضة' : 'Low'} ({dataToRender.stats.low})
-        </button>
-      </div>
-
-      {/* Clause Table */}
-      <div className="bg-card border-border/60 overflow-hidden rounded-2xl border shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-start text-sm">
-            <thead>
-              <tr className="border-border/60 bg-muted/40 text-muted-foreground border-b font-bold">
-                <th className="px-6 py-4 text-start font-black">
-                  {isRtl ? 'البند' : 'Clause Title'}
-                </th>
-                <th className="w-32 px-6 py-4 text-start font-black">
-                  {isRtl ? 'درجة الخطورة' : 'Risk Level'}
-                </th>
-                <th className="hidden px-6 py-4 text-start font-black md:table-cell">
-                  {isRtl ? 'ملخص موجز' : 'Summary'}
-                </th>
-                <th className="w-28 px-6 py-4 text-end font-black">
-                  {isRtl ? 'التفاصيل' : 'Details'}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-border/40 divide-y">
-              {filteredItems.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="text-muted-foreground py-12 text-center text-sm font-semibold"
-                  >
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                <div className="space-y-3 md:col-span-3">
+                  <h3 className="text-foreground text-lg font-bold">
                     {isRtl
-                      ? 'لا توجد بنود تحت هذا التصنيف حالياً.'
-                      : 'No items found under this classification.'}
-                  </td>
-                </tr>
-              ) : (
-                filteredItems.map((item) => {
-                  const isExpanded = expandedClauseId === item.id
-                  const isHighlighted = highlightedRisk === item.severity
-                  return (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-muted/10 transition-colors"
-                    >
-                      <td colSpan={4} className="p-0">
-                        {/* Interactive Main Row Row */}
-                        <div
-                          onClick={() => toggleRow(item.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              toggleRow(item.id)
-                            }
-                          }}
-                          role="button"
-                          tabIndex={0}
-                          aria-expanded={isExpanded}
-                          aria-controls={`clause-details-${item.id}`}
-                          className={`focus:bg-muted/20 flex w-full cursor-pointer items-center justify-between px-6 py-4 outline-none ${
-                            isHighlighted
-                              ? 'bg-primary/5 border-primary animate-pulse border-l-4 transition-all duration-300'
-                              : ''
-                          }`}
-                        >
-                          <div className="flex min-w-0 flex-1 flex-col justify-between gap-4 pr-4 text-start md:flex-row md:items-center">
-                            <span className="text-foreground max-w-xs truncate pr-2 text-base font-bold md:max-w-sm">
-                              {item.title}
-                            </span>
-                            <span
-                              className={`w-24 shrink-0 rounded-full px-2.5 py-1 text-center text-[10px] font-extrabold tracking-wider whitespace-nowrap uppercase ${getSeverityBadgeClass(item.severity)}`}
-                            >
-                              {getSeverityLabel(item.severity)}
-                            </span>
-                          </div>
+                      ? 'النتائج والملخص العام للتحليل'
+                      : 'Key Analysis Findings'}
+                  </h3>
+                  <p className="text-muted-foreground text-base leading-relaxed font-medium">
+                    {dataToRender.summary}
+                  </p>
+                </div>
 
-                          <span className="text-muted-foreground hidden max-w-md flex-1 truncate pr-8 text-start text-xs font-semibold md:block">
-                            {getOneLineSummary(item.explanation)}
-                          </span>
+                {/* Safety Score Radial/Circular Indicator */}
+                <div className="bg-muted/30 border-border/30 flex flex-col items-center justify-center rounded-2xl border p-4">
+                  <div className="relative flex items-center justify-center">
+                    <svg className="h-24 w-24 -rotate-90 transform">
+                      {/* Background Circle */}
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="40"
+                        className="stroke-muted-foreground/10"
+                        strokeWidth="8"
+                        fill="transparent"
+                      />
+                      {/* Foreground Circle */}
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="40"
+                        className={`${
+                          dataToRender.overallScore >= 80
+                            ? 'stroke-emerald-500'
+                            : dataToRender.overallScore >= 50
+                              ? 'stroke-amber-500'
+                              : 'stroke-red-500'
+                        } transition-all duration-1000 ease-out`}
+                        strokeWidth="8"
+                        strokeDasharray={2 * Math.PI * 40}
+                        strokeDashoffset={
+                          2 *
+                          Math.PI *
+                          40 *
+                          (1 - dataToRender.overallScore / 100)
+                        }
+                        strokeLinecap="round"
+                        fill="transparent"
+                      />
+                    </svg>
+                    <span className="text-foreground absolute text-2xl font-black">
+                      {dataToRender.overallScore}%
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground mt-2 text-xs font-bold">
+                    {isRtl ? 'درجة الأمان العامة' : 'Overall Safety Score'}
+                  </span>
+                </div>
+              </div>
 
-                          <span className="text-primary hover:text-primary/80 flex shrink-0 items-center gap-1 pl-4 text-xs font-bold">
-                            <span>
-                              {isExpanded
-                                ? isRtl
-                                  ? 'إخفاء'
-                                  : 'Collapse'
-                                : isRtl
-                                  ? 'عرض'
-                                  : 'Expand'}
-                            </span>
-                            {isExpanded ? (
-                              <ChevronDown size={16} />
-                            ) : isRtl ? (
-                              <ChevronLeft size={16} />
-                            ) : (
-                              <ChevronRight size={16} />
-                            )}
-                          </span>
-                        </div>
+              {/* Breakdown bar */}
+              <div className="space-y-2">
+                <span className="text-muted-foreground block text-xs font-bold">
+                  {isRtl
+                    ? 'توزيع المخاطر والروابط السريعة:'
+                    : 'Risk Distribution & Quick Jumps:'}
+                </span>
+                <div className="bg-muted flex h-3 w-full overflow-hidden rounded-full">
+                  <div
+                    style={{
+                      width: `${(dataToRender.stats.high / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                    }}
+                    className="bg-red-500 transition-all duration-500"
+                  />
+                  <div
+                    style={{
+                      width: `${(dataToRender.stats.medium / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                    }}
+                    className="bg-amber-500 transition-all duration-500"
+                  />
+                  <div
+                    style={{
+                      width: `${(dataToRender.stats.low / (dataToRender.stats.high + dataToRender.stats.medium + dataToRender.stats.low || 1)) * 100}%`,
+                    }}
+                    className="bg-blue-500 transition-all duration-500"
+                  />
+                </div>
 
-                        {/* Expanded Panel */}
-                        {isExpanded && (
-                          <div
-                            id={`clause-details-${item.id}`}
-                            className="border-border/40 bg-muted/20 border-t"
-                          >
-                            <ClauseCard
-                              item={item as ClauseItem}
-                              contractId={contractId || ''}
-                              clauseIndex={item.clauseIndex}
-                            />
-                          </div>
-                        )}
+                {/* Jump links */}
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-xs font-extrabold">
+                  <button
+                    onClick={() => handleJumpToRisk('high')}
+                    className="flex cursor-pointer items-center gap-1 text-red-500 hover:underline"
+                  >
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />
+                    {dataToRender.stats.high} {isRtl ? 'عالية' : 'High'}
+                  </button>
+                  <button
+                    onClick={() => handleJumpToRisk('medium')}
+                    className="flex cursor-pointer items-center gap-1 text-amber-500 hover:underline"
+                  >
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500" />
+                    {dataToRender.stats.medium} {isRtl ? 'متوسطة' : 'Medium'}
+                  </button>
+                  <button
+                    onClick={() => handleJumpToRisk('low')}
+                    className="flex cursor-pointer items-center gap-1 text-blue-500 hover:underline"
+                  >
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
+                    {dataToRender.stats.low} {isRtl ? 'منخفضة' : 'Low'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* User Feedback */}
+          <div className="border-border/40 bg-card/30 flex items-center justify-between rounded-2xl border p-4 shadow-sm">
+            <span className="text-muted-foreground text-xs font-bold">
+              {isRtl
+                ? 'هل كان هذا التحليل مفيداً؟'
+                : 'Was this analysis helpful?'}
+            </span>
+            <ThumbsFeedback
+              targetType="analysis"
+              targetId={analysis?._id?.toString() || contractId || ''}
+              contractId={contractId || ''}
+              analysisId={analysis?._id?.toString() || ''}
+            />
+          </div>
+
+          {/* Filter Tabs */}
+          <div
+            ref={tableRef}
+            className="border-border/40 flex flex-wrap items-center gap-2 border-b pb-2"
+          >
+            <button
+              onClick={() => setActiveFilter('all')}
+              className={`cursor-pointer rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+                activeFilter === 'all'
+                  ? 'bg-foreground text-background shadow-md'
+                  : 'text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {isRtl ? 'كل الثغرات' : 'All Flaws'} ({dataToRender.items.length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('high')}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+                activeFilter === 'high'
+                  ? 'bg-red-500 text-white shadow-md'
+                  : 'text-red-500 hover:bg-red-500/5'
+              }`}
+            >
+              <ShieldAlert size={16} />
+              {isRtl ? 'مخاطر عالية' : 'High Risks'} ({dataToRender.stats.high})
+            </button>
+            <button
+              onClick={() => setActiveFilter('medium')}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+                activeFilter === 'medium'
+                  ? 'bg-amber-500 text-white shadow-md'
+                  : 'text-amber-500 hover:bg-amber-500/5'
+              }`}
+            >
+              <AlertTriangle size={16} />
+              {isRtl ? 'متوسطة' : 'Medium'} ({dataToRender.stats.medium})
+            </button>
+            <button
+              onClick={() => setActiveFilter('low')}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+                activeFilter === 'low'
+                  ? 'bg-blue-500 text-white shadow-md'
+                  : 'text-blue-500 hover:bg-blue-500/5'
+              }`}
+            >
+              <ShieldCheck size={16} />
+              {isRtl ? 'منخفضة' : 'Low'} ({dataToRender.stats.low})
+            </button>
+          </div>
+
+          {/* Clause Table */}
+          <div className="bg-card border-border/60 overflow-hidden rounded-2xl border shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-start text-sm">
+                <thead>
+                  <tr className="border-border/60 bg-muted/40 text-muted-foreground border-b font-bold">
+                    <th className="px-6 py-4 text-start font-black">
+                      {isRtl ? 'البند' : 'Clause Title'}
+                    </th>
+                    <th className="w-32 px-6 py-4 text-start font-black">
+                      {isRtl ? 'درجة الخطورة' : 'Risk Level'}
+                    </th>
+                    <th className="hidden px-6 py-4 text-start font-black md:table-cell">
+                      {isRtl ? 'ملخص موجز' : 'Summary'}
+                    </th>
+                    <th className="w-28 px-6 py-4 text-end font-black">
+                      {isRtl ? 'التفاصيل' : 'Details'}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-border/40 divide-y">
+                  {filteredItems.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="text-muted-foreground py-12 text-center text-sm font-semibold"
+                      >
+                        {isRtl
+                          ? 'لا توجد بنود تحت هذا التصنيف حالياً.'
+                          : 'No items found under this classification.'}
                       </td>
                     </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
+                  ) : (
+                    filteredItems.map((item) => {
+                      const isExpanded = expandedClauseId === item.id
+                      const isHighlighted = highlightedRisk === item.severity
+                      return (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-muted/10 transition-colors"
+                        >
+                          <td colSpan={4} className="p-0">
+                            {/* Interactive Main Row Row */}
+                            <div
+                              onClick={() => toggleRow(item.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  toggleRow(item.id)
+                                }
+                              }}
+                              role="button"
+                              tabIndex={0}
+                              aria-expanded={isExpanded}
+                              aria-controls={`clause-details-${item.id}`}
+                              className={`focus:bg-muted/20 flex w-full cursor-pointer items-center justify-between px-6 py-4 outline-none ${
+                                isHighlighted
+                                  ? 'bg-primary/5 border-primary animate-pulse border-l-4 transition-all duration-300'
+                                  : ''
+                              }`}
+                            >
+                              <div className="flex min-w-0 flex-1 flex-col justify-between gap-4 pr-4 text-start md:flex-row md:items-center">
+                                <span className="text-foreground max-w-xs truncate pr-2 text-base font-bold md:max-w-sm">
+                                  {item.title}
+                                </span>
+                                <span
+                                  className={`w-24 shrink-0 rounded-full px-2.5 py-1 text-center text-[10px] font-extrabold tracking-wider whitespace-nowrap uppercase ${getSeverityBadgeClass(item.severity)}`}
+                                >
+                                  {getSeverityLabel(item.severity)}
+                                </span>
+                              </div>
+
+                              <span className="text-muted-foreground hidden max-w-md flex-1 truncate pr-8 text-start text-xs font-semibold md:block">
+                                {getOneLineSummary(item.explanation)}
+                              </span>
+
+                              <span className="text-primary hover:text-primary/80 flex shrink-0 items-center gap-1 pl-4 text-xs font-bold">
+                                <span>
+                                  {isExpanded
+                                    ? isRtl
+                                      ? 'إخفاء'
+                                      : 'Collapse'
+                                    : isRtl
+                                      ? 'عرض'
+                                      : 'Expand'}
+                                </span>
+                                {isExpanded ? (
+                                  <ChevronDown size={16} />
+                                ) : isRtl ? (
+                                  <ChevronLeft size={16} />
+                                ) : (
+                                  <ChevronRight size={16} />
+                                )}
+                              </span>
+                            </div>
+
+                            {/* Expanded Panel */}
+                            {isExpanded && (
+                              <div
+                                id={`clause-details-${item.id}`}
+                                className="border-border/40 bg-muted/20 border-t"
+                              >
+                                <ClauseCard
+                                  item={item as ClauseItem}
+                                  contractId={contractId || ''}
+                                  clauseIndex={item.clauseIndex}
+                                />
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>

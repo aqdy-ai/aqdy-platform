@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePermissions } from '../../hooks/usePermissions'
 import { motion } from 'framer-motion'
+import { speakText } from '../../lib/speech'
 import {
   Users,
   TrendingUp,
@@ -22,6 +23,7 @@ import {
   Volume2,
   VolumeX,
   Filter,
+  Calendar,
 } from 'lucide-react'
 import {
   BarChart,
@@ -210,14 +212,10 @@ export default function AnalyticsDashboard() {
       ? `ملخص تحليلات أكيدس. إجمالي المستخدمين: ${data.totalAccounts}. الإيرادات الشهرية المتكررة: ${data.mrrCurrent} دولار. التحليلات هذا الشهر: ${data.analysesThisMonth}. إجمالي التحليلات: ${data.totalAnalyses}. الاعتمادات المستهلكة هذا الشهر: ${data.creditsConsumedThisMonth}.`
       : `Aqdes Analytics Summary. Total users: ${data.totalAccounts}. Monthly recurring revenue: ${data.mrrCurrent} dollars. Analyses this month: ${data.analysesThisMonth}. Total analyses: ${data.totalAnalyses}. Credits consumed this month: ${data.creditsConsumedThisMonth}.`
 
-    const utterance = new SpeechSynthesisUtterance(summary)
-    utterance.lang = lang
-    utterance.rate = 1
-    utterance.pitch = 1
+    window.speechSynthesis.cancel()
+    const utterance = speakText(summary, lang)
     utterance.onend = () => setTtsPlaying(false)
     utterance.onerror = () => setTtsPlaying(false)
-    window.speechSynthesis.cancel()
-    window.speechSynthesis.speak(utterance)
     setTtsPlaying(true)
   }
 
@@ -320,13 +318,24 @@ export default function AnalyticsDashboard() {
           >
             {isRtl ? 'من' : 'From'}:
           </label>
-          <input
-            id="analytics-start-date"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
-          />
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="analytics-start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <label
@@ -335,13 +344,24 @@ export default function AnalyticsDashboard() {
           >
             {isRtl ? 'إلى' : 'To'}:
           </label>
-          <input
-            id="analytics-end-date"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
-          />
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="analytics-end-date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
         </div>
         <button
           onClick={handleFilter}
@@ -395,7 +415,11 @@ export default function AnalyticsDashboard() {
               : 'Monthly Recurring Revenue Trend'}
           </h4>
           <p className="text-muted-foreground mb-4 text-sm">
-            {isRtl ? 'آخر 6 أشهر' : 'Last 6 months'}
+            {appliedStartDate && appliedEndDate
+              ? `${appliedStartDate} — ${appliedEndDate}`
+              : isRtl
+                ? 'آخر 6 أشهر'
+                : 'Last 6 months'}
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <ReLineChart data={data.mrrTrend}>
@@ -433,7 +457,11 @@ export default function AnalyticsDashboard() {
             {isRtl ? 'تسجيلات المستخدمين الجدد' : 'New User Signups'}
           </h4>
           <p className="text-muted-foreground mb-4 text-sm">
-            {isRtl ? 'آخر 8 أسابيع' : 'Last 8 weeks'}
+            {appliedStartDate && appliedEndDate
+              ? `${appliedStartDate} — ${appliedEndDate}`
+              : isRtl
+                ? 'آخر 8 أسابيع'
+                : 'Last 8 weeks'}
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data.weeklySignups}>

@@ -24,6 +24,7 @@ jest.unstable_mockModule("../../src/services/llm.service.js", () => {
   };
 });
 
+
 // Import after mocking
 const { ragService, RAGService } =
   await import("../../src/services/rag.service.js");
@@ -374,6 +375,7 @@ describe("RAGService — searchKB", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     service = new RAGService();
+
   });
 
   test("should return empty result for empty clause text", async () => {
@@ -491,4 +493,5 @@ describe("RAGService — searchKB", () => {
     const result = await service.searchKB("clause");
     expect(result.matches[0].relatedLaw).toBeFalsy();
   });
+
 });

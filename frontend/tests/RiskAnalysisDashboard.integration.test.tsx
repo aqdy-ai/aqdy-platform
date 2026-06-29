@@ -1,7 +1,24 @@
 /* tests/RiskAnalysisDashboard.integration.test.tsx */
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 import RiskAnalysisDashboard from '../src/pages/RiskAnalysisDashboard'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: false, staleTime: 0, gcTime: 0 },
+  },
+})
+
+function WithQueryClient({ children }: { children: ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  )
+}
+
+const renderWithProviders = (ui: ReactNode) =>
+  render(<WithQueryClient>{ui}</WithQueryClient>)
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -17,6 +34,9 @@ const mockSearchParams = new URLSearchParams()
 
 vi.mock('react-router-dom', () => ({
   useSearchParams: () => [mockSearchParams, () => {}],
+  useLocation: () => ({ search: '', pathname: '/' }),
+  useNavigate: () => vi.fn(),
+  Link: ({ children, to, ...props }: any) => <a href={to} {...props}>{children}</a>,
 }))
 
 describe('RiskAnalysisDashboard Integration Test (Full Data Flow)', () => {
@@ -26,7 +46,7 @@ describe('RiskAnalysisDashboard Integration Test (Full Data Flow)', () => {
   })
 
   it('should render the redesigned dashboard with executive summary, negotiation priority, and table rows', () => {
-    render(<RiskAnalysisDashboard />)
+    renderWithProviders(<RiskAnalysisDashboard />)
 
     // Header title (Arabic)
     expect(screen.getByText('تحليل مخاطر العقد')).toBeInTheDocument()
@@ -67,7 +87,7 @@ describe('RiskAnalysisDashboard Integration Test (Full Data Flow)', () => {
   })
 
   it('should toggle row expansion and enforce accordion behavior', () => {
-    render(<RiskAnalysisDashboard />)
+    renderWithProviders(<RiskAnalysisDashboard />)
 
     const firstRowExp = 'هذا البند يفرض التزامات مالية غير محدودة قد تؤدي لتعثر الطرف الثاني ماليًا.'
     const secondRowExp = 'الإنهاء الفوري بدون سبب يضر بالاستقرار التشغيلي والتخطيط المالي للطرف الثاني.'
@@ -99,7 +119,7 @@ describe('RiskAnalysisDashboard Integration Test (Full Data Flow)', () => {
   })
 
   it('should support keyboard accessibility for expand/collapse (Enter & Space)', () => {
-    render(<RiskAnalysisDashboard />)
+    renderWithProviders(<RiskAnalysisDashboard />)
 
     const firstRowExp = 'هذا البند يفرض التزامات مالية غير محدودة قد تؤدي لتعثر الطرف الثاني ماليًا.'
     const firstRow = screen.getByText('شرط جزائي مفتوح وبدون حد أقصى').closest('[role="button"]')!
@@ -114,7 +134,7 @@ describe('RiskAnalysisDashboard Integration Test (Full Data Flow)', () => {
   })
 
   it('should handle jump links in executive summary to filter/scroll to rows', () => {
-    render(<RiskAnalysisDashboard />)
+    renderWithProviders(<RiskAnalysisDashboard />)
 
     // Click "High" jump link
     const highLink = screen.getByText(/3 عالية/i)
@@ -167,7 +187,7 @@ describe('RiskAnalysisDashboard Integration Test (Full Data Flow)', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     await act(async () => {
-      render(<RiskAnalysisDashboard />)
+      renderWithProviders(<RiskAnalysisDashboard />)
     })
 
     // Wait for the async state to resolve to loaded state
@@ -229,7 +249,7 @@ describe('Task 5.30 regression: overallScore formula and overallRiskLevel displa
       Promise.resolve({ ok: true, json: () => Promise.resolve(lowRiskData) } as Response),
     )
 
-    await act(async () => { render(<RiskAnalysisDashboard />) })
+    await act(async () => { renderWithProviders(<RiskAnalysisDashboard />) })
 
     await screen.findByText('low_risk_contract.pdf')
 
@@ -281,7 +301,7 @@ describe('Task 5.30 regression: overallScore formula and overallRiskLevel displa
       Promise.resolve({ ok: true, json: () => Promise.resolve(highRiskData) } as Response),
     )
 
-    await act(async () => { render(<RiskAnalysisDashboard />) })
+    await act(async () => { renderWithProviders(<RiskAnalysisDashboard />) })
 
     await screen.findByText('high_risk_contract.pdf')
 
@@ -376,7 +396,7 @@ describe('Task 5.30 regression: overallScore formula and overallRiskLevel displa
       Promise.resolve({ ok: true, json: () => Promise.resolve(criticalData) } as Response),
     )
 
-    await act(async () => { render(<RiskAnalysisDashboard />) })
+    await act(async () => { renderWithProviders(<RiskAnalysisDashboard />) })
 
     await screen.findByText('critical_contract.pdf')
 

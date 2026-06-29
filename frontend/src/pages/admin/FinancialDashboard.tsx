@@ -11,6 +11,7 @@ import {
   Undo2,
   History,
   Filter,
+  Calendar,
 } from 'lucide-react'
 import { adminApi, AdminPlan } from '../../services/adminApi'
 import { usePermissions } from '../../hooks/usePermissions'
@@ -285,13 +286,24 @@ export default function FinancialDashboard() {
           >
             From:
           </label>
-          <input
-            id="financial-start-date"
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
-          />
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="financial-start-date"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <label
@@ -300,13 +312,24 @@ export default function FinancialDashboard() {
           >
             To:
           </label>
-          <input
-            id="financial-end-date"
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
-          />
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="financial-end-date"
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
         </div>
         <button
           onClick={handleFilter}
@@ -462,18 +485,40 @@ export default function FinancialDashboard() {
                 className="bg-background border-border w-36 rounded-lg border py-1.5 ps-8 pe-2.5 text-xs outline-none"
               />
             </div>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="bg-background border-border rounded-lg border px-2 py-1.5 text-xs"
-            />
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="bg-background border-border rounded-lg border px-2 py-1.5 text-xs"
-            />
+            <div className="relative">
+              <Calendar
+                className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+                onClick={(e) => {
+                  const input = e.currentTarget.parentElement?.querySelector(
+                    'input[type="date"]'
+                  ) as HTMLInputElement | null
+                  input?.showPicker()
+                }}
+              />
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="bg-background border-border rounded-lg border px-2 py-1.5 ps-8 text-xs"
+              />
+            </div>
+            <div className="relative">
+              <Calendar
+                className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+                onClick={(e) => {
+                  const input = e.currentTarget.parentElement?.querySelector(
+                    'input[type="date"]'
+                  ) as HTMLInputElement | null
+                  input?.showPicker()
+                }}
+              />
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="bg-background border-border rounded-lg border px-2 py-1.5 ps-8 text-xs"
+              />
+            </div>
           </div>
         </div>
         <table className="w-full text-sm">

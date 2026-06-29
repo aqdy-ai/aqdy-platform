@@ -215,3 +215,6 @@ Thumbs.db
 *.pem.enc
 *.key.enc
 
+# Doppler local config (contains your local development service token)
+.doppler/
+

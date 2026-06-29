@@ -12,6 +12,7 @@
  *   - Clean separation from persistence (AnalysisService owns DB writes).
  */
 
+import pMap from "p-map";
 import {
   extractorAgent,
   type ExtractionResult,
@@ -27,6 +28,7 @@ import { getStableHash } from "../utils/text.utils.js";
 import type { IClauseAnalysis } from "../models/riskAnalysis.model.js";
 import { metrics } from "../utils/metrics.js";
 import { metricsService } from "../services/metrics.service.js";
+import { env } from "../config/env.js";
 
 // ── Types ─────────────────────────────────────────
 
@@ -151,8 +153,10 @@ export class OrchestratorService {
 
     // ── Step 2 & 3: Classification + Redlining ───
 
-    const clauseAnalysis = await Promise.all(
-      extractionResult.clauses.map(async (clause) => {
+    const CLAUSE_CONCURRENCY = env.CLAUSE_ANALYSIS_CONCURRENCY;
+    const clauseAnalysis = await pMap(
+      extractionResult.clauses,
+      async (clause) => {
         let riskLevel: IClauseAnalysis["riskLevel"] = "unknown";
         let confidence = 0.0;
         let explanation: { ar: string; en: string } = {
@@ -261,7 +265,8 @@ export class OrchestratorService {
           redlineSuggestion,
           redlineDurationMs,
         };
-      }),
+      },
+      { concurrency: CLAUSE_CONCURRENCY },
     );
 
     let riskyClausesCount = 0;

@@ -18,6 +18,7 @@ import {
   Database,
   Languages,
   Filter,
+  Calendar,
 } from 'lucide-react'
 import {
   BarChart,
@@ -219,13 +220,24 @@ export default function AdminDashboard() {
           >
             {isRtl ? 'من' : 'From'}:
           </label>
-          <input
-            id="admin-start-date"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
-          />
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="admin-start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <label
@@ -234,13 +246,24 @@ export default function AdminDashboard() {
           >
             {isRtl ? 'إلى' : 'To'}:
           </label>
-          <input
-            id="admin-end-date"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="bg-background border-border rounded-lg border px-3 py-1.5 text-xs"
-          />
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="admin-end-date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
         </div>
         <button
           onClick={handleFilter}

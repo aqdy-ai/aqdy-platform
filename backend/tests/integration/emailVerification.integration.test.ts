@@ -10,10 +10,25 @@ import {
 import mongoose from "mongoose";
 import request from "supertest";
 import { config } from "dotenv";
-import { User } from "../../src/models/user.model.js";
-import { generateAccessToken } from "../../src/services/auth.service.js";
 
 config();
+
+// Mock email service to prevent real email sending
+jest.unstable_mockModule("../../src/services/email.service.js", () => ({
+  emailService: {
+    sendVerificationEmail: jest
+      .fn<(...args: unknown[]) => Promise<undefined>>()
+      .mockResolvedValue(undefined),
+    sendPasswordResetEmail: jest
+      .fn<(...args: unknown[]) => Promise<undefined>>()
+      .mockResolvedValue(undefined),
+  },
+}));
+
+const { User } = await import("../../src/models/user.model.js");
+const { generateAccessToken } = await import(
+  "../../src/services/auth.service.js"
+);
 
 let app: unknown;
 

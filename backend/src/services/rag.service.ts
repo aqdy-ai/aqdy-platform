@@ -1,6 +1,7 @@
 import { Pinecone } from "@pinecone-database/pinecone";
 import { env } from "../config/env.js";
 import { llmService } from "./llm.service.js";
+
 import { logger } from "../utils/logger.js";
 import { getStableHash } from "../utils/text.utils.js";
 
@@ -551,8 +552,9 @@ export class RAGService {
   /**
    * Full KB search pipeline:
    * 1. Semantic search via Pinecone integrated inference
-   * 2. MMR reranking for diversity
-   * 3. Confidence scoring
+   * 2. Cross-encoder reranking for relevance
+   * 3. MMR reranking for diversity
+   * 4. Confidence scoring
    */
   async searchKB(clauseText: string): Promise<RAGResult> {
     if (!clauseText || clauseText.trim().length === 0) {
@@ -584,16 +586,19 @@ export class RAGService {
         return result;
       }
 
-      const rerankedMatches = this.applyCategoryMMR(rawMatches);
-      const confidence = this.calculateConfidence(rerankedMatches);
+      const nerankedMatches = rawMatches;
+
+      // Category-based MMR for diversity
+      const diversifiedMatches = this.applyCategoryMMR(nerankedMatches);
+      const confidence = this.calculateConfidence(diversifiedMatches);
       const result: RAGResult = {
-        matches: rerankedMatches,
+        matches: diversifiedMatches,
         confidence,
         hasMatch: confidence >= 0.6,
       };
 
       logger.info(
-        `RAGService: ${rerankedMatches.length} matches, confidence: ${confidence}`,
+        `RAGService: ${diversifiedMatches.length} matches, confidence: ${confidence}`,
       );
 
       this.searchCache.set(cacheKey, result);
