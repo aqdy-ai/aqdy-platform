@@ -21,6 +21,7 @@ const jestConfig: JestConfigWithTsJest = {
       "ts-jest",
       {
         useESM: true,
+        diagnostics: false,
       },
     ],
   },

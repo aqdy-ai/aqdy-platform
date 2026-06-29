@@ -34,7 +34,7 @@ import Payment from "../../src/models/payment.model.js";
 import { AuditLog } from "../../src/models/auditLog.model.js";
 
 // ─── Stripe mock helper ───────────────────────────────────────────────────────
-function stripeResponse<T>(data: any): Stripe.Response<T> {
+function stripeResponse<T>(data: any): any {
   return {
     ...data,
     lastResponse: {
@@ -42,7 +42,7 @@ function stripeResponse<T>(data: any): Stripe.Response<T> {
       requestId: "req_test",
       statusCode: 200,
     },
-  } as unknown as Stripe.Response<T>;
+  } as any;
 }
 
 async function createTestUser(overrides = {}) {
@@ -85,7 +85,7 @@ function buildMockSession(
   planSlug: string,
   subscriptionId = "sub_test_" + Date.now(),
   customerId = "cus_test_" + Date.now(),
-): Stripe.Checkout.Session {
+): any {
   return {
     id: "cs_test_" + Date.now(),
     object: "checkout.session",
@@ -96,7 +96,7 @@ function buildMockSession(
     amount_total: 2900,
     currency: "usd",
     metadata: { userId, planId, planSlug },
-  } as unknown as Stripe.Checkout.Session;
+  } as any;
 }
 
 /** Build a signed Stripe webhook event payload (used in manual webhook tests) */
@@ -180,7 +180,7 @@ describe("PaymentService.createCheckoutSession", () => {
     expect(result.url).toBe("https://checkout.stripe.com/test");
 
     const callArgs = mockCreate.mock
-      .calls[0][0] as Stripe.Checkout.SessionCreateParams;
+      .calls[0][0] as any;
     expect(callArgs.metadata?.planSlug).toBe(plan.slug);
     expect(callArgs.metadata?.planId).toBe(String(plan._id));
 
@@ -490,7 +490,7 @@ describe("PaymentService.handleWebhook", () => {
       id: eventId,
       type: "checkout.session.completed",
       data: { object: {} },
-    } as unknown as Stripe.Event);
+    } as any);
 
     const fulfillSpy = jest
       .spyOn(
@@ -524,7 +524,7 @@ describe("PaymentService.handleWebhook", () => {
       id: "evt_del_" + Date.now(),
       type: "customer.subscription.deleted",
       data: { object: { id: subId } },
-    } as unknown as Stripe.Event);
+    } as any);
 
     await paymentService.handleWebhook(Buffer.from(""), "sig");
 
@@ -565,7 +565,7 @@ describe("PaymentService.handleWebhook", () => {
             currency: "usd",
           },
         },
-      } as unknown as Stripe.Event);
+      } as any);
 
       jest.spyOn(stripe.subscriptions, "retrieve").mockResolvedValue(
         stripeResponse({
@@ -633,7 +633,7 @@ describe("PaymentService.handleWebhook", () => {
         id: "evt_race_" + Date.now(),
         type: "customer.subscription.deleted",
         data: { object: { id: oldSubId } },
-      } as unknown as Stripe.Event);
+      } as any);
 
       await paymentService.handleWebhook(Buffer.from(""), "sig");
 
@@ -678,7 +678,7 @@ describe("PaymentService.handleWebhook", () => {
             current_period_end: Math.floor(Date.now() / 1000) + 2592000,
           },
         },
-      } as unknown as Stripe.Event);
+      } as any);
 
       await paymentService.handleWebhook(Buffer.from(""), "sig");
 
