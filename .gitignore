@@ -218,3 +218,4 @@ Thumbs.db
 # Doppler local config (contains your local development service token)
 .doppler/
 
+cdk.out/

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Fragment } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
@@ -95,6 +95,18 @@ function HumanFeedbackTab() {
   const [stats, setStats] = useState<FeedbackStats | null>(null)
   const [lowRated, setLowRated] = useState<LowRatedItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(
+    new Set()
+  )
+
+  const toggleComment = (id: string) => {
+    setExpandedComments((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -206,34 +218,57 @@ function HumanFeedbackTab() {
                     Category
                   </th>
                   <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    Comment
+                    Date
                   </th>
                   <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                    Date
+                    Comment
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {lowRated.map((item) => (
-                  <tr key={item._id} className="border-border/20 border-b">
-                    <td className="text-foreground px-4 py-2 text-sm">
-                      {item.userEmail ?? 'N/A'}
-                    </td>
-                    <td className="text-foreground px-4 py-2 text-sm capitalize">
-                      {item.feedbackType === 'thumbs_down'
-                        ? '👎 Thumbs Down'
-                        : '🚩 Report'}
-                    </td>
-                    <td className="text-foreground px-4 py-2 text-sm capitalize">
-                      {item.category || '—'}
-                    </td>
-                    <td className="text-muted-foreground max-w-xs truncate px-4 py-2 text-sm">
-                      {item.comment || '—'}
-                    </td>
-                    <td className="text-muted-foreground px-4 py-2 text-sm">
-                      {new Date(item.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
+                  <Fragment key={item._id}>
+                    <tr className="border-border/20 border-b">
+                      <td className="text-foreground px-4 py-2 text-sm">
+                        {item.userEmail ?? 'N/A'}
+                      </td>
+                      <td className="text-foreground px-4 py-2 text-sm capitalize">
+                        {item.feedbackType === 'thumbs_down'
+                          ? '👎 Thumbs Down'
+                          : '🚩 Report'}
+                      </td>
+                      <td className="text-foreground px-4 py-2 text-sm capitalize">
+                        {item.category || '—'}
+                      </td>
+                      <td className="text-muted-foreground px-4 py-2 text-sm">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-2 text-sm">
+                        {item.comment ? (
+                          <button
+                            onClick={() => toggleComment(item._id)}
+                            className="text-primary hover:text-primary/80 cursor-pointer text-xs font-semibold"
+                          >
+                            {expandedComments.has(item._id)
+                              ? 'Hide Comment'
+                              : 'Show Comment'}
+                          </button>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                    </tr>
+                    {expandedComments.has(item._id) && item.comment && (
+                      <tr className="border-border/20 border-b">
+                        <td
+                          colSpan={5}
+                          className="bg-muted/20 px-6 py-3 text-sm leading-relaxed"
+                        >
+                          {item.comment}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

@@ -255,6 +255,8 @@ jobs:
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -287,6 +289,7 @@ jobs:
             --cluster aqdy-staging \
             --service aqdy-platform-backend-staging \
             --force-new-deployment \
+            --desired-count 1 \
             --region ${{ secrets.AWS_REGION }}
 
       - name: Deploy frontend to ECS (staging)
@@ -295,6 +298,7 @@ jobs:
             --cluster aqdy-staging \
             --service aqdy-platform-frontend-staging \
             --force-new-deployment \
+            --desired-count 1 \
             --region ${{ secrets.AWS_REGION }}
 
       - name: Wait for staging backend to stabilize
