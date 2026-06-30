@@ -77,12 +77,14 @@ export class AqdyPlatformStagingStack extends Stack {
       description: "Backend ECS security group",
       allowAllOutbound: true,
     });
+    backendSg.connections.allowFrom(albSg, ec2.Port.tcp(3000), "Allow ALB to backend health checks");
 
     const frontendSg = new ec2.SecurityGroup(this, "FrontendSecurityGroup", {
       vpc,
       description: "Frontend ECS security group",
       allowAllOutbound: true,
     });
+    frontendSg.connections.allowFrom(albSg, ec2.Port.tcp(80), "Allow ALB to frontend health checks");
 
     // ── ECS Cluster ──
     const cluster = new ecs.Cluster(this, "AqdyCluster", {
@@ -128,7 +130,7 @@ export class AqdyPlatformStagingStack extends Stack {
       environment: {
         NODE_ENV: "production",
         DOPPLER_PROJECT: "backend",
-        DOPPLER_CONFIG: "staging",
+        DOPPLER_CONFIG: "stg_backend",
       },
       secrets: {
         DOPPLER_TOKEN: ecs.Secret.fromSecretsManager(dopplerTokenSecret, "DOPPLER_TOKEN"),

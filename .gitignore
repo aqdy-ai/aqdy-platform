@@ -162,6 +162,7 @@ vite.config.ts.timestamp-*
 
 # Secret/config files
 secrets*
+!backend/src/config/secrets.ts
 *.secret
 secrets.json
 credentials.json
