@@ -97,7 +97,7 @@ Full documentation is available in the [`docs/`](./docs/) directory:
 | Observability | [Langfuse Tracing](./docs/05-OBSERVABILITY/TRACING.md) |
 | Testing | [Unit/Integration](./docs/06-TESTING/UNIT-INTEGRATION.md) • [E2E](./docs/06-TESTING/E2E.md) |
 | User Guide | [How to Use](./docs/07-USER-GUIDE/README.md) |
-| Appendix | [Accessibility](./docs/08-APPENDIX/ACCESSIBILITY.md) • [Localization](./docs/08-APPENDIX/LOCALIZATION.md) |
+| Appendix | [Accessibility](./docs/08-APPENDIX/ACCESSIBILITY.md) • [Localization](./docs/08-APPENDIX/LOCALIZATION.md) • [Credits](./docs/08-APPENDIX/CREDITS.md) |
 
 ---
 
