@@ -14,22 +14,22 @@ ci-cd.yml
 Runs on:
 
 ```
-push
-pull_request
+push to develop, main, fix/pre-stage
+pull_request to develop, main, fix/pre-stage
 ```
 
 Pipeline steps (high level):
 
 ```
 Checkout
-Install dependencies
-Lint
-Unit Tests
-Build Backend
-Build Frontend
-Docker Build
-Coverage
-Deploy (optional)
+Set up Node.js
+Lint Backend
+Lint Frontend
+Test Backend
+Test Frontend
+Security Audit
+Build and push Docker images
+Deploy to staging / production
 ```
 
 Pipeline Flow
@@ -39,39 +39,31 @@ Push / Pull Request
 
 ↓
 
-Install
+Lint Backend
 
 ↓
 
-Lint
+Lint Frontend
 
 ↓
 
-Backend Tests
+Test Backend
 
 ↓
 
-Frontend Tests
+Test Frontend
 
 ↓
 
-Build Backend
+Security Audit
 
 ↓
 
-Build Frontend
+Build and Push Docker Images
 
 ↓
 
-Docker Build
-
-↓
-
-Playwright
-
-↓
-
-Deploy
+Deploy to Staging / Production
 ```
 
 Tools Used
@@ -99,7 +91,7 @@ Uploads report
 
 Husky & local checks
 
-The repo uses a Husky pre-commit hook at `.husky/pre-commit` and `lint-staged` to run checks before commits. Ensure your local setup runs the Husky hooks after installation.
+The repo includes a Husky pre-commit hook at `.husky/pre-commit`. The frontend package also includes `lint-staged` as a dependency, but the current hook is still minimal and can be extended for staged-file checks.
 
 Code quality tools
 
@@ -132,7 +124,14 @@ GEMINI_API_KEY
 LANGFUSE_SECRET_KEY
 LANGFUSE_PUBLIC_KEY
 STRIPE_SECRET_KEY
-SMTP_USER
-SMTP_PASS
+STRIPE_PUBLISHABLE_KEY
+STRIPE_WEBHOOK_SECRET
+OPENAI_API_KEY
+PINECONE_API_KEY
+PINECONE_INDEX
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_REGION
+VITE_GOOGLE_CLIENT_ID
 ```
 

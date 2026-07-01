@@ -118,18 +118,14 @@ Push / Pull Request
 GitHub Actions
       │
       ├── ESLint
-      ├── Unit Tests
-      ├── Integration Tests
-      ├── Frontend Build
-      ├── Backend Build
+      ├── Backend Tests
+      ├── Frontend Tests
+      ├── Security Audit
       ├── Docker Image Build
-      └── Playwright E2E
+      └── Deploy to Staging / Production
       │
       ▼
-CDK Deployment
-      │
-      ▼
-AWS Infrastructure
+AWS ECS / Infrastructure
 ```
 
 AI Pipeline Components
@@ -157,8 +153,9 @@ Observability
 Health & Monitoring
 
 ```
-GET /health
-GET /metrics (if enabled)
+GET /api/health
+GET /api/metrics
+GET /api/docs
 ```
 
 Background Workers

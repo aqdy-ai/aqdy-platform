@@ -88,11 +88,13 @@ cdk deploy
 
 Seed Data
 
-```
+```bash
 cd backend
-
-# Run the backend seed scripts defined in backend/package.json
-# for plans, knowledge base, payments, and demo data.
+npm run seed:plans
+npm run seed:kb
+npm run seed:payments
+# or
+npm run seed:all
 ```
 
 Queue Worker
@@ -182,24 +184,23 @@ Backend
 
 ```
 npm run dev
-
-npm test
-
-npm run lint
-
 npm run build
+npm run lint
+npm test
+npm run seed:plans
+npm run seed:kb
+npm run seed:payments
+npm run seed:all
 ```
 
 Frontend
 
 ```
 npm run dev
-
 npm run build
-
-npm test
-
 npm run lint
+npm test
+npm run test:e2e
 ```
 
 Running tests
@@ -221,6 +222,7 @@ npm test
 Playwright (E2E)
 
 ```bash
+cd frontend
 npm run test:e2e
 ```
 
