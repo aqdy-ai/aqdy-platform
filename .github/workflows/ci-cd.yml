@@ -270,7 +270,7 @@ jobs:
     if: github.ref == 'refs/heads/develop'
     environment:
       name: staging
-      url: https://staging.aqdy.app
+      url: https://staging.aqdy.site
 
     steps:
       - name: Checkout code
