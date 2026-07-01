@@ -1,67 +1,74 @@
-# Aqdy Platform Documentation Index 📚
+# Aqdy Platform — Documentation Index
 
-Welcome to the central developer documentation index for the **Aqdy Platform** — an AI-powered contract risk analyzer designed for the Arabic-speaking market. 
-
-This repository contains two main applications (an Express backend and a Vite frontend) along with a dedicated semantic RAG (Retrieval-Augmented Generation) pipeline.
+**AI-powered contract risk analyzer for the Arabic-speaking market.**  
+Aqdy helps freelancers, startups, and small businesses understand legal contracts through clause-by-clause risk analysis with bilingual (Arabic/English) support.
 
 ---
 
-## 🏗️ High-Level System Architecture
+## Table of Contents
 
-The following diagram illustrates how the frontend, backend, vector storage (Pinecone), and relational database (MongoDB) interact during the contract analysis workflow:
+| Section | Contents |
+|:---|:---|
+| **01 — Architecture** | System overview, database schema, API specification (Swagger) |
+| **02 — Setup** | Local development, Docker deployment, CI/CD pipeline |
+| **03 — AI Pipeline** | Model selection, prompt library, RAG, multi-agent system, multimodality, evaluation |
+| **04 — Security** | OWASP LLM Top 10 coverage, guardrails, rate limiting |
+| **05 — Observability** | Langfuse tracing, cost & latency monitoring |
+| **06 — Testing** | Unit/integration tests, E2E tests, quality gates |
+| **07 — User Guide** | How to use the platform |
+| **08 — Appendix** | Accessibility, localization, credits |
+
+---
+
+## Quick Links
+
+### Technical Documentation
+- [System Architecture](./01-ARCHITECTURE/OVERVIEW.md) — Architecture diagram and component interaction
+- [Database Schema](./01-ARCHITECTURE/DATABASE-SCHEMA.md) — MongoDB collections, indexes, and relationships
+- [API Specification](./01-ARCHITECTURE/API-SPEC.md) — OpenAPI/Swagger REST API docs
+
+### Getting Started
+- [Local Development Setup](./02-SETUP/LOCAL-DEV.md) — Prerequisites, .env config, running backend & frontend
+- [Deployment Guide](./02-SETUP/DEPLOYMENT.md) — Docker, docker-compose, AWS CDK
+- [CI/CD Pipeline](./02-SETUP/CI-CD.md) — GitHub Actions, quality gates, code coverage
+
+### AI Pipeline (Core)
+- [Model Selection Rationale](./03-AI-PIPELINE/MODEL-SELECTION.md) — Gemini primary, GPT-4o fallback, cost analysis
+- [Prompt Library](./03-AI-PIPELINE/PROMPT-LIBRARY.md) — Catalog of production prompts with versioning
+- [RAG Pipeline](./03-AI-PIPELINE/RAG.md) — Ingestion, chunking, embedding, retrieval (Pinecone + MMR reranking)
+- [Multi-Agent System](./03-AI-PIPELINE/AGENTS.md) — 3-agent sequential pipeline (Extractor → Classifier → Redline)
+- [Multimodal AI](./03-AI-PIPELINE/MULTIMODAL.md) — Vision, speech, and generation capabilities
+- [Evaluation](./03-AI-PIPELINE/EVALUATION.md) — LLM-as-a-Judge, 4 quality metrics, human feedback
+
+### Security & Observability
+- [Security Overview](./04-SECURITY/OVERVIEW.md) — OWASP LLM Top 10, input sanitization, PII filtering, rate limiting
+- [Langfuse Tracing](./05-OBSERVABILITY/TRACING.md) — LLM call traces, cost tracking, latency monitoring
+
+### Quality Assurance
+- [Unit & Integration Tests](./06-TESTING/UNIT-INTEGRATION.md) — Jest/Vitest, 60% coverage gate
+- [End-to-End Tests](./06-TESTING/E2E.md) — Playwright test scenarios
+
+### User Documentation
+- [User Guide](./07-USER-GUIDE/README.md) — How to upload, analyze, and review contracts
+
+### Reference
+- [Accessibility (WCAG 2.1 AA)](./08-APPENDIX/ACCESSIBILITY.md)
+- [Localization (Arabic/English)](./08-APPENDIX/LOCALIZATION.md)
+- [Credits & Attributions](./08-APPENDIX/CREDITS.md)
+
+---
+
+## Architecture at a Glance
 
 ```mermaid
 graph TD
-    User[Client / Browser] <-->|HTTPS / React 19| FE[Frontend Vite App]
-    FE <-->|REST API / JSON| BE[Backend Node/Express]
-    BE <-->|Mongoose ODM| DB[(MongoDB Atlas)]
-    BE -->|LangChain JS| LLM[Google Gemini API]
-    BE <-->|multilingual-e5-large| Vector[(Pinecone Vector DB)]
-    
-    style User fill:#f9f,stroke:#333,stroke-width:2px
-    style FE fill:#bbf,stroke:#333,stroke-width:2px
-    style BE fill:#ddf,stroke:#333,stroke-width:2px
-    style DB fill:#bfb,stroke:#333,stroke-width:2px
-    style Vector fill:#ffd,stroke:#333,stroke-width:2px
+    User[Client / Browser] <-->|HTTPS| FE[React 19 / Vite 8]
+    FE <-->|REST API| BE[Node.js / Express]
+    BE -->|LangChain| LLM[Google Gemini API]
+    BE <-->|Pinecone SDK| Vector[(Pinecone Vector DB)]
+    BE <-->|Mongoose| DB[(MongoDB Atlas)]
+    BE -->|BullMQ| Redis[(Redis)]
+    BE -->|Langfuse SDK| Trace[Langfuse Tracing]
+    BE -->|Stripe SDK| Payments[Stripe Payments]
 ```
 
----
-
-## 📂 Documentation Directory Map
-
-Our technical guides are compartmentalized into domain-specific folders to keep instructions concise and focused:
-
-| Domain | File / Guide | Description |
-|:---|:---|:---|
-| **🚀 DevOps** | [Local Setup](./DEVOPS/LOCAL_SETUP.md) | Standard developer installation guide for backend, frontend, and DB. |
-| | [Deployment Guide](./DEVOPS/DEPLOYMENT.md) | Multi-stage Dockerization, docker-compose configuration, and CI/CD tips. |
-| **💻 Backend** | [LLM Setup](./BACKEND/LLM_SETUP.md) | LangChain pipeline, ChatGoogleGenerativeAI, and model retry/fallback policies. |
-| **🎨 Frontend** | [Frontend Overview](./FRONTEND/README.md) | React 19, Tailwind 4, logical RTL spacing, and state management. |
-| | [Component Architecture](./FRONTEND/COMPONENT_ARCHITECTURE.md) | Feature-based Atomic design pattern, animations, and standards. |
-| **🗄️ Database** | [Connection Setup](./DATABASE/CONNECTION_SETUP.md) | MongoDB Atlas cloud setup, connection strings, and integration test DB rules. |
-| | [Database Schema](./DATABASE/DATABASE_SCHEMA.md) | Detailed schema specs for Contracts, RiskAnalyses, and AuditLogs. |
-| **🤖 RAG & AI** | [RAG & Embedding Pipeline](./RAG/rag-and-embedding.md) | Search mechanics with Pinecone, E5 embeddings, and retrieval flow. |
-| | [KB Curation Process](./RAG/KB_CURATION_PROCESS.md) | Maintenance workflow for adding, modifying, or removing legal clauses. |
-| | [Legal KB Catalog](./RAG/LEGAL_KB.md) | Catalog of all 50 risky clauses in `legalKB.json` with code/law mappings. |
-| | [MENA Business Norms](./RAG/MENA_BUSINESS_NORMS.md) | Localization study on regional civil law, labor codes, and specific contract risks. |
-| **🧪 QA & Test** | [Testing Guidelines](./TESTING/README.md) | Jest and Vitest suites, MSW API mocking, and coverage rules. |
-
----
-
-## 🚦 Getting Started Roadmap
-
-If you are a new developer onboarding to the Aqdy project, we recommend reading the guides in this order:
-
-1. **Step 1: Environment Setup** — Follow the [Local Development Setup](./DEVOPS/LOCAL_SETUP.md) to set up node packages, database variables, and local servers.
-2. **Step 2: Database Connection** — Make sure your Atlas credentials align with [Database Connection Setup](./DATABASE/CONNECTION_SETUP.md).
-3. **Step 3: Understand the RAG Engine** — Read the [RAG & Embedding Pipeline](./RAG/rag-and-embedding.md) and learn how we query Pinecone with `multilingual-e5-large` to ground LLM analysis.
-4. **Step 4: Explore Frontend Design** — Familiarize yourself with our atomic structure and RTL guidelines in [Component Architecture](./FRONTEND/COMPONENT_ARCHITECTURE.md).
-5. **Step 5: Code Quality & Testing** — Ensure any new pull requests pass the Jest/Vitest standard defined in [Testing Guidelines](./TESTING/README.md).
-
----
-
-> [!NOTE]
-> **API Keys & Credentials:** The platform integrates heavily with external cloud providers (Google AI Studio, Pinecone, Langfuse, MongoDB Atlas). All keys must be defined in your local `backend/.env` file. Refer to the respective guides above for example `.env` schemas.
-
-> [!IMPORTANT]
-> **Arabic-First / RTL Support:** Aqdy is designed primarily for the Middle East & North Africa (MENA) market. Every UI element and backend risk assessment prompt is localized and tested for both Arabic and English. Please respect these structural guidelines when making code modifications.
