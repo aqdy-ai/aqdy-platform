@@ -229,15 +229,3 @@ Docker (full stack)
 ```bash
 docker compose up --build
 ```
-
-Checklist (quick verification)
-
-- [ ] Backend responds at `http://localhost:3000`
-- [ ] Frontend responds at `http://localhost:5173`
-- [ ] Tests pass for backend and frontend
-- [ ] CDK synthesizes without errors
-
-Notes
-
-- The file `backend/tests/setup-env.ts` lists env keys that tests expect. Keep CI and local `.env` aligned with those values.
-- If you want, I can add a `backend/.env.example` and `frontend/.env.example` with the minimal keys above.

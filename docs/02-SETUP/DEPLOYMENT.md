@@ -179,18 +179,4 @@ Redis
 analysis.worker.ts
 ```
 
-Post Deployment Checklist
 
-- Health endpoint responds (`/health`)
-- Frontend loads successfully
-- Authentication works
-- Google Login works
-- Stripe Checkout works
-- Email service works
-- Redis connection is healthy
-- MongoDB connection is healthy
-- AI analysis pipeline is operational
-
-Notes
-
-- If you want, I can add a `scripts/deploy.sh` and/or scaffold CDK deployment permissions and GitHub Actions jobs to automate the image build + `cdk deploy` sequence.

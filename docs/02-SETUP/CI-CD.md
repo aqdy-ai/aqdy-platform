@@ -136,11 +136,3 @@ SMTP_USER
 SMTP_PASS
 ```
 
-Checklist (CI status)
-
-- [ ] `ci-cd.yml` present and runs on PRs
-- [ ] `playwright.yml` runs E2E and uploads reports
-- [ ] Secrets configured in GitHub repository settings
-- [ ] Coverage artifacts uploaded and accessible
-
-If you want, I can scaffold example job snippets or update the existing `ci-cd.yml` and `playwright.yml` workflows to match the exact `npm` scripts in `backend/package.json` and `frontend/package.json`.
