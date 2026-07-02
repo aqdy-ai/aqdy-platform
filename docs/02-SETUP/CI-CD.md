@@ -1,26 +1,48 @@
-# CI/CD (Aqdy Platform)
+# ⚙️ CI/CD Pipeline
 
-> This repository already contains GitHub Actions workflows. The pipeline runs lint, tests, build, image creation and Playwright E2E where configured.
+> Aqdy Platform uses GitHub Actions for linting, testing, security checks, Docker image publishing, and deployment.
 
-Repository workflows
+## 📂 Workflow Files
 
-```
+```text
 .github/workflows/ci-cd.yml
 .github/workflows/playwright.yml
 ```
 
-ci-cd.yml
+## 🔄 CI/CD Flow
+
+```text
+Push / Pull Request
+  ↓
+Lint Backend
+  ↓
+Lint Frontend
+  ↓
+Test Backend
+  ↓
+Test Frontend
+  ↓
+Security Audit
+  ↓
+Build and Push Docker Images
+  ↓
+Deploy to Staging / Production
+```
+
+## 🧪 Workflow Details
+
+### ci-cd.yml
 
 Runs on:
 
-```
+```text
 push to develop, main, fix/pre-stage
 pull_request to develop, main, fix/pre-stage
 ```
 
-Pipeline steps (high level):
+High-level stages:
 
-```
+```text
 Checkout
 Set up Node.js
 Lint Backend
@@ -68,7 +90,7 @@ Deploy to Staging / Production
 
 Tools Used
 
-```
+```text
 GitHub Actions
 Docker
 Playwright
@@ -97,26 +119,29 @@ Code quality tools
 
 Backend:
 
-```
+```text
 ESLint
 Jest
 ```
 
-Frontend:
+### Frontend
 
-```
+```text
 ESLint
 Vitest
 Playwright
 ```
 
-Coverage
+## 📊 Coverage
 
-Backend uses `Jest` for coverage reporting. Frontend uses `Vitest`.
-
-GitHub Secrets (required)
-
+```text
+Backend → Jest coverage reporting
+Frontend → Vitest coverage reporting
 ```
+
+## 🔐 GitHub Secrets
+
+```text
 JWT_SECRET
 MONGODB_URI
 REDIS_URL

@@ -1,41 +1,41 @@
-# Local Development Setup (Aqdy Platform)
+# 🚀 Local Development Setup
 
-> This document documents how to run the Aqdy Platform locally and the exact variables, ports and commands used in this repository.
+> A polished guide to run Aqdy Platform locally, with the exact services, ports, environment variables, and commands used by this repository.
 
-Repository structure
+## 📁 Repository Structure
 
-```
+```text
 aqdy-platform/
 ├── backend/      # Express + TypeScript API
-├── frontend/     # React + Vite
-├── infra/        # AWS CDK Infrastructure
+├── frontend/     # React + Vite app
+├── infra/        # AWS CDK infrastructure
 ├── docs/
 ├── .github/workflows/
-├── docker-compose.yml
+└── docker-compose.yml
 ```
 
-Important directories
+## 🧭 Important Directories
 
-```
+```text
 backend/src
-    Express API
-    AI agents
-    Queue workers
-    Stripe integration
+  ├── Express API
+  ├── AI agents
+  ├── Queue workers
+  └── Stripe integration
 
 frontend/src
-    React application
-    Dashboard
-    Authentication
-    Billing
+  ├── React application
+  ├── Dashboard
+  ├── Authentication
+  └── Billing
 
 infra/
-    AWS CDK stacks
+  └── AWS CDK stacks
 ```
 
-Requirements
+## ✅ Prerequisites
 
-```
+```text
 Node.js 20 LTS or later
 npm 10+
 Docker Desktop (recommended)
@@ -44,7 +44,7 @@ Redis (required for queues and rate limiting)
 Git
 ```
 
-Backend (run locally)
+## ▶️ Start the Backend
 
 ```bash
 cd backend
@@ -52,13 +52,10 @@ npm install
 npm run dev
 ```
 
-Service URL:
+- Backend URL: http://localhost:3000
+- Swagger docs: http://localhost:3000/api/docs
 
-```
-http://localhost:3000
-```
-
-Frontend (run locally)
+## 🎨 Start the Frontend
 
 ```bash
 cd frontend
@@ -66,13 +63,9 @@ npm install
 npm run dev
 ```
 
-Service URL:
+- Frontend URL: http://localhost:5173
 
-```
-http://localhost:5173
-```
-
-Infrastructure
+## 🧱 Infrastructure
 
 ```bash
 cd infra
@@ -80,13 +73,13 @@ npm install
 cdk synth
 ```
 
-To deploy (CDK):
+Deploy with:
 
 ```bash
 cdk deploy
 ```
 
-Seed Data
+## 🌱 Seed Data
 
 ```bash
 cd backend
@@ -97,92 +90,67 @@ npm run seed:payments
 npm run seed:all
 ```
 
-Queue Worker
+## ⚙️ Queue Worker
 
-```
-Background processing is handled by BullMQ workers located in:
+```text
+Background processing is handled by BullMQ workers in:
 
 backend/src/queue/
-
-- analysis.worker.ts
-- analysis.queue.ts
-
-Run the worker using the project script defined in backend/package.json (if configured).
+  ├── analysis.worker.ts
+  └── analysis.queue.ts
 ```
 
-Swagger / API docs
+## 📚 Swagger / API Docs
 
-```
+```text
 Swagger/OpenAPI documentation is available when Swagger is enabled in the backend configuration.
 
 Default endpoint:
-
 http://localhost:3000/api/docs
 ```
 
-Environment variables
+## 🔐 Environment Variables
 
-Backend (`backend/.env`)
+### Backend (.env)
 
-```
+```text
 PORT=
-
 MONGODB_URI=
-
 JWT_SECRET=
-
 STRIPE_SECRET_KEY=
-
 STRIPE_WEBHOOK_SECRET=
-
 REDIS_URL=
-
 SMTP_HOST=
 SMTP_PORT=
 SMTP_USER=
 SMTP_PASS=
-
 GEMINI_API_KEY=
-
 LANGFUSE_SECRET_KEY=
 LANGFUSE_PUBLIC_KEY=
 ```
 
-Frontend (`frontend/.env`)
+### Frontend (.env)
 
-```
+```text
 VITE_API_URL=
-
 VITE_GOOGLE_CLIENT_ID=
-
 VITE_STRIPE_PUBLISHABLE_KEY=
 ```
 
-Ports
+## 🔌 Ports
 
-```
-Frontend
-
-http://localhost:5173
-
-Backend
-
-http://localhost:3000
-
-MongoDB
-
-27017
-
-Redis
-
-6379
+```text
+Frontend → http://localhost:5173
+Backend  → http://localhost:3000
+MongoDB  → 27017
+Redis    → 6379
 ```
 
-Scripts
+## 🧪 Scripts
 
-Backend
+### Backend
 
-```
+```bash
 npm run dev
 npm run build
 npm run lint
@@ -193,9 +161,9 @@ npm run seed:payments
 npm run seed:all
 ```
 
-Frontend
+### Frontend
 
-```
+```bash
 npm run dev
 npm run build
 npm run lint
@@ -203,30 +171,26 @@ npm test
 npm run test:e2e
 ```
 
-Running tests
-
-Backend
+## 🧪 Running Tests
 
 ```bash
 cd backend
 npm test
 ```
 
-Frontend
-
 ```bash
 cd frontend
 npm test
 ```
 
-Playwright (E2E)
+## 🎭 Playwright (E2E)
 
 ```bash
 cd frontend
 npm run test:e2e
 ```
 
-Docker (full stack)
+## 🐳 Docker Compose
 
 ```bash
 docker compose up --build
