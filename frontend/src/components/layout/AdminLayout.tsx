@@ -140,8 +140,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Filter menu items based on user's permissions
   const menuItems = allMenuItems.filter((item) => hasPermission(item.section))
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     toast.success(t('nav.logout'))
     navigate('/login', { replace: true })
   }
