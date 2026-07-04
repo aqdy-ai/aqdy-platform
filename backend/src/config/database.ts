@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
+import { env } from "./env.js";
 import { logger } from "../utils/logger.js";
 
 const connectDB = async (): Promise<void> => {
   try {
-    const mongoURI = process.env.MONGODB_URI;
-    if (!mongoURI) throw new Error("MONGODB_URI not defined");
+    const mongoURI = env.MONGODB_URI;
 
     const conn = await mongoose.connect(mongoURI);
     logger.info(

@@ -12,9 +12,7 @@ jest.unstable_mockModule("@langchain/google-genai", () => {
 });
 
 // Import AFTER mocking
-const { geminiWrapper } = await import(
-  "../../src/services/gemini.wrapper.js"
-);
+const { geminiWrapper } = await import("../../src/services/gemini.wrapper.js");
 
 // ── Tests ────────────────────────────────────────
 

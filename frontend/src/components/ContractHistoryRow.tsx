@@ -199,7 +199,7 @@ export const ContractHistoryRow: React.FC<ContractHistoryRowProps> = ({
               <div
                 className={cn(
                   'border-border/50 bg-card/95 animate-in fade-in-0 slide-in-from-bottom-2 absolute bottom-full z-50 mb-2 w-72 rounded-2xl border p-4 text-start shadow-xl backdrop-blur-md duration-200',
-                  isRtl ? 'right-6' : 'left-6'
+                  'start-6'
                 )}
                 role="tooltip"
               >
@@ -300,7 +300,7 @@ export const ContractHistoryRow: React.FC<ContractHistoryRowProps> = ({
         <td className="px-6 py-4 whitespace-nowrap">
           <span
             className={cn(
-              'inline-block rounded-full border px-2.5 py-0.5 text-xs leading-none font-bold capitalize',
+              'inline-block rounded-full border px-2.5 py-0.5 text-xs leading-none font-bold whitespace-nowrap capitalize',
               riskColors[overallRisk]
             )}
           >

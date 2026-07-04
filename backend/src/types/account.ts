@@ -11,4 +11,5 @@ export interface ProfileResponse {
   plan: string;
   memberSince: Date;
   lastLogin?: Date;
+  hasPassword: boolean;
 }

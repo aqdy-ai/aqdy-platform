@@ -15,9 +15,8 @@ jest.unstable_mockModule("../../src/services/auth.service.js", () => ({
   verifyAccessToken: mockVerifyAccessToken,
 }));
 
-const { authenticateJwt, requireAuth, requireAdmin, verifyJWT } = await import(
-  "../../src/middlewares/auth.middleware.js"
-);
+const { authenticateJwt, requireAuth, requireAdmin, verifyJWT } =
+  await import("../../src/middlewares/auth.middleware.js");
 
 describe("Auth Middleware", () => {
   let mockRequest: Partial<Request>;
@@ -94,7 +93,11 @@ describe("Auth Middleware", () => {
     const mockReq: Partial<Request> = {};
     const mockNextFn = jest.fn();
 
-    requireAuth(mockReq as Request, mockResponse as Response, mockNextFn as unknown as NextFunction);
+    requireAuth(
+      mockReq as Request,
+      mockResponse as Response,
+      mockNextFn as unknown as NextFunction,
+    );
 
     expect(mockNextFn).toHaveBeenCalledTimes(1);
     expect(mockNextFn.mock.calls[0][0]).toMatchObject({ statusCode: 401 });
@@ -102,10 +105,14 @@ describe("Auth Middleware", () => {
 
   describe("requireAdmin", () => {
     test("should allow access for user with admin role", () => {
-      const mockReq = { user: { role: "admin" } } as any;
+      const mockReq = { user: { role: "super_admin" } } as any;
       const mockNextFn = jest.fn();
 
-      requireAdmin(mockReq, mockResponse as Response, mockNextFn as unknown as NextFunction);
+      requireAdmin(
+        mockReq,
+        mockResponse as Response,
+        mockNextFn as unknown as NextFunction,
+      );
 
       expect(mockNextFn).toHaveBeenCalledTimes(1);
       expect(mockNextFn.mock.calls[0][0]).toBeUndefined();
@@ -115,20 +122,34 @@ describe("Auth Middleware", () => {
       const mockReq = { user: { role: "user" } } as any;
       const mockNextFn = jest.fn();
 
-      requireAdmin(mockReq, mockResponse as Response, mockNextFn as unknown as NextFunction);
+      requireAdmin(
+        mockReq,
+        mockResponse as Response,
+        mockNextFn as unknown as NextFunction,
+      );
 
       expect(mockNextFn).toHaveBeenCalledTimes(1);
-      expect(mockNextFn.mock.calls[0][0]).toMatchObject({ statusCode: 403, message: "Forbidden" });
+      expect(mockNextFn.mock.calls[0][0]).toMatchObject({
+        statusCode: 403,
+        message: "Forbidden",
+      });
     });
 
     test("should reject access with 401 if user is not authenticated", () => {
       const mockReq = { headers: {} } as any;
       const mockNextFn = jest.fn();
 
-      requireAdmin(mockReq, mockResponse as Response, mockNextFn as unknown as NextFunction);
+      requireAdmin(
+        mockReq,
+        mockResponse as Response,
+        mockNextFn as unknown as NextFunction,
+      );
 
       expect(mockNextFn).toHaveBeenCalledTimes(1);
-      expect(mockNextFn.mock.calls[0][0]).toMatchObject({ statusCode: 401, message: "Authentication required." });
+      expect(mockNextFn.mock.calls[0][0]).toMatchObject({
+        statusCode: 401,
+        message: "Authentication required.",
+      });
     });
   });
 
@@ -141,18 +162,31 @@ describe("Auth Middleware", () => {
 
     test("should return null if the signature is tampered or doesn't match HMAC expected signature", () => {
       // Form a token with a valid structural look but arbitrary parts
-      const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-      const payload = Buffer.from(JSON.stringify({ sub: "user123", role: "user" })).toString("base64url");
-      const badSignature = "thisIsAFakeSignatureThatWillNotMatchTheHmacExpectation12345";
+      const header = Buffer.from(
+        JSON.stringify({ alg: "HS256", typ: "JWT" }),
+      ).toString("base64url");
+      const payload = Buffer.from(
+        JSON.stringify({ sub: "user123", role: "user" }),
+      ).toString("base64url");
+      const badSignature =
+        "thisIsAFakeSignatureThatWillNotMatchTheHmacExpectation12345";
 
       const token = `${header}.${payload}.${badSignature}`;
       expect(verifyJWT(token)).toBeNull();
     });
 
     test("should parse and return payload for a correctly signed token", () => {
-      const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-      const payloadObj = { sub: "user123", role: "user", exp: Date.now() + 10000 };
-      const payload = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
+      const header = Buffer.from(
+        JSON.stringify({ alg: "HS256", typ: "JWT" }),
+      ).toString("base64url");
+      const payloadObj = {
+        sub: "user123",
+        role: "user",
+        exp: Date.now() + 10000,
+      };
+      const payload = Buffer.from(JSON.stringify(payloadObj)).toString(
+        "base64url",
+      );
 
       // Calculate signature manually (verifyJWT expects process.env.JWT_SECRET or env.JWT_SECRET)
       const jwtSecret = process.env.JWT_SECRET || "test-secret";

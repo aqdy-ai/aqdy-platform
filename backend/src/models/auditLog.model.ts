@@ -16,6 +16,21 @@ export const ACTION_TYPES = [
   "KB_SEARCH",
   "ADMIN_VIEW_LOGS",
   "ADMIN_VIEW_USER",
+  // Role management actions
+  "ROLE_ASSIGNED",
+  "ROLE_REVOKED",
+  // Support admin actions
+  "ADMIN_EMAIL_VERIFY",
+  "ADMIN_PASSWORD_RESET_TRIGGER",
+  "ADMIN_CREDIT_ADJUSTMENT",
+  // Financial admin actions
+  "ADMIN_REFUND",
+  "ADMIN_SUBSCRIPTION_CHANGE",
+  // Content admin actions
+  "KB_ENTRY_CREATED",
+  "KB_ENTRY_UPDATED",
+  "KB_ENTRY_DELETED",
+  "PROMPT_UPDATED",
   // Legacy actions for backward compatibility
   "STRIPE_WEBHOOK",
   "CONTRACT_UPLOADED",

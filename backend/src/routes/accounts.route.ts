@@ -5,7 +5,7 @@ import { Contract } from "../models/contract.model.js";
 import { AuditLog } from "../models/auditLog.model.js";
 import {
   authenticateJwt,
-  requireAdmin,
+  requirePermission,
 } from "../middlewares/auth.middleware.js";
 import { Plan } from "../models/plan.model.js";
 import { Subscription } from "../models/subscription.model.js";
@@ -17,7 +17,7 @@ const router = Router();
 router.get(
   "/",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("accounts", "read"),
   async (req: Request, res: Response) => {
     try {
       const {
@@ -92,7 +92,7 @@ router.get(
 router.get(
   "/:id",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("accounts", "read"),
   async (req: Request, res: Response) => {
     try {
       const { id } = req.params as { id: string };
@@ -156,7 +156,7 @@ router.get(
 router.patch(
   "/:id",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("accounts", "write"),
   async (req: Request, res: Response) => {
     try {
       const id = req.params.id as string; // Ensure id is a string
@@ -225,7 +225,7 @@ router.patch(
               "plan_topup",
             );
             // Attach topup info to be returned in the response later
-            (user as any)._creditTopup = {
+            (user as Record<string, unknown>)._creditTopup = {
               amount: allowance,
               newBalance: allowance,
             };
@@ -245,9 +245,14 @@ router.patch(
 
       const updatedUser = await User.findById(userId);
       // If a topup was performed, include it in the response
-      const responsePayload: any = { success: true, data: updatedUser };
-      if ((user as any)._creditTopup) {
-        responsePayload.creditTopup = (user as any)._creditTopup;
+      const responsePayload: Record<string, unknown> = {
+        success: true,
+        data: updatedUser,
+      };
+      if ((user as Record<string, unknown>)._creditTopup) {
+        responsePayload.creditTopup = (
+          user as Record<string, unknown>
+        )._creditTopup;
       }
       return res.status(200).json(responsePayload);
     } catch (error: unknown) {
@@ -264,7 +269,7 @@ router.patch(
 router.delete(
   "/:id",
   authenticateJwt,
-  requireAdmin,
+  requirePermission("accounts", "write"),
   async (req: Request, res: Response) => {
     try {
       const id = req.params.id as string; // Ensure id is a string

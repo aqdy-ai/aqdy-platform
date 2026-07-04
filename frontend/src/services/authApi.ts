@@ -12,6 +12,7 @@ const authApi = {
   resetPassword: (token: string, newPassword: string) =>
     authClient.post('/reset-password', { token, newPassword }),
   login: (credentials: LoginInput) => authClient.post('/login', credentials),
+  loginWithGoogle: (idToken: string) => authClient.post('/google', { idToken }),
   register: (userData: RegisterApiData) =>
     authClient.post('/register', userData),
   getMe: () => authClient.get('/me'),

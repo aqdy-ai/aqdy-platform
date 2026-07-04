@@ -1,34 +1,69 @@
 import "dotenv/config";
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
-import mongoose from 'mongoose';
-import request from 'supertest';
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  jest,
+} from "@jest/globals";
+import mongoose from "mongoose";
+import request from "supertest";
+
+// Mock the analysis queue to avoid Redis dependency in test
+jest.unstable_mockModule("../../src/queue/analysis.queue.js", () => ({
+  analysisQueue: {
+    add: jest
+      .fn<(...args: unknown[]) => Promise<unknown>>()
+      .mockResolvedValue({ id: "mock-job-id" }),
+  },
+  closeAnalysisQueue: jest.fn().mockResolvedValue(undefined),
+  AnalysisPayload: {},
+}));
+
+jest.unstable_mockModule("../../src/queue/analysis.worker.js", () => ({
+  analysisWorker: {
+    on: jest.fn(),
+    close: jest.fn().mockResolvedValue(undefined),
+  },
+  closeAnalysisWorker: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.unstable_mockModule("../../src/config/redis.config.js", () => ({
+  getRedisConnection: jest.fn().mockReturnValue({}),
+  closeRedis: jest.fn().mockResolvedValue(undefined),
+}));
 
 let app: any;
 let authToken: string;
 let authenticatedUserId: string;
 
-import { Contract } from '../../src/models/contract.model.js';
-import { RiskAnalysis } from '../../src/models/riskAnalysis.model.js';
-import { AuditLog } from '../../src/models/auditLog.model.js';
-import { creditsService } from '../../src/services/credits.service.js';
-import { jest } from '@jest/globals';
+const { Contract } = await import("../../src/models/contract.model.js");
+const { RiskAnalysis } = await import(
+  "../../src/models/riskAnalysis.model.js"
+);
+const { AuditLog } = await import("../../src/models/auditLog.model.js");
+const { creditsService } = await import(
+  "../../src/services/credits.service.js"
+);
 
 beforeAll(async () => {
-  const mongoURI = process.env.MONGODB_URI!.replace('aqdy_db', 'aqdy_test');
+  const mongoURI = process.env.MONGODB_URI!.replace("aqdy_db", "aqdy_test");
   await mongoose.connect(mongoURI);
 
-  const imported = await import('../../src/index.js');
+  const imported = await import("../../src/index.js");
   app = imported.default;
 
-  jest.spyOn(creditsService, 'getBalance').mockResolvedValue(10000);
+  jest.spyOn(creditsService, "getBalance").mockResolvedValue(10000);
 
   // Register user once for all tests
   const registerRes = await request(app)
-    .post('/api/auth/register')
+    .post("/api/auth/register")
     .send({
-      name: 'Test User',
+      name: "Test User",
       email: `endpoints_test_${Date.now()}@test.com`,
-      password: 'Test@1234',
+      password: "Test@1234",
     });
   authToken = registerRes.body.data.token;
   authenticatedUserId = registerRes.body.data.user.id;
@@ -55,16 +90,15 @@ beforeEach(async () => {
 
 // ── Contract Upload Endpoint ──────────────────────────────────────────────
 
-describe('POST /api/contracts/upload', () => {
-
-  test('should upload a contract successfully', async () => {
+describe("POST /api/contracts/upload", () => {
+  test("should upload a contract successfully", async () => {
     const res = await request(app)
-      .post('/api/contracts/upload')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/contracts/upload")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
-        filename: 'test.pdf',
-        language: 'en',
-        text: 'This is a sample contract text for testing purposes.',
+        filename: "test.pdf",
+        language: "en",
+        text: "This is a sample contract text for testing purposes.",
         userId: authenticatedUserId,
         fileSize: 1024,
       });
@@ -74,26 +108,26 @@ describe('POST /api/contracts/upload', () => {
     expect(res.body.data.contractId).toBeDefined();
   });
 
-  test('should reject upload with missing fields', async () => {
+  test("should reject upload with missing fields", async () => {
     const res = await request(app)
-      .post('/api/contracts/upload')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/contracts/upload")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
-        filename: 'test.pdf',
+        filename: "test.pdf",
         // missing language, text, userId, fileSize
       });
 
     expect(res.status).toBe(400);
   });
 
-  test('should reject upload with invalid language', async () => {
+  test("should reject upload with invalid language", async () => {
     const res = await request(app)
-      .post('/api/contracts/upload')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/contracts/upload")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
-        filename: 'test.pdf',
-        language: 'fr', // invalid
-        text: 'Contract text',
+        filename: "test.pdf",
+        language: "fr", // invalid
+        text: "Contract text",
         userId: authenticatedUserId,
         fileSize: 1024,
       });
@@ -101,14 +135,14 @@ describe('POST /api/contracts/upload', () => {
     expect(res.status).toBe(400);
   });
 
-  test('should upload Arabic contract successfully', async () => {
+  test("should upload Arabic contract successfully", async () => {
     const res = await request(app)
-      .post('/api/contracts/upload')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/contracts/upload")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
-        filename: 'عقد.pdf',
-        language: 'ar',
-        text: 'هذا عقد عمل بين الطرفين',
+        filename: "عقد.pdf",
+        language: "ar",
+        text: "هذا عقد عمل بين الطرفين",
         userId: authenticatedUserId,
         fileSize: 2048,
       });
@@ -117,14 +151,14 @@ describe('POST /api/contracts/upload', () => {
     expect(res.body.success).toBe(true);
   });
 
-  test('should create audit log on upload', async () => {
+  test("should create audit log on upload", async () => {
     await request(app)
-      .post('/api/contracts/upload')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/contracts/upload")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
-        filename: 'test.pdf',
-        language: 'en',
-        text: 'Contract text for audit test',
+        filename: "test.pdf",
+        language: "en",
+        text: "Contract text for audit test",
         userId: authenticatedUserId,
         fileSize: 512,
       });
@@ -136,22 +170,22 @@ describe('POST /api/contracts/upload', () => {
       ],
     });
     expect(logs).toHaveLength(1);
-    expect(logs[0].action).toBe('CONTRACT_UPLOADED');
+    expect(logs[0].action).toBe("CONTRACT_UPLOADED");
   });
 });
 
 // ── Get Contract Endpoint ─────────────────────────────────────────────────
 
-describe('GET /api/contracts/:id', () => {
-  test('should get contract by ID', async () => {
+describe("GET /api/contracts/:id", () => {
+  test("should get contract by ID", async () => {
     // Upload first
     const uploadRes = await request(app)
-      .post('/api/contracts/upload')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/contracts/upload")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
-        filename: 'test.pdf',
-        language: 'en',
-        text: 'Contract text',
+        filename: "test.pdf",
+        language: "en",
+        text: "Contract text",
         userId: authenticatedUserId,
         fileSize: 1024,
       });
@@ -160,32 +194,32 @@ describe('GET /api/contracts/:id', () => {
 
     const res = await request(app)
       .get(`/api/contracts/${contractId}`)
-      .set('Authorization', `Bearer ${authToken}`);
+      .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.filename).toBe('test.pdf');
+    expect(res.body.filename).toBe("test.pdf");
   });
 
-  test('should return 404 for non-existent contract', async () => {
+  test("should return 404 for non-existent contract", async () => {
     const fakeId = new mongoose.Types.ObjectId().toString();
     const res = await request(app)
       .get(`/api/contracts/${fakeId}`)
-      .set('Authorization', `Bearer ${authToken}`);
+      .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(404);
   });
 });
 
 // ── Analysis Endpoint ─────────────────────────────────────────────────────
 
-describe('POST /api/analysis/analyze', () => {
-  test('should start analysis for valid contract', async () => {
+describe("POST /api/analysis/analyze", () => {
+  test("should start analysis for valid contract", async () => {
     // Upload first بالـ authenticated user
     const uploadRes = await request(app)
-      .post('/api/contracts/upload')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/contracts/upload")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
-        filename: 'test.pdf',
-        language: 'en',
-        text: 'This contract includes unlimited liability clause.',
+        filename: "test.pdf",
+        language: "en",
+        text: "This contract includes unlimited liability clause.",
         userId: authenticatedUserId,
         fileSize: 1024,
       });
@@ -193,30 +227,30 @@ describe('POST /api/analysis/analyze', () => {
     const contractId = uploadRes.body.data.contractId;
 
     const res = await request(app)
-      .post('/api/analysis/analyze')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/analysis/analyze")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({ contractId, userId: authenticatedUserId });
 
     expect(res.status).toBe(202);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.status).toBe('processing');
+    expect(res.body.data.status).toBe("processing");
   });
 
-  test('should return 404 for non-existent contract', async () => {
+  test("should return 404 for non-existent contract", async () => {
     const fakeId = new mongoose.Types.ObjectId().toString();
 
     const res = await request(app)
-      .post('/api/analysis/analyze')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/analysis/analyze")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({ contractId: fakeId, userId: authenticatedUserId });
 
     expect(res.status).toBe(404);
   });
 
-  test('should reject analysis with missing contractId', async () => {
+  test("should reject analysis with missing contractId", async () => {
     const res = await request(app)
-      .post('/api/analysis/analyze')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/analysis/analyze")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({ userId: authenticatedUserId });
 
     expect(res.status).toBe(400);
@@ -225,15 +259,15 @@ describe('POST /api/analysis/analyze', () => {
 
 // ── Get Analysis Results Endpoint ─────────────────────────────────────────
 
-describe('GET /api/analysis/:contractId', () => {
-  test('should return processing status when analysis not done', async () => {
+describe("GET /api/analysis/:contractId", () => {
+  test("should return processing status when analysis not done", async () => {
     const uploadRes = await request(app)
-      .post('/api/contracts/upload')
-      .set('Authorization', `Bearer ${authToken}`)
+      .post("/api/contracts/upload")
+      .set("Authorization", `Bearer ${authToken}`)
       .send({
-        filename: 'test.pdf',
-        language: 'en',
-        text: 'Contract text',
+        filename: "test.pdf",
+        language: "en",
+        text: "Contract text",
         userId: authenticatedUserId,
         fileSize: 1024,
       });
@@ -242,16 +276,16 @@ describe('GET /api/analysis/:contractId', () => {
 
     const res = await request(app)
       .get(`/api/analysis/${contractId}`)
-      .set('Authorization', `Bearer ${authToken}`);
+      .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.status).toBe('processing');
+    expect(res.body.data.status).toBe("processing");
   });
 
-  test('should return 404 for non-existent contract', async () => {
+  test("should return 404 for non-existent contract", async () => {
     const fakeId = new mongoose.Types.ObjectId().toString();
     const res = await request(app)
       .get(`/api/analysis/${fakeId}`)
-      .set('Authorization', `Bearer ${authToken}`);
+      .set("Authorization", `Bearer ${authToken}`);
     expect(res.status).toBe(404);
   });
 });

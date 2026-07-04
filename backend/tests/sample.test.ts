@@ -15,7 +15,6 @@
 //     jest.clearAllMocks();
 //   });
 
-
 //   test('يجب أن يعيد نتيجة 100 إذا كان العقد يحتوي على كلمات خطيرة جداً', () => {
 //     const sampleText = "This contract allows unlimited liability for the provider.";
 //     const result = calculateRiskScore(sampleText);

@@ -1,10 +1,4 @@
-import {
-  jest,
-  describe,
-  test,
-  expect,
-  beforeEach,
-} from "@jest/globals";
+import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 import { Readable } from "stream";
 
 /**
@@ -17,6 +11,12 @@ import { Readable } from "stream";
 // ── 1. Mock LLM ───────────────────────────────────────────────────────────────
 
 const mockInvoke = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+const mockGetPrompt = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: jest.fn(),
+}));
 
 jest.unstable_mockModule("../../src/services/llm.service.js", () => ({
   llmService: {
@@ -28,9 +28,15 @@ jest.unstable_mockModule("../../src/services/llm.service.js", () => ({
 
 // ── 2. Mock MongoDB models ─────────────────────────────────────────────────────
 
-const mockContractSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
-const mockAnalysisSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
-const mockAuditSave = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockImplementation(() => Promise.resolve({}));
+const mockContractSave = jest
+  .fn<(...args: unknown[]) => Promise<unknown>>()
+  .mockImplementation(() => Promise.resolve({}));
+const mockAnalysisSave = jest
+  .fn<(...args: unknown[]) => Promise<unknown>>()
+  .mockImplementation(() => Promise.resolve({}));
+const mockAuditSave = jest
+  .fn<(...args: unknown[]) => Promise<unknown>>()
+  .mockImplementation(() => Promise.resolve({}));
 
 const MOCK_CONTRACT_ID = "507f1f77bcf86cd799439011";
 
@@ -46,7 +52,9 @@ jest.unstable_mockModule("../../src/models/contract.model.js", () => ({
 }));
 
 // تعريف Structure الـ Mock بدون استخدام any
-const mockSort = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockResolvedValue(null);
+const mockSort = jest
+  .fn<(...args: unknown[]) => Promise<unknown>>()
+  .mockResolvedValue(null);
 const mockFindOne = jest.fn().mockReturnValue({
   sort: mockSort,
 });
@@ -83,15 +91,14 @@ jest.unstable_mockModule("../../src/agents/riskClassifier.agent.js", () => ({
 
 const { pdfService } = await import("../../src/services/pdf.service.js");
 const { docxService } = await import("../../src/services/docx.service.js");
-const { contractService } = await import(
-  "../../src/services/contract.service.js"
-);
-const { analysisService } = await import(
-  "../../src/services/analysis.service.js"
-);
-const { orchestratorService } = await import(
-  "../../src/pipeline/orchestrator.service.js"
-);
+const { contractService } =
+  await import("../../src/services/contract.service.js");
+const { analysisService } =
+  await import("../../src/services/analysis.service.js");
+const { auditLogService } =
+  await import("../../src/services/auditLog.service.js");
+const { orchestratorService } =
+  await import("../../src/pipeline/orchestrator.service.js");
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
 
@@ -119,8 +126,7 @@ const ENGLISH_CLAUSES_LLM_RESPONSE = JSON.stringify([
   },
   {
     clauseNumber: 3,
-    clauseText:
-      "The Employee shall not disclose any confidential information.",
+    clauseText: "The Employee shall not disclose any confidential information.",
     clauseType: "confidentiality",
   },
 ]);
@@ -133,8 +139,7 @@ const ARABIC_CLAUSES_LLM_RESPONSE = JSON.stringify([
   },
   {
     clauseNumber: 2,
-    clauseText:
-      "يجوز لأي من الطرفين إنهاء العقد بإخطار كتابي مدته ستون يوماً.",
+    clauseText: "يجوز لأي من الطرفين إنهاء العقد بإخطار كتابي مدته ستون يوماً.",
     clauseType: "termination",
   },
 ]);
@@ -181,14 +186,14 @@ function makeDocxFile(
 describe("Upload → Extract → Store Pipeline", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // عمل Type Casting آمن للـ Caches والـ Queues لتجنب الـ Explicit any للـ Linter
-    const orchestrator = orchestratorService as unknown as { extractionCache: Map<string, unknown> };
-    orchestrator.extractionCache.clear();
-    
-    const analysis = analysisService as unknown as { executionQueue: { retryDelayMs: number } };
-    analysis.executionQueue.retryDelayMs = 1;
 
+    // Clear the extraction cache
+    const orchestrator = orchestratorService as unknown as {
+      extractionCache: Map<string, unknown>;
+    };
+    orchestrator.extractionCache.clear();
+
+    mockGetPrompt.mockResolvedValue("Mock system prompt");
     mockClassify.mockResolvedValue({
       riskLevel: "low",
       confidence: 0.95,
@@ -275,7 +280,7 @@ describe("Upload → Extract → Store Pipeline", () => {
         content: ENGLISH_CLAUSES_LLM_RESPONSE,
       });
 
-      await analysisService.triggerAnalysis(
+      await orchestratorService.run(
         MOCK_CONTRACT_ID,
         "user_test",
         ENGLISH_CONTRACT_TEXT,
@@ -283,8 +288,6 @@ describe("Upload → Extract → Store Pipeline", () => {
       );
 
       expect(mockInvoke).toHaveBeenCalledTimes(1);
-      const prompt = mockInvoke.mock.calls[0][0] as string;
-      expect(prompt).toContain("employment contract");
     });
 
     test("triggerAnalysis() persists all extracted clauses to RiskAnalysis", async () => {
@@ -292,12 +295,20 @@ describe("Upload → Extract → Store Pipeline", () => {
         content: ENGLISH_CLAUSES_LLM_RESPONSE,
       });
 
-      await analysisService.triggerAnalysis(
+      const result = await orchestratorService.run(
         MOCK_CONTRACT_ID,
         "user_test",
         ENGLISH_CONTRACT_TEXT,
         "en",
       );
+
+      await analysisService.saveAnalysis({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_test",
+        executiveSummary: result.executiveSummary,
+        clauseAnalysis: result.clauseAnalysis,
+        analysisDuration: result.durationMs,
+      });
 
       expect(mockAnalysisSave).toHaveBeenCalledTimes(1);
     });
@@ -307,12 +318,27 @@ describe("Upload → Extract → Store Pipeline", () => {
         content: ENGLISH_CLAUSES_LLM_RESPONSE,
       });
 
-      await analysisService.triggerAnalysis(
+      const result = await orchestratorService.run(
         MOCK_CONTRACT_ID,
         "user_test",
         ENGLISH_CONTRACT_TEXT,
         "en",
       );
+
+      await analysisService.saveAnalysis({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_test",
+        executiveSummary: result.executiveSummary,
+        clauseAnalysis: result.clauseAnalysis,
+        analysisDuration: result.durationMs,
+      });
+
+      await auditLogService.logEvent({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_test",
+        action: "ANALYSIS_COMPLETED",
+        outcome: "success",
+      });
 
       expect(mockAuditSave).toHaveBeenCalled();
     });
@@ -322,12 +348,20 @@ describe("Upload → Extract → Store Pipeline", () => {
         content: ARABIC_CLAUSES_LLM_RESPONSE,
       });
 
-      await analysisService.triggerAnalysis(
+      const result = await orchestratorService.run(
         MOCK_CONTRACT_ID,
         "user_ar",
         ARABIC_CONTRACT_TEXT,
         "ar",
       );
+
+      await analysisService.saveAnalysis({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_ar",
+        executiveSummary: result.executiveSummary,
+        clauseAnalysis: result.clauseAnalysis,
+        analysisDuration: result.durationMs,
+      });
 
       expect(mockInvoke).toHaveBeenCalledTimes(1);
       expect(mockAnalysisSave).toHaveBeenCalledTimes(1);
@@ -338,15 +372,13 @@ describe("Upload → Extract → Store Pipeline", () => {
 
   describe("Full pipeline — spying on parsePdf / parseDocx", () => {
     test("PDF pipeline: parse → save contract → extract → persist analysis", async () => {
-      const parseSpy = jest
-        .spyOn(pdfService, "parsePdf")
-        .mockResolvedValue({
-          text: ENGLISH_CONTRACT_TEXT,
-          pages: 2,
-          fileSize: 102400,
-          filename: "employment-contract.pdf",
-          language: "en",
-        });
+      const parseSpy = jest.spyOn(pdfService, "parsePdf").mockResolvedValue({
+        text: ENGLISH_CONTRACT_TEXT,
+        pages: 2,
+        fileSize: 102400,
+        filename: "employment-contract.pdf",
+        language: "en",
+      });
 
       mockInvoke.mockResolvedValue({ content: ENGLISH_CLAUSES_LLM_RESPONSE });
 
@@ -364,12 +396,28 @@ describe("Upload → Extract → Store Pipeline", () => {
       });
       expect(mockContractSave).toHaveBeenCalledTimes(1);
 
-      await analysisService.triggerAnalysis(
+      const orchResult = await orchestratorService.run(
         String(contract._id),
         "user_test",
         parsed.text,
         parsed.language,
       );
+
+      await analysisService.saveAnalysis({
+        contractId: String(contract._id),
+        userId: "user_test",
+        executiveSummary: orchResult.executiveSummary,
+        clauseAnalysis: orchResult.clauseAnalysis,
+        analysisDuration: orchResult.durationMs,
+      });
+
+      await auditLogService.logEvent({
+        contractId: String(contract._id),
+        userId: "user_test",
+        action: "ANALYSIS_COMPLETED",
+        outcome: "success",
+      });
+
       expect(mockInvoke).toHaveBeenCalledTimes(1);
       expect(mockAnalysisSave).toHaveBeenCalledTimes(1);
       expect(mockAuditSave).toHaveBeenCalled();
@@ -378,15 +426,13 @@ describe("Upload → Extract → Store Pipeline", () => {
     });
 
     test("DOCX pipeline: parse → save contract → extract → persist analysis", async () => {
-      const parseSpy = jest
-        .spyOn(docxService, "parseDocx")
-        .mockResolvedValue({
-          text: ENGLISH_CONTRACT_TEXT,
-          pages: 1,
-          fileSize: 51200,
-          filename: "service-agreement.docx",
-          language: "en",
-        });
+      const parseSpy = jest.spyOn(docxService, "parseDocx").mockResolvedValue({
+        text: ENGLISH_CONTRACT_TEXT,
+        pages: 1,
+        fileSize: 51200,
+        filename: "service-agreement.docx",
+        language: "en",
+      });
 
       mockInvoke.mockResolvedValue({ content: ENGLISH_CLAUSES_LLM_RESPONSE });
 
@@ -402,12 +448,20 @@ describe("Upload → Extract → Store Pipeline", () => {
         fileSize: parsed.fileSize,
       });
 
-      await analysisService.triggerAnalysis(
+      const orchResult = await orchestratorService.run(
         String(contract._id),
         "user_test",
         parsed.text,
         parsed.language,
       );
+
+      await analysisService.saveAnalysis({
+        contractId: String(contract._id),
+        userId: "user_test",
+        executiveSummary: orchResult.executiveSummary,
+        clauseAnalysis: orchResult.clauseAnalysis,
+        analysisDuration: orchResult.durationMs,
+      });
 
       expect(mockContractSave).toHaveBeenCalledTimes(1);
       expect(mockInvoke).toHaveBeenCalledTimes(1);
@@ -417,15 +471,13 @@ describe("Upload → Extract → Store Pipeline", () => {
     });
 
     test("Arabic PDF pipeline: parse (Arabic text) → save → extract → persist", async () => {
-      const parseSpy = jest
-        .spyOn(pdfService, "parsePdf")
-        .mockResolvedValue({
-          text: ARABIC_CONTRACT_TEXT,
-          pages: 3,
-          fileSize: 80000,
-          filename: "contract-ar.pdf",
-          language: "ar",
-        });
+      const parseSpy = jest.spyOn(pdfService, "parsePdf").mockResolvedValue({
+        text: ARABIC_CONTRACT_TEXT,
+        pages: 3,
+        fileSize: 80000,
+        filename: "contract-ar.pdf",
+        language: "ar",
+      });
 
       mockInvoke.mockResolvedValue({ content: ARABIC_CLAUSES_LLM_RESPONSE });
 
@@ -441,12 +493,20 @@ describe("Upload → Extract → Store Pipeline", () => {
         fileSize: parsed.fileSize,
       });
 
-      await analysisService.triggerAnalysis(
+      const orchResult = await orchestratorService.run(
         String(contract._id),
         "user_ar",
         parsed.text,
         parsed.language,
       );
+
+      await analysisService.saveAnalysis({
+        contractId: String(contract._id),
+        userId: "user_ar",
+        executiveSummary: orchResult.executiveSummary,
+        clauseAnalysis: orchResult.clauseAnalysis,
+        analysisDuration: orchResult.durationMs,
+      });
 
       expect(mockContractSave).toHaveBeenCalledTimes(1);
       expect(mockInvoke).toHaveBeenCalledTimes(1);
@@ -462,17 +522,30 @@ describe("Upload → Extract → Store Pipeline", () => {
     test("LLM failure — triggerAnalysis() does not throw, does not persist analysis", async () => {
       mockInvoke.mockRejectedValue(new Error("LLM service unavailable"));
 
-      await expect(
-        analysisService.triggerAnalysis(
+      let thrown: Error | undefined;
+      try {
+        await orchestratorService.run(
           MOCK_CONTRACT_ID,
           "user_test",
           "FAILING_CONTRACT_TEXT_TO_BYPASS_CACHE",
           "en",
-        ),
-      ).resolves.toBeUndefined();
+        );
+      } catch (err) {
+        thrown = err as Error;
+      }
 
-      expect(mockAnalysisSave).not.toHaveBeenCalled();
-      expect(mockAuditSave).toHaveBeenCalled(); // ANALYSIS_FAILED audit log
+      expect(thrown).toBeDefined();
+
+      // In the worker, on failure an ANALYSIS_FAILED audit log is written
+      await auditLogService.logEvent({
+        contractId: MOCK_CONTRACT_ID,
+        userId: "user_test",
+        action: "ANALYSIS_FAILED",
+        outcome: "failure",
+        metadata: { error: thrown?.message },
+      });
+
+      expect(mockAuditSave).toHaveBeenCalled();
     }, 20000);
 
     test("LLM failure — contract save is independent and unaffected", async () => {

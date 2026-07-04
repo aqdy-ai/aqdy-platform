@@ -35,12 +35,37 @@ export interface AdminStats {
   }
 }
 
+export interface DailyStat {
+  date: string
+  avgFaithfulness: number
+  avgRelevancy: number
+  avgPrecision: number
+  avgRecall: number
+  count: number
+}
 export interface PaymentUser {
   _id: string
   name: string
   email: string
   planSlug: string
   status: string
+}
+
+export interface Evaluation {
+  _id: string
+  analysisId: string
+  faithfulness: number
+  relevancy: number
+  precision: number
+  recall: number
+  reasoning: {
+    faithfulness?: string
+    relevancy?: string
+    precision?: string
+    recall?: string
+    overall?: string
+  }
+  createdAt: string
 }
 
 export interface PaymentRecord {
@@ -124,6 +149,50 @@ export interface ContractsResponse {
   data: AdminContract[]
 }
 
+export interface AdminPlan {
+  _id: string
+  name: string
+  slug: string
+  price: number | null
+  billingCycle: 'monthly' | 'annual'
+  features: string[]
+  analysisLimit: number
+  storageLimit: number
+  creditAllowance: number
+  stripePriceId?: string
+  stripeAnnualPriceId?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreatePlanInput {
+  name: string
+  slug: string
+  price?: number | null
+  billingCycle: 'monthly' | 'annual'
+  features: string[]
+  analysisLimit: number
+  storageLimit: number
+  creditAllowance?: number
+  stripePriceId?: string
+  stripeAnnualPriceId?: string
+  isActive?: boolean
+}
+
+export interface PlansResponse {
+  success: boolean
+  pagination: {
+    page: number
+    pageSize: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+  data: AdminPlan[]
+}
+
 export interface DashboardData {
   totalAccounts: number
   accountsThisWeek: number
@@ -188,9 +257,22 @@ export interface DashboardData {
 }
 
 export const adminApi = {
-  getDashboard: () =>
-    adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard'),
+  getDashboard: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get<{ success: boolean; data: DashboardData }>('/dashboard', {
+      params,
+    }),
   getStats: () => adminClient.get<AdminStats>('/stats'),
+  // Evaluation endpoints
+  getEvaluationStats: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get<{ success: boolean; data: DailyStat[] }>(
+      '/evaluations/stats',
+      { params }
+    ),
+  getLowScores: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get<{ success: boolean; data: Evaluation[] }>(
+      '/evaluations/low-scores',
+      { params }
+    ),
   getPayments: (params?: {
     page?: number
     pageSize?: number
@@ -224,4 +306,117 @@ export const adminApi = {
       `/accounts/${id}`,
       data
     ),
+
+  // ── Role Management (Super Admin only) ──────────────
+  getRoleUsers: () => adminClient.get('/roles'),
+  assignRole: (userId: string, role: string) =>
+    adminClient.post('/roles/assign', { userId, role }),
+  revokeRole: (userId: string) => adminClient.post('/roles/revoke', { userId }),
+  getRoleAuditLog: (params?: {
+    page?: number
+    pageSize?: number
+    action?: string
+  }) => adminClient.get('/roles/audit-log', { params }),
+
+  // ── Support Admin ───────────────────────────────────
+  searchUsers: (q: string, page?: number) =>
+    adminClient.get('/support/users/search', { params: { q, page } }),
+  getSupportUser: (id: string) => adminClient.get(`/support/users/${id}`),
+  verifyUserEmail: (id: string) =>
+    adminClient.post(`/support/users/${id}/verify-email`),
+  triggerPasswordReset: (id: string) =>
+    adminClient.post(`/support/users/${id}/reset-password`),
+  supportCreditAdjustment: (id: string, amount: number, reason: string) =>
+    adminClient.post(`/support/users/${id}/credit-adjustment`, {
+      amount,
+      reason,
+    }),
+
+  // ── Financial Admin ─────────────────────────────────
+  getFinancialOverview: () => adminClient.get('/financial/overview'),
+  getSubscriptions: (params?: {
+    page?: number
+    planSlug?: string
+    search?: string
+  }) => adminClient.get('/financial/subscriptions', { params }),
+  changeSubscription: (id: string, action: string, planSlug?: string) =>
+    adminClient.post(`/financial/subscriptions/${id}/change`, {
+      action,
+      planSlug,
+    }),
+  issueRefund: (userId: string, amount: number, reason: string) =>
+    adminClient.post('/financial/refunds', { userId, amount, reason }),
+  financialCreditAdjustment: (userId: string, amount: number, reason: string) =>
+    adminClient.post('/financial/credits', { userId, amount, reason }),
+  getStripeWebhooks: (params?: {
+    page?: number
+    eventType?: string
+    status?: string
+  }) => adminClient.get('/financial/stripe-webhooks', { params }),
+  getFinancialExport: (dateFrom?: string, dateTo?: string) =>
+    adminClient.get('/financial/export', { params: { dateFrom, dateTo } }),
+
+  // ── Content Admin ───────────────────────────────────
+  getKnowledgeBase: (params?: {
+    search?: string
+    contractType?: string
+    category?: string
+    jurisdiction?: string
+    riskLevel?: string
+    page?: number
+    pageSize?: number
+  }) => adminClient.get('/content/knowledge-base', { params }),
+  getLangfuseMetrics: (params?: { startDate?: string; endDate?: string }) =>
+    adminClient.get('/content/langfuse-metrics', { params }),
+  createKBEntry: (data: Record<string, string>) =>
+    adminClient.post('/content/knowledge-base', data),
+  updateKBEntry: (id: string, data: Record<string, string>) =>
+    adminClient.put(`/content/knowledge-base/${id}`, data),
+  deleteKBEntry: (id: string) =>
+    adminClient.delete(`/content/knowledge-base/${id}`),
+  getPrompts: () => adminClient.get('/content/prompts'),
+  updatePrompt: (agentName: string, prompt: string) =>
+    adminClient.put(`/content/prompts/${agentName}`, { prompt }),
+  // ── Operations Admin ────────────────────────────────
+  getSystemHealth: () => adminClient.get('/operations/system-health'),
+  getPipelineMetrics: () => adminClient.get('/operations/pipeline-metrics'),
+  getInfrastructure: () => adminClient.get('/operations/infrastructure'),
+  getLangfuseTraces: (params?: {
+    status?: string
+    agent?: string
+    page?: number
+  }) => adminClient.get('/operations/langfuse-traces', { params }),
+  getAlerts: () => adminClient.get('/operations/alerts'),
+
+  // ── Plan Management ────────────────────────────────
+  getPlans: (params?: {
+    page?: number
+    pageSize?: number
+    isActive?: string
+    billingCycle?: string
+    search?: string
+  }) => adminClient.get<PlansResponse>('/plans', { params }),
+  getPlan: (id: string) =>
+    adminClient.get<{ success: boolean; data: AdminPlan }>(`/plans/${id}`),
+  createPlan: (data: CreatePlanInput) =>
+    adminClient.post<{ success: boolean; data: AdminPlan }>('/plans', data),
+  updatePlan: (id: string, data: Partial<CreatePlanInput>) =>
+    adminClient.put<{ success: boolean; data: AdminPlan }>(
+      `/plans/${id}`,
+      data
+    ),
+  deletePlan: (id: string) =>
+    adminClient.delete<{ success: boolean; message: string }>(`/plans/${id}`),
+
+  // ── Audit Logs ──────────────────────────────────────
+  getAuditLogs: (params?: {
+    page?: number
+    pageSize?: number
+    action?: string
+    outcome?: string
+    email?: string
+    userId?: string
+    dateFrom?: string
+    dateTo?: string
+  }) => adminClient.get('/audit-logs', { params }),
 }

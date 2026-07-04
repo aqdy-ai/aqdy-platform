@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import { env } from "../config/env.js";
 import { ApiResponse } from "../types/index.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { User, UserZodSchema } from "../models/user.model.js";
@@ -9,9 +10,11 @@ import {
   registerUser,
   logoutUser,
   refreshTokens,
+  loginWithGoogle,
 } from "../services/auth.service.js";
 import { AuthenticatedRequest } from "../types/auth.js";
 import { emailService } from "../services/email.service.js";
+import { logAuth } from "../services/auditLog.service.js";
 
 const registerSchema = UserZodSchema;
 
@@ -43,14 +46,14 @@ export const register = async (
 
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -85,16 +88,18 @@ export const login = async (
 
     const { user, token, refreshToken } = await loginUser(body);
 
+    logAuth.loginSuccess(req, { _id: String(user._id), email: user.email });
+
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -115,6 +120,61 @@ export const login = async (
       message: "Login successful.",
     });
   } catch (error) {
+    logAuth.loginFailed(
+      req,
+      req.body?.email || "unknown",
+      (error as Error).message,
+    );
+    next(error);
+  }
+};
+
+export const googleLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken || typeof idToken !== "string") {
+      throw new AppError(400, "Google ID token is required.");
+    }
+
+    const { user, token, refreshToken } = await loginWithGoogle(idToken);
+
+    logAuth.loginSuccess(req, { _id: String(user._id), email: user.email });
+
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: String(user._id),
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          plan: user.plan,
+          isEmailVerified: user.isEmailVerified,
+        },
+        token,
+      },
+      message: "Login successful.",
+    });
+  } catch (error) {
+    logAuth.loginFailed(req, "unknown", (error as Error).message);
     next(error);
   }
 };
@@ -159,14 +219,14 @@ export const refresh = async (
 
     res.cookie("accessToken", tokens.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -192,6 +252,11 @@ export const me = async (
       throw new AppError(401, "Authentication required.");
     }
 
+    const userWithPasswordInfo = await User.findById(user._id).select(
+      "+passwordHash",
+    );
+    const hasPassword = !!userWithPasswordInfo?.passwordHash;
+
     const response: ApiResponse<{
       user: {
         id: string;
@@ -200,6 +265,7 @@ export const me = async (
         role: string;
         plan: string;
         isEmailVerified: boolean;
+        hasPassword: boolean;
       };
     }> = {
       success: true,
@@ -211,6 +277,7 @@ export const me = async (
           role: user.role,
           plan: user.plan,
           isEmailVerified: user.isEmailVerified,
+          hasPassword,
         },
       },
       message: "Authenticated user information.",
@@ -328,8 +395,16 @@ export const forgotPassword = async (
     });
     const { email } = schema.parse(req.body);
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+    }).select("+passwordHash");
     if (user) {
+      if (user.googleId && !user.passwordHash) {
+        throw new AppError(
+          400,
+          "OAuth account detected. Please login using Google and set a password from your Account Settings.",
+        );
+      }
       const token = crypto.randomBytes(32).toString("hex");
       user.passwordResetToken = token;
       user.passwordResetExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
@@ -359,7 +434,7 @@ export const resetPassword = async (
         .string()
         .min(8)
         .regex(
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]+$/,
           "Password must include uppercase, lowercase, number, and special character",
         ),
     });

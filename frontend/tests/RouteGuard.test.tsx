@@ -135,4 +135,65 @@ describe('AdminRoute (Route Guard)', () => {
     expect(screen.queryByTestId('admin-content')).not.toBeInTheDocument()
     expect(screen.getByText('جاري التحميل...')).toBeInTheDocument()
   })
+
+  it('should allow super_admin to access route restricted to super_admin', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      isAuthenticated: true,
+      user: { id: '1', name: 'Super Admin', email: 'super@test.com', role: 'super_admin' },
+      isInitialLoading: false,
+      login: vi.fn(),
+      register: vi.fn(),
+      logout: vi.fn(),
+      isLoading: false,
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/admin/roles']}>
+        <Routes>
+          <Route
+            path="/admin/roles"
+            element={
+              <AdminRoute allowedRoles={['super_admin']}>
+                <div data-testid="roles-content">Roles Content</div>
+              </AdminRoute>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(screen.getByTestId('roles-content')).toBeInTheDocument()
+  })
+
+  it('should redirect support_admin from route restricted to super_admin', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      isAuthenticated: true,
+      user: { id: '2', name: 'Support Admin', email: 'support@test.com', role: 'support_admin' },
+      isInitialLoading: false,
+      login: vi.fn(),
+      register: vi.fn(),
+      logout: vi.fn(),
+      isLoading: false,
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/admin/roles']}>
+        <Routes>
+          <Route
+            path="/admin/roles"
+            element={
+              <AdminRoute allowedRoles={['super_admin']}>
+                <div data-testid="roles-content">Roles Content</div>
+              </AdminRoute>
+            }
+          />
+          <Route path="/admin" element={<div data-testid="admin-home">Admin Home</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(screen.queryByTestId('roles-content')).not.toBeInTheDocument()
+    expect(screen.getByTestId('admin-home')).toBeInTheDocument()
+  })
 })
+

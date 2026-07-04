@@ -162,6 +162,7 @@ vite.config.ts.timestamp-*
 
 # Secret/config files
 secrets*
+!backend/src/config/secrets.ts
 *.secret
 secrets.json
 credentials.json
@@ -215,3 +216,7 @@ Thumbs.db
 *.pem.enc
 *.key.enc
 
+# Doppler local config (contains your local development service token)
+.doppler/
+
+cdk.out/

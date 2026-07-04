@@ -20,7 +20,8 @@ logger.level = "error";
 // ── Synthetic Contract Generators ────────────────
 
 function generateContractText(kbSize: number): string {
-  const paragraph = "This contract clause constitutes a binding agreement. Either party may terminate it with notice.\n";
+  const paragraph =
+    "This contract clause constitutes a binding agreement. Either party may terminate it with notice.\n";
   return paragraph.repeat(Math.ceil((kbSize * 1024) / paragraph.length));
 }
 
@@ -52,10 +53,10 @@ jest.unstable_mockModule("../../src/config/langfuse.config.js", () => ({
 // ── Latency Simulation Configs ────────────────────
 
 const LATENCY = {
-  EXTRACT_PER_CHUNK: 800,   // ms
+  EXTRACT_PER_CHUNK: 800, // ms
   CLASSIFY_PER_CLAUSE: 400, // ms
-  REDLINE_PER_CLAUSE: 500,  // ms
-  RAG_PER_CLAUSE: 150,      // ms
+  REDLINE_PER_CLAUSE: 500, // ms
+  RAG_PER_CLAUSE: 150, // ms
 };
 
 // Helper to wait
@@ -75,7 +76,9 @@ export async function runBenchmark() {
   ];
 
   for (const tc of testCases) {
-    console.log(`\n▶ Starting Test: ${tc.name} [Size: ${tc.sizeKb}KB, Clauses: ${tc.clauses}]`);
+    console.log(
+      `\n▶ Starting Test: ${tc.name} [Size: ${tc.sizeKb}KB, Clauses: ${tc.clauses}]`,
+    );
     const text = generateContractText(tc.sizeKb);
 
     // Setup simulated latency mocks
@@ -120,15 +123,28 @@ export async function runBenchmark() {
     });
 
     const runStart = Date.now();
-    const result = await orchestratorService.run("bench_contract", "bench_user", text, "en");
+    const result = await orchestratorService.run(
+      "bench_contract",
+      "bench_user",
+      text,
+      "en",
+    );
     const runDuration = Date.now() - runStart;
 
     console.log(`✔ Finished: ${tc.name}`);
     console.log(`  - Total Elapsed Time: ${(runDuration / 1000).toFixed(2)}s`);
-    console.log(`  - Clauses Extracted:  ${result.executiveSummary.totalClauses}`);
-    console.log(`  - Risky Clauses Found: ${result.executiveSummary.riskyClausesCount}`);
-    console.log(`  - Overall Risk Level: ${result.executiveSummary.overallRisk}`);
-    console.log(`  - Processing Speed:  ${(text.length / (runDuration / 1000)).toFixed(0)} chars/sec`);
+    console.log(
+      `  - Clauses Extracted:  ${result.executiveSummary.totalClauses}`,
+    );
+    console.log(
+      `  - Risky Clauses Found: ${result.executiveSummary.riskyClausesCount}`,
+    );
+    console.log(
+      `  - Overall Risk Level: ${result.executiveSummary.overallRisk}`,
+    );
+    console.log(
+      `  - Processing Speed:  ${(text.length / (runDuration / 1000)).toFixed(0)} chars/sec`,
+    );
   }
 
   console.log("\n==================================================");

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { usePermissions } from '../../hooks/usePermissions'
 import { motion } from 'framer-motion'
 import {
   Users,
@@ -16,6 +17,8 @@ import {
   Zap,
   Database,
   Languages,
+  Filter,
+  Calendar,
 } from 'lucide-react'
 import {
   BarChart,
@@ -130,23 +133,45 @@ function timeAgo(dateStr: string, lang: string) {
 export default function AdminDashboard() {
   const { t, i18n } = useTranslation()
   const isRtl = i18n.language === 'ar'
+  const { hasPermission } = usePermissions()
+  const canViewUserData = hasPermission('accounts', 'read')
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [appliedStartDate, setAppliedStartDate] = useState('')
+  const [appliedEndDate, setAppliedEndDate] = useState('')
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(
+    async (sd: string, ed: string) => {
       try {
         setLoading(true)
-        const res = await adminApi.getDashboard()
+        const params: { startDate?: string; endDate?: string } = {}
+        if (sd) params.startDate = sd
+        if (ed) params.endDate = ed
+        const res = await adminApi.getDashboard(
+          Object.keys(params).length ? params : undefined
+        )
         if (res.data.success) setData(res.data.data)
       } catch {
         toast.error(t('admin.error_updating'))
       } finally {
         setLoading(false)
       }
-    }
-    fetchData()
-  }, [t])
+    },
+    [t]
+  )
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData('', '')
+  }, [fetchData])
+
+  const handleFilter = () => {
+    setAppliedStartDate(startDate)
+    setAppliedEndDate(endDate)
+    fetchData(startDate, endDate)
+  }
 
   if (loading) {
     return (
@@ -186,6 +211,83 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* ── Date Filter Bar ── */}
+      <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="admin-start-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            {isRtl ? 'من' : 'From'}:
+          </label>
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="admin-start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="admin-end-date"
+            className="text-muted-foreground text-xs font-semibold"
+          >
+            {isRtl ? 'إلى' : 'To'}:
+          </label>
+          <div className="relative">
+            <Calendar
+              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+              onClick={(e) => {
+                const input = e.currentTarget.parentElement?.querySelector(
+                  'input[type="date"]'
+                ) as HTMLInputElement | null
+                input?.showPicker()
+              }}
+            />
+            <input
+              id="admin-end-date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
+            />
+          </div>
+        </div>
+        <button
+          onClick={handleFilter}
+          className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition-colors hover:opacity-90"
+        >
+          <Filter size={12} />
+          {t('admin.filter', { defaultValue: 'Filter' })}
+        </button>
+        {(appliedStartDate || appliedEndDate) && (
+          <button
+            onClick={() => {
+              setStartDate('')
+              setEndDate('')
+              setAppliedStartDate('')
+              setAppliedEndDate('')
+              fetchData('', '')
+            }}
+            className="text-muted-foreground hover:text-foreground text-xs font-semibold underline"
+          >
+            {t('admin.clear_filters', { defaultValue: 'Clear filters' })}
+          </button>
+        )}
+      </div>
+
       {/* ── Section 1: Business Overview ── */}
       <SectionHeading
         title={isRtl ? 'نظرة عامة على الأعمال' : 'BUSINESS OVERVIEW'}
@@ -322,24 +424,22 @@ export default function AdminDashboard() {
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <ReLineChart data={data.mrrTrend}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
                 formatter={(value: number) => [formatUSD(value), 'MRR']}
               />
@@ -362,25 +462,23 @@ export default function AdminDashboard() {
           </p>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data.weeklySignups}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="week"
-                tick={{ fontSize: 10 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 tickFormatter={(v) => v.slice(5)}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
               />
               <Bar dataKey="count" radius={[6, 6, 0, 0]} fill={COLORS.primary}>
@@ -412,25 +510,23 @@ export default function AdminDashboard() {
           </p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={data.analysesPerDay}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 9 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 tickFormatter={(v) => v.slice(8)}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
                 labelFormatter={(v) => v}
               />
@@ -449,25 +545,23 @@ export default function AdminDashboard() {
           </p>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={data.creditsPerDay}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 9 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
                 tickFormatter={(v) => v.slice(8)}
               />
               <YAxis
-                tick={{ fontSize: 11 }}
-                stroke="hsl(var(--muted-foreground))"
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                stroke="var(--muted-foreground)"
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
                 labelFormatter={(v) => v}
               />
@@ -521,8 +615,9 @@ export default function AdminDashboard() {
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid hsl(var(--border))',
-                  background: 'hsl(var(--card))',
+                  border: '1px solid var(--border)',
+                  background: 'var(--card)',
+                  color: 'var(--foreground)',
                 }}
               />
               <Legend
@@ -640,45 +735,47 @@ export default function AdminDashboard() {
         title={isRtl ? 'المستخدمين والنشاط' : 'USERS & ACTIVITY'}
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
-          <h4 className="text-foreground mb-4 text-sm font-bold">
-            {isRtl
-              ? 'أفضل المستخدمين استهلاكاً للاعتمادات'
-              : 'Top Users by Credits Consumed'}
-          </h4>
-          <div className="divide-border/40 divide-y">
-            {data.topCreditConsumers.length === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm font-semibold">
-                {t('admin.no_data')}
-              </p>
-            ) : (
-              data.topCreditConsumers.map((u, i) => (
-                <div key={u._id} className="flex items-center gap-3 py-3">
-                  <span className="text-muted-foreground w-5 text-center text-xs font-bold">
-                    {i + 1}
-                  </span>
-                  <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
-                    {u.name.charAt(0).toUpperCase()}
+        {canViewUserData && (
+          <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
+            <h4 className="text-foreground mb-4 text-sm font-bold">
+              {isRtl
+                ? 'أفضل المستخدمين استهلاكاً للاعتمادات'
+                : 'Top Users by Credits Consumed'}
+            </h4>
+            <div className="divide-border/40 divide-y">
+              {data.topCreditConsumers.length === 0 ? (
+                <p className="text-muted-foreground py-6 text-center text-sm font-semibold">
+                  {t('admin.no_data')}
+                </p>
+              ) : (
+                data.topCreditConsumers.map((u, i) => (
+                  <div key={u._id} className="flex items-center gap-3 py-3">
+                    <span className="text-muted-foreground w-5 text-center text-xs font-bold">
+                      {i + 1}
+                    </span>
+                    <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
+                      {u.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-foreground truncate text-sm font-bold">
+                        {u.name}
+                      </p>
+                      <p className="text-muted-foreground truncate text-xs">
+                        {u.email}
+                      </p>
+                    </div>
+                    <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-bold capitalize">
+                      {u.planSlug}
+                    </span>
+                    <span className="text-foreground text-sm font-black">
+                      {formatNumber(u.credits)}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-foreground truncate text-sm font-bold">
-                      {u.name}
-                    </p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {u.email}
-                    </p>
-                  </div>
-                  <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-bold capitalize">
-                    {u.planSlug}
-                  </span>
-                  <span className="text-foreground text-sm font-black">
-                    {formatNumber(u.credits)}
-                  </span>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <div className="flex flex-col gap-6">
           <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
             <h4 className="text-foreground mb-4 text-sm font-bold">
@@ -821,62 +918,64 @@ export default function AdminDashboard() {
         }
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
-          <h4 className="text-foreground mb-4 text-sm font-bold">
-            {isRtl ? 'آخر المدفوعات' : 'Recent Payments'}
-          </h4>
-          <div className="divide-border/40 divide-y">
-            {data.recentPayments.length === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm font-semibold">
-                {t('admin.no_data')}
-              </p>
-            ) : (
-              data.recentPayments.map((p) => (
-                <div key={p._id} className="flex items-center gap-3 py-3">
-                  <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
-                    {p.user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-foreground truncate text-sm font-bold">
-                      {p.user.name}
-                    </p>
-                    <p className="text-muted-foreground truncate text-xs">
-                      {p.user.planSlug || ''}
-                    </p>
-                  </div>
-                  <span className="text-foreground text-sm font-black">
-                    {p.amount.toLocaleString()} {p.currency}
-                  </span>
-                  {p.status === 'succeeded' ? (
-                    <CheckCircle2
-                      size={16}
-                      className="shrink-0 text-emerald-500"
-                    />
-                  ) : p.status === 'failed' ? (
-                    <XCircle size={16} className="shrink-0 text-rose-500" />
-                  ) : (
-                    <Clock size={16} className="shrink-0 text-amber-500" />
-                  )}
-                  <span
-                    className={`text-xs font-bold ${p.status === 'succeeded' ? 'text-emerald-500' : p.status === 'failed' ? 'text-rose-500' : 'text-amber-500'}`}
-                  >
-                    {p.status === 'succeeded'
-                      ? isRtl
-                        ? 'مدفوع'
-                        : 'Paid'
-                      : p.status === 'failed'
+        {canViewUserData && (
+          <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
+            <h4 className="text-foreground mb-4 text-sm font-bold">
+              {isRtl ? 'آخر المدفوعات' : 'Recent Payments'}
+            </h4>
+            <div className="divide-border/40 divide-y">
+              {data.recentPayments.length === 0 ? (
+                <p className="text-muted-foreground py-6 text-center text-sm font-semibold">
+                  {t('admin.no_data')}
+                </p>
+              ) : (
+                data.recentPayments.map((p) => (
+                  <div key={p._id} className="flex items-center gap-3 py-3">
+                    <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-black">
+                      {p.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-foreground truncate text-sm font-bold">
+                        {p.user.name}
+                      </p>
+                      <p className="text-muted-foreground truncate text-xs">
+                        {p.user.planSlug || ''}
+                      </p>
+                    </div>
+                    <span className="text-foreground text-sm font-black">
+                      {p.amount.toLocaleString()} {p.currency}
+                    </span>
+                    {p.status === 'succeeded' ? (
+                      <CheckCircle2
+                        size={16}
+                        className="shrink-0 text-emerald-500"
+                      />
+                    ) : p.status === 'failed' ? (
+                      <XCircle size={16} className="shrink-0 text-rose-500" />
+                    ) : (
+                      <Clock size={16} className="shrink-0 text-amber-500" />
+                    )}
+                    <span
+                      className={`text-xs font-bold ${p.status === 'succeeded' ? 'text-emerald-500' : p.status === 'failed' ? 'text-rose-500' : 'text-amber-500'}`}
+                    >
+                      {p.status === 'succeeded'
                         ? isRtl
-                          ? 'فاشل'
-                          : 'Failed'
-                        : isRtl
-                          ? 'معلق'
-                          : 'Pending'}
-                  </span>
-                </div>
-              ))
-            )}
+                          ? 'مدفوع'
+                          : 'Paid'
+                        : p.status === 'failed'
+                          ? isRtl
+                            ? 'فاشل'
+                            : 'Failed'
+                          : isRtl
+                            ? 'معلق'
+                            : 'Pending'}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <div className="border-border/40 bg-card/30 rounded-3xl border p-6 shadow-sm">
           <h4 className="text-foreground mb-4 text-sm font-bold">
             {isRtl ? 'حالة النظام' : 'System Status'}

@@ -7,7 +7,8 @@ jest.unstable_mockModule("../../src/models/auditLog.model.js", () => ({
   AuditLog: jest.fn().mockImplementation(() => ({ save: mockSave })),
 }));
 
-const { AuditLogService } = await import("../../src/services/auditLog.service.js");
+const { AuditLogService } =
+  await import("../../src/services/auditLog.service.js");
 const { AuditLog } = await import("../../src/models/auditLog.model.js");
 
 (AuditLog as any).find = mockFind;

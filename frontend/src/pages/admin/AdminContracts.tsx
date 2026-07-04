@@ -152,25 +152,25 @@ const AdminContracts = () => {
     switch (risk) {
       case 'critical':
         return {
-          color: 'bg-red-500/10 text-red-600',
+          color: 'bg-red-500/10 text-red-600 dark:text-red-200',
           icon: <ShieldAlert className="h-3 w-3" />,
           label: isRtl ? 'حرج' : 'Critical',
         }
       case 'high':
         return {
-          color: 'bg-rose-500/10 text-rose-500',
+          color: 'bg-rose-500/10 text-rose-500 dark:text-rose-200',
           icon: <AlertTriangle className="h-3 w-3" />,
           label: isRtl ? 'عالي' : 'High',
         }
       case 'medium':
         return {
-          color: 'bg-amber-500/10 text-amber-600',
+          color: 'bg-amber-500/10 text-amber-600 dark:text-amber-200',
           icon: <AlertTriangle className="h-3 w-3" />,
           label: isRtl ? 'متوسط' : 'Medium',
         }
       case 'low':
         return {
-          color: 'bg-emerald-500/10 text-emerald-500',
+          color: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-200',
           icon: <CheckCircle2 className="h-3 w-3" />,
           label: isRtl ? 'منخفض' : 'Low',
         }
@@ -259,7 +259,7 @@ const AdminContracts = () => {
               setPage(1)
             }}
             data-testid="status-filter"
-            className="bg-background/50 border-border/50 focus:border-primary text-foreground min-w-[140px] cursor-pointer appearance-none rounded-xl border py-2.5 pr-10 pl-4 text-sm transition-all outline-none"
+            className="bg-background/50 border-border/50 focus:border-primary text-foreground min-w-[140px] cursor-pointer appearance-none rounded-xl border py-2.5 ps-4 pe-10 text-sm transition-all outline-none"
           >
             <option value="">{isRtl ? 'كل الحالات' : 'All Statuses'}</option>
             <option value="analyzed">
@@ -270,12 +270,20 @@ const AdminContracts = () => {
             </option>
             <option value="failed">{isRtl ? 'فشل' : 'Failed'}</option>
           </select>
-          <ChevronDown className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
+          <ChevronDown className="text-muted-foreground pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2" />
         </div>
 
         {/* Date From */}
         <div className="relative">
-          <Calendar className="text-muted-foreground/60 pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Calendar
+            className="text-muted-foreground/60 absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+            onClick={(e) => {
+              const input = e.currentTarget.parentElement?.querySelector(
+                'input[type="date"]'
+              ) as HTMLInputElement | null
+              input?.showPicker()
+            }}
+          />
           <input
             type="date"
             value={dateFrom}
@@ -290,7 +298,15 @@ const AdminContracts = () => {
 
         {/* Date To */}
         <div className="relative">
-          <Calendar className="text-muted-foreground/60 pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Calendar
+            className="text-muted-foreground/60 absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
+            onClick={(e) => {
+              const input = e.currentTarget.parentElement?.querySelector(
+                'input[type="date"]'
+              ) as HTMLInputElement | null
+              input?.showPicker()
+            }}
+          />
           <input
             type="date"
             value={dateTo}
@@ -436,7 +452,7 @@ const AdminContracts = () => {
                       {/* Risk Level */}
                       <td className="px-6 py-4.5">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${riskBadge.color}`}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap ${riskBadge.color}`}
                           data-testid="risk-badge"
                         >
                           {riskBadge.icon}

@@ -1,5 +1,12 @@
 import "dotenv/config";
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from "@jest/globals";
 import mongoose from "mongoose";
 
 import { Contract } from "../../src/models/contract.model.js";
@@ -139,7 +146,9 @@ describe("Integration: AnalysisService", () => {
 
     expect(analysis._id).toBeDefined();
 
-    const found = await analysisService.getAnalysisByContractId(String(contract._id));
+    const found = await analysisService.getAnalysisByContractId(
+      String(contract._id),
+    );
     expect(found?.executiveSummary.overallRisk).toBe("high");
     expect(found?.clauseAnalysis).toHaveLength(1);
   });

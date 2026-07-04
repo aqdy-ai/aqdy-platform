@@ -1,7 +1,15 @@
 import { z } from "zod";
-import dotenv from "dotenv";
 
-dotenv.config();
+let loadSecrets: () => Promise<void> = async () => {};
+
+try {
+  const secretsModule = await import("./secrets.js");
+  loadSecrets = secretsModule.loadSecrets;
+} catch {
+  console.warn("secrets.js not found — falling back to process.env only");
+}
+
+await loadSecrets();
 
 /** Dummy values for required vars when running under Jest (CI may leave secrets empty). */
 const TEST_ENV_DEFAULTS: Record<string, string> = {
@@ -16,6 +24,11 @@ const TEST_ENV_DEFAULTS: Record<string, string> = {
   STRIPE_SECRET_KEY: "test",
   STRIPE_PUBLISHABLE_KEY: "test",
   STRIPE_WEBHOOK_SECRET: "test",
+  SMTP_HOST: "test",
+  SMTP_PORT: "587",
+  SMTP_USER: "test",
+  SMTP_PASS: "test",
+  SMTP_FROM: "test@test.com",
 };
 
 if (process.env.NODE_ENV === "test" || process.env.JEST_WORKER_ID) {
@@ -55,7 +68,18 @@ const envSchema = z.object({
     .min(1, "STRIPE_PUBLISHABLE_KEY is required"),
   STRIPE_WEBHOOK_SECRET: z.string().min(1, "STRIPE_WEBHOOK_SECRET is required"),
 
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().default("587"),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().default("no-reply@aqdy.eg"),
+
+  REDIS_URL: z.string().default("redis://localhost:6379"),
+
+  CLAUSE_ANALYSIS_CONCURRENCY: z.coerce.number().positive().default(5),
+
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
+  GOOGLE_CLIENT_ID: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

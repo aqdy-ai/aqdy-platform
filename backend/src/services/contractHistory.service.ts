@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { Contract, IContract } from "../models/contract.model.js";
 import { RiskAnalysis } from "../models/riskAnalysis.model.js";
 import { logger } from "../utils/logger.js";
@@ -198,7 +197,7 @@ export class ContractHistoryService {
   // تحديد الـ status
   private determineStatus(
     contractId: string,
-    analysisMap: Map<string, any>,
+    analysisMap: Map<string, Record<string, unknown>>,
   ): "analyzed" | "pending" | "failed" {
     const analysis = analysisMap.get(contractId);
     if (!analysis) return "pending";
@@ -210,7 +209,10 @@ export class ContractHistoryService {
   async getContractDetail(
     contractId: string,
     userId: string,
-  ): Promise<{ contract: IContract; analysis: any | null } | null> {
+  ): Promise<{
+    contract: IContract;
+    analysis: Record<string, unknown> | null;
+  } | null> {
     const contract = await Contract.findOne({
       _id: contractId,
       userId,

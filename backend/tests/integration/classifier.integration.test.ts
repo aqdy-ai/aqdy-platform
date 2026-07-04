@@ -4,6 +4,12 @@ import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 
 const mockInvoke = jest.fn() as jest.Mock;
 const mockSearchRecords = jest.fn() as jest.Mock;
+const mockGetPrompt = jest.fn() as jest.Mock;
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: jest.fn(),
+}));
 
 jest.unstable_mockModule("@langchain/google-genai", () => {
   return {
@@ -24,9 +30,8 @@ jest.unstable_mockModule("@pinecone-database/pinecone", () => {
 });
 
 // Import AFTER mocking
-const { RiskClassifierAgent } = await import(
-  "../../src/agents/riskClassifier.agent.js"
-);
+const { RiskClassifierAgent } =
+  await import("../../src/agents/riskClassifier.agent.js");
 
 jest.setTimeout(30000);
 
@@ -184,6 +189,7 @@ describe("RiskClassifierAgent — Integration Tests for Accuracy", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetPrompt.mockResolvedValue('Mock system prompt for testing');
     mockSearchRecords.mockResolvedValue({ result: { hits: [] } });
     agent = new RiskClassifierAgent();
   });
@@ -212,6 +218,8 @@ describe("RiskClassifierAgent — Integration Tests for Accuracy", () => {
 
   test("should handle invalid JSON response from LLM gracefully", async () => {
     mockInvoke.mockResolvedValueOnce({ content: "invalid json" });
-    await expect(agent.classify("some text", "some-type", "en")).rejects.toThrow("Failed to parse JSON from LLM response");
+    await expect(
+      agent.classify("some text", "some-type", "en"),
+    ).rejects.toThrow("Failed to parse JSON from LLM response");
   });
 });

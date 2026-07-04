@@ -6,6 +6,7 @@ import { useAuth } from '../src/hooks/useAuth'
 import { authApi } from '../src/services/authApi'
 import { toast } from 'sonner'
 import { AxiosError } from 'axios'
+import { registerSchema, loginSchema } from '../src/hooks/useAuth'
 
 const mockNavigate = vi.fn()
 const mockSetUser = vi.fn()
@@ -14,6 +15,10 @@ vi.mock('../src/services/authApi', () => ({
   authApi: {
     login: vi.fn(),
     register: vi.fn(),
+    loginWithGoogle: vi.fn(),
+    forgotPassword: vi.fn(),
+    resetPassword: vi.fn(),
+    logout: vi.fn(),
   },
 }))
 
@@ -53,6 +58,11 @@ const wrapper = ({ children }: { children: ReactNode }) => {
 describe('useAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+
+    vi.mocked(authApi.forgotPassword).mockResolvedValue({} as any)
+    vi.mocked(authApi.logout).mockResolvedValue({} as any)
+    vi.mocked(authApi.resetPassword).mockResolvedValue({} as any)
+    vi.mocked(authApi.loginWithGoogle).mockResolvedValue({} as any)
   })
 
   it('should login successfully', async () => {
@@ -176,48 +186,37 @@ describe('useAuth', () => {
     expect(toast.error).toHaveBeenCalled()
   })
 
-  it('should show forgot password toast', () => {
+  it('should show forgot password toast', async () => {
     const { result } = renderHook(() => useAuth(), {
       wrapper,
     })
 
-    act(() => {
-      result.current.forgotPassword()
+    await act(async () => {
+      await result.current.forgotPassword('john@test.com')
     })
 
     expect(toast.success).toHaveBeenCalledWith('auth.forgotPasswordSuccess')
   })
 
-  it('should reject invalid registration data', async () => {
-    const { result } = renderHook(() => useAuth(), {
-      wrapper,
+
+  it('should reject invalid registration data', () => {
+    const result = registerSchema.safeParse({
+      name: 'ab',
+      email: 'bad-email',
+      password: '123',
+      confirmPassword: '123',
     })
 
-    await act(async () => {
-      await result.current.register({
-        name: 'ab',
-        email: 'bad-email',
-        password: '123',
-        confirmPassword: '123',
-      } as any)
-    })
-
-    expect(authApi.register).not.toHaveBeenCalled()
+    expect(result.success).toBe(false)
   })
 
-  it('should reject invalid login data', async () => {
-    const { result } = renderHook(() => useAuth(), {
-      wrapper,
+  it('should reject invalid login data', () => {
+    const result = loginSchema.safeParse({
+      email: 'bad-email',
+      password: '123',
     })
 
-    await act(async () => {
-      await result.current.login({
-        email: 'bad-email',
-        password: '123',
-      })
-    })
-
-    expect(authApi.login).not.toHaveBeenCalled()
+    expect(result.success).toBe(false)
   })
 
   it('should redirect admin to /admin on login', async () => {
@@ -248,10 +247,10 @@ describe('useAuth', () => {
 
     expect(authApi.login).toHaveBeenCalled()
     expect(mockSetUser).toHaveBeenCalled()
-    expect(mockNavigate).toHaveBeenCalledWith('/admin', { replace: true })
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/analytics', { replace: true })
   })
 
-  it('should redirect admin to /admin on register', async () => {
+  it('should redirect admin to /admin/analytics on register', async () => {
     vi.mocked(authApi.register).mockResolvedValueOnce({
       data: {
         success: true,
@@ -281,7 +280,178 @@ describe('useAuth', () => {
 
     expect(authApi.register).toHaveBeenCalled()
     expect(mockSetUser).toHaveBeenCalled()
-    expect(mockNavigate).toHaveBeenCalledWith('/admin', { replace: true })
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/analytics', { replace: true })
+  })
+
+  it('should login with Google successfully', async () => {
+    vi.mocked(authApi.loginWithGoogle).mockResolvedValueOnce({
+      data: {
+        data: {
+          user: {
+            id: '1',
+            name: 'Google User',
+            email: 'google@test.com',
+            role: 'user',
+          },
+        },
+      },
+    } as any)
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await act(async () => {
+      await result.current.loginWithGoogle('google-token')
+    })
+
+    expect(authApi.loginWithGoogle).toHaveBeenCalledWith(
+      'google-token'
+    )
+
+    expect(mockSetUser).toHaveBeenCalled()
+
+    expect(mockNavigate).toHaveBeenCalledWith('/', {
+      replace: true,
+    })
+
+    expect(toast.success).toHaveBeenCalledWith(
+      'auth.loginSuccess'
+    )
+  })
+
+  it('should redirect admin after Google login', async () => {
+    vi.mocked(authApi.loginWithGoogle).mockResolvedValueOnce({
+      data: {
+        data: {
+          user: {
+            role: 'admin',
+          },
+        },
+      },
+    } as any)
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper,
+    })
+
+    await act(async () => {
+      await result.current.loginWithGoogle('token')
+    })
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/admin/analytics',
+      { replace: true }
+    )
+  })
+
+  it('should send forgot password email', async () => {
+    vi.mocked(authApi.forgotPassword).mockResolvedValueOnce({} as any)
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper,
+    })
+
+    await act(async () => {
+      await result.current.forgotPassword(
+        'john@test.com'
+      )
+    })
+
+    expect(authApi.forgotPassword).toHaveBeenCalledWith(
+      'john@test.com'
+    )
+
+    expect(toast.success).toHaveBeenCalledWith(
+      'auth.forgotPasswordSuccess'
+    )
+  })
+
+  it('should show oauthOnly error', async () => {
+    const error = new AxiosError(
+      '',
+      '',
+      undefined,
+      undefined,
+      {
+        status: 400,
+        statusText: '',
+        headers: {},
+        config: {} as any,
+        data: {
+          error: 'OAuth account detected',
+        },
+      }
+    )
+
+    vi.mocked(authApi.forgotPassword)
+      .mockRejectedValueOnce(error)
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper,
+    })
+
+    await act(async () => {
+      await result.current.forgotPassword(
+        'google@test.com'
+      )
+    })
+
+    expect(toast.error).toHaveBeenCalledWith(
+      'auth.errors.oauthOnly'
+    )
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/login'
+    )
+  })
+
+  it('should reset password successfully', async () => {
+    vi.mocked(authApi.resetPassword)
+      .mockResolvedValueOnce({} as any)
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper,
+    })
+
+    await act(async () => {
+      await result.current.resetPassword(
+        'token',
+        'Password123!'
+      )
+    })
+
+    expect(authApi.resetPassword).toHaveBeenCalledWith(
+      'token',
+      'Password123!'
+    )
+
+    expect(toast.success).toHaveBeenCalledWith(
+      'auth.passwordResetSuccess'
+    )
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/login'
+    )
+  })
+
+  it('should logout successfully', async () => {
+    vi.mocked(authApi.logout)
+      .mockResolvedValueOnce({} as any)
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper,
+    })
+
+    await act(async () => {
+      await result.current.logout()
+    })
+
+    expect(authApi.logout).toHaveBeenCalled()
+
+    expect(mockSetUser).toHaveBeenCalledWith(null)
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/login'
+    )
   })
 })
 

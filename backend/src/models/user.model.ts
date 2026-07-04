@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 import mongoose, { Document, Schema } from "mongoose";
 import { z } from "zod";
+import { ALL_ROLES, type UserRole as ConfigUserRole } from "../config/roles.js";
 
-export type UserRole = "user" | "admin";
+export type UserRole = ConfigUserRole;
 export type UserStatus = "active" | "suspended" | "deleted";
 
 export const UserZodSchema = z.object({
@@ -19,10 +20,10 @@ export const UserZodSchema = z.object({
     .string()
     .min(8)
     .regex(
-      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#_-])[A-Za-z\d@$!%*?&#_-]/,
       "Password must include uppercase, lowercase, number, and special character",
     ),
-  role: z.enum(["user", "admin"]).default("user"),
+  role: z.enum(ALL_ROLES).default("user"),
   plan: z.enum(["free", "pro", "enterprise"]).default("free"),
   passwordResetToken: z.string().optional(),
   passwordResetExpiresAt: z.date().optional(),
@@ -40,7 +41,8 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  passwordHash: string;
+  passwordHash?: string;
+  googleId?: string;
   role: UserRole;
   plan: string;
   planSlug: string;
@@ -70,8 +72,9 @@ const UserSchema = new Schema<IUser>(
       lowercase: true,
       index: true,
     },
-    passwordHash: { type: String, required: true, select: false },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
+    passwordHash: { type: String, select: false },
+    googleId: { type: String, unique: true, sparse: true, index: true },
+    role: { type: String, enum: ALL_ROLES, default: "user" },
     plan: { type: String, required: true, default: "free" },
     passwordResetToken: { type: String },
     passwordResetExpiresAt: { type: Date },
@@ -150,6 +153,9 @@ UserSchema.pre<IUser>("validate", async function () {
 });
 
 UserSchema.methods.verifyPassword = async function (password: string) {
+  if (!this.passwordHash) {
+    return false;
+  }
   return bcrypt.compare(password, this.passwordHash);
 };
 

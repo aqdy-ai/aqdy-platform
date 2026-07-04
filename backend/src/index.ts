@@ -31,16 +31,32 @@ import adminStatsRouter from "./routes/admin.stats.route.js";
 import adminDashboardRouter from "./routes/admin.dashboard.route.js";
 import adminPaymentsRouter from "./routes/admin.payments.route.js";
 import adminContractsRouter from "./routes/admin.contracts.route.js";
+import evaluationRouter from "./routes/evaluation.route.js";
+import feedbackRouter from "./routes/feedback.route.js";
+import adminRolesRouter from "./routes/admin.roles.route.js";
+import adminSupportRouter from "./routes/admin.support.route.js";
+import adminFinancialRouter from "./routes/admin.financial.route.js";
+import adminContentRouter from "./routes/admin.content.route.js";
+import adminOperationsRouter from "./routes/admin.operations.route.js";
+import adminPlansRouter from "./routes/admin.plans.route.js";
 import {
   authenticateJwt,
   requireEmailVerified,
 } from "./middlewares/auth.middleware.js";
-
+import {
+  analysisWorker,
+  closeAnalysisWorker,
+  closeAnalysisQueue,
+} from "./queue/index.js";
+import { closeRedis } from "./config/redis.config.js";
 // Initialize Langfuse observability
 initializeLangfuse();
 
 // Initialize Database
 connectDB();
+
+// Start BullMQ worker for background analysis jobs
+logger.info("Starting BullMQ analysis worker...");
 
 const app: Application = express();
 
@@ -68,7 +84,12 @@ app.use("/api", healthRouter);
 app.use("/api/upload", authenticateJwt, requireEmailVerified, uploadRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/account", authenticateJwt, requireEmailVerified, accountRouter);
-app.use("/api/contracts", authenticateJwt, requireEmailVerified, contractRouter);
+app.use(
+  "/api/contracts",
+  authenticateJwt,
+  requireEmailVerified,
+  contractRouter,
+);
 app.use("/api/analysis", authenticateJwt, requireEmailVerified, analysisRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/payments", paymentRouter);
@@ -78,6 +99,15 @@ app.use("/api/admin/stats", adminStatsRouter);
 app.use("/api/admin/dashboard", adminDashboardRouter);
 app.use("/api/admin/payments", adminPaymentsRouter);
 app.use("/api/admin/contracts", adminContractsRouter);
+app.use("/api/admin/evaluations", evaluationRouter);
+app.use("/api/feedback", feedbackRouter);
+app.use("/api/admin/feedback", feedbackRouter);
+app.use("/api/admin/roles", adminRolesRouter);
+app.use("/api/admin/support", adminSupportRouter);
+app.use("/api/admin/financial", adminFinancialRouter);
+app.use("/api/admin/content", adminContentRouter);
+app.use("/api/admin/operations", adminOperationsRouter);
+app.use("/api/admin/plans", adminPlansRouter);
 app.use("/api/plans", plansRouter);
 
 // Use Swagger UI
@@ -102,8 +132,17 @@ if (env.NODE_ENV !== "test") {
 const gracefulShutdown = async () => {
   logger.info("Shutting down gracefully...");
 
+  // Close BullMQ worker (stop accepting new jobs)
+  await closeAnalysisWorker();
+
   // Flush Langfuse traces
   await flushLangfuseTraces();
+
+  // Close BullMQ queue
+  await closeAnalysisQueue();
+
+  // Close Redis connection
+  await closeRedis();
 
   // Close server if it was started
   if (server && typeof server.close === "function") {

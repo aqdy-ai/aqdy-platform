@@ -2,7 +2,15 @@ import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 
 // ── Mock Setup ───────────────────────────────────
 
-const mockInvoke = jest.fn() as jest.Mock;
+const mockGetPrompt = jest.fn() as any;
+const mockSetFallback = jest.fn() as any;
+
+jest.unstable_mockModule("../../src/services/prompt.service.js", () => ({
+  getPrompt: mockGetPrompt,
+  setFallback: mockSetFallback,
+}));
+
+const mockInvoke = jest.fn() as any;
 
 jest.unstable_mockModule("@langchain/google-genai", () => {
   return {
@@ -13,14 +21,18 @@ jest.unstable_mockModule("@langchain/google-genai", () => {
 });
 
 // Import AFTER mocking (required for ESM mock hoisting)
-const { ExtractorAgent } = await import(
-  "../../src/agents/extractor.agent.js"
-);
+const { ExtractorAgent } = await import("../../src/agents/extractor.agent.js");
 
 // ── Helpers ──────────────────────────────────────
 
 /** Creates a valid JSON response string for a set of clauses */
-function makeLLMResponse(clauses: Array<{ clauseNumber: number; clauseText: string; clauseType: string }>) {
+function makeLLMResponse(
+  clauses: Array<{
+    clauseNumber: number;
+    clauseText: string;
+    clauseType: string;
+  }>,
+) {
   return JSON.stringify(clauses);
 }
 
@@ -28,17 +40,20 @@ function makeLLMResponse(clauses: Array<{ clauseNumber: number; clauseText: stri
 const ENGLISH_CLAUSES = [
   {
     clauseNumber: 1,
-    clauseText: "The Employee shall be subject to a probation period of three (3) months.",
+    clauseText:
+      "The Employee shall be subject to a probation period of three (3) months.",
     clauseType: "probation",
   },
   {
     clauseNumber: 2,
-    clauseText: "The Employer shall pay the Employee a monthly salary of EGP 25,000.",
+    clauseText:
+      "The Employer shall pay the Employee a monthly salary of EGP 25,000.",
     clauseType: "payment",
   },
   {
     clauseNumber: 3,
-    clauseText: "Either party may terminate this Agreement by providing sixty (60) days' written notice.",
+    clauseText:
+      "Either party may terminate this Agreement by providing sixty (60) days' written notice.",
     clauseType: "termination",
   },
 ];
@@ -47,7 +62,8 @@ const ENGLISH_CLAUSES = [
 const ARABIC_CLAUSES = [
   {
     clauseNumber: 1,
-    clauseText: "يخضع الموظف لفترة اختبار مدتها ثلاثة أشهر من تاريخ مباشرة العمل.",
+    clauseText:
+      "يخضع الموظف لفترة اختبار مدتها ثلاثة أشهر من تاريخ مباشرة العمل.",
     clauseType: "probation",
   },
   {
@@ -64,6 +80,7 @@ describe("ExtractorAgent", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetPrompt.mockResolvedValue('Mock system prompt for testing');
     agent = new ExtractorAgent();
   });
 
@@ -145,7 +162,8 @@ describe("ExtractorAgent", () => {
 
   describe("extract() — JSON parsing", () => {
     test("should handle JSON wrapped in markdown fences", async () => {
-      const fencedJSON = "```json\n" + makeLLMResponse(ENGLISH_CLAUSES) + "\n```";
+      const fencedJSON =
+        "```json\n" + makeLLMResponse(ENGLISH_CLAUSES) + "\n```";
       mockInvoke.mockResolvedValueOnce({ content: fencedJSON });
 
       const result = await agent.extract("Some contract text", "en");
@@ -173,7 +191,9 @@ describe("ExtractorAgent", () => {
   describe("extract() — Error handling", () => {
     test("should throw for empty contract text", async () => {
       await expect(agent.extract("")).rejects.toThrow("Contract text is empty");
-      await expect(agent.extract("   ")).rejects.toThrow("Contract text is empty");
+      await expect(agent.extract("   ")).rejects.toThrow(
+        "Contract text is empty",
+      );
     });
 
     test("should throw when LLM returns completely invalid JSON", async () => {
@@ -182,9 +202,7 @@ describe("ExtractorAgent", () => {
 
       // The first successful LLM call returns invalid JSON,
       // safeParseJSON will throw, and the whole extract() call will fail
-      await expect(
-        agent.extract("Some contract", "en"),
-      ).rejects.toThrow();
+      await expect(agent.extract("Some contract", "en")).rejects.toThrow();
     });
   });
 
@@ -213,7 +231,11 @@ describe("ExtractorAgent", () => {
       const partial = [
         { clauseNumber: 1, clauseText: "Valid clause", clauseType: "payment" },
         { clauseNumber: 2, clauseText: "", clauseType: "other" }, // invalid
-        { clauseNumber: 3, clauseText: "Another valid", clauseType: "termination" },
+        {
+          clauseNumber: 3,
+          clauseText: "Another valid",
+          clauseType: "termination",
+        },
       ];
       mockInvoke.mockResolvedValueOnce({
         content: JSON.stringify(partial),
@@ -225,9 +247,7 @@ describe("ExtractorAgent", () => {
     });
 
     test("should default clauseType to 'other' when missing", async () => {
-      const partial = [
-        { clauseNumber: 1, clauseText: "Some clause" },
-      ];
+      const partial = [{ clauseNumber: 1, clauseText: "Some clause" }];
       mockInvoke.mockResolvedValueOnce({
         content: JSON.stringify(partial),
       });
@@ -259,13 +279,25 @@ describe("ExtractorAgent", () => {
         "C".repeat(100);
 
       const chunk1Clauses = [
-        { clauseNumber: 1, clauseText: "Clause from chunk 1", clauseType: "payment" },
+        {
+          clauseNumber: 1,
+          clauseText: "Clause from chunk 1",
+          clauseType: "payment",
+        },
       ];
       const chunk2Clauses = [
-        { clauseNumber: 1, clauseText: "Clause from chunk 2", clauseType: "termination" },
+        {
+          clauseNumber: 1,
+          clauseText: "Clause from chunk 2",
+          clauseType: "termination",
+        },
       ];
       const chunk3Clauses = [
-        { clauseNumber: 1, clauseText: "Clause from chunk 3", clauseType: "liability" },
+        {
+          clauseNumber: 1,
+          clauseText: "Clause from chunk 3",
+          clauseType: "liability",
+        },
       ];
 
       mockInvoke
@@ -286,17 +318,32 @@ describe("ExtractorAgent", () => {
     test("should deduplicate clauses across chunks", async () => {
       const smallChunkAgent = new ExtractorAgent(200);
 
-      const longContract =
-        "A".repeat(150) + "\n\n" + "B".repeat(150);
+      const longContract = "A".repeat(150) + "\n\n" + "B".repeat(150);
 
       // Simulate overlapping clause extraction from two chunks
       const chunk1 = [
-        { clauseNumber: 1, clauseText: "Shared clause text", clauseType: "payment" },
-        { clauseNumber: 2, clauseText: "Unique to chunk 1", clauseType: "other" },
+        {
+          clauseNumber: 1,
+          clauseText: "Shared clause text",
+          clauseType: "payment",
+        },
+        {
+          clauseNumber: 2,
+          clauseText: "Unique to chunk 1",
+          clauseType: "other",
+        },
       ];
       const chunk2 = [
-        { clauseNumber: 1, clauseText: "Shared clause text", clauseType: "payment" },
-        { clauseNumber: 2, clauseText: "Unique to chunk 2", clauseType: "other" },
+        {
+          clauseNumber: 1,
+          clauseText: "Shared clause text",
+          clauseType: "payment",
+        },
+        {
+          clauseNumber: 2,
+          clauseText: "Unique to chunk 2",
+          clauseType: "other",
+        },
       ];
 
       mockInvoke
@@ -347,6 +394,108 @@ describe("ExtractorAgent", () => {
         expect(clause.clauseText.length).toBeGreaterThan(0);
         expect(clause.clauseNumber).toBeGreaterThan(0);
       }
+    });
+  });
+
+  // ────────────────────────────────────────────────
+  // OCR Artifacts & Meaning Preservation
+  // ────────────────────────────────────────────────
+
+  describe("extract() — OCR Artifacts & Meaning Preservation", () => {
+    test("should contain OCR handling instructions in the system prompt", async () => {
+      const { EXTRACTOR_SYSTEM_PROMPT } =
+        await import("../../src/agents/extractor.prompts.js");
+      expect(EXTRACTOR_SYSTEM_PROMPT).toContain("OCR Artifact Handling");
+      expect(EXTRACTOR_SYSTEM_PROMPT).toContain("HIGH CONFIDENCE RULE");
+      expect(EXTRACTOR_SYSTEM_PROMPT).toContain("MEANING PRESERVATION RULE");
+    });
+
+    test("should mock processing of English OCR-damaged contract text", async () => {
+      const ocrDamagedText =
+        "T h e   E m p l o y e e shall be subject to a pro-bation period of three (3) months.";
+      const cleanedClauses = [
+        {
+          clauseNumber: 1,
+          clauseText:
+            "The Employee shall be subject to a probation period of three (3) months.",
+          clauseType: "probation",
+        },
+      ];
+
+      mockInvoke.mockResolvedValueOnce({
+        content: makeLLMResponse(cleanedClauses),
+      });
+
+      const result = await agent.extract(ocrDamagedText, "en");
+      expect(result.clauses[0].clauseText).toBe(
+        "The Employee shall be subject to a probation period of three (3) months.",
+      );
+      expect(result.clauses[0].clauseType).toBe("probation");
+    });
+
+    test("should mock processing of Arabic OCR-damaged contract text", async () => {
+      const ocrDamagedText =
+        "يخـ ضع ال موظف لفترة اخـ تبار مدتها ثلاثة أشهر من تاريـ خ مباشرة العمل.";
+      const cleanedClauses = [
+        {
+          clauseNumber: 1,
+          clauseText:
+            "يخضع الموظف لفترة اختبار مدتها ثلاثة أشهر من تاريخ مباشرة العمل.",
+          clauseType: "probation",
+        },
+      ];
+
+      mockInvoke.mockResolvedValueOnce({
+        content: makeLLMResponse(cleanedClauses),
+      });
+
+      const result = await agent.extract(ocrDamagedText, "ar");
+      expect(result.clauses[0].clauseText).toBe(
+        "يخضع الموظف لفترة اختبار مدتها ثلاثة أشهر من تاريخ مباشرة العمل.",
+      );
+    });
+
+    test("should mock processing of Mixed Arabic/English OCR-damaged contract text", async () => {
+      const ocrDamagedText =
+        "Article 1: P r e m i s e s / العين المؤجـ رة\nThe Landlord leases to the T e n a n t...";
+      const cleanedClauses = [
+        {
+          clauseNumber: 1,
+          clauseText: "The Landlord leases to the Tenant...",
+          clauseType: "other",
+        },
+      ];
+
+      mockInvoke.mockResolvedValueOnce({
+        content: makeLLMResponse(cleanedClauses),
+      });
+
+      const result = await agent.extract(ocrDamagedText, "ar");
+      expect(result.clauses[0].clauseText).toBe(
+        "The Landlord leases to the Tenant...",
+      );
+    });
+
+    test("should mock preservation of clean contract text exactly without improvements", async () => {
+      const cleanText =
+        "The Employer shall pay the Employee a monthly salary of EGP 25,000.";
+      const preservedClauses = [
+        {
+          clauseNumber: 1,
+          clauseText:
+            "The Employer shall pay the Employee a monthly salary of EGP 25,000.",
+          clauseType: "payment",
+        },
+      ];
+
+      mockInvoke.mockResolvedValueOnce({
+        content: makeLLMResponse(preservedClauses),
+      });
+
+      const result = await agent.extract(cleanText, "en");
+      expect(result.clauses[0].clauseText).toBe(
+        "The Employer shall pay the Employee a monthly salary of EGP 25,000.",
+      );
     });
   });
 });

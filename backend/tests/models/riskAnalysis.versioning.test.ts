@@ -289,10 +289,9 @@ describe("RiskAnalysis Versioning", () => {
       await service.saveAnalysis(makeAnalysisData(contractIdA));
       await service.saveAnalysis(makeAnalysisData(contractIdA));
 
-      const versions =
-        await service.getAnalysisVersionsByContractId(
-          contractIdA.toString(),
-        );
+      const versions = await service.getAnalysisVersionsByContractId(
+        contractIdA.toString(),
+      );
 
       expect(versions).toHaveLength(3);
       expect(versions[0].version).toBe(3);
@@ -301,10 +300,9 @@ describe("RiskAnalysis Versioning", () => {
     });
 
     test("returns empty array when no analyses exist", async () => {
-      const versions =
-        await service.getAnalysisVersionsByContractId(
-          new mongoose.Types.ObjectId().toString(),
-        );
+      const versions = await service.getAnalysisVersionsByContractId(
+        new mongoose.Types.ObjectId().toString(),
+      );
 
       expect(versions).toHaveLength(0);
     });
@@ -312,10 +310,9 @@ describe("RiskAnalysis Versioning", () => {
     test("each version includes overallRisk from executiveSummary", async () => {
       await service.saveAnalysis(makeAnalysisData(contractIdA));
 
-      const versions =
-        await service.getAnalysisVersionsByContractId(
-          contractIdA.toString(),
-        );
+      const versions = await service.getAnalysisVersionsByContractId(
+        contractIdA.toString(),
+      );
 
       expect(versions[0]).toHaveProperty("executiveSummary");
       expect((versions[0].executiveSummary as any).overallRisk).toBe("medium");
@@ -324,10 +321,9 @@ describe("RiskAnalysis Versioning", () => {
     test("does not include clauseAnalysis in the list response", async () => {
       await service.saveAnalysis(makeAnalysisData(contractIdA));
 
-      const versions =
-        await service.getAnalysisVersionsByContractId(
-          contractIdA.toString(),
-        );
+      const versions = await service.getAnalysisVersionsByContractId(
+        contractIdA.toString(),
+      );
 
       expect((versions[0] as any).clauseAnalysis).toBeUndefined();
     });
@@ -340,9 +336,7 @@ describe("RiskAnalysis Versioning", () => {
 
     test("returns the full analysis document by ID", async () => {
       const saved = await service.saveAnalysis(makeAnalysisData(contractIdA));
-      const retrieved = await service.getAnalysisById(
-        String(saved._id),
-      );
+      const retrieved = await service.getAnalysisById(String(saved._id));
 
       expect(retrieved).not.toBeNull();
       expect(String(retrieved!._id)).toBe(String(saved._id));

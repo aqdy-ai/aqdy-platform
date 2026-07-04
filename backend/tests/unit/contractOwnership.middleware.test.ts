@@ -1,5 +1,5 @@
-import { describe, test, expect, jest, beforeEach } from '@jest/globals';
-import mongoose from 'mongoose';
+import { describe, test, expect, jest, beforeEach } from "@jest/globals";
+import mongoose from "mongoose";
 
 const validUserId = new mongoose.Types.ObjectId().toString();
 const otherUserId = new mongoose.Types.ObjectId().toString();
@@ -7,20 +7,20 @@ const validContractId = new mongoose.Types.ObjectId().toString();
 
 const mockFindById = jest.fn();
 
-jest.unstable_mockModule('../../src/models/contract.model.js', () => ({
+jest.unstable_mockModule("../../src/models/contract.model.js", () => ({
   Contract: { findById: mockFindById },
 }));
 
-const { verifyContractOwnership } = await import(
-  '../../src/middlewares/contractOwnership.middleware.js'
-);
+const { verifyContractOwnership } =
+  await import("../../src/middlewares/contractOwnership.middleware.js");
 
-const mockReq = (userId: string, contractId: string, fromParams = false) => ({
-  user: { _id: userId },
-  body: fromParams ? {} : { contractId },
-  params: fromParams ? { contractId } : {},
-  headers: {},
-}) as any;
+const mockReq = (userId: string, contractId: string, fromParams = false) =>
+  ({
+    user: { _id: userId },
+    body: fromParams ? {} : { contractId },
+    params: fromParams ? { contractId } : {},
+    headers: {},
+  }) as any;
 
 const mockRes = () => {
   const res: any = {};
@@ -31,10 +31,10 @@ const mockRes = () => {
 
 const mockNext = jest.fn();
 
-describe('verifyContractOwnership', () => {
+describe("verifyContractOwnership", () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test('should call next if user owns the contract', async () => {
+  test("should call next if user owns the contract", async () => {
     mockFindById.mockResolvedValue({
       _id: validContractId,
       userId: validUserId,
@@ -47,7 +47,7 @@ describe('verifyContractOwnership', () => {
     expect(mockNext).toHaveBeenCalledWith();
   });
 
-  test('should return 403 if user does not own the contract', async () => {
+  test("should return 403 if user does not own the contract", async () => {
     mockFindById.mockResolvedValue({
       _id: validContractId,
       userId: otherUserId,
@@ -63,7 +63,7 @@ describe('verifyContractOwnership', () => {
     );
   });
 
-  test('should return 404 if contract not found', async () => {
+  test("should return 404 if contract not found", async () => {
     mockFindById.mockResolvedValue(null);
 
     const req = mockReq(validUserId, validContractId);
@@ -76,7 +76,7 @@ describe('verifyContractOwnership', () => {
     );
   });
 
-  test('should return 400 if contractId is missing', async () => {
+  test("should return 400 if contractId is missing", async () => {
     const req = {
       user: { _id: validUserId },
       body: {},
@@ -92,7 +92,7 @@ describe('verifyContractOwnership', () => {
     );
   });
 
-  test('should work with contractId from params', async () => {
+  test("should work with contractId from params", async () => {
     mockFindById.mockResolvedValue({
       _id: validContractId,
       userId: validUserId,
@@ -105,7 +105,7 @@ describe('verifyContractOwnership', () => {
     expect(mockNext).toHaveBeenCalledWith();
   });
 
-  test('should return 400 if userId is missing', async () => {
+  test("should return 400 if userId is missing", async () => {
     const req = {
       user: null,
       body: { contractId: validContractId },

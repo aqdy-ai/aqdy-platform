@@ -386,6 +386,147 @@ export const logAdmin = {
   },
 };
 
+export const logRole = {
+  async assign(
+    req: AuditRequest,
+    targetUserId: string,
+    targetEmail: string,
+    newRole: string,
+    previousRole: string,
+  ) {
+    const reqDetails = extractRequestDetails(req);
+    return await writeLog({
+      action: "ROLE_ASSIGNED",
+      outcome: "success",
+      userId: reqDetails.userId,
+      userEmail: reqDetails.userEmail,
+      ipAddress: reqDetails.ipAddress,
+      userAgent: reqDetails.userAgent,
+      requestId: reqDetails.requestId,
+      metadata: { targetUserId, targetEmail, newRole, previousRole },
+    });
+  },
+
+  async revoke(
+    req: AuditRequest,
+    targetUserId: string,
+    targetEmail: string,
+    previousRole: string,
+  ) {
+    const reqDetails = extractRequestDetails(req);
+    return await writeLog({
+      action: "ROLE_REVOKED",
+      outcome: "success",
+      userId: reqDetails.userId,
+      userEmail: reqDetails.userEmail,
+      ipAddress: reqDetails.ipAddress,
+      userAgent: reqDetails.userAgent,
+      requestId: reqDetails.requestId,
+      metadata: { targetUserId, targetEmail, previousRole, newRole: "user" },
+    });
+  },
+};
+
+export const logSupport = {
+  async emailVerify(
+    req: AuditRequest,
+    targetUserId: string,
+    targetEmail: string,
+  ) {
+    const reqDetails = extractRequestDetails(req);
+    return await writeLog({
+      action: "ADMIN_EMAIL_VERIFY",
+      outcome: "success",
+      userId: reqDetails.userId,
+      userEmail: reqDetails.userEmail,
+      ipAddress: reqDetails.ipAddress,
+      userAgent: reqDetails.userAgent,
+      requestId: reqDetails.requestId,
+      metadata: { targetUserId, targetEmail },
+    });
+  },
+
+  async passwordReset(
+    req: AuditRequest,
+    targetUserId: string,
+    targetEmail: string,
+  ) {
+    const reqDetails = extractRequestDetails(req);
+    return await writeLog({
+      action: "ADMIN_PASSWORD_RESET_TRIGGER",
+      outcome: "success",
+      userId: reqDetails.userId,
+      userEmail: reqDetails.userEmail,
+      ipAddress: reqDetails.ipAddress,
+      userAgent: reqDetails.userAgent,
+      requestId: reqDetails.requestId,
+      metadata: { targetUserId, targetEmail },
+    });
+  },
+
+  async creditAdjustment(
+    req: AuditRequest,
+    targetUserId: string,
+    targetEmail: string,
+    amount: number,
+    reason: string,
+    newBalance: number,
+  ) {
+    const reqDetails = extractRequestDetails(req);
+    return await writeLog({
+      action: "ADMIN_CREDIT_ADJUSTMENT",
+      outcome: "success",
+      userId: reqDetails.userId,
+      userEmail: reqDetails.userEmail,
+      ipAddress: reqDetails.ipAddress,
+      userAgent: reqDetails.userAgent,
+      requestId: reqDetails.requestId,
+      metadata: { targetUserId, targetEmail, amount, reason, newBalance },
+    });
+  },
+};
+
+export const logContent = {
+  async kbChange(
+    req: AuditRequest,
+    action: "KB_ENTRY_CREATED" | "KB_ENTRY_UPDATED" | "KB_ENTRY_DELETED",
+    entryId: string,
+    previousValue?: Record<string, unknown>,
+    updatedValue?: Record<string, unknown>,
+  ) {
+    const reqDetails = extractRequestDetails(req);
+    return await writeLog({
+      action,
+      outcome: "success",
+      userId: reqDetails.userId,
+      userEmail: reqDetails.userEmail,
+      ipAddress: reqDetails.ipAddress,
+      userAgent: reqDetails.userAgent,
+      requestId: reqDetails.requestId,
+      metadata: { entryId, previousValue, updatedValue },
+    });
+  },
+
+  async promptChange(
+    req: AuditRequest,
+    agentName: string,
+    previousPrompt: string,
+    updatedPrompt: string,
+  ) {
+    const reqDetails = extractRequestDetails(req);
+    return await writeLog({
+      action: "PROMPT_UPDATED",
+      outcome: "success",
+      userId: reqDetails.userId,
+      userEmail: reqDetails.userEmail,
+      ipAddress: reqDetails.ipAddress,
+      userAgent: reqDetails.userAgent,
+      requestId: reqDetails.requestId,
+      metadata: { agentName, previousPrompt, updatedPrompt },
+    });
+  },
+};
+
 // --- Existing AuditLogService ---
 
 export class AuditLogService {
@@ -462,6 +603,9 @@ const audit = {
   logAgent,
   logKB,
   logAdmin,
+  logRole,
+  logSupport,
+  logContent,
   getIP,
   writeLog,
 };

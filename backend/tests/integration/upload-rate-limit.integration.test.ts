@@ -16,9 +16,28 @@ jest.unstable_mockModule("../../src/services/contract.service.js", () => ({
 const mockLogEvent = jest.fn() as jest.Mock<any>;
 jest.unstable_mockModule("../../src/services/auditLog.service.js", () => ({
   auditLogService: { logEvent: mockLogEvent },
+  logAuth: {
+    loginSuccess: jest.fn().mockResolvedValue(undefined),
+    loginFailed: jest.fn().mockResolvedValue(undefined),
+    logout: jest.fn().mockResolvedValue(undefined),
+    passwordReset: jest.fn().mockResolvedValue(undefined),
+  },
   logAdmin: {
     viewLogs: jest.fn().mockResolvedValue(undefined),
   },
+  logRole: {
+    assign: jest.fn().mockResolvedValue(undefined),
+    revoke: jest.fn().mockResolvedValue(undefined),
+  },
+  logSupport: {
+    emailVerify: jest.fn().mockResolvedValue(undefined),
+    passwordReset: jest.fn().mockResolvedValue(undefined),
+    creditAdjustment: jest.fn().mockResolvedValue(undefined),
+  },
+  logContent: {
+    update: jest.fn().mockResolvedValue(undefined),
+  },
+  writeLog: jest.fn().mockResolvedValue(undefined),
 }));
 
 const mockTriggerAnalysis = jest.fn() as jest.Mock<any>;
@@ -51,12 +70,23 @@ jest.unstable_mockModule("../../src/middlewares/auth.middleware.js", () => ({
   requireEmailVerified: (_req: any, _res: any, next: any) => {
     next();
   },
+  requireRole:
+    (..._roles: string[]) =>
+    (_req: any, _res: any, next: any) => {
+      next();
+    },
+  requirePermission:
+    (_section: string, _action: string) =>
+    (_req: any, _res: any, next: any) => {
+      next();
+    },
   verifyJWT: () => ({ sub: "6a21a76caad3374228b4d6b0" }),
 }));
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-const { resetRateLimitStores } = await import("../../src/middlewares/rateLimit.js");
+const { resetRateLimitStores } =
+  await import("../../src/middlewares/rateLimit.js");
 const { default: app } = await import("../../src/index.js");
 
 const mockParsedPdf = {
@@ -91,7 +121,11 @@ describe("Anonymous IP Rate Limit Integration", () => {
       const res = await request(app)
         .post("/api/upload")
         .set("x-forwarded-for", ipAddress)
-        .attach("contract", Buffer.from("%PDF-1.4 dummy pdf data"), "contract.pdf");
+        .attach(
+          "contract",
+          Buffer.from("%PDF-1.4 dummy pdf data"),
+          "contract.pdf",
+        );
 
       expect(res.status).toBe(201);
       expect(res.body.status).toBe("processing");
@@ -102,11 +136,17 @@ describe("Anonymous IP Rate Limit Integration", () => {
     const blocked = await request(app)
       .post("/api/upload")
       .set("x-forwarded-for", ipAddress)
-      .attach("contract", Buffer.from("%PDF-1.4 dummy pdf data"), "contract.pdf");
+      .attach(
+        "contract",
+        Buffer.from("%PDF-1.4 dummy pdf data"),
+        "contract.pdf",
+      );
 
     expect(blocked.status).toBe(429);
     expect(blocked.body.success).toBe(false);
-    expect(blocked.body.error).toContain("Too many requests from this IP address");
+    expect(blocked.body.error).toContain(
+      "Too many requests from this IP address",
+    );
     expect(blocked.headers["retry-after"]).toBeDefined();
   });
 });

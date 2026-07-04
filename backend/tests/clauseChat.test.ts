@@ -1,4 +1,12 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, jest } from "@jest/globals";
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  jest,
+} from "@jest/globals";
 import mongoose from "mongoose";
 import request from "supertest";
 import express from "express";
@@ -17,10 +25,12 @@ jest.unstable_mockModule("@langchain/openai", () => ({
 const { User } = await import("../src/models/user.model.js");
 const { Contract } = await import("../src/models/contract.model.js");
 const { RiskAnalysis } = await import("../src/models/riskAnalysis.model.js");
-const { default: contractRouter } = await import("../src/routes/contract.route.js");
+const { default: contractRouter } =
+  await import("../src/routes/contract.route.js");
 const { generateAccessToken } = await import("../src/services/auth.service.js");
 const { errorHandler } = await import("../src/middlewares/errorHandler.js");
-const { resetClauseChatLimits } = await import("../src/controllers/clauseChat.controller.js");
+const { resetClauseChatLimits } =
+  await import("../src/controllers/clauseChat.controller.js");
 const { env } = await import("../src/config/env.js");
 
 const testApp = express();
@@ -30,7 +40,8 @@ testApp.use("/api/contracts", contractRouter);
 testApp.use(errorHandler);
 
 beforeAll(async () => {
-  const mongoURI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aqdy-chat-test";
+  const mongoURI =
+    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aqdy-chat-test";
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(mongoURI);
   }
@@ -89,7 +100,8 @@ describe("Clause Chat API Endpoint", () => {
       },
       clauseAnalysis: [
         {
-          clauseText: "The Indemnifying Party shall hold harmless the Indemnified Party.",
+          clauseText:
+            "The Indemnifying Party shall hold harmless the Indemnified Party.",
           clauseType: "indemnity",
           riskLevel: "medium",
           confidence: 0.9,
@@ -176,9 +188,10 @@ describe("Clause Chat API Endpoint", () => {
     // Artificially trigger rate limit by sending max messages (default 20)
     const chatLimit = env.CLAUSE_CHAT_RATE_LIMIT;
     const rateLimitKey = `${user._id}:${contract._id}:0`;
-    
+
     // Set count to match the limit
-    const { clauseChatLimits } = await import("../src/controllers/clauseChat.controller.js");
+    const { clauseChatLimits } =
+      await import("../src/controllers/clauseChat.controller.js");
     clauseChatLimits.set(rateLimitKey, {
       count: chatLimit,
       resetAt: Date.now() + 10000,
@@ -204,7 +217,10 @@ describe("Clause Chat API Endpoint", () => {
       .set("Cookie", `accessToken=${userToken}`)
       .send({
         message: "What is the risk level?",
-        history: [{ role: "user", content: "Hi" }, { role: "assistant", content: "Hello" }],
+        history: [
+          { role: "user", content: "Hi" },
+          { role: "assistant", content: "Hello" },
+        ],
       });
 
     // Verify headers
@@ -225,12 +241,18 @@ describe("Clause Chat API Endpoint", () => {
     const systemPromptMessage = mockStream.mock.calls[0][0][0]; // First element in the array of messages
     const systemPromptText = systemPromptMessage.content;
 
-    expect(systemPromptText).toContain("The Indemnifying Party shall hold harmless the Indemnified Party.");
+    expect(systemPromptText).toContain(
+      "The Indemnifying Party shall hold harmless the Indemnified Party.",
+    );
     expect(systemPromptText).toContain("medium");
     expect(systemPromptText).toContain("Explanation of indemnity risk");
     expect(systemPromptText).toContain("kb-source-123");
     expect(systemPromptText).toContain("Limit liability to 1x fees.");
-    expect(systemPromptText).toContain("ONLY answer questions about this specific clause");
-    expect(systemPromptText).toContain("Do NOT speculate beyond the provided context");
+    expect(systemPromptText).toContain(
+      "ONLY answer questions about this specific clause",
+    );
+    expect(systemPromptText).toContain(
+      "Do NOT speculate beyond the provided context",
+    );
   });
 });

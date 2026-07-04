@@ -25,20 +25,22 @@ describe("CSRF Protection and CORS Integration", () => {
     // Generate a unique email to avoid duplicate error
     const uniqueEmail = `csrf-test-${Date.now()}@example.com`;
 
-    const registerRes = await request(app)
-      .post("/api/auth/register")
-      .send({
-        name: "CSRF Test User",
-        email: uniqueEmail,
-        password: "StrongPass123!",
-      });
+    const registerRes = await request(app).post("/api/auth/register").send({
+      name: "CSRF Test User",
+      email: uniqueEmail,
+      password: "StrongPass123!",
+    });
 
     expect(registerRes.status).toBe(201);
     const setCookies = registerRes.headers["set-cookie"] || [];
-    
+
     // Check SameSite=Strict and HttpOnly parameters
-    const accessCookie = setCookies.find((c: string) => c.startsWith("accessToken="));
-    const refreshCookie = setCookies.find((c: string) => c.startsWith("refreshToken="));
+    const accessCookie = setCookies.find((c: string) =>
+      c.startsWith("accessToken="),
+    );
+    const refreshCookie = setCookies.find((c: string) =>
+      c.startsWith("refreshToken="),
+    );
 
     expect(accessCookie).toBeDefined();
     expect(accessCookie).toContain("HttpOnly");
@@ -55,7 +57,9 @@ describe("CSRF Protection and CORS Integration", () => {
       .set("Origin", "http://localhost:5173")
       .set("Access-Control-Request-Method", "POST");
 
-    expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
+    expect(res.headers["access-control-allow-origin"]).toBe(
+      "http://localhost:5173",
+    );
     expect(res.headers["access-control-allow-credentials"]).toBe("true");
   });
 
@@ -67,6 +71,8 @@ describe("CSRF Protection and CORS Integration", () => {
 
     // Express CORS middleware by default either omits the Access-Control-Allow-Origin header
     // or does not match it to the malicious origin when configured dynamically.
-    expect(res.headers["access-control-allow-origin"]).not.toBe("http://malicious-site.com");
+    expect(res.headers["access-control-allow-origin"]).not.toBe(
+      "http://malicious-site.com",
+    );
   });
 });
