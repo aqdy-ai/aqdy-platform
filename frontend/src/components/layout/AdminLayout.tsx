@@ -161,7 +161,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* Sidebar Navigation */}
-        <aside className="border-border/40 bg-background/70 w-full shrink-0 overflow-x-clip border-b backdrop-blur-xl md:sticky md:top-0 md:h-screen md:w-64 md:border-e md:border-b-0">
+        <aside className="border-border/40 bg-background/70 w-full shrink-0 overflow-x-clip border-b backdrop-blur-xl md:w-64 md:border-e md:border-b-0">
           <div className="flex h-full flex-col">
             {/* Profile Dropdown Trigger */}
             <div className="relative" ref={menuRef}>
