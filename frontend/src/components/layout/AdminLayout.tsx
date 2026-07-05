@@ -291,7 +291,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </aside>
 
         {/* Main Content Area */}
-        <main className="min-w-0 flex-1 overflow-auto">
+        <main className="min-w-0 flex-1">
           <div className="mx-auto max-w-7xl px-5 py-5">
             <div className="bg-card/30 border-border/40 min-h-[60vh] rounded-3xl border p-6 shadow-sm backdrop-blur-md">
               {children}

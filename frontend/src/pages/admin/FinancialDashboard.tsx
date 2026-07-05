@@ -277,83 +277,6 @@ export default function FinancialDashboard() {
         </div>
       </div>
 
-      {/* ── Date Filter Bar ── */}
-      <div className="border-border/40 bg-card/30 flex flex-wrap items-center gap-3 rounded-2xl border p-4 shadow-sm">
-        <div className="flex items-center gap-2">
-          <label
-            htmlFor="financial-start-date"
-            className="text-muted-foreground text-xs font-semibold"
-          >
-            From:
-          </label>
-          <div className="relative">
-            <Calendar
-              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
-              onClick={(e) => {
-                const input = e.currentTarget.parentElement?.querySelector(
-                  'input[type="date"]'
-                ) as HTMLInputElement | null
-                input?.showPicker()
-              }}
-            />
-            <input
-              id="financial-start-date"
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <label
-            htmlFor="financial-end-date"
-            className="text-muted-foreground text-xs font-semibold"
-          >
-            To:
-          </label>
-          <div className="relative">
-            <Calendar
-              className="text-muted-foreground/60 absolute start-2 top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer"
-              onClick={(e) => {
-                const input = e.currentTarget.parentElement?.querySelector(
-                  'input[type="date"]'
-                ) as HTMLInputElement | null
-                input?.showPicker()
-              }}
-            />
-            <input
-              id="financial-end-date"
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="bg-background border-border rounded-lg border px-3 py-1.5 ps-8 text-xs"
-            />
-          </div>
-        </div>
-        <button
-          onClick={handleFilter}
-          className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition-colors hover:opacity-90"
-        >
-          <Filter size={12} />
-          Filter
-        </button>
-        {(appliedDateFrom || appliedDateTo) && (
-          <button
-            onClick={() => {
-              setDateFrom('')
-              setDateTo('')
-              setAppliedDateFrom('')
-              setAppliedDateTo('')
-              fetchAll('', '')
-            }}
-            className="text-muted-foreground hover:text-foreground text-xs font-semibold underline"
-          >
-            Clear filters
-          </button>
-        )}
-      </div>
-
       {/* Metric Cards */}
       {overview && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -519,6 +442,27 @@ export default function FinancialDashboard() {
                 className="bg-background border-border rounded-lg border px-2 py-1.5 ps-8 text-xs"
               />
             </div>
+            <button
+              onClick={handleFilter}
+              className="bg-primary text-primary-foreground flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-colors hover:opacity-90"
+            >
+              <Filter size={12} />
+              Filter
+            </button>
+            {(appliedDateFrom || appliedDateTo) && (
+              <button
+                onClick={() => {
+                  setDateFrom('')
+                  setDateTo('')
+                  setAppliedDateFrom('')
+                  setAppliedDateTo('')
+                  fetchAll('', '')
+                }}
+                className="text-muted-foreground hover:text-foreground text-xs font-semibold underline"
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
         <table className="w-full text-sm">

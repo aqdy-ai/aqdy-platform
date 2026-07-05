@@ -78,6 +78,20 @@ const AdminPlans = () => {
     load()
   }, [t])
 
+  useEffect(() => {
+    if (showModal || deleteConfirm) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+    }
+  }, [showModal, deleteConfirm])
+
   const openCreate = () => {
     setEditingPlan(null)
     setForm(emptyForm)
@@ -168,7 +182,7 @@ const AdminPlans = () => {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-10">
+    <div className="space-y-8 p-2">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-foreground text-2xl font-bold">
           {t('admin.plans_title')}
@@ -306,7 +320,10 @@ const AdminPlans = () => {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 py-10 backdrop-blur-sm">
+        <div
+          dir={isRtl ? 'rtl' : 'ltr'}
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 py-10 backdrop-blur-sm"
+        >
           <div
             className={`bg-card mx-4 max-h-[calc(100vh-5rem)] w-full max-w-2xl overflow-y-auto rounded-3xl border p-8 shadow-2xl ${
               isRtl ? 'text-right' : 'text-left'

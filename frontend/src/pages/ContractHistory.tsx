@@ -452,15 +452,6 @@ export default function ContractHistory() {
                   <th className="px-6 py-4 text-start font-black">
                     {t('history.table_status', { defaultValue: 'Status' })}
                   </th>
-                  <th className="px-6 py-4 text-start font-black">
-                    <button
-                      onClick={() => handleSort('riskLevel')}
-                      className="hover:text-primary flex items-center gap-1 transition-colors focus:outline-none"
-                    >
-                      {t('history.table_risk', { defaultValue: 'Risk Level' })}
-                      <ArrowUpDown size={12} className="opacity-50" />
-                    </button>
-                  </th>
                   <th className="px-6 py-4 text-end font-black">
                     {t('history.table_actions', { defaultValue: 'Actions' })}
                   </th>
@@ -485,9 +476,6 @@ export default function ContractHistory() {
                       <td className="px-6 py-5">
                         <div className="bg-muted h-5 w-16 rounded-full" />
                       </td>
-                      <td className="px-6 py-5">
-                        <div className="bg-muted h-5 w-20 rounded-full" />
-                      </td>
                       <td className="px-6 py-5 text-end">
                         <div className="bg-muted inline-block h-8 w-24 rounded-lg" />
                       </td>
@@ -496,7 +484,7 @@ export default function ContractHistory() {
                 ) : isError ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={4}
                       className="py-16 text-center text-sm font-semibold text-red-500"
                     >
                       {t('common.error', {

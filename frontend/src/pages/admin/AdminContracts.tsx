@@ -9,11 +9,9 @@ import {
   Download,
   Calendar,
   X,
-  AlertTriangle,
   CheckCircle2,
   Clock,
   XCircle,
-  ShieldAlert,
 } from 'lucide-react'
 import { adminApi, AdminContract } from '../../services/adminApi'
 import { toast } from 'sonner'
@@ -82,7 +80,6 @@ const AdminContracts = () => {
       'Owner Email',
       'Upload Date',
       'Status',
-      'Risk Level',
       'Language',
       'File Size (bytes)',
     ]
@@ -93,7 +90,6 @@ const AdminContracts = () => {
       c.owner ? c.owner.email : '',
       new Date(c.uploadedAt).toISOString(),
       c.status,
-      c.riskLevel || 'N/A',
       c.language,
       String(c.fileSize),
     ])
@@ -144,41 +140,6 @@ const AdminContracts = () => {
           color: 'bg-muted text-muted-foreground',
           icon: null,
           label: status,
-        }
-    }
-  }
-
-  const getRiskBadge = (risk: string | null) => {
-    switch (risk) {
-      case 'critical':
-        return {
-          color: 'bg-red-500/10 text-red-600 dark:text-red-200',
-          icon: <ShieldAlert className="h-3 w-3" />,
-          label: isRtl ? 'حرج' : 'Critical',
-        }
-      case 'high':
-        return {
-          color: 'bg-rose-500/10 text-rose-500 dark:text-rose-200',
-          icon: <AlertTriangle className="h-3 w-3" />,
-          label: isRtl ? 'عالي' : 'High',
-        }
-      case 'medium':
-        return {
-          color: 'bg-amber-500/10 text-amber-600 dark:text-amber-200',
-          icon: <AlertTriangle className="h-3 w-3" />,
-          label: isRtl ? 'متوسط' : 'Medium',
-        }
-      case 'low':
-        return {
-          color: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-200',
-          icon: <CheckCircle2 className="h-3 w-3" />,
-          label: isRtl ? 'منخفض' : 'Low',
-        }
-      default:
-        return {
-          color: 'bg-muted/50 text-muted-foreground',
-          icon: null,
-          label: '—',
         }
     }
   }
@@ -354,22 +315,19 @@ const AdminContracts = () => {
                 <th className="px-6 py-4 text-start font-black">
                   {isRtl ? 'الحالة' : 'Status'}
                 </th>
-                <th className="px-6 py-4 text-start font-black">
-                  {isRtl ? 'مستوى المخاطر' : 'Risk Level'}
-                </th>
               </tr>
             </thead>
             <tbody className="divide-border/40 divide-y">
               {loading && contracts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={4} className="px-6 py-12 text-center">
                     <Loader2 className="text-primary mx-auto h-8 w-8 animate-spin" />
                   </td>
                 </tr>
               ) : contracts.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={4}
                     className="text-muted-foreground px-6 py-12 text-center font-semibold"
                     data-testid="no-data"
                   >
@@ -379,7 +337,6 @@ const AdminContracts = () => {
               ) : (
                 contracts.map((contract) => {
                   const statusBadge = getStatusBadge(contract.status)
-                  const riskBadge = getRiskBadge(contract.riskLevel)
 
                   return (
                     <tr
@@ -446,17 +403,6 @@ const AdminContracts = () => {
                         >
                           {statusBadge.icon}
                           {statusBadge.label}
-                        </span>
-                      </td>
-
-                      {/* Risk Level */}
-                      <td className="px-6 py-4.5">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap ${riskBadge.color}`}
-                          data-testid="risk-badge"
-                        >
-                          {riskBadge.icon}
-                          {riskBadge.label}
                         </span>
                       </td>
                     </tr>
