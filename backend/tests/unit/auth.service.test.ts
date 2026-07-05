@@ -135,10 +135,10 @@ describe("Auth Service", () => {
     expect(mockSave).toHaveBeenCalled();
   });
 
-  test("logoutUser rejects an invalid refresh token with 401", async () => {
+  test("logoutUser does nothing for an invalid refresh token", async () => {
     mockFindOne.mockReturnValue({ select: jest.fn().mockResolvedValue(null) });
 
-    await expect(logoutUser("invalid-refresh-token")).rejects.toThrow(AppError);
+    await expect(logoutUser("invalid-refresh-token")).resolves.toBeUndefined();
   });
 
   test("refreshTokens returns a new access token and refresh token", async () => {
