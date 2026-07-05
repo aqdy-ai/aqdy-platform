@@ -36,23 +36,6 @@ interface DailyStat {
   count: number
 }
 
-interface Evaluation {
-  _id: string
-  analysisId: string
-  faithfulness: number
-  relevancy: number
-  precision: number
-  recall: number
-  reasoning: {
-    faithfulness?: string
-    relevancy?: string
-    precision?: string
-    recall?: string
-    overall?: string
-  }
-  createdAt: string
-}
-
 type Tab = 'automated' | 'human'
 
 function MetricCard({
@@ -292,9 +275,7 @@ export default function AdminEvaluations() {
   const { t } = useTranslation()
   const [tab, setTab] = useState<Tab>('automated')
   const [stats, setStats] = useState<DailyStat[]>([])
-  const [lowScores, setLowScores] = useState<Evaluation[]>([])
   const [loadingStats, setLoadingStats] = useState(true)
-  const [loadingLow, setLoadingLow] = useState(true)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [appliedStartDate, setAppliedStartDate] = useState('')
@@ -303,25 +284,18 @@ export default function AdminEvaluations() {
   const fetchAll = useCallback(
     async (sd: string, ed: string) => {
       setLoadingStats(true)
-      setLoadingLow(true)
       try {
         const params: { startDate?: string; endDate?: string } = {}
         if (sd) params.startDate = sd
         if (ed) params.endDate = ed
         const paramArg = Object.keys(params).length ? params : undefined
-        const [statsRes, lowRes] = await Promise.all([
-          adminApi.getEvaluationStats(paramArg),
-          adminApi.getLowScores(paramArg),
-        ])
+        const statsRes = await adminApi.getEvaluationStats(paramArg)
         if (statsRes.data.success) setStats(statsRes.data.data)
         else toast.error(t('evaluations.error_stats'))
-        if (lowRes.data.success) setLowScores(lowRes.data.data)
-        else toast.error(t('evaluations.error_low'))
       } catch {
         toast.error(t('evaluations.error_generic'))
       } finally {
         setLoadingStats(false)
-        setLoadingLow(false)
       }
     },
     [t]
@@ -344,30 +318,6 @@ export default function AdminEvaluations() {
     avgRelevancy: 0,
     avgPrecision: 0,
     avgRecall: 0,
-  }
-
-  const getLowestMetric = (e: Evaluation) => {
-    const scores = {
-      faithfulness: e.faithfulness,
-      relevancy: e.relevancy,
-      precision: e.precision,
-      recall: e.recall,
-    }
-    const entries = Object.entries(scores) as [keyof typeof scores, number][]
-    const [metric, value] = entries.reduce((prev, cur) =>
-      cur[1] < prev[1] ? cur : prev
-    )
-    return { metric, value }
-  }
-
-  const metricLabel = (key: string) => {
-    const map: Record<string, string> = {
-      faithfulness: t('evaluations.faithfulness'),
-      relevancy: t('evaluations.relevancy'),
-      precision: t('evaluations.precision'),
-      recall: t('evaluations.recall'),
-    }
-    return map[key] ?? key
   }
 
   return (
@@ -567,86 +517,6 @@ export default function AdminEvaluations() {
                   />
                 </ReLineChart>
               </ResponsiveContainer>
-            )}
-          </section>
-
-          {/* Low-Score Table */}
-          <section className="border-border/40 bg-card/30 rounded-2xl border p-6 shadow-sm">
-            <h2 className="text-muted-foreground mb-4 font-semibold uppercase">
-              {t('evaluations.low_scores')}
-            </h2>
-            {loadingLow ? (
-              <div className="flex h-48 items-center justify-center">
-                <Loader2 className="text-primary h-8 w-8 animate-spin" />
-              </div>
-            ) : lowScores.length === 0 ? (
-              <div className="flex h-32 flex-col items-center justify-center gap-2 text-center">
-                <p className="text-muted-foreground text-sm">
-                  {t('evaluations.no_evaluations')}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto border-collapse">
-                  <thead>
-                    <tr className="bg-muted">
-                      <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                        {t('evaluations.analysis_id')}
-                      </th>
-                      <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                        {t('evaluations.lowest_metric')}
-                      </th>
-                      <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                        {t('evaluations.score')}
-                      </th>
-                      <th className="text-muted-foreground px-4 py-2 text-left text-xs font-medium">
-                        {t('evaluations.reasoning')}
-                      </th>
-                      <th className="text-muted-foreground px-4 py-2 text-center text-xs font-medium">
-                        {t('evaluations.action')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lowScores.map((e) => {
-                      const { metric, value } = getLowestMetric(e)
-                      const reasoning =
-                        e.reasoning[metric as keyof typeof e.reasoning] ?? ''
-                      return (
-                        <tr key={e._id} className="border-border/20 border-b">
-                          <td className="text-foreground px-4 py-2 text-sm">
-                            {e.analysisId?.toString().slice(0, 12)}…
-                          </td>
-                          <td className="text-foreground px-4 py-2 text-sm capitalize">
-                            {metricLabel(metric)}
-                          </td>
-                          <td className="text-foreground px-4 py-2 text-sm">
-                            {value}
-                          </td>
-                          <td
-                            className="text-muted-foreground max-w-xs truncate px-4 py-2 text-sm"
-                            title={reasoning}
-                          >
-                            {reasoning}
-                          </td>
-                          <td className="px-4 py-2 text-center">
-                            <button
-                              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded px-3 py-1 text-xs font-medium transition-colors"
-                              onClick={() => {
-                                toast.info(
-                                  t('evaluations.inspect', { id: e.analysisId })
-                                )
-                              }}
-                            >
-                              {t('evaluations.view')}
-                            </button>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
             )}
           </section>
         </>
