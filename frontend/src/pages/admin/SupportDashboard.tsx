@@ -75,6 +75,7 @@ export default function SupportDashboard() {
     } catch {
       setAnalysisHistory([])
       setPayments([])
+      toast.error(t('common.error'))
     }
   }
 
@@ -209,9 +210,12 @@ export default function SupportDashboard() {
                       {t('admin.plan')}
                     </div>
                     <div className="font-bold">
-                      {t(`admin.plan_${selectedUser.planSlug.toLowerCase()}`, {
-                        defaultValue: selectedUser.planSlug,
-                      })}
+                      {t(
+                        `admin.plan_${selectedUser.planSlug?.toLowerCase() ?? 'free'}`,
+                        {
+                          defaultValue: selectedUser.planSlug ?? 'free',
+                        }
+                      )}
                     </div>
                   </div>
                   <div className="bg-muted/50 rounded-xl px-3 py-2">
@@ -227,9 +231,12 @@ export default function SupportDashboard() {
                       {t('admin.status')}
                     </div>
                     <div className="font-bold">
-                      {t(`admin.status_${selectedUser.status.toLowerCase()}`, {
-                        defaultValue: selectedUser.status,
-                      })}
+                      {t(
+                        `admin.status_${selectedUser.status?.toLowerCase() ?? 'active'}`,
+                        {
+                          defaultValue: selectedUser.status ?? 'active',
+                        }
+                      )}
                     </div>
                   </div>
                   <div className="bg-muted/50 rounded-xl px-3 py-2">

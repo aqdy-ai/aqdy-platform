@@ -37,11 +37,12 @@ Aqdy helps freelancers, startups, and small businesses understand legal contract
 - [Prompt Library](./03-AI-PIPELINE/PROMPT-LIBRARY.md) — Catalog of production prompts with versioning
 - [RAG Pipeline](./03-AI-PIPELINE/RAG.md) — Ingestion, chunking, embedding, retrieval (Pinecone + MMR reranking)
 - [Multi-Agent System](./03-AI-PIPELINE/AGENTS.md) — 3-agent sequential pipeline (Extractor → Classifier → Redline)
-- [Multimodal AI](./03-AI-PIPELINE/MULTIMODAL.md) — Vision, speech, and generation capabilities
+- [Multimodal AI](./03-AI-PIPELINE/MULTIMODAL.md) — speech, and generation capabilities
 - [Evaluation](./03-AI-PIPELINE/EVALUATION.md) — LLM-as-a-Judge, 4 quality metrics, human feedback
 
 ### Security & Observability
 - [Security Overview](./04-SECURITY/OVERVIEW.md) — OWASP LLM Top 10, input sanitization, PII filtering, rate limiting
+- [RBAC](./04-SECURITY/RBAC.md) — Role-Based Access Control Hierarchy
 - [Langfuse Tracing](./05-OBSERVABILITY/TRACING.md) — LLM call traces, cost tracking, latency monitoring
 
 ### Quality Assurance

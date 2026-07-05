@@ -187,12 +187,12 @@ export const logout = async (
   try {
     const refreshToken = req.cookies?.refreshToken;
 
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
     if (refreshToken) {
       await logoutUser(refreshToken);
     }
-
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
 
     res.status(200).json({
       success: true,

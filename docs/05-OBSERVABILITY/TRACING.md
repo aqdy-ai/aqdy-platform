@@ -89,8 +89,3 @@ The Langfuse cloud console provides standard metrics dashboards:
 *   **Traces Waterfall**: A visual log of individual request executions to debug failures step-by-step.
 
 ---
-
-## 📂 Detailed Documentation Reference
-
-*   **[Langfuse SDK Guide](./LANGFUSE_GUIDE.md)** — Code implementation examples, callbacks, and manual span creation.
-*   **[Developer Runbook](./RUNBOOK_TROUBLESHOOTING.md)** — Step-by-step troubleshooting, filtering, and quality score evaluations.

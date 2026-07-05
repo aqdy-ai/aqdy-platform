@@ -55,11 +55,13 @@ const PERMISSION_MATRIX: Record<
     knowledge_base: ['read', 'write'],
     prompts: ['read', 'write'],
     evaluations: ['read'],
+    feedback: ['read'],
   },
   operations_admin: {
     ai_pipeline: ['read', 'write'],
     system_health: ['read', 'write'],
     evaluations: ['read'],
+    feedback: ['read'],
   },
   analytics_admin: {
     dashboard: ['read'],
