@@ -52,7 +52,14 @@ router.get("/overview", async (_req, res: Response) => {
 /** GET /api/admin/financial/subscriptions */
 router.get("/subscriptions", async (req, res: Response) => {
   try {
-    const { page: pR, pageSize: psR, planSlug, search, dateFrom, dateTo } = req.query;
+    const {
+      page: pR,
+      pageSize: psR,
+      planSlug,
+      search,
+      dateFrom,
+      dateTo,
+    } = req.query;
     let page = parseInt(pR as string, 10) || 1;
     let pageSize = parseInt(psR as string, 10) || 20;
     if (page < 1) page = 1;
