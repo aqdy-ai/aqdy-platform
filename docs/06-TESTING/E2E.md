@@ -50,10 +50,6 @@ Playwright will launch browsers headlessly by default; add `--headed` to see the
 
 ## 🏭 CI Integration
 The **GitHub Action** `playwright.yml` (or the `test:e2e` job inside `ci-cd.yml`) runs the same command in a Linux container, captures HTML reports, and uploads them as artifacts. The CI job fails if any test exits with a non‑zero status, guaranteeing that regressions are caught before merge.
-
-## 🛡️ Adversarial / Security Testing
-*Future work*: Add tests that feed syntactically malformed contracts or LLM jailbreak prompts to verify that the backend sanitization and rate‑limiting layers block malicious payloads.
-
 ---
 
 > **Note**: The repository already contains a sample test at `tests/e2e/upload-analyse-view.spec.ts`. Feel free to extend it using the patterns shown above.

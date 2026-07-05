@@ -50,6 +50,24 @@ The **GitHub Actions** workflow (`.github/workflows/ci-cd.yml`) runs:
 2. **Integration** – API endpoints exercised with real request/response flow, using Supertest or Vitest with MSW.
 3. **Pipeline** – Combine unit & integration steps to simulate end‑to‑end behavior (covered by the separate E2E suite).
 
+## 🛡️ Adversarial / Security Testing
+
+Prompt injection and jailbreak detection are tested at both the unit and integration levels:
+
+### Security Middleware (`backend/src/middlewares/security.middleware.ts`)
+- Detects 20+ distinct English and Arabic jailbreak patterns at the HTTP layer.
+- Rejects requests with `400 Bad Request` when prompt injection is found.
+
+| Test file | Level |
+|-----------|-------|
+| `backend/tests/unit/security.middleware.test.ts` | Unit — validates pattern detection per payload |
+| `backend/tests/unit/sanitization.service.test.ts` | Unit — validates specific jailbreak payloads (DAN, STAN, roleplay, hypothetical, research, steganographic zero-width chars) |
+| `backend/tests/integration/pipeline.security.integration.test.ts` | Integration — validates pipeline rejects uploaded documents containing prompt injection |
+
+### Sanitization Service (`backend/src/services/sanitization.service.ts`)
+- Removes role override, ignore instructions, and jailbreak attempts (`DAN`, `do anything now`, `developer mode`, `god mode`, `STAN`, `hypothetically`, `for research purposes`, roleplay patterns, etc.).
+- Strips zero-width characters used in steganographic attacks.
+
 ---
 
 > **Note**: Keep new tests alongside existing ones; follow the naming convention `*.test.ts` for Jest and `*.spec.ts` for Vitest.
