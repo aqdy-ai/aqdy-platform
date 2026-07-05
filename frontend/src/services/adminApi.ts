@@ -338,6 +338,8 @@ export const adminApi = {
     page?: number
     planSlug?: string
     search?: string
+    dateFrom?: string
+    dateTo?: string
   }) => adminClient.get('/financial/subscriptions', { params }),
   changeSubscription: (id: string, action: string, planSlug?: string) =>
     adminClient.post(`/financial/subscriptions/${id}/change`, {

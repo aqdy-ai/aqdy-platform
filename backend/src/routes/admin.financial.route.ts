@@ -52,7 +52,14 @@ router.get("/overview", async (_req, res: Response) => {
 /** GET /api/admin/financial/subscriptions */
 router.get("/subscriptions", async (req, res: Response) => {
   try {
-    const { page: pR, pageSize: psR, planSlug, search } = req.query;
+    const {
+      page: pR,
+      pageSize: psR,
+      planSlug,
+      search,
+      dateFrom,
+      dateTo,
+    } = req.query;
     let page = parseInt(pR as string, 10) || 1;
     let pageSize = parseInt(psR as string, 10) || 20;
     if (page < 1) page = 1;
@@ -64,6 +71,12 @@ router.get("/subscriptions", async (req, res: Response) => {
         { name: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } },
       ];
+    }
+    if (dateFrom || dateTo) {
+      const dateFilter: Record<string, Date> = {};
+      if (dateFrom) dateFilter.$gte = new Date(dateFrom as string);
+      if (dateTo) dateFilter.$lte = new Date(dateTo as string);
+      filter.createdAt = dateFilter;
     }
     const [data, total] = await Promise.all([
       User.find(filter)

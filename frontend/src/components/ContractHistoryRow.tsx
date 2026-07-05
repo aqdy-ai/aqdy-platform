@@ -296,18 +296,6 @@ export const ContractHistoryRow: React.FC<ContractHistoryRowProps> = ({
           </span>
         </td>
 
-        {/* Overall Risk Level Badge Column */}
-        <td className="px-6 py-4 whitespace-nowrap">
-          <span
-            className={cn(
-              'inline-block rounded-full border px-2.5 py-0.5 text-xs leading-none font-bold whitespace-nowrap capitalize',
-              riskColors[overallRisk]
-            )}
-          >
-            {t(`risk.${overallRisk}`, { defaultValue: overallRisk })}
-          </span>
-        </td>
-
         {/* Actions Column */}
         <td className="px-6 py-4 text-end whitespace-nowrap">
           <div className="inline-flex items-center gap-2">
