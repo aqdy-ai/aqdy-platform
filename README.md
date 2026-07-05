@@ -1,117 +1,213 @@
-# Aqdy Platform ⚖️🚀
+<div align="center">
+  <h1>⚖️ Aqdy Platform (عَقْدِي)</h1>
+  <p><strong>AI-powered contract risk analyzer grounded in Egyptian law for the Arabic-speaking market.</strong></p>
 
-> **AI-powered contract risk analyzer designed for the Arabic-speaking market.**  
-> Aqdy helps freelancers, startups, and small businesses understand legal contracts by providing clause-by-clause risk analysis in Arabic and English using state-of-the-art LLMs, semantic RAG pipelines, and curated regional legal knowledge bases.
+  <p>
+    <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white" alt="Node.js" /></a>
+    <a href="https://react.dev"><img src="https://img.shields.io/badge/React-v19-61DAFB?logo=react&logoColor=black" alt="React" /></a>
+    <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" /></a>
+    <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-v5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+    <a href="https://ai.google.dev"><img src="https://img.shields.io/badge/Google_Gemini-API-8E75C2?logo=googlegemini&logoColor=white" alt="Google Gemini" /></a>
+    <a href="https://langfuse.com"><img src="https://img.shields.io/badge/Langfuse-Trace-000000?logo=langfuse&logoColor=white" alt="Langfuse" /></a>
+    <a href="https://stripe.com"><img src="https://img.shields.io/badge/Stripe-Payments-008FC1?logo=stripe&logoColor=white" alt="Stripe" /></a>
+    <a href="https://www.docker.com"><img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white" alt="Docker Compose" /></a>
+  </p>
 
----
-
-## 🛠️ Technology Stack
-
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![React 19](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Vite 8](https://img.shields.io/badge/Vite%208-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Tailwind CSS 4](https://img.shields.io/badge/Tailwind%204-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-<br>
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB%20Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
-![Pinecone](https://img.shields.io/badge/Pinecone-24292e?style=for-the-badge&logo=pinecone&logoColor=white)
-<br>
-![Gemini API](https://img.shields.io/badge/Gemini%20API-4285F4?style=for-the-badge&logo=google-gemini&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
-
----
-
-## ✨ Core Features
-
-*   **Bilingual Analysis (ar/en):** Complete support for contracts written in Arabic, English, or mixed bilingual formats.
-*   **Semantic RAG Pipeline:** Augmented intelligence grounded in a vector database (`Pinecone`) using the `multilingual-e5-large` model, preventing AI hallucinations.
-*   **Curated Legal Knowledge Base:** 50+ pre-audited risk clauses carefully mapped against the **Egyptian Labor Law No. 12/2003** and the **Egyptian Civil Code No. 131/1948**.
-*   **RTL-First Premium UI:** Built from the ground up to support right-to-left layout constraints using Tailwind 4 logical spacing properties.
-*   **Observability & Tracking:** Full Langfuse trace logging for security, debugging, and continuous improvement of AI responses.
-*   **Strict Quality Gates:** Proactive linting, formatting checks, and a mandatory **60% unit test coverage gate** in CI/CD.
+  <h4>
+    <a href="#-quick-start">Quick Start</a> •
+    <a href="#-core-features">Features</a> •
+    <a href="#-system-architecture">Architecture</a> •
+    <a href="#-repository-layout">Repository Structure</a> •
+    <a href="#-documentation-directory">Documentation Index</a>
+  </h4>
+</div>
 
 ---
 
-## 📂 Repository Layout
+## 🌟 Project Overview
 
-```text
+Aqdy helps freelancers, startups, and small businesses understand legal contracts by highlighting liabilities, providing alternative legal wordings, and explaining terms in plain language (both Arabic and English).
+
+Upload any contract in **PDF** or **DOCX** format to retrieve:
+*   🔍 **Clause-by-clause risk analysis** calibrated against Egyptian law.
+*   🌍 **Bilingual (Arabic/English) explanations** with auto-detected contract language.
+*   📝 **Redline revision suggestions** and negotiation talking points.
+*   📚 **Citations and grounding** from a curated legal knowledge base.
+
+---
+
+## 🛠️ Tech Stack & Ecosystem
+
+| Component | Technologies & Frameworks |
+| :--- | :--- |
+| **Backend** | ![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white) ![Express](https://img.shields.io/badge/Express.js-v4-000000?logo=express&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-v5-3178C6?logo=typescript&logoColor=white) ![LangChain](https://img.shields.io/badge/LangChain-v0.2-1C3C3C?logo=langchain&logoColor=white) |
+| **Frontend** | ![React](https://img.shields.io/badge/React-v19-61DAFB?logo=react&logoColor=black) ![Vite](https://img.shields.io/badge/Vite-v8-646CFF?logo=vite&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white) ![Radix UI / shadcn](https://img.shields.io/badge/Radix_UI-Primitive-161618?logo=radixui&logoColor=white) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-Animation-00C5FF?logo=framer&logoColor=white) |
+| **AI / RAG** | ![Google Gemini](https://img.shields.io/badge/Google_Gemini-API-8E75C2?logo=googlegemini&logoColor=white) ![Pinecone](https://img.shields.io/badge/Pinecone-Vector_DB-161616?logo=pinecone&logoColor=white) ![OpenAI Fallback](https://img.shields.io/badge/OpenAI_Fallback-v4-412991?logo=openai&logoColor=white) |
+| **Data & Queues** | ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white) ![Redis](https://img.shields.io/badge/Redis-v7-DC382D?logo=redis&logoColor=white) ![BullMQ](https://img.shields.io/badge/BullMQ-Queues-FF9900) |
+| **Observability** | ![Langfuse](https://img.shields.io/badge/Langfuse-Trace-000000?logo=langfuse&logoColor=white) |
+| **Security / Dev** | ![Docker](https://img.shields.io/badge/Docker_Compose-v2-2496ED?logo=docker&logoColor=white) ![Doppler](https://img.shields.io/badge/Doppler-Secrets-FF007F?logo=doppler&logoColor=white) ![AWS CDK](https://img.shields.io/badge/AWS_CDK-v2-FF9900?logo=amazon-web-services&logoColor=white) |
+| **Testing** | ![Jest](https://img.shields.io/badge/Jest-Backend-C21325?logo=jest&logoColor=white) ![Vitest](https://img.shields.io/badge/Vitest-Frontend-6E9F18?logo=vitest&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-E2E-2E8555?logo=playwright&logoColor=white) |
+
+---
+
+## ⚡ Core Features
+
+*   **🤖 3-Agent AI Pipeline** — Sequential multi-agent orchestration for high-accuracy parsing and classification:
+    1.  `ExtractorAgent` (Clause extraction & language detection)
+    2.  `RiskClassifierAgent` (Egyptian law grounding and risk scoring)
+    3.  `RedlineAgent` (Safer alternative generation & negotiation points)
+*   **📚 Semantic RAG** — 150+ legal clauses embedded using `multilingual-e5-large` in Pinecone, retrieved with MMR (Maximal Marginal Relevance) + reranking.
+*   **🌍 RTL-First & Bilingual** — Full Arabic and English support; automatically detects document languages and uses Tailwind logical properties for fluent RTL switching.
+*   **⚖️ LLM-as-a-Judge** — Continuous evaluation of the RAG pipeline across 4 quality metrics: Context Precision, Context Recall, Faithfulness, and Answer Relevancy.
+*   **📈 Real-time Observability** — End-to-end tracing (latencies, token count, costs per LLM call) integrated with Langfuse Cloud.
+*   **🔒 Hardened Security** — Input sanitization, PII filtering, Redis rate limiting, JWT authentication, Helmet headers, and secure Doppler-managed secrets.
+*   **💳 Payments & Credit Model** — Seamless Stripe integration with support for recurring subscription tiers and a tokenized credit-deduction engine.
+*   **♿ Accessibility (WCAG 2.1 AA)** — Fully compliant with keyboard navigation, screen reader attributes, semantic HTML, and vitest-axe tests.
+*   **💬 Human Feedback Loop** — Thumbs up/down evaluation on per-clause results and contextual issue-reporting forms.
+
+---
+
+## 🏗️ System Architecture
+
+The following diagram illustrates how the frontend client, backend Express application, asynchronous BullMQ workers, and the multi-agent AI framework interact with the Pinecone vector database and Langfuse observability:
+
+```mermaid
+graph TD
+    User["User (Web Browser)"] -- "HTTPS / RTL-First UI" <--> FE["React 19 Frontend (Vite 8, Tailwind 4)"]
+    FE -- "REST API / JWT / Doppler Secrets" <--> BE["Express.js Backend (Node.js, TypeScript)"]
+
+    subgraph "Asynchronous Processing & Storage"
+        BE -->|Enqueue Jobs| Redis["Redis (BullMQ Queue)"]
+        Redis -.->|Worker Dequeue| Worker["BullMQ Background Worker"]
+        Worker -- "Save / Retrieve Data" <--> DB[(MongoDB Mongoose)]
+    end
+
+    subgraph "Orchestration & AI Agents"
+        Worker -- "Execute Pipeline" <--> Orchestrator["Orchestrator Service"]
+        Orchestrator -->|0. Sanitize Text| Sanitization["Sanitization Service"]
+        Orchestrator -->|1. Extract Clauses| Extractor["Extractor Agent"]
+        Orchestrator -->|2. Classify Risk| Classifier["Risk Classifier Agent"]
+        Orchestrator -->|3. Generate Revisions| Redline["Redline Agent"]
+    end
+
+    subgraph "External AI & Vector Databases"
+        Extractor -- "Primary LLM: gpt-4o / Fallback: gemini" <--> LLM["LLM Service (LangChain)"]
+        Classifier -- "Primary LLM: gpt-4o / Fallback: gemini" <--> LLM
+        Redline -- "Primary LLM: gpt-4o / Fallback: gemini" <--> LLM
+        Classifier -- "Query Vector Database" <--> RAG["RAG Service"]
+        RAG -- "Semantic Search (multilingual-e5-large)" <--> Pinecone[(Pinecone Serverless Vector DB)]
+    end
+
+    subgraph "Observability & Payments"
+        Orchestrator -.->|Callbacks & Spans| Langfuse["Langfuse Cloud"]
+        LLM -.->|Token Count & Cost| Langfuse
+        RAG -.->|Retrieval Metrics| Langfuse
+        Worker -- "Manage Subscriptions & Credits" <--> Stripe["Stripe Payments"]
+    end
+```
+
+---
+
+## 📁 Repository Layout
+
+```
 aqdy-platform/
-├── backend/                   # Node/Express API service
+├── backend/                     # Express API Server (Node.js/TypeScript)
 │   ├── src/
-│   │   ├── config/            # LangChain configurations & env Zod validators
-│   │   ├── data/              # legalKB.json primary source of truth
-│   │   ├── scripts/           # embedKB.ts indexing script
-│   │   └── services/          # LLM connection wrappers, contract/analysis services
-│   └── tests/                 # Jest backend suites & template mocks
-├── frontend/                  # React 19 / Vite 8 client application
+│   │   ├── agents/              # Multi-agent systems & prompt libraries
+│   │   ├── config/              # Redis, MongoDB, LangChain configuration
+│   │   ├── models/              # Mongoose schemas (12 database collections)
+│   │   ├── routes/              # Express REST endpoints (23 files)
+│   │   └── services/            # AI pipelines, RAG, payments, and tracing
+│   └── tests/                   # Unit, integration, & system tests (Jest)
+├── frontend/                    # React client built with Vite & Tailwind CSS v4
 │   ├── src/
-│   │   ├── components/        # Layout panels (RTL-ready) & Atomic UI primitives
-│   │   ├── locales/           # Arabic & English translation dictionaries
-│   │   └── pages/             # Main client routes & state stores
-│   └── tests/                 # Vitest frontend components & MSW api mocks
-├── docs/                      # Central system technical documentation
-│   ├── BACKEND/               # LLM wrappers & LangChain setups
-│   ├── DATABASE/              # Atlas connections & table schemas
-│   ├── DEVOPS/                # Docker setups & installation guides
-│   ├── FRONTEND/              # Component Atomic design & i18n
-│   ├── RAG/                   # Knowledge Base & Pinecone pipeline
-│   └── TESTING/               # Jest, Vitest, & CI/CD thresholds
-├── docker-compose.yml         # Local container orchestrator
-└── README.md                  # Landing page (You are here!)
+│   │   ├── components/          # UI primitives and feature-specific components
+│   │   ├── pages/               # Application page templates (15 views)
+│   │   └── locales/             # Translation keys (Arabic/English)
+│   └── tests/                   # Component and E2E tests (Vitest + Playwright)
+├── docs/                        # Complete technical specifications & design docs
+├── infra/                       # AWS CDK Infrastructure-as-Code definitions
+└── docker-compose.yml           # Redis, MongoDB, Backend & Frontend local setup
 ```
 
 ---
 
-## 🚦 Quick Start Guide
+## ⚡ Quick Start
 
-### 1. Prerequisite Installations
-*   Ensure **Node.js (>= 18)**, **npm**, **MongoDB**, and **Docker** are installed locally.
+### Prerequisites
+Make sure you have the following tools installed on your development machine:
+- **Node.js** (>= 18.0)
+- **npm** (>= 9.0)
+- **Docker** & **Docker Compose**
 
-### 2. Configure Environment Secrets
-Create a `.env` file inside `backend/` and configure the essential API keys:
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/aqdy
-GEMINI_API_KEY=your_google_ai_studio_gemini_key
-PINECONE_API_KEY=your_pinecone_db_key
-PINECONE_INDEX=legal-kb
-```
-
-### 3. Spin Up Services
-
-#### Running via Docker Compose (Recommended)
-From the repository root directory:
+### Step 1: Clone and Set Up Environment
+Copy the environment variables template:
 ```bash
-docker-compose up --build
+cp .env.example .env
+```
+Fill in the configuration details inside `.env` (API credentials for Gemini, OpenAI, Pinecone, MongoDB Atlas, Langfuse, Stripe, and Doppler).
+
+### Step 2: Run with Docker Compose
+Run the entire stack containing backend, frontend, database, and Redis queues:
+```bash
+docker compose up --build
 ```
 
-#### Running Locally (Development Mode)
-Run both backend and frontend concurrently in your local environment:
+### Step 3: Run Manually (Local Development Mode)
+If you prefer running services independently:
+
+**Backend Server**
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+**Frontend App** (In a new terminal)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 📖 Documentation Directory
+
+The complete guide and architecture specs are modularly organized in the [`docs/`](./docs/) directory:
+
+| Section | Topic | Primary Reference Guides |
+| :--- | :--- | :--- |
+| **01 — Architecture** | System Design | [System Overview](./docs/01-ARCHITECTURE/OVERVIEW.md) • [DB Schema](./docs/01-ARCHITECTURE/DATABASE-SCHEMA.md) • [API Spec](./docs/01-ARCHITECTURE/API-SPEC.md) |
+| **02 — Setup** | Run & Deploy | [Local Dev](./docs/02-SETUP/LOCAL-DEV.md) • [Deployment](./docs/02-SETUP/DEPLOYMENT.md) • [CI/CD](./docs/02-SETUP/CI-CD.md) |
+| **03 — AI Pipeline** | LLMs & Agents | [Model Selection](./docs/03-AI-PIPELINE/MODEL-SELECTION.md) • [Prompt Library](./docs/03-AI-PIPELINE/PROMPT-LIBRARY.md) • [RAG Pipeline](./docs/03-AI-PIPELINE/RAG.md) • [Multi-Agent System](./docs/03-AI-PIPELINE/AGENTS.md) • [Evaluation](./docs/03-AI-PIPELINE/EVALUATION.md) |
+| **04 — Security** | Guardrails | [Security Overview](./docs/04-SECURITY/OVERVIEW.md) • [RBAC Policies](./docs/04-SECURITY/RBAC.md) |
+| **05 — Observability** | Tracing | [Langfuse Tracing](./docs/05-OBSERVABILITY/TRACING.md) |
+| **06 — Testing** | Quality Assurance | [Unit & Integration](./docs/06-TESTING/UNIT-INTEGRATION.md) • [E2E Testing](./docs/06-TESTING/E2E.md) |
+| **07 — User Guide** | Operations | [How to Use](./docs/07-USER-GUIDE/README.md) |
+| **08 — Appendix** | Standards & Info | [Accessibility](./docs/08-APPENDIX/ACCESSIBILITY.md) • [Localization](./docs/08-APPENDIX/LOCALIZATION.md) • [Credits](./docs/08-APPENDIX/CREDITS.md) |
+
+---
+
+## 🧪 Running Tests & Quality Gates
+
+Run the automated test suites locally to verify logic and schema compliance:
 
 ```bash
-# In the backend terminal:
-cd backend && npm install && npm run dev
+# Run backend tests (Jest)
+cd backend
+npm run test
+npm run test:coverage       # Enforces 60% coverage gate in CI/CD pipeline
 
-# In the frontend terminal:
-cd frontend && npm install && npm run dev
+# Run frontend unit/component tests (Vitest)
+cd frontend
+npm run test
+npm run test:coverage
+
+# Run End-to-End browser scenarios (Playwright)
+cd frontend
+npm run test:e2e
 ```
 
----
 
-## 📖 Deep-Dive Technical Documentation
-
-To read further about specific architectures and components, please jump to our **[Central Documentation Index (docs/README.md)](./docs/README.md)** or explore these direct guides:
-
-*   **Setup Guides:** [Local Development Installation](./docs/DEVOPS/LOCAL_SETUP.md) | [Docker Deployment Guide](./docs/DEVOPS/DEPLOYMENT.md)
-*   **Engineering specs:** [LLM Connection & Orchestration](./docs/BACKEND/LLM_SETUP.md) | [Database Collections & Schemas](./docs/DATABASE/DATABASE_SCHEMA.md)
-*   **Frontend patterns:** [Tailwind 4 i18n & Layouts](./docs/FRONTEND/README.md) | [Atomic Component Architecture](./docs/FRONTEND/COMPONENT_ARCHITECTURE.md)
-*   **Vector Engine:** [Semantic Pinecone RAG Pipeline](./docs/RAG/rag-and-embedding.md) | [Legal Clause Catalog](./docs/RAG/LEGAL_KB.md)
-*   **Development Rules:** [Testing Strategies & CI/CD Quality Gates](./docs/TESTING/README.md) | [KB Curation Workflow](./docs/RAG/KB_CURATION_PROCESS.md)
-
----
-
-> [!TIP]
-> **Updating the Knowledge Base:** If you are a legal expert or a developer adding new contract risks to the Pinecone index, always read the [Knowledge Base Curation Process](./docs/RAG/KB_CURATION_PROCESS.md) first to ensure correct schema validations and multilingual embedding guidelines are preserved.

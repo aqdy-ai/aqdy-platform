@@ -622,6 +622,26 @@
     "preview_risky_clauses": "البنود عالية المخاطر: {{count}}",
     "version": "الإصدار"
   },
+  "feedback": {
+    "aria_label": "قيّم هذه الإجابة",
+    "thank_you": "شكراً على تقييمك!",
+    "thumbs_up": "مفيد",
+    "thumbs_down": "غير مفيد",
+    "report": {
+      "title": "الإبلاغ عن مشكلة",
+      "description": "ساعدنا في التحسين بوصف ما حدث من خطأ.",
+      "category_label": "التصنيف",
+      "inaccurate": "غير دقيق",
+      "offensive": "مسيء",
+      "unclear": "غير واضح",
+      "other": "أخرى",
+      "comment_label": "تفاصيل إضافية (اختياري)",
+      "comment_placeholder": "صِف المشكلة التي واجهتها...",
+      "submit": "إرسال التقرير",
+      "success": "تم إرسال التقرير. شكراً لك!",
+      "error": "فشل إرسال التقرير"
+    }
+  },
   "evaluations": {
     "title": "لوحة تحكم تقييم LLM كحكم",
     "faithfulness": "الدقة",

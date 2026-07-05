@@ -617,6 +617,26 @@
     "preview_risky_clauses": "High risk clauses: {{count}}",
     "version": "Version"
   },
+  "feedback": {
+    "aria_label": "Rate this response",
+    "thank_you": "Thank you for your feedback!",
+    "thumbs_up": "Thumbs up - helpful",
+    "thumbs_down": "Thumbs down - not helpful",
+    "report": {
+      "title": "Report an Issue",
+      "description": "Help us improve by describing what went wrong.",
+      "category_label": "Category",
+      "inaccurate": "Inaccurate",
+      "offensive": "Offensive",
+      "unclear": "Unclear",
+      "other": "Other",
+      "comment_label": "Additional details (optional)",
+      "comment_placeholder": "Describe what issue you encountered...",
+      "submit": "Submit Report",
+      "success": "Report submitted. Thank you!",
+      "error": "Failed to submit report"
+    }
+  },
   "evaluations": {
     "title": "LLM-as-a-Judge Evaluation Dashboard",
     "faithfulness": "Faithfulness",

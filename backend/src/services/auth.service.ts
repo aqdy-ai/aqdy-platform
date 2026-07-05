@@ -160,7 +160,7 @@ export const logoutUser = async (refreshToken: string): Promise<void> => {
   );
 
   if (!user) {
-    throw new AppError(401, "Invalid refresh token.");
+    return;
   }
 
   user.refreshToken = undefined;
