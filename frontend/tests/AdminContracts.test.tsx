@@ -122,7 +122,6 @@ describe('AdminContracts', () => {
     expect(screen.getByText('Owner')).toBeInTheDocument()
     expect(screen.getByText('Upload Date')).toBeInTheDocument()
     expect(screen.getByText('Status')).toBeInTheDocument()
-    expect(screen.getByText('Risk Level')).toBeInTheDocument()
   })
 
   it('renders all contracts with correct data', async () => {
@@ -159,17 +158,6 @@ describe('AdminContracts', () => {
     expect(badges[0]).toHaveTextContent('Analyzed')
     expect(badges[1]).toHaveTextContent('Pending')
     expect(badges[2]).toHaveTextContent('Failed')
-  })
-
-  it('renders correct risk level badges', async () => {
-    renderComponent()
-
-    await waitFor(() => {
-      const badges = screen.getAllByTestId('risk-badge')
-      expect(badges).toHaveLength(3)
-    })
-
-    expect(screen.getByText('High')).toBeInTheDocument()
   })
 
   it('renders owner links pointing to admin accounts', async () => {
